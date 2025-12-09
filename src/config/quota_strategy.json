@@ -1,0 +1,64 @@
+{
+    "groups": [
+        {
+            "id": "gemini",
+            "label": "Gemini",
+            "themeColor": "#69F0AE",
+            "prefixes": [
+                "gemini"
+            ],
+            "models": [
+                {
+                    "id": "gemini-3-pro-high",
+                    "modelName": "MODEL_PLACEHOLDER_M8",
+                    "displayName": "Gemini 3 Pro (High)"
+                },
+                {
+                    "id": "gemini-3-pro-low",
+                    "modelName": "MODEL_PLACEHOLDER_M7",
+                    "displayName": "Gemini 3 Pro (Low)"
+                }
+            ]
+        },
+        {
+            "id": "claude",
+            "label": "Claude",
+            "themeColor": "#FFAB40",
+            "prefixes": [
+                "claude"
+            ],
+            "models": [
+                {
+                    "id": "claude-4-5-sonnet",
+                    "modelName": "MODEL_CLAUDE_4_5_SONNET",
+                    "displayName": "Claude Sonnet 4.5"
+                },
+                {
+                    "id": "claude-4-5-sonnet-thinking",
+                    "modelName": "MODEL_CLAUDE_4_5_SONNET_THINKING",
+                    "displayName": "Claude Sonnet 4.5"
+                },
+                {
+                    "id": "claude-4-opus-thinking",
+                    "modelName": "MODEL_PLACEHOLDER_M12",
+                    "displayName": "Claude Opus 4.5"
+                }
+            ]
+        },
+        {
+            "id": "gpt",
+            "label": "GPT",
+            "themeColor": "#FF5252",
+            "prefixes": [
+                "gpt"
+            ],
+            "models": [
+                {
+                    "id": "gpt-oss-120b-medium",
+                    "modelName": "MODEL_OPENAI_GPT_OSS_120B_MEDIUM",
+                    "displayName": "GPT-OSS 120B"
+                }
+            ]
+        }
+    ]
+}

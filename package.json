@@ -1,0 +1,209 @@
+{
+  "name": "antigravity-panel",
+  "displayName": "%extension.displayName%",
+  "description": "%extension.description%",
+  "version": "0.2.1",
+  "publisher": "n2ns",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/n2ns/antigravity-panel.git"
+  },
+  "icon": "assets/icon.png",
+  "engines": {
+    "vscode": "^1.104.0"
+  },
+  "main": "./dist/extension.js",
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "gagp-sidebar",
+          "title": "%viewsContainers.gagp-sidebar.title%",
+          "icon": "assets/icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "gagp-sidebar": [
+        {
+          "type": "webview",
+          "id": "gagp.sidebar",
+          "name": "%views.gagp.sidebar.name%"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "gagp.openPanel",
+        "title": "%command.openPanel.title%",
+        "category": "%extension.category%"
+      },
+      {
+        "command": "gagp.showCacheSize",
+        "title": "%command.showCacheSize.title%",
+        "category": "%extension.category%"
+      },
+      {
+        "command": "gagp.cleanCache",
+        "title": "%command.cleanCache.title%",
+        "category": "%extension.category%",
+        "icon": "$(trash)"
+      },
+      {
+        "command": "gagp.refreshQuota",
+        "title": "%command.refreshQuota.title%",
+        "category": "%extension.category%",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "gagp.openSettings",
+        "title": "%command.openSettings.title%",
+        "category": "%extension.category%",
+        "icon": "$(gear)"
+      }
+    ],
+    "menus": {
+      "view/title": [
+        {
+          "command": "gagp.refreshQuota",
+          "when": "view == gagp.sidebar",
+          "group": "navigation"
+        },
+        {
+          "command": "gagp.openSettings",
+          "when": "view == gagp.sidebar",
+          "group": "navigation"
+        }
+      ]
+    },
+    "configuration": [
+      {
+        "title": "%config.quota.title%",
+        "properties": {
+          "gagp.pollingInterval": {
+            "type": "number",
+            "default": 120,
+            "minimum": 60,
+            "description": "%config.pollingInterval.description%"
+          },
+          "gagp.showQuota": {
+            "type": "boolean",
+            "default": true,
+            "description": "%config.showQuota.description%"
+          },
+          "gagp.quotaDisplayStyle": {
+            "type": "string",
+            "default": "percentage",
+            "enum": [
+              "percentage",
+              "resetTime",
+              "used",
+              "remaining"
+            ],
+            "enumDescriptions": [
+              "%config.quotaDisplayStyle.percentage%",
+              "%config.quotaDisplayStyle.resetTime%",
+              "%config.quotaDisplayStyle.used%",
+              "%config.quotaDisplayStyle.remaining%"
+            ],
+            "description": "%config.quotaDisplayStyle.description%"
+          },
+          "gagp.visualizationMode": {
+            "type": "string",
+            "default": "groups",
+            "enum": [
+              "groups",
+              "models"
+            ],
+            "enumDescriptions": [
+              "%config.visualizationMode.groups%",
+              "%config.visualizationMode.models%"
+            ],
+            "description": "%config.visualizationMode.description%"
+          },
+          "gagp.quotaWarningThreshold": {
+            "type": "number",
+            "default": 30,
+            "minimum": 5,
+            "maximum": 100,
+            "description": "%config.quotaWarningThreshold.description%"
+          },
+          "gagp.quotaCriticalThreshold": {
+            "type": "number",
+            "default": 10,
+            "minimum": 1,
+            "maximum": 50,
+            "description": "%config.quotaCriticalThreshold.description%"
+          },
+          "gagp.historyDisplayMinutes": {
+            "type": "number",
+            "default": 60,
+            "minimum": 10,
+            "maximum": 120,
+            "description": "%config.historyDisplayMinutes.description%"
+          }
+        }
+      },
+      {
+        "title": "%config.cache.title%",
+        "properties": {
+          "gagp.showCacheSize": {
+            "type": "boolean",
+            "default": true,
+            "description": "%config.showCacheSize.description%"
+          },
+          "gagp.autoCleanCache": {
+            "type": "boolean",
+            "default": false,
+            "description": "%config.autoCleanCache.description%"
+          },
+          "gagp.cacheWarningThreshold": {
+            "type": "number",
+            "default": 500,
+            "minimum": 100,
+            "description": "%config.cacheWarningThreshold.description%"
+          }
+        }
+      },
+      {
+        "title": "%config.debug.title%",
+        "properties": {
+          "gagp.debugMode": {
+            "type": "boolean",
+            "default": false,
+            "description": "%config.debugMode.description%"
+          }
+        }
+      }
+    ]
+  },
+  "scripts": {
+    "build": "node ./esbuild.js",
+    "watch": "node ./esbuild.js --watch --sourcemap",
+    "vscode:prepublish": "npm run build",
+    "lint": "eslint src --ext .ts",
+    "test": "tsc -p tsconfig.test.json && node ./out/test/runUnitTests.js"
+  },
+  "devDependencies": {
+    "@types/mocha": "^10.0.10",
+    "@types/node": "^24.10.1",
+    "@types/vscode": "^1.104.0",
+    "@typescript-eslint/eslint-plugin": "^8.48.1",
+    "@typescript-eslint/parser": "^8.48.1",
+    "canvas": "^3.2.0",
+    "esbuild": "^0.27.1",
+    "eslint": "^9.39.1",
+    "glob": "^13.0.0",
+    "mocha": "^11.7.5",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.48.1"
+  },
+  "dependencies": {
+    "@vscode/codicons": "^0.0.43",
+    "lit": "^3.3.1"
+  }
+}

@@ -1,0 +1,23 @@
+{
+    "extends": "./tsconfig.json",
+    "compilerOptions": {
+        "module": "Node16",
+        "moduleResolution": "Node16",
+        "target": "ES2022",
+        "outDir": "out",
+        "rootDir": "src",
+        "sourceMap": true,
+        "noEmit": false
+    },
+    "include": [
+        "src/core/**/*",
+        "src/utils/**/*",
+        "src/config/**/*",
+        "src/test/**/*"
+    ],
+    "exclude": [
+        "src/ui/**/*",
+        "src/extension.ts",
+        "node_modules"
+    ]
+}
