@@ -2,199 +2,169 @@ English | [中文文档](README_zh.md)
 
 # Antigravity Panel
 
-> Cache and Quota Management Extension for Google Antigravity IDE
+> Monitor your AI quota usage and manage cache with ease
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![VS Code Marketplace Version](https://img.shields.io/visual-studio-marketplace/v/n2ns.antigravity-panel?style=flat&logo=visual-studio-code)](https://marketplace.visualstudio.com/items?itemName=n2ns.antigravity-panel)
-[![VS Code Marketplace Installs](https://img.shields.io/visual-studio-marketplace/i/n2ns.antigravity-panel?style=flat&logo=visual-studio-code)](https://marketplace.visualstudio.com/items?itemName=n2ns.antigravity-panel)
-[![Open VSX Version](https://img.shields.io/open-vsx/v/n2ns/antigravity-panel?style=flat&logo=open-vsx)](https://open-vsx.org/extension/n2ns/antigravity-panel)
-[![Open VSX Downloads](https://img.shields.io/open-vsx/dt/n2ns/antigravity-panel?style=flat&logo=open-vsx)](https://open-vsx.org/extension/n2ns/antigravity-panel)
-[![VS Code Engine](https://img.shields.io/badge/VS%20Code-%5E1.104.0-blue)](https://code.visualstudio.com/)
+[![Version](https://img.shields.io/visual-studio-marketplace/v/n2ns.antigravity-panel?style=flat&label=version)](https://marketplace.visualstudio.com/items?itemName=n2ns.antigravity-panel)
+[![Installs](https://img.shields.io/visual-studio-marketplace/i/n2ns.antigravity-panel?style=flat)](https://marketplace.visualstudio.com/items?itemName=n2ns.antigravity-panel)
+[![Downloads](https://img.shields.io/open-vsx/dt/n2ns/antigravity-panel?style=flat)](https://open-vsx.org/extension/n2ns/antigravity-panel)
 
-**Antigravity Panel** is a VS Code extension that integrates with the local Antigravity Language Server. It provides real-time visualization of AI model quota usage and management tools for file system caches generated during AI sessions.
+**Antigravity Panel** helps you stay on top of your AI model usage in **Google Antigravity IDE**. Get real-time quota monitoring, usage trends, and powerful cache management—all in one beautiful sidebar panel.
 
-## Features
+## ✨ Why Antigravity Panel?
 
-### Quota Monitoring
-- **Grouped Visualization**: Displays quota usage by model families (Gemini, Claude, GPT) using configurable grouping strategies
-- **Real-time Updates**: Automatically detects and connects to the local Antigravity Language Server
-- **Status Bar Integration**: Shows active model's remaining quota and total cache size in the IDE status bar
-- **Configurable Thresholds**: Visual warnings when quota drops below customizable thresholds
+- 🎯 **Never run out of quota** - Real-time monitoring with visual warnings
+- 📊 **Understand your usage** - Interactive charts showing 24-hour trends
+- 🧹 **Keep things clean** - Manage AI conversation caches with one click
+- 🎨 **Beautiful UI** - Native theme integration
+- 🌍 **Speaks your language** - Available in 11 languages
 
-### Usage History & Trends
-- **Interactive Bar Chart**: Visualizes quota consumption over configurable time ranges (10-120 minutes)
-- **24-Hour History**: Tracks and persists quota usage data for trend analysis
-- **Color-Coded Groups**: Differentiates model families using theme colors from `quota_strategy.json`
-- **Stacked Visualization**: Shows multi-group usage in a single chart
+## 📸 Screenshots
 
-### Cache & Task Management
-- **Brain Task Explorer**: Browse and manage AI conversation tasks stored in `~/.gemini/antigravity/brain/`
-  - View task metadata (size, file count, creation date)
-  - Expand tasks to see contained files (images, markdown, code)
-  - Delete individual tasks with automatic cleanup
-- **Code Context Cache**: Manage code analysis caches in `~/.gemini/antigravity/code_tracker/active/`
-  - View cache size per project
-  - Delete specific project caches
-- **Smart Cleanup**: Automatically closes related editor tabs and preview windows when deleting tasks or files
+![Antigravity Panel Interface](assets/preview.png)
 
-### Configuration Shortcuts
-- Quick access to **Global Rules** (`~/.gemini/GEMINI.md`)
-- Quick access to **MCP Configuration** (`~/.gemini/mcp.json`)
-- Quick access to **Browser Allowlist** (`~/.gemini/browser_allowlist.json`)
+*Real-time quota monitoring, usage trends, and cache management in one place*
 
-### Cross-Platform Support
-- Windows (PowerShell/WMIC-based process detection)
-- macOS (ps/lsof-based process detection)
-- Linux (ps/lsof-based process detection)
+## 🚀 Key Features
 
-### Multi-language Support
-- **Full Localization**: Configuration UI and commands available in 11 languages:
-  - English, Simplified Chinese, Traditional Chinese, Japanese, French, German
-  - Spanish, Portuguese (Brazil), Italian, Korean, Russian
+### 📊 Smart Quota Monitoring
 
-## Interface
+**See your AI usage at a glance**
+- Visual quota display grouped by model families (Gemini, Claude, GPT, etc.)
+- Status bar shows remaining quota and cache size
+- Color-coded warnings when quota runs low
+- Automatic connection to local Antigravity Language Server
 
-![Interface Preview](assets/preview.png)
+### 📈 Usage Trends & Analytics
 
-## Installation
+**Understand your consumption patterns**
+- Interactive bar charts showing usage over time (10-120 minutes)
+- 24-hour history tracking with persistent storage
+- Color-coded visualization by model family
+- Predict when you'll run out of quota
 
-### Installation
+### 🗂️ Powerful Cache Management
 
-**Visual Studio Marketplace** & **Open VSX Registry**
-Search for `Antigravity Panel` in your IDE's Extensions view (`Ctrl+Shift+X`) to install.
+**Keep your workspace clean**
+- **Brain Tasks**: Browse and delete AI conversation caches
+  - See task size, file count, and creation date
+  - Preview images, markdown, and code files
+  - One-click deletion with automatic cleanup
+- **Code Context**: Manage code analysis caches per project
+- **Smart Cleanup**: Automatically closes related editor tabs
 
-Alternatively, you can install from the web:
-- [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=n2ns.antigravity-panel)
+### ⚙️ Quick Configuration Access
+
+**One-click shortcuts to important settings**
+- Edit Global Rules
+- Configure MCP settings
+- Manage Browser Allowlist
+
+### 🌐 Works Everywhere
+
+**Cross-platform support**
+- ✅ Windows
+- ✅ macOS
+- ✅ Linux
+
+**Multi-language UI**
+- English, 简体中文, 繁體中文, 日本語, Français, Deutsch, Español, Português (Brasil), Italiano, 한국어, Русский
+
+## 📦 Installation
+
+### Install from Extension Marketplace
+
+1. Open **Antigravity IDE**
+2. Press `Ctrl+Shift+X` (Windows/Linux) or `Cmd+Shift+X` (macOS) to open Extensions
+3. Search for `Antigravity Panel`
+4. Click **Install**
+
+**Or install from web:**
+- [Extension Marketplace](https://marketplace.visualstudio.com/items?itemName=n2ns.antigravity-panel)
 - [Open VSX Registry](https://open-vsx.org/extension/n2ns/antigravity-panel)
 
-### From Source
-```bash
-git clone https://github.com/n2ns/antigravity-panel.git
-cd antigravity-panel
-npm install
-npm run build
-```
+## 🎯 Quick Start
 
-## Usage
+### Step 1: Open the Panel
 
-1.  **Open Panel**: Click the Antigravity icon in the sidebar or execute `Antigravity Panel: Open Panel`.
-2.  **View Quota**: Hover over pie charts to see specific model limits.
-3.  **Manage Cache**:
-    *   Expand **Brain** or **Code Tracker** sections to view items.
-    *   Click the trash icon 🗑️ to delete tasks or context caches.
-    *   *Deletion removes associated conversation history and artifacts.*
+Click the **Antigravity** icon in the sidebar, or:
+- Press `Ctrl+Shift+P` (Windows/Linux) or `Cmd+Shift+P` (macOS)
+- Type `Antigravity Panel: Open Panel`
+- Press Enter
 
-### Commands
-| Command | Description |
+### Step 2: Monitor Your Quota
+
+- **Pie charts** show quota by model family
+- **Hover** over charts to see detailed limits
+- **Status bar** displays active model quota and cache size
+- **Usage chart** shows consumption trends
+
+### Step 3: Manage Cache
+
+- Expand **Brain** or **Code Tracker** sections
+- Click 🗑️ to delete tasks or caches
+- Related editor tabs close automatically
+
+> ⚠️ **Note**: Deleting tasks removes conversation history and artifacts permanently.
+
+## 🛠️ Available Commands
+
+Open Command Palette (`Ctrl+Shift+P` / `Cmd+Shift+P`) and search for:
+
+| Command | What it does |
 |---------|-------------|
-| `Antigravity Panel: Open Panel` | Opens the sidebar webview. |
-| `Antigravity Panel: Clean Cache` | Removes all cache data (Brain + Contexts). |
-| `Antigravity Panel: Refresh Quota` | Triggers a data fetch for quota and cache. |
-| `Antigravity Panel: Show Cache Size` | Displays current total cache size via notification. |
+| `Antigravity Panel: Open Panel` | Open the sidebar panel |
+| `Antigravity Panel: Refresh Quota` | Manually refresh quota data |
+| `Antigravity Panel: Show Cache Size` | Show total cache size notification |
+| `Antigravity Panel: Clean Cache` | Delete all cache data (use with caution!) |
 
-## Configuration
+## ⚙️ Configuration
 
-Settings can be modified in VS Code Settings (`Ctrl+,` or `Cmd+,`) under the `gagp` prefix.
+Open Settings (`Ctrl+,` / `Cmd+,`) in Antigravity IDE and search for `gagp` to customize:
 
-### Quota Settings
-
-| Setting | Default | Range | Description |
-|---------|---------|-------|-------------|
-| `gagp.pollingInterval` | `120` | 60-∞ | Auto-refresh interval in seconds (minimum: 60s, recommended: 120s to reduce server load) |
-| `gagp.showQuota` | `true` | - | Show quota information in the status bar |
-| `gagp.visualizationMode` | `groups` | - | Sidebar display mode: `groups` (grouped by category) or `models` (individual models) |
-| `gagp.quotaWarningThreshold` | `30` | 5-100 | Show warning color when quota falls below this percentage |
-| `gagp.quotaCriticalThreshold` | `10` | 1-50 | Show critical color when quota falls below this percentage |
-| `gagp.historyDisplayMinutes` | `60` | 10-120 | Time range for usage history chart in minutes |
-
-### Cache Settings
-
-| Setting | Default | Range | Description |
-|---------|---------|-------|-------------|
-| `gagp.showCacheSize` | `true` | - | Display Antigravity IDE cache size in the status bar |
-
-**Removed Settings** (not implemented):
-- `gagp.quotaDisplayStyle` — Status bar always displays percentage format
-- `gagp.autoCleanCache` — Automatic cleanup feature not implemented
-- `gagp.cacheWarningThreshold` — Cache warning feature not implemented
-
-### Debug Settings
+### 📊 Quota Settings
 
 | Setting | Default | Description |
 |---------|---------|-------------|
-| `gagp.debugMode` | `false` | Enable debug mode: show raw model IDs in UI and output detailed logs to 'Antigravity Panel' channel (View > Output) |
+| **Polling Interval** | `120s` | How often to refresh quota (min: 60s, recommended: 120s) |
+| **Show Quota** | `✓` | Display quota in status bar |
+| **Visualization Mode** | `groups` | Show by `groups` (Gemini, Claude, etc.) or `models` (individual) |
+| **Warning Threshold** | `30%` | Show warning when quota drops below this |
+| **Critical Threshold** | `10%` | Show critical alert when quota drops below this |
+| **History Range** | `60 min` | Time range for usage chart (10-120 minutes) |
 
-**How to enable debug logs:**
-1. Open VS Code Settings → Search for `gagp.debugMode`
-2. Enable the checkbox
-3. Open Output panel: `View` → `Output` (or `Ctrl+Shift+U` / `Cmd+Shift+U`)
-4. Select `Antigravity Panel` from the dropdown
-5. View detailed debug logs including HTTP requests, server responses, and quota aggregation
+### 💾 Cache Settings
 
-## Technical Architecture
+| Setting | Default | Description |
+|---------|---------|-------------|
+| **Show Cache Size** | `✓` | Display cache size in status bar |
 
-### Core Components
-- **Process Detection**: Cross-platform strategy pattern for detecting Antigravity Language Server processes
-- **HTTP Client**: Automatic HTTPS→HTTP fallback with protocol caching for self-signed certificates
-- **Quota Manager**: Factory-based initialization with retry logic and error handling
-- **Scheduler**: Unified task scheduling system for polling and data refresh
-- **History Manager**: 24-hour quota usage tracking with persistent storage (VS Code GlobalState)
+## 🔒 Privacy
 
-### UI Layer
-- **Framework**: LitElement 3.3 (Web Components) with MVVM architecture
-- **Components**: Modular components (quota-pie, usage-chart, folder-tree, etc.)
-- **Styling**: VS Code native CSS variables for theme compatibility
-- **Communication**: Message passing between Extension Host and Webview
+**Your data stays yours.**
 
-### Configuration
-- **Strategy-Driven**: Model grouping defined in `src/config/quota_strategy.json`
-- **Extensible**: Easy to add new model families or customize grouping rules
+Antigravity Panel does not collect, transmit, or store any user data. All operations are performed locally on your machine. The extension only communicates with your local Antigravity Language Server—nothing is sent to external servers.
 
-## Directory Structure
+## 🤝 Contributing
 
-| Directory | Content |
-|-----------|---------|
-| `~/.gemini/antigravity/brain/` | Task artifacts and conversation history. |
-| `~/.gemini/antigravity/conversations/` | Protobuf conversation logs. |
-| `~/.gemini/antigravity/code_tracker/active/` | Code context analysis cache. |
-| `~/.gemini/GEMINI.md` | Global Rules configuration. |
+We welcome contributions! Here's how:
 
-## Development
+1. **Report bugs**: [Open an issue](https://github.com/n2ns/antigravity-panel/issues)
+2. **Suggest features**: [Start a discussion](https://github.com/n2ns/antigravity-panel/discussions)
+3. **Submit code**: Fork, code, test, and [open a PR](https://github.com/n2ns/antigravity-panel/pulls)
 
-### Project Structure
-```
-src/
-├── core/           # Business logic (QuotaManager, CacheManager, Scheduler, etc.)
-├── ui/             # Webview provider and HTML builder
-│   └── webview/    # LitElement components
-├── utils/          # Utilities (HTTP client, retry, formatting, etc.)
-└── config/         # Configuration files (quota_strategy.json)
-```
+For major changes, please open an issue first to discuss your ideas.
 
-### Build from Source
-```bash
-git clone https://github.com/n2ns/antigravity-panel.git
-cd antigravity-panel
-npm install
-npm run build        # Build extension and webview
-npm run watch        # Watch mode for development
-npm test             # Run all unit tests
-```
+## 📄 License
 
-### Testing
+[MIT License](LICENSE) - feel free to use this extension in your projects!
 
-The project has **113 unit tests** covering ~50% of the codebase. All tests run in pure Node.js environment without requiring VS Code Extension Host, making them fast (~5 seconds) and suitable for CI/CD.
+---
 
-All tests use Mock objects and don't require a running Antigravity IDE instance.
+<div align="center">
 
-See `docs/TODO.md` for planned improvements and known issues.
+**Made with ❤️ by [n2n studio](https://github.com/n2ns)**
 
-## Contributing
+[Report Bug](https://github.com/n2ns/antigravity-panel/issues) · [Request Feature](https://github.com/n2ns/antigravity-panel/issues) · [Documentation](https://github.com/n2ns/antigravity-panel/wiki)
 
-Contributions are welcome! Please feel free to submit Pull Requests.
-
-For major changes, please open an issue first to discuss what you would like to change.
-
-## License
-
-[MIT License](LICENSE)
+</div>

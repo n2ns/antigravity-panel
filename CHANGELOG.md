@@ -2,6 +2,20 @@
 
 All notable changes to the "Antigravity Panel" extension will be documented in this file.
 
+## [1.0.1] - 2025-12-10
+
+### Fixed
+- **Prediction UI**: Fixed a race condition where the "Runway" prediction text would disappear from the usage chart shortly after loading or during updates.
+- **Quota Display**: Resolved an issue where the quota pie chart might not render on startup due to incomplete data processing in the refresh cycle.
+
+### Refactor
+- **Type Safety**: Eliminated `any` types in `sidebar_provider.ts` and `status_bar.ts` by introducing strict interfaces (`ModelDefinition`, `ModelQuotaInfo`).
+- **Clean Code**: Fixed various linting warnings and removed unused imports in `extension.ts`.
+
+### Internal
+- **Quota Logic**: Refactored `refreshData` and `onUpdate` to use a unified `processQuotaUpdate` function, eliminating code duplication and ensuring consistent UI state updates.
+- **Stability**: Improved asynchronous handling in data refresh to prevent UI updates from being overwritten by stale or incomplete data.
+
 ## [1.0.0] - 2025-12-09
 
 ### Changed

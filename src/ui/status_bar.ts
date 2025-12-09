@@ -3,7 +3,7 @@
  */
 
 import * as vscode from "vscode";
-import { QuotaSnapshot } from "../core/quota_manager";
+import { QuotaSnapshot, ModelQuotaInfo } from "../core/quota_manager";
 import { CacheInfo } from "../core/cache_manager";
 import { formatBytes } from "../utils/format";
 
@@ -93,8 +93,8 @@ export class StatusBarManager implements vscode.Disposable {
     this.item.show();
   }
 
-  private getCategoryStats(models: any[], category: 'gemini' | 'other') {
-    const filtered = models.filter((m: any) => 
+  private getCategoryStats(models: ModelQuotaInfo[], category: 'gemini' | 'other') {
+    const filtered = models.filter((m) => 
       category === 'gemini' 
         ? m.label.toLowerCase().includes("gemini")
         : !m.label.toLowerCase().includes("gemini")

@@ -13,7 +13,7 @@ import * as path from "path";
 import { QuotaSnapshot } from "../core/quota_manager";
 import { CacheInfo, BrainTask } from "../core/cache_manager";
 import { ConfigManager } from "../core/config_manager";
-import { QuotaStrategyManager } from "../core/quota_strategy_manager";
+import { QuotaStrategyManager, ModelDefinition } from "../core/quota_strategy_manager";
 import { getBrainDir, getMcpConfigPath, getBrowserAllowlistPath, getCodeTrackerActiveDir, getGlobalRulesPath } from "../utils/paths";
 import { formatBytes } from "../utils/format";
 import { debugLog } from "../utils/logger";
@@ -375,7 +375,7 @@ export class SidebarProvider implements vscode.WebviewViewProvider, vscode.Dispo
       const displayModels = [...models];
 
       // Sort by Config Order
-      const allConfigModels: any[] = []; // Use any or import ModelDefinition to avoid import updates
+      const allConfigModels: ModelDefinition[] = []; // Use any or import ModelDefinition to avoid import updates
       strategyManager.getGroups().forEach(g => allConfigModels.push(...g.models));
 
       displayModels.sort((a, b) => {

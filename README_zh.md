@@ -2,199 +2,169 @@
 
 # Antigravity Panel
 
-> Google Antigravity IDE 缓存与配额管理扩展
+> 轻松监控 AI 配额使用和管理缓存
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![VS Code Marketplace Version](https://img.shields.io/visual-studio-marketplace/v/n2ns.antigravity-panel?style=flat&logo=visual-studio-code)](https://marketplace.visualstudio.com/items?itemName=n2ns.antigravity-panel)
-[![VS Code Marketplace Installs](https://img.shields.io/visual-studio-marketplace/i/n2ns.antigravity-panel?style=flat&logo=visual-studio-code)](https://marketplace.visualstudio.com/items?itemName=n2ns.antigravity-panel)
-[![Open VSX Version](https://img.shields.io/open-vsx/v/n2ns/antigravity-panel?style=flat&logo=open-vsx)](https://open-vsx.org/extension/n2ns/antigravity-panel)
-[![Open VSX Downloads](https://img.shields.io/open-vsx/dt/n2ns/antigravity-panel?style=flat&logo=open-vsx)](https://open-vsx.org/extension/n2ns/antigravity-panel)
-[![VS Code Engine](https://img.shields.io/badge/VS%20Code-%5E1.104.0-blue)](https://code.visualstudio.com/)
+[![版本](https://img.shields.io/visual-studio-marketplace/v/n2ns.antigravity-panel?style=flat&label=版本)](https://marketplace.visualstudio.com/items?itemName=n2ns.antigravity-panel)
+[![安装量](https://img.shields.io/visual-studio-marketplace/i/n2ns.antigravity-panel?style=flat)](https://marketplace.visualstudio.com/items?itemName=n2ns.antigravity-panel)
+[![下载量](https://img.shields.io/open-vsx/dt/n2ns/antigravity-panel?style=flat)](https://open-vsx.org/extension/n2ns/antigravity-panel)
 
-**Antigravity Panel** 是一款 VS Code 扩展，用于集成本地 Antigravity Language Server。它提供 AI 模型配额使用情况的实时可视化展示，并支持管理 AI 会话过程中生成的文件系统缓存。
+**Antigravity Panel** 帮助你掌控 **Google Antigravity IDE** 中的 AI 模型使用情况。实时配额监控、用量趋势分析、强大的缓存管理——一切尽在一个精美的侧边栏面板中。
 
-## 功能特性
+## ✨ 为什么选择 Antigravity Panel？
 
-### 配额监控
-- **分组可视化**: 根据可配置的分组策略，按模型家族（Gemini, Claude, GPT）显示配额使用情况
-- **实时更新**: 自动检测并连接本地 Antigravity Language Server
-- **状态栏集成**: 在 IDE 状态栏显示当前活跃模型的剩余配额和总缓存大小
-- **可配置阈值**: 当配额低于自定义阈值时显示视觉警告
+- 🎯 **永不超额** - 实时监控配额，可视化警告提醒
+- 📊 **了解用量** - 交互式图表展示 24 小时使用趋势
+- 🧹 **保持整洁** - 一键管理 AI 对话缓存
+- 🎨 **界面精美** - 原生主题集成
+- 🌍 **多语言支持** - 提供 11 种语言
 
-### 用量历史与趋势
-- **交互式柱状图**: 可视化展示可配置时间范围（10-120 分钟）内的配额消耗情况
-- **24 小时历史**: 追踪并持久化配额使用数据以进行趋势分析
-- **颜色编码分组**: 使用 `quota_strategy.json` 中的主题色区分模型家族
-- **堆叠可视化**: 在单个图表中显示多组使用情况
+## 📸 界面预览
 
-### 缓存与任务管理
-- **Brain 任务浏览器**: 浏览和管理存储在 `~/.gemini/antigravity/brain/` 中的 AI 对话任务
-  - 查看任务元数据（大小、文件数、创建日期）
-  - 展开任务查看包含的文件（图片、Markdown、代码）
-  - 删除单个任务并自动清理
-- **代码上下文缓存**: 管理 `~/.gemini/antigravity/code_tracker/active/` 中的代码分析缓存
-  - 查看每个项目的缓存大小
-  - 删除特定项目的缓存
-- **智能清理**: 删除任务或文件时自动关闭相关的编辑器标签页和预览窗口
+![Antigravity Panel 界面](assets/preview.png)
 
-### 配置快捷方式
-- 快速访问 **全局规则** (`~/.gemini/GEMINI.md`)
-- 快速访问 **MCP 配置** (`~/.gemini/mcp.json`)
-- 快速访问 **浏览器白名单** (`~/.gemini/browser_allowlist.json`)
+*实时配额监控、用量趋势和缓存管理，一目了然*
 
-### 跨平台支持
-- Windows（基于 PowerShell/WMIC 的进程检测）
-- macOS（基于 ps/lsof 的进程检测）
-- Linux（基于 ps/lsof 的进程检测）
+## 🚀 核心功能
 
-### 多语言支持
-- **配置与命令本地化**: 提供 11 种语言的完整界面支持：
-  - English, 简体中文, 繁體中文, 日本語, Français, Deutsch
-  - Español, Português (Brasil), Italiano, 한국어, Русский
+### 📊 智能配额监控
 
-## 界面概览
+**一眼掌握 AI 使用情况**
+- 按模型家族（Gemini、Claude、GPT 等）分组显示配额
+- 状态栏显示剩余配额和缓存大小
+- 配额不足时颜色警告
+- 自动连接本地 Antigravity Language Server
 
-![界面预览](assets/preview.png)
+### 📈 用量趋势分析
 
-## 安装说明
+**了解你的消费模式**
+- 交互式柱状图展示时间段用量（10-120 分钟）
+- 24 小时历史记录持久化存储
+- 按模型家族颜色编码可视化
+- 预测配额耗尽时间
 
-### 安装
+### 🗂️ 强大的缓存管理
 
-**Visual Studio Marketplace** 与 **Open VSX Registry**
-在 IDE 的扩展视图 (`Ctrl+Shift+X`) 中搜索 `Antigravity Panel` 即可直接安装。
+**保持工作区整洁**
+- **Brain 任务**: 浏览和删除 AI 对话缓存
+  - 查看任务大小、文件数和创建日期
+  - 预览图片、Markdown 和代码文件
+  - 一键删除并自动清理
+- **代码上下文**: 按项目管理代码分析缓存
+- **智能清理**: 自动关闭相关编辑器标签页
 
-或者通过网页安装：
-- [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=n2ns.antigravity-panel)
+### ⚙️ 快速配置访问
+
+**一键访问重要设置**
+- 编辑全局规则
+- 配置 MCP 设置
+- 管理浏览器白名单
+
+### 🌐 全平台支持
+
+**跨平台兼容**
+- ✅ Windows
+- ✅ macOS
+- ✅ Linux
+
+**多语言界面**
+- English, 简体中文, 繁體中文, 日本語, Français, Deutsch, Español, Português (Brasil), Italiano, 한국어, Русский
+
+## 📦 安装
+
+### 从扩展市场安装
+
+1. 打开 **Antigravity IDE**
+2. 按 `Ctrl+Shift+X`（Windows/Linux）或 `Cmd+Shift+X`（macOS）打开扩展面板
+3. 搜索 `Antigravity Panel`
+4. 点击 **安装**
+
+**或从网页安装：**
+- [扩展市场](https://marketplace.visualstudio.com/items?itemName=n2ns.antigravity-panel)
 - [Open VSX Registry](https://open-vsx.org/extension/n2ns/antigravity-panel)
 
-### 源码构建
-```bash
-git clone https://github.com/n2ns/antigravity-panel.git
-cd antigravity-panel
-npm install
-npm run build
-```
+## 🎯 快速开始
 
-## 使用指南
+### 第一步：打开面板
 
-1.  **打开面板**: 点击侧边栏图标或运行命令 `Antigravity Panel: Open Panel`。
-2.  **查看配额**: 悬停在饼图上可查看具体的模型限制数据。
-3.  **管理缓存**:
-    *   展开 **Brain** 或 **Code Tracker** 查看详情。
-    *   点击垃圾桶图标 🗑️ 删除任务或上下文缓存。
-    *   *删除操作将移除相关的对话记录及文件。*
+点击侧边栏的 **Antigravity** 图标，或者：
+- 按 `Ctrl+Shift+P`（Windows/Linux）或 `Cmd+Shift+P`（macOS）
+- 输入 `Antigravity Panel: Open Panel`
+- 按回车
 
-### 命令列表
-| 命令 | 说明 |
+### 第二步：监控配额
+
+- **饼图** 显示各模型家族的配额
+- **悬停** 在图表上查看详细限制
+- **状态栏** 显示活跃模型配额和缓存大小
+- **用量图表** 展示消费趋势
+
+### 第三步：管理缓存
+
+- 展开 **Brain** 或 **Code Tracker** 部分
+- 点击 🗑️ 删除任务或缓存
+- 相关编辑器标签页自动关闭
+
+> ⚠️ **注意**：删除任务将永久移除对话历史和相关文件。
+
+## 🛠️ 可用命令
+
+打开命令面板（`Ctrl+Shift+P` / `Cmd+Shift+P`）并搜索：
+
+| 命令 | 功能 |
 |------|------|
-| `Antigravity Panel: Open Panel` | 打开侧边栏 Webview 面板 |
-| `Antigravity Panel: Clean Cache` | 清除所有缓存数据 (Brain + Contexts) |
-| `Antigravity Panel: Refresh Quota` | 触发配额与缓存数据刷新 |
-| `Antigravity Panel: Show Cache Size` | 通过通知显示当前缓存总大小 |
+| `Antigravity Panel: Open Panel` | 打开侧边栏面板 |
+| `Antigravity Panel: Refresh Quota` | 手动刷新配额数据 |
+| `Antigravity Panel: Show Cache Size` | 显示缓存总大小通知 |
+| `Antigravity Panel: Clean Cache` | 删除所有缓存数据（谨慎使用！）|
 
-## 配置选项
+## ⚙️ 配置选项
 
-在 VS Code 设置 (`Ctrl+,` 或 `Cmd+,`) 中搜索 `gagp` 前缀进行配置。
+在 Antigravity IDE 设置（`Ctrl+,` / `Cmd+,`）中搜索 `gagp` 进行自定义：
 
-### 配额设置
-
-| 配置项 | 默认值 | 范围 | 说明 |
-|--------|--------|------|------|
-| `gagp.pollingInterval` | `120` | 60-∞ | 自动刷新间隔（秒），最小值 60 秒，推荐 120 秒以减少服务器负载 |
-| `gagp.showQuota` | `true` | - | 在状态栏中显示配额信息 |
-| `gagp.visualizationMode` | `groups` | - | 侧边栏显示模式：`groups` (按类别分组) 或 `models` (单独显示所有模型) |
-| `gagp.quotaWarningThreshold` | `30` | 5-100 | 配额低于此百分比时显示警告颜色 |
-| `gagp.quotaCriticalThreshold` | `10` | 1-50 | 配额低于此百分比时显示严重警告颜色 |
-| `gagp.historyDisplayMinutes` | `60` | 10-120 | 使用历史图表的时间范围（分钟） |
-
-### 缓存设置
-
-| 配置项 | 默认值 | 范围 | 说明 |
-|--------|--------|------|------|
-| `gagp.showCacheSize` | `true` | - | 在状态栏中显示 Antigravity IDE 缓存大小 |
-
-**已移除的配置项**（未实现）：
-- `gagp.quotaDisplayStyle` — 状态栏固定显示百分比格式
-- `gagp.autoCleanCache` — 自动清理功能未实现
-- `gagp.cacheWarningThreshold` — 缓存警告功能未实现
-
-### 调试设置
+### 📊 配额设置
 
 | 配置项 | 默认值 | 说明 |
 |--------|--------|------|
-| `gagp.debugMode` | `false` | 启用调试模式：在 UI 中显示原始模型 ID，并将详细日志输出到 'Antigravity Panel' 频道（查看 > 输出） |
+| **轮询间隔** | `120秒` | 刷新配额的频率（最小 60 秒，推荐 120 秒）|
+| **显示配额** | `✓` | 在状态栏显示配额信息 |
+| **可视化模式** | `groups` | 按 `groups`（分组）或 `models`（单个模型）显示 |
+| **警告阈值** | `30%` | 配额低于此值时显示警告 |
+| **严重阈值** | `10%` | 配额低于此值时显示严重警告 |
+| **历史范围** | `60 分钟` | 用量图表的时间范围（10-120 分钟）|
 
-**如何启用调试日志：**
-1. 打开 VS Code 设置 → 搜索 `gagp.debugMode`
-2. 勾选启用
-3. 打开输出面板：`查看` → `输出`（或 `Ctrl+Shift+U` / `Cmd+Shift+U`）
-4. 从下拉菜单选择 `Antigravity Panel`
-5. 查看详细的调试日志，包括 HTTP 请求、服务器响应和配额聚合过程
+### 💾 缓存设置
 
-## 技术架构
+| 配置项 | 默认值 | 说明 |
+|--------|--------|------|
+| **显示缓存大小** | `✓` | 在状态栏显示缓存大小 |
 
-### 核心组件
-- **进程检测**: 跨平台策略模式，用于检测 Antigravity Language Server 进程
-- **HTTP 客户端**: 自动 HTTPS→HTTP 降级，支持自签名证书的协议缓存
-- **配额管理器**: 基于工厂模式的初始化，包含重试逻辑和错误处理
-- **调度器**: 统一的任务调度系统，用于轮询和数据刷新
-- **历史管理器**: 24 小时配额使用追踪，持久化存储（VS Code GlobalState）
+## 🔒 隐私声明
 
-### UI 层
-- **框架**: LitElement 3.3（Web Components）+ MVVM 架构
-- **组件**: 模块化组件（quota-pie、usage-chart、folder-tree 等）
-- **样式**: 使用 VS Code 原生 CSS 变量以兼容主题
-- **通信**: Extension Host 与 Webview 之间的消息传递
+**你的数据属于你自己。**
 
-### 配置
-- **策略驱动**: 模型分组定义在 `src/config/quota_strategy.json`
-- **可扩展**: 易于添加新的模型家族或自定义分组规则
+Antigravity Panel 不会收集、传输或存储任何用户数据。所有操作都在你的本地计算机上执行。扩展仅与你本地的 Antigravity Language Server 通信——不会向任何外部服务器发送数据。
 
-## 目录结构
+## 🤝 参与贡献
 
-| 目录 | 内容 |
-|------|------|
-| `~/.gemini/antigravity/brain/` | 任务产物与对话历史。 |
-| `~/.gemini/antigravity/conversations/` | Protobuf 对话日志。 |
-| `~/.gemini/antigravity/code_tracker/active/` | 代码上下文分析缓存。 |
-| `~/.gemini/GEMINI.md` | 全局规则配置。 |
+欢迎贡献！你可以：
 
-## 开发
+1. **报告问题**：[提交 Issue](https://github.com/n2ns/antigravity-panel/issues)
+2. **建议功能**：[发起讨论](https://github.com/n2ns/antigravity-panel/discussions)
+3. **提交代码**：Fork、编码、测试，然后[提交 PR](https://github.com/n2ns/antigravity-panel/pulls)
 
-### 项目结构
-```
-src/
-├── core/           # 业务逻辑（QuotaManager、CacheManager、Scheduler 等）
-├── ui/             # Webview 提供者和 HTML 构建器
-│   └── webview/    # LitElement 组件
-├── utils/          # 工具函数（HTTP 客户端、重试、格式化等）
-└── config/         # 配置文件（quota_strategy.json）
-```
+对于重大更改，请先开启 issue 讨论你的想法。
 
-### 从源码构建
-```bash
-git clone https://github.com/n2ns/antigravity-panel.git
-cd antigravity-panel
-npm install
-npm run build        # 构建扩展和 webview
-npm run watch        # 开发模式（监听文件变化）
-npm test             # 运行所有单元测试
-```
+## 📄 许可证
 
-### 测试
+[MIT License](LICENSE) - 欢迎在你的项目中使用本扩展！
 
-项目包含 **113 个单元测试**，覆盖约 50% 的代码。所有测试都在纯 Node.js 环境中运行，无需 VS Code Extension Host，速度快（约 5 秒），适合 CI/CD。
+---
 
-所有测试都使用 Mock 对象，不需要运行中的 Antigravity IDE 实例。
+<div align="center">
 
-查看 [`docs/TODO_zh.md`](docs/TODO_zh.md) 了解计划改进和已知问题。
+**用 ❤️ 制作 by [n2n studio](https://github.com/n2ns)**
 
-## 贡献
+[报告问题](https://github.com/n2ns/antigravity-panel/issues) · [功能建议](https://github.com/n2ns/antigravity-panel/issues) · [文档](https://github.com/n2ns/antigravity-panel/wiki)
 
-欢迎贡献！请随时提交 Pull Request。
-
-对于重大更改，请先开启 issue 讨论您想要更改的内容。
-
-## 许可证
-
-[MIT License](LICENSE)
+</div>

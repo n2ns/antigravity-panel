@@ -161,6 +161,8 @@ export interface GagpConfig {
   visualizationMode: "groups" | "models";
   /** History chart display time range (minutes), default 60 */
   historyDisplayMinutes: number;
+  /** Whether to enable debug mode */
+  debugMode: boolean;
 }
 
 // ==================== Callback Types ====================

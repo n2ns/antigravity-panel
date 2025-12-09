@@ -36,6 +36,7 @@ export class ConfigManager implements vscode.Disposable {
       visualizationMode: config.get<"groups" | "models">("visualizationMode", "groups"),
       // History chart configuration
       historyDisplayMinutes: config.get<number>("historyDisplayMinutes", 60),
+      debugMode: config.get<boolean>("debugMode", false),
     };
   }
 

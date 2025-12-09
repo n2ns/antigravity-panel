@@ -16,7 +16,7 @@ import { SidebarProvider } from "./ui/sidebar_provider";
 import { getBrainDir, getConversationsDir, getCodeTrackerActiveDir } from "./utils/paths";
 import { formatBytes } from "./utils/format";
 import { QuotaStrategyManager } from "./core/quota_strategy_manager";
-import { initLogger, setDebugMode, debugLog, infoLog, errorLog } from "./utils/logger";
+import { initLogger, setDebugMode, infoLog, errorLog } from "./utils/logger";
 
 // Service instances
 let statusBar: StatusBarManager;
@@ -160,198 +160,8 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
       quotaManager = QuotaManager.create(serverInfo);
 
       // Setup callbacks
-      let lastGeminiAvg = -1;
-      let lastOtherAvg = -1;
-      // Initialize from persistent storage
-      let activeCategory: 'gemini' | 'other' = quotaHistoryManager.getLastActiveCategory();
-
-      // 0. Initial Cached Render (instant startup: no async dependencies)
-      const initialConfig = configManager.getConfig();
-      const cachedPct = quotaHistoryManager.getLastDisplayPercentage();
-      const cachedCacheSize = quotaHistoryManager.getLastCacheSize();
-      const cachedDetails = quotaHistoryManager.getLastCacheDetails();
-
-      // Construct temporary CacheInfo to avoid waiting for disk scan
-      // Use fully persisted real data, reject fake data
-      const cachedCacheInfo = {
-          brainSize: cachedDetails.brain,
-          conversationsSize: cachedDetails.workspace,
-          totalSize: cachedCacheSize,
-          brainCount: 0,
-          conversationsCount: 0,
-          brainTasks: []
-      };
-
-      // Render immediately without waiting for any Promise
-      statusBar.update(null, cachedCacheInfo, initialConfig.showQuota, initialConfig.showCacheSize, activeCategory, cachedPct, initialConfig.quotaWarningThreshold, initialConfig.quotaCriticalThreshold);
-
-      // Setup callbacks
       quotaManager.onUpdate((snapshot) => {
-        const config = configManager.getConfig();
-        const strategyManager = new QuotaStrategyManager();
-
-        // 1. Dynamically infer quota pools from server data (based on remainingPercentage similarity)
-        const models = snapshot.models || [];
-
-        // Group by remainingPercentage (rounded to 1 decimal place)
-        const quotaPoolsMap = new Map<string, typeof models>();
-        for (const model of models) {
-          const poolKey = model.remainingPercentage.toFixed(1);
-          if (!quotaPoolsMap.has(poolKey)) {
-            quotaPoolsMap.set(poolKey, []);
-          }
-          quotaPoolsMap.get(poolKey)!.push(model);
-        }
-
-        // 2. Match quota pools to UI groups (gemini or other)
-        const poolUsageMap = new Map<'gemini' | 'other', number>();
-
-        for (const [, poolModels] of quotaPoolsMap) {
-          const poolRemaining = poolModels[0].remainingPercentage;
-
-          // Check which UI group the models in the pool belong to
-          let geminiCount = 0;
-          let otherCount = 0;
-
-          for (const model of poolModels) {
-            const group = strategyManager.getGroupForModel(model.modelId, model.label);
-            if (group.id === 'gemini') {
-              geminiCount++;
-            } else {
-              otherCount++;
-            }
-          }
-
-          // If most models in pool are Gemini, classify as 'gemini', otherwise 'other'
-          const uiGroup: 'gemini' | 'other' = geminiCount > otherCount ? 'gemini' : 'other';
-
-          // If this UI group already exists, take minimum value (conservative strategy)
-          if (poolUsageMap.has(uiGroup)) {
-            poolUsageMap.set(uiGroup, Math.min(poolUsageMap.get(uiGroup)!, poolRemaining));
-          } else {
-            poolUsageMap.set(uiGroup, poolRemaining);
-          }
-        }
-
-        const geminiAvg = poolUsageMap.get('gemini') ?? 0;
-        const otherAvg = poolUsageMap.get('other') ?? 0;
-
-        // 3. Determine active state (Logic moved from UI to Controller)
-        if (lastGeminiAvg !== -1 && lastOtherAvg !== -1) {
-            const geminiUsed = Math.max(0, lastGeminiAvg - geminiAvg);
-            const otherUsed = Math.max(0, lastOtherAvg - otherAvg);
-
-            if (geminiUsed > 0 || otherUsed > 0) {
-              const newCategory = geminiUsed >= otherUsed ? 'gemini' : 'other';
-              if (newCategory !== activeCategory) {
-                activeCategory = newCategory;
-                quotaHistoryManager.setActiveCategory(activeCategory);
-              }
-            }
-        }
-
-        lastGeminiAvg = geminiAvg;
-        lastOtherAvg = otherAvg;
-
-        // Save display percentage
-        const displayPct = activeCategory === 'gemini' ? geminiAvg : otherAvg;
-        quotaHistoryManager.setLastDisplayPercentage(Math.round(displayPct));
-
-        cacheManager.getCacheInfo().then((cache) => {
-          statusBar.update(snapshot, cache, config.showQuota, config.showCacheSize, activeCategory, undefined, config.quotaWarningThreshold, config.quotaCriticalThreshold);
-
-          quotaHistoryManager.setLastCacheSize(cache.totalSize);
-          quotaHistoryManager.setLastCacheDetails(cache.brainSize, cache.conversationsSize);
-
-          // 4. Record history (record quota pools not groups)
-          const quotaPoolRecord = {
-            gemini: geminiAvg,
-            other: otherAvg
-          };
-          quotaHistoryManager.record(quotaPoolRecord).then(() => {
-            // 5. Calculate chart data
-            const buckets = quotaHistoryManager.calculateUsageBuckets(
-              config.historyDisplayMinutes,
-              config.pollingInterval / 60
-            );
-
-            // 6. Inject colors into chart data (quota pool colors)
-            const poolColorMap: Record<string, string> = {
-              gemini: '#69F0AE',  // Gemini quota pool color (green)
-              other: '#FFAB40'    // Other quota pool color (orange)
-            };
-
-            const coloredBuckets = buckets.map(b => ({
-              ...b,
-              items: b.items.map(item => ({
-                ...item,
-                color: poolColorMap[item.groupId] || '#888'
-              }))
-            }));
-
-            const maxUsage = quotaHistoryManager.getMaxUsage(buckets);
-
-            // 7. Calculate predictive analysis (Burn Rate + ETE)
-            // Use activeCategory directly as quota pool ID, no hardcoding
-            const activeGroupId = activeCategory;  // 'gemini' or 'other'
-            const currentRemaining = activeCategory === 'gemini' ? geminiAvg : otherAvg;
-
-            // Calculate total consumption for active group
-            let totalUsage = 0;
-            for (const bucket of buckets) {
-              for (const item of bucket.items) {
-                if (item.groupId === activeGroupId) {
-                  totalUsage += item.usage;
-                }
-              }
-            }
-
-            // Usage Rate: usage rate (%/hour)
-            const displayHours = config.historyDisplayMinutes / 60;
-            const usageRate = displayHours > 0 ? totalUsage / displayHours : 0;
-            
-            // Runway: estimated duration
-            let runway = 'Stable';
-            if (usageRate > 0 && currentRemaining > 0) {
-              const hoursUntilEmpty = currentRemaining / usageRate;
-              if (hoursUntilEmpty > 168) { // > 7 days
-                runway = '>7d';
-              } else if (hoursUntilEmpty > 24) {
-                runway = `~${Math.round(hoursUntilEmpty / 24)}d`;
-              } else if (hoursUntilEmpty > 1) {
-                runway = `~${Math.round(hoursUntilEmpty)}h`;
-              } else {
-                runway = `~${Math.round(hoursUntilEmpty * 60)}m`;
-              }
-            }
-
-            // Cache prediction data
-            quotaHistoryManager.setLastPrediction(usageRate, runway, activeGroupId);
-            
-            debugLog('Prediction data', { 
-              activeGroupId, 
-              totalUsage, 
-              usageRate, 
-              runway, 
-              currentRemaining,
-              bucketsCount: buckets.length
-            });
-            
-            sidebarProvider.update(snapshot, cache, {
-              buckets: coloredBuckets,
-              maxUsage,
-              displayMinutes: config.historyDisplayMinutes,
-              interval: config.pollingInterval,
-              prediction: {
-                groupId: activeGroupId,
-                groupLabel: activeGroup?.label || activeGroupId,
-                usageRate,
-                runway,
-                remaining: currentRemaining
-              }
-            });
-          });
-        });
+        processQuotaUpdate(snapshot).catch(e => errorLog("Error in onUpdate", e));
       });
 
       quotaManager.onError((error) => {
@@ -421,23 +231,149 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
   infoLog("Antigravity Panel: Activated");
 }
 
-async function refreshData(): Promise<void> {
-  // sidebarProvider.setLoading(true);
+async function processQuotaUpdate(snapshot: QuotaSnapshot): Promise<void> {
   const config = configManager.getConfig();
-  let quota: QuotaSnapshot | null = null;
+  const strategyManager = new QuotaStrategyManager();
+  
+  // 1. Dynamically infer quota pools from server data
+  const models = snapshot.models || [];
+  const quotaPoolsMap = new Map<string, typeof models>();
+  for (const model of models) {
+    const poolKey = model.remainingPercentage.toFixed(1);
+    if (!quotaPoolsMap.has(poolKey)) {
+      quotaPoolsMap.set(poolKey, []);
+    }
+    quotaPoolsMap.get(poolKey)!.push(model);
+  }
+
+  // 2. Match quota pools to UI groups
+  const poolUsageMap = new Map<'gemini' | 'other', number>();
+  for (const [, poolModels] of quotaPoolsMap) {
+    const poolRemaining = poolModels[0].remainingPercentage;
+    let geminiCount = 0;
+    let otherCount = 0;
+    for (const model of poolModels) {
+      const group = strategyManager.getGroupForModel(model.modelId, model.label);
+      if (group.id === 'gemini') geminiCount++;
+      else otherCount++;
+    }
+    const uiGroup: 'gemini' | 'other' = geminiCount > otherCount ? 'gemini' : 'other';
+    if (poolUsageMap.has(uiGroup)) {
+      poolUsageMap.set(uiGroup, Math.min(poolUsageMap.get(uiGroup)!, poolRemaining));
+    } else {
+      poolUsageMap.set(uiGroup, poolRemaining);
+    }
+  }
+
+  const geminiAvg = poolUsageMap.get('gemini') ?? 0;
+  const otherAvg = poolUsageMap.get('other') ?? 0;
+
+  // 3. Determine active state
+  
+  // Note: We use persisted lastActiveCategory
+  const activeCategory = quotaHistoryManager.getLastActiveCategory();
+  
+  const displayPct = activeCategory === 'gemini' ? geminiAvg : otherAvg;
+  quotaHistoryManager.setLastDisplayPercentage(Math.round(displayPct));
+
+  const cache = await cacheManager.getCacheInfo();
+  
+  statusBar.update(snapshot, cache, config.showQuota, config.showCacheSize, activeCategory, undefined, config.quotaWarningThreshold, config.quotaCriticalThreshold);
+
+  quotaHistoryManager.setLastCacheSize(cache.totalSize);
+  quotaHistoryManager.setLastCacheDetails(cache.brainSize, cache.conversationsSize);
+
+  // 4. Record history
+  const quotaPoolRecord = { gemini: geminiAvg, other: otherAvg };
+  await quotaHistoryManager.record(quotaPoolRecord);
+
+  // 5. Calculate chart data
+  const buckets = quotaHistoryManager.calculateUsageBuckets(
+    config.historyDisplayMinutes,
+    config.pollingInterval / 60
+  );
+
+  // 6. Inject colors
+  const poolColorMap: Record<string, string> = {
+    gemini: '#69F0AE',
+    other: '#FFAB40'
+  };
+
+  const coloredBuckets = buckets.map(b => ({
+    ...b,
+    items: b.items.map(item => ({
+      ...item,
+      color: poolColorMap[item.groupId] || '#888'
+    }))
+  }));
+
+  const maxUsage = quotaHistoryManager.getMaxUsage(buckets);
+
+  // 7. Calculate predictive analysis
+  const activeGroupId = activeCategory;
+  const currentRemaining = activeCategory === 'gemini' ? geminiAvg : otherAvg;
+
+  let totalUsage = 0;
+  for (const bucket of buckets) {
+    for (const item of bucket.items) {
+      if (item.groupId === activeGroupId) {
+        totalUsage += item.usage;
+      }
+    }
+  }
+
+  const displayHours = config.historyDisplayMinutes / 60;
+  const usageRate = displayHours > 0 ? totalUsage / displayHours : 0;
+  
+  let runway = 'Stable';
+  if (usageRate > 0 && currentRemaining > 0) {
+    const hoursUntilEmpty = currentRemaining / usageRate;
+    if (hoursUntilEmpty > 168) runway = '>7d';
+    else if (hoursUntilEmpty > 24) runway = `~${Math.round(hoursUntilEmpty / 24)}d`;
+    else if (hoursUntilEmpty > 1) runway = `~${Math.round(hoursUntilEmpty)}h`;
+    else runway = `~${Math.round(hoursUntilEmpty * 60)}m`;
+  }
+
+  quotaHistoryManager.setLastPrediction(usageRate, runway, activeGroupId);
+  const activeGroup = strategyManager.getGroups().find(g => g.id === activeGroupId);
+
+  sidebarProvider.update(snapshot, cache, {
+    buckets: coloredBuckets,
+    maxUsage,
+    displayMinutes: config.historyDisplayMinutes,
+    interval: config.pollingInterval,
+    prediction: {
+      groupId: activeGroupId,
+      groupLabel: activeGroup?.label || activeGroupId,
+      usageRate,
+      runway,
+      remaining: currentRemaining
+    }
+  });
+}
+
+async function refreshData(): Promise<void> {
+  const config = configManager.getConfig();
 
   if (quotaManager && config.showQuota) {
     try {
-      quota = await quotaManager.fetchQuota();
+      const quota = await quotaManager.fetchQuota();
+      if (quota) {
+        // Await the processing to ensure UI is updated before returning
+        await processQuotaUpdate(quota);
+        return;
+      }
     } catch (e) {
       errorLog("Failed to get quota", e);
     }
   }
 
+  // Fallback: Quota fetch failed or disabled
   const cache = await cacheManager.getCacheInfo();
-  statusBar.update(quota, cache, config.showQuota, config.showCacheSize, 'gemini', undefined, config.quotaWarningThreshold, config.quotaCriticalThreshold);
+  const activeCategory = quotaHistoryManager.getLastActiveCategory();
+
+  statusBar.update(null, cache, config.showQuota, config.showCacheSize, activeCategory, undefined, config.quotaWarningThreshold, config.quotaCriticalThreshold);
   
-  // Get latest history chart data
   const buckets = quotaHistoryManager.calculateUsageBuckets(
     config.historyDisplayMinutes,
     config.pollingInterval / 60
@@ -454,7 +390,7 @@ async function refreshData(): Promise<void> {
 
   const maxUsage = quotaHistoryManager.getMaxUsage(buckets);
   
-  sidebarProvider.update(quota, cache, {
+  sidebarProvider.update(null, cache, {
     buckets: coloredBuckets,
     maxUsage,
     displayMinutes: config.historyDisplayMinutes,
