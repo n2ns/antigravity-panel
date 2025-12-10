@@ -28,9 +28,14 @@ esbuild.js
 # All node_modules (dependencies are bundled into dist/)
 node_modules/**
 
+# Exception: Include codicons font files for webview
+!node_modules/@vscode/codicons/dist/codicon.css
+!node_modules/@vscode/codicons/dist/codicon.ttf
+
 # Documentation (keep only essential ones in English)
 README_zh.md
 CHANGELOG_zh.md
+DEVELOPMENT_HISTORY.md
 
 # Misc
 .DS_Store

@@ -2,7 +2,7 @@
   "name": "antigravity-panel",
   "displayName": "%extension.displayName%",
   "description": "%extension.description%",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "publisher": "bugstan",
   "license": "MIT",
   "repository": {
