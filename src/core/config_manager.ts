@@ -1,74 +1,74 @@
 /**
- * ConfigManager: Handles reading and writing gagp.* configuration settings
+ * ConfigManager: Handles reading gagp.* configuration settings
  *
- * Note: pollingInterval has a minimum value of 60 seconds
+ * Architecture: Uses dependency injection for testability.
+ * - IConfigReader: Abstract interface for reading config values
+ * - ConfigManager: Pure business logic, no vscode dependency
+ * - VscodeConfigReader: VS Code implementation (in extension.ts)
  */
 
-import * as vscode from "vscode";
 import { GagpConfig } from "../utils/types";
 
 // Re-export types for backward compatibility
 export type { GagpConfig };
 
 /** Minimum polling interval in seconds */
-const MIN_POLLING_INTERVAL = 60;
+export const MIN_POLLING_INTERVAL = 60;
 
-export class ConfigManager implements vscode.Disposable {
-  private readonly section = "gagp";
-  private disposables: vscode.Disposable[] = [];
+/** Minimum cache check interval in seconds */
+export const MIN_CACHE_CHECK_INTERVAL = 30;
+
+/**
+ * Configuration reader interface - abstracts config source
+ */
+export interface IConfigReader {
+  get<T>(key: string, defaultValue: T): T;
+}
+
+/**
+ * Disposable interface for resource cleanup
+ */
+export interface IDisposable {
+  dispose(): void;
+}
+
+/**
+ * ConfigManager: Pure configuration logic without VS Code dependency
+ */
+export class ConfigManager {
+  constructor(private readonly reader: IConfigReader) {}
 
   getConfig(): GagpConfig {
-    const config = vscode.workspace.getConfiguration(this.section);
-
-    // Ensure polling interval is not below minimum value
-    const rawPollingInterval = config.get<number>("pollingInterval", 120);
+    const rawPollingInterval = this.reader.get<number>("pollingInterval", 120);
     const pollingInterval = Math.max(rawPollingInterval, MIN_POLLING_INTERVAL);
+
+    const rawCacheCheckInterval = this.reader.get<number>("cacheCheckInterval", 120);
+    const cacheCheckInterval = Math.max(rawCacheCheckInterval, MIN_CACHE_CHECK_INTERVAL);
 
     return {
       // Status Bar Settings
-      statusBarShowQuota: config.get<boolean>("statusBarShowQuota", true),
-      statusBarShowCache: config.get<boolean>("statusBarShowCache", true),
-      statusBarStyle: config.get<"percentage" | "resetTime" | "used" | "remaining">("statusBarStyle", "percentage"),
-      statusBarThresholdWarning: config.get<number>("statusBarThresholdWarning", 30),
-      statusBarThresholdCritical: config.get<number>("statusBarThresholdCritical", 10),
+      statusBarShowQuota: this.reader.get<boolean>("statusBarShowQuota", true),
+      statusBarShowCache: this.reader.get<boolean>("statusBarShowCache", true),
+      statusBarStyle: this.reader.get<"percentage" | "resetTime" | "used" | "remaining">("statusBarStyle", "percentage"),
+      statusBarThresholdWarning: this.reader.get<number>("statusBarThresholdWarning", 30),
+      statusBarThresholdCritical: this.reader.get<number>("statusBarThresholdCritical", 10),
       // Quota Settings
       pollingInterval,
-      visualizationMode: config.get<"groups" | "models">("visualizationMode", "groups"),
-      showGptQuota: config.get<boolean>("showGptQuota", false),
-      historyDisplayMinutes: config.get<number>("historyDisplayMinutes", 60),
+      visualizationMode: this.reader.get<"groups" | "models">("visualizationMode", "groups"),
+      showGptQuota: this.reader.get<boolean>("showGptQuota", false),
+      historyDisplayMinutes: this.reader.get<number>("historyDisplayMinutes", 60),
       // Cache Settings
-      cacheCheckInterval: Math.max(config.get<number>("cacheCheckInterval", 120), 30),
-      cacheWarningThreshold: config.get<number>("cacheWarningThreshold", 500),
-      cacheHideEmptyFolders: config.get<boolean>("cacheHideEmptyFolders", false),
-      autoCleanCache: config.get<boolean>("autoCleanCache", false),
+      cacheCheckInterval,
+      cacheWarningThreshold: this.reader.get<number>("cacheWarningThreshold", 500),
+      cacheHideEmptyFolders: this.reader.get<boolean>("cacheHideEmptyFolders", false),
+      autoCleanCache: this.reader.get<boolean>("autoCleanCache", false),
       // Debug Settings
-      debugMode: config.get<boolean>("debugMode", false),
+      debugMode: this.reader.get<boolean>("debugMode", false),
     };
   }
 
   get<T>(key: string, defaultValue: T): T {
-    const config = vscode.workspace.getConfiguration(this.section);
-    return config.get<T>(key, defaultValue) as T;
-  }
-
-  async update<T>(key: string, value: T): Promise<void> {
-    const config = vscode.workspace.getConfiguration(this.section);
-    await config.update(key, value, vscode.ConfigurationTarget.Global);
-  }
-
-  onConfigChange(callback: (config: GagpConfig) => void): vscode.Disposable {
-    const disposable = vscode.workspace.onDidChangeConfiguration((e) => {
-      if (e.affectsConfiguration(this.section)) {
-        callback(this.getConfig());
-      }
-    });
-    this.disposables.push(disposable);
-    return disposable;
-  }
-
-  dispose(): void {
-    this.disposables.forEach((d) => d.dispose());
-    this.disposables = [];
+    return this.reader.get<T>(key, defaultValue);
   }
 }
 

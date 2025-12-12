@@ -1,4 +1,21 @@
+English | [中文文档](docs/CHANGELOG_zh.md)
+
 # Changelog
+
+## [1.2.0] - 2025-12-12
+
+### Improved
+- **Architecture Optimization**: Refactored `ConfigManager` and `WebviewHtmlBuilder` for better testability
+  - Introduced `IConfigReader` interface for dependency injection
+  - Removed direct `vscode` module dependency from core modules
+  - Core business logic can now be unit tested in pure Node.js environment
+- **Dependency Injection**: `SidebarProvider` now receives dependencies via constructor instead of creating instances internally
+
+### Added
+- **New Unit Tests**: Added comprehensive tests for `ConfigManager` and `WebviewHtmlBuilder`
+  - `config_manager.test.ts`: 18 new tests
+  - `html_builder.test.ts`: 13 new tests
+  - Total: 168 tests passing
 
 ## [1.1.0] - 2025-12-11
 

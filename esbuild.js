@@ -1,6 +1,6 @@
 /**
  * esbuild 构建配置
- * 
+ *
  * 双入口构建：
  * - Extension: Node.js CJS 格式
  * - Webview: 浏览器 ESM 格式 (Lit 组件)
@@ -8,6 +8,7 @@
 
 const esbuild = require("esbuild");
 const path = require("path");
+const fs = require("fs");
 
 const isWatch = process.argv.includes("--watch");
 const enableSourcemap = process.argv.includes("--sourcemap");
@@ -55,6 +56,12 @@ async function run() {
   });
 
   console.log("Building Extension and Webview...");
+
+  // Copy CSS file to dist directory
+  const srcCss = path.resolve(__dirname, "src", "ui", "webview.css");
+  const distCss = path.resolve(__dirname, "dist", "webview.css");
+  fs.copyFileSync(srcCss, distCss);
+  console.log("Copied webview.css to dist/");
 
   if (isWatch) {
     console.log("Watch mode enabled");

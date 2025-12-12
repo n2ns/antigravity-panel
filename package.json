@@ -2,7 +2,7 @@
   "name": "antigravity-panel",
   "displayName": "%extension.displayName%",
   "description": "%extension.description%",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "publisher": "n2ns",
   "license": "MIT",
   "repository": {

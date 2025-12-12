@@ -41,7 +41,8 @@ English | [中文文档](README_zh.md)
 - Interactive bar charts showing usage over time (10-120 minutes)
 - 24-hour history tracking with persistent storage
 - Color-coded visualization by model family
-- Track quota consumption trends
+- 🔥 **Usage Rate**: Real-time consumption speed (%/hour)
+- ⏱️ **Runway Prediction**: Estimated time until quota exhaustion
 
 ### 🗂️ Powerful Cache Management
 
@@ -161,6 +162,14 @@ For major changes, please open an issue first to discuss your ideas.
 ## 📄 License
 
 [MIT License](LICENSE) - feel free to use this extension in your projects!
+
+---
+
+## 📚 Documentation
+
+- [Features](docs/FEATURES.md) - Complete feature list
+- [Changelog](CHANGELOG.md) - Version history
+- [TODO](docs/TODO.md) - Planned features
 
 ---
 

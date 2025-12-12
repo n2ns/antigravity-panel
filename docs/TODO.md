@@ -1,7 +1,10 @@
+English | [中文文档](TODO_zh.md)
+
 # TODO List
 
-> Last Updated: 2025-12-11
-> Project Version: v1.1.0
+> Last Updated: 2025-12-12
+
+> ⚠️ **Note**: This document should only contain pending tasks. Completed tasks should be removed and documented in [CHANGELOG.md](../CHANGELOG.md) or [FEATURES.md](./FEATURES.md).
 
 ---
 
@@ -9,35 +12,21 @@
 
 ### Test Coverage Improvement
 
-- [ ] **Add unit tests for remaining modules** (Current: 135 tests, 13/34 files covered, Target: 80%)
-  - [ ] `HttpClient` - HTTPS→HTTP fallback, protocol cache (basic tests only)
-  - [ ] `ConfigManager` - Configuration reading/defaults
-  - [ ] `StatusBarManager` - Status bar updates
-  - [ ] `HtmlBuilder` - Webview HTML generation
-  - [ ] `SidebarProvider` - Webview message handling (integration tests)
+- [ ] **Add remaining unit tests** (Target: 80%, Current: 169 tests)
+  - [ ] `HttpClient` - HTTPS→HTTP fallback, protocol cache
+  - [ ] `StatusBarManager` - Status bar updates (requires VS Code integration tests)
+  - [ ] `SidebarProvider` - Webview message handling (requires VS Code integration tests)
   - [ ] Webview Components - Lit component unit tests (using @web/test-runner)
 
 ### Release Preparation
 
-- [x] **Publish to VS Code Marketplace** ✅
-  - [x] Configure GitHub Actions auto-publish workflow ✅
-  - [x] Support publishing to VS Code Marketplace ✅
-  - [x] Support publishing to Open VSX Registry ✅
-  - [x] Auto-create GitHub Release ✅
-  - [x] Configure GitHub Secrets (VSCE_PAT, OVSX_PAT) ✅
-  - [x] Enhance README with feature screenshots and usage guide ✅
-  - [ ] Prepare Marketplace display images (at least 3)
+- [ ] **Prepare Marketplace display images** (at least 3)
 
 ---
 
 ## 🟡 Medium Priority (P1)
 
 ### New Features
-
-- [x] **Cache Warning Notifications** ✅ (v1.1.0)
-  - [x] Show VS Code notification when cache exceeds `gagp.cacheWarningThreshold` ✅
-  - [x] 24-hour cooldown to prevent spam ✅
-  - [x] Configurable check interval (`gagp.cacheCheckInterval`) ✅
 
 - [ ] **Quota Warning Notifications**
   - Show VS Code notification when quota drops below threshold
@@ -51,10 +40,7 @@
 
 ### Code Quality
 
-- [x] **Add ESLint Rule Checking** ✅
-  - [x] Run `npm run lint` to check code standards ✅
-  - [x] Fix all ESLint warnings and errors ✅
-  - [ ] Configure pre-commit hook for automatic checking
+- [ ] **Configure pre-commit hook** for automatic ESLint checking
 
 ---
 
@@ -62,23 +48,18 @@
 
 ### Features (Future Versions)
 
-- [ ] **Auto-cleanup** (from plan.md v0.3.0)
+- [ ] **Auto-cleanup**
   - Automatically delete tasks older than N days
   - Configurable retention policy
   - Dry-run mode
 
-- [ ] **Advanced Quota Analytics** (from plan.md v0.3.0)
+- [ ] **Advanced Quota Analytics**
   - Burn rate calculation (quota/hour)
   - Estimated time to exhaustion (ETE)
   - Usage pattern analysis
   - Weekly/monthly reports
 
 ### UI/UX Improvements
-
-- [ ] **Webview State Persistence**
-  - Use `vscode.setState()` to save UI state
-  - Restore expanded/collapsed sections on reload
-  - Remember last active tab
 
 - [ ] **Dark/Light Theme Support**
   - Ensure all custom colors respect VS Code theme
@@ -96,8 +77,7 @@
   - Virtual scrolling for large file lists
   - Pagination for history chart
 
-- [ ] **Optimize Polling**
-  - Use exponential backoff when server is unavailable
+- [ ] **Polling Optimization**
   - Pause polling when extension is not visible
   - Reduce network calls
 
@@ -118,14 +98,6 @@
 
 ---
 
-## 🐛 Known Issues
-
-- [ ] **Webview CSP Warnings**
-  - Investigate Content Security Policy warnings in console
-  - Ensure all resources are properly configured with nonce
-
----
-
 ## 🔧 Technical Debt
 
 - [ ] **Improve Error Handling**
@@ -133,6 +105,9 @@
   - Log detailed errors in Output Channel
   - Avoid exposing technical details in UI
 
+- [ ] **Webview i18n Support**
+  - Webview components have hardcoded English strings
+  - Affected: Usage History, Timeline, Stable, Brain, Code Tracker, Loading...
+  - Need to pass translations from extension to webview
+
 ---
-
-

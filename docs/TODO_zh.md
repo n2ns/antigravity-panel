@@ -1,7 +1,10 @@
+[English](TODO.md) | 中文文档
+
 # 待办事项清单
 
-> 最后更新: 2025-12-11
-> 项目版本: v1.1.0
+> 最后更新: 2025-12-12
+
+> ⚠️ **注意**: 本文档仅包含待办任务。已完成的任务应移除，并记录到 [CHANGELOG.md](../CHANGELOG.md) 或 [FEATURES.md](./FEATURES.md)。
 
 ---
 
@@ -9,35 +12,21 @@
 
 ### 测试覆盖率提升
 
-- [ ] **补充核心模块单元测试**（当前：135 个测试，13/34 文件已覆盖，目标：80%）
-  - [ ] `HttpClient` - HTTPS→HTTP 降级、协议缓存（仅有基础测试）
-  - [ ] `ConfigManager` - 配置读取/默认值
-  - [ ] `StatusBarManager` - 状态栏更新
-  - [ ] `HtmlBuilder` - Webview HTML 生成
-  - [ ] `SidebarProvider` - Webview 消息处理（集成测试）
+- [ ] **补充剩余单元测试**（目标：80%，当前：169 个测试）
+  - [ ] `HttpClient` - HTTPS→HTTP 降级、协议缓存
+  - [ ] `StatusBarManager` - 状态栏更新（需要 VS Code 集成测试）
+  - [ ] `SidebarProvider` - Webview 消息处理（需要 VS Code 集成测试）
   - [ ] Webview 组件 - Lit 组件单元测试（使用 @web/test-runner）
 
 ### 发布准备
 
-- [x] **发布到 VS Code Marketplace** ✅
-  - [x] 配置 GitHub Actions 自动发布工作流 ✅
-  - [x] 支持发布到 VS Code Marketplace ✅
-  - [x] 支持发布到 Open VSX Registry ✅
-  - [x] 自动创建 GitHub Release ✅
-  - [x] 配置 GitHub Secrets（VSCE_PAT、OVSX_PAT）✅
-  - [x] 完善 README 中的功能截图和使用说明 ✅
-  - [ ] 准备 Marketplace 展示图片（至少 3 张）
+- [ ] **准备 Marketplace 展示图片**（至少 3 张）
 
 ---
 
 ## 🟡 中优先级 (P1)
 
 ### 新功能
-
-- [x] **缓存预警通知** ✅ (v1.1.0)
-  - [x] 当缓存超过 `gagp.cacheWarningThreshold` 时显示 VS Code 通知 ✅
-  - [x] 24 小时冷却防止重复通知 ✅
-  - [x] 可配置检查间隔（`gagp.cacheCheckInterval`）✅
 
 - [ ] **配额预警通知**
   - 当配额低于阈值时显示 VS Code 通知
@@ -51,10 +40,7 @@
 
 ### 代码质量
 
-- [x] **添加 ESLint 规则检查** ✅
-  - [x] 运行 `npm run lint` 检查代码规范 ✅
-  - [x] 修复所有 ESLint 警告和错误 ✅
-  - [ ] 配置 pre-commit hook 自动检查
+- [ ] **配置 pre-commit hook** 自动 ESLint 检查
 
 ---
 
@@ -62,23 +48,18 @@
 
 ### 功能（未来版本）
 
-- [ ] **自动清理**（来自 plan.md v0.3.0）
+- [ ] **自动清理**
   - 自动删除 N 天前的任务
   - 可配置的保留策略
   - 试运行模式
 
-- [ ] **高级配额分析**（来自 plan.md v0.3.0）
+- [ ] **高级配额分析**
   - 消耗速率计算（配额/小时）
   - 预计耗尽时间（ETE）
   - 使用模式分析
   - 周报/月报
 
 ### UI/UX 改进
-
-- [ ] **Webview 状态持久化**
-  - 使用 `vscode.setState()` 保存 UI 状态
-  - 重新加载时恢复展开/折叠的部分
-  - 记住最后活跃的标签页
 
 - [ ] **深色/浅色主题支持**
   - 确保所有自定义颜色遵循 VS Code 主题
@@ -96,8 +77,7 @@
   - 大型文件列表的虚拟滚动
   - 历史图表的分页
 
-- [ ] **优化轮询机制**
-  - 服务器不可用时使用指数退避
+- [ ] **轮询优化**
   - 扩展不可见时暂停轮询
   - 减少网络调用
 
@@ -118,14 +98,6 @@
 
 ---
 
-## 🐛 已知问题
-
-- [ ] **Webview CSP 警告**
-  - 调查控制台中的内容安全策略警告
-  - 确保所有资源正确配置 nonce
-
----
-
 ## 🔧 技术债务
 
 - [ ] **改进错误处理**
@@ -133,6 +105,9 @@
   - 在 Output Channel 中记录详细错误信息
   - 避免在 UI 中暴露技术细节
 
+- [ ] **Webview 国际化支持**
+  - Webview 组件中有硬编码英文字符串
+  - 涉及：Usage History、Timeline、Stable、Brain、Code Tracker、Loading...
+  - 需要从扩展向 Webview 传递翻译文本
+
 ---
-
-

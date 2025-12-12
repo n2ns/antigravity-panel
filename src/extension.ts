@@ -8,12 +8,47 @@ import * as path from "path";
 import { ProcessFinder } from "./core/process_finder";
 import { QuotaManager, QuotaSnapshot } from "./core/quota_manager";
 import { CacheManager } from "./core/cache_manager";
-import { ConfigManager } from "./core/config_manager";
+import { ConfigManager, IConfigReader, IDisposable, GagpConfig } from "./core/config_manager";
 import { Scheduler } from "./core/scheduler";
 import { QuotaHistoryManager } from "./core/quota_history";
 import { QuotaViewModel } from "./core/quota_view_model";
+import { QuotaStrategyManager } from "./core/quota_strategy_manager";
 import { StatusBarManager } from "./ui/status_bar";
 import { SidebarProvider } from "./ui/sidebar_provider";
+
+/**
+ * VS Code implementation of IConfigReader
+ * Bridges VS Code workspace configuration to ConfigManager
+ */
+class VscodeConfigReader implements IConfigReader, IDisposable {
+  private readonly section = "gagp";
+  private disposables: vscode.Disposable[] = [];
+
+  get<T>(key: string, defaultValue: T): T {
+    const config = vscode.workspace.getConfiguration(this.section);
+    return config.get<T>(key, defaultValue) as T;
+  }
+
+  async update<T>(key: string, value: T): Promise<void> {
+    const config = vscode.workspace.getConfiguration(this.section);
+    await config.update(key, value, vscode.ConfigurationTarget.Global);
+  }
+
+  onConfigChange(callback: (config: GagpConfig) => void, configManager: ConfigManager): vscode.Disposable {
+    const disposable = vscode.workspace.onDidChangeConfiguration((e) => {
+      if (e.affectsConfiguration(this.section)) {
+        callback(configManager.getConfig());
+      }
+    });
+    this.disposables.push(disposable);
+    return disposable;
+  }
+
+  dispose(): void {
+    this.disposables.forEach((d) => d.dispose());
+    this.disposables = [];
+  }
+}
 import { getBrainDir, getConversationsDir, getCodeTrackerActiveDir } from "./utils/paths";
 import { formatBytes } from "./utils/format";
 import { initLogger, setDebugMode, infoLog, errorLog } from "./utils/logger";
@@ -22,7 +57,9 @@ import { initLogger, setDebugMode, infoLog, errorLog } from "./utils/logger";
 let statusBar: StatusBarManager;
 let quotaManager: QuotaManager | null = null;
 let cacheManager: CacheManager;
+let configReader: VscodeConfigReader;
 let configManager: ConfigManager;
+let strategyManager: QuotaStrategyManager;
 let scheduler: Scheduler;
 let quotaHistoryManager: QuotaHistoryManager;
 let quotaViewModel: QuotaViewModel;
@@ -33,10 +70,12 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
   initLogger(context);
   infoLog("Antigravity Panel: Activating...");
 
-  // Initialize core services
-  configManager = new ConfigManager();
+  // Initialize core services with dependency injection
+  configReader = new VscodeConfigReader();
+  configManager = new ConfigManager(configReader);
   setDebugMode(configManager.get('debugMode', false));
 
+  strategyManager = new QuotaStrategyManager();
   cacheManager = new CacheManager();
   quotaHistoryManager = new QuotaHistoryManager(context.globalState);
   quotaViewModel = new QuotaViewModel(quotaHistoryManager, configManager);
@@ -49,8 +88,8 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     },
   });
 
-  // Initialize sidebar
-  sidebarProvider = new SidebarProvider(context.extensionUri);
+  // Initialize sidebar with dependencies
+  sidebarProvider = new SidebarProvider(context.extensionUri, configManager, strategyManager);
 
   // Subscribe to business events: delete task
   sidebarProvider.onDeleteTask(async (taskId: string) => {
@@ -164,7 +203,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
   );
 
   context.subscriptions.push(statusBar);
-  context.subscriptions.push(configManager);
+  context.subscriptions.push(configReader);
 
   // Detect Antigravity Language Server
   try {
@@ -249,11 +288,11 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
   scheduler.start("cacheCheck");
 
   // Listen for configuration changes
-  configManager.onConfigChange((newConfig) => {
+  configReader.onConfigChange((newConfig) => {
     scheduler.updateInterval("refresh", newConfig.pollingInterval * 1000);
     scheduler.updateInterval("cacheCheck", newConfig.cacheCheckInterval * 1000);
     setDebugMode(newConfig.debugMode);
-  });
+  }, configManager);
 
   infoLog("Antigravity Panel: Activated");
 }

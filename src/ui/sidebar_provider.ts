@@ -63,6 +63,10 @@ export class SidebarProvider implements vscode.WebviewViewProvider, vscode.Dispo
   private readonly _onDeleteContext = new vscode.EventEmitter<string>();
   readonly onDeleteContext = this._onDeleteContext.event;
 
+  // 依赖注入
+  private readonly _configManager: ConfigManager;
+  private readonly _strategyManager: QuotaStrategyManager;
+
   // UI 状态处理器
   private readonly uiHandlers: Record<string, (msg: WebviewMessage) => void> = {
     toggleTasks: () => {
@@ -112,7 +116,14 @@ export class SidebarProvider implements vscode.WebviewViewProvider, vscode.Dispo
     openRules: () => vscode.commands.executeCommand("vscode.open", vscode.Uri.file(getGlobalRulesPath())),
   };
 
-  constructor(private readonly _extensionUri: vscode.Uri) {}
+  constructor(
+    private readonly _extensionUri: vscode.Uri,
+    configManager: ConfigManager,
+    strategyManager: QuotaStrategyManager
+  ) {
+    this._configManager = configManager;
+    this._strategyManager = strategyManager;
+  }
 
   private handleMessage(msg: WebviewMessage): void {
     if (this.uiHandlers[msg.type]) {
@@ -338,9 +349,12 @@ export class SidebarProvider implements vscode.WebviewViewProvider, vscode.Dispo
 
   private _updateHtml(): void {
     if (!this._view) return;
-    
+
     const codiconsUri = this._view.webview.asWebviewUri(
       vscode.Uri.joinPath(this._extensionUri, "node_modules", "@vscode/codicons", "dist", "codicon.css")
+    );
+    const stylesUri = this._view.webview.asWebviewUri(
+      vscode.Uri.joinPath(this._extensionUri, "dist", "webview.css")
     );
     const webviewUri = this._view.webview.asWebviewUri(
       vscode.Uri.joinPath(this._extensionUri, "dist", "webview.js")
@@ -348,7 +362,7 @@ export class SidebarProvider implements vscode.WebviewViewProvider, vscode.Dispo
     const cspSource = this._view.webview.cspSource;
 
     this._view.webview.html = new WebviewHtmlBuilder()
-      .setHead(cspSource, codiconsUri, webviewUri)
+      .setHead(cspSource, codiconsUri.toString(), stylesUri.toString(), webviewUri.toString())
       .build();
   }
 
@@ -402,22 +416,20 @@ export class SidebarProvider implements vscode.WebviewViewProvider, vscode.Dispo
     const models = this._quota?.models || [];
     if (models.length === 0) return [];
 
-    const configManager = new ConfigManager(); // Or inject
-    const strategyManager = new QuotaStrategyManager(); // Or inject
-    const mode = configManager.get('visualizationMode', 'groups');
+    const mode = this._configManager.get('visualizationMode', 'groups');
 
     debugLog('Aggregating quotas', { mode, modelCount: models.length });
 
     if (mode === 'groups') {
-      const showGptQuota = configManager.get('showGptQuota', false);
-      const groups = strategyManager.getGroups();
+      const showGptQuota = this._configManager.get('showGptQuota', false);
+      const groups = this._strategyManager.getGroups();
 
       // Filter out GPT group if showGptQuota is disabled
       const filteredGroups = showGptQuota ? groups : groups.filter(g => g.id !== 'gpt');
 
       return filteredGroups.map(group => {
         // Find models belonging to this group
-        const groupModels = models.filter(m => strategyManager.getGroupForModel(m.modelId, m.label).id === group.id);
+        const groupModels = models.filter(m => this._strategyManager.getGroupForModel(m.modelId, m.label).id === group.id);
 
         let remaining = 0;
         let resetTime = 'N/A';
@@ -443,20 +455,20 @@ export class SidebarProvider implements vscode.WebviewViewProvider, vscode.Dispo
       });
     } else {
       // Models Mode
-      const showGptQuota = configManager.get('showGptQuota', false);
+      const showGptQuota = this._configManager.get('showGptQuota', false);
 
       // Filter out GPT models if showGptQuota is disabled
       const filteredModels = showGptQuota
         ? [...models]
-        : models.filter(m => strategyManager.getGroupForModel(m.modelId, m.label).id !== 'gpt');
+        : models.filter(m => this._strategyManager.getGroupForModel(m.modelId, m.label).id !== 'gpt');
 
       // Sort by Config Order
-      const allConfigModels: ModelDefinition[] = []; // Use any or import ModelDefinition to avoid import updates
-      strategyManager.getGroups().forEach(g => allConfigModels.push(...g.models));
+      const allConfigModels: ModelDefinition[] = [];
+      this._strategyManager.getGroups().forEach(g => allConfigModels.push(...g.models));
 
       filteredModels.sort((a, b) => {
-        const defA = strategyManager.getModelDefinition(a.modelId, a.label);
-        const defB = strategyManager.getModelDefinition(b.modelId, b.label);
+        const defA = this._strategyManager.getModelDefinition(a.modelId, a.label);
+        const defB = this._strategyManager.getModelDefinition(b.modelId, b.label);
 
         const indexA = defA ? allConfigModels.indexOf(defA) : 9999;
         const indexB = defB ? allConfigModels.indexOf(defB) : 9999;
@@ -467,8 +479,8 @@ export class SidebarProvider implements vscode.WebviewViewProvider, vscode.Dispo
       debugLog('Sorted models', { first: filteredModels[0]?.modelId, configuredCount: allConfigModels.length });
 
       return filteredModels.map(m => {
-        const group = strategyManager.getGroupForModel(m.modelId, m.label);
-        const configuredName = strategyManager.getModelDisplayName(m.modelId, m.label);
+        const group = this._strategyManager.getGroupForModel(m.modelId, m.label);
+        const configuredName = this._strategyManager.getModelDisplayName(m.modelId, m.label);
         // Use configured name -> server label -> model ID
         const displayName = configuredName || m.label || m.modelId;
 
@@ -480,7 +492,7 @@ export class SidebarProvider implements vscode.WebviewViewProvider, vscode.Dispo
           resetTime: m.timeUntilReset,
           hasData: true,
           themeColor: group.themeColor, // Inherit group color
-          subLabel: configManager.get('debugMode', false) ? m.modelId : undefined
+          subLabel: this._configManager.get('debugMode', false) ? m.modelId : undefined
         };
       });
     }
@@ -494,8 +506,7 @@ export class SidebarProvider implements vscode.WebviewViewProvider, vscode.Dispo
 
   private _buildTaskFolders(): FolderItem[] {
     const tasks = this._cache?.brainTasks || [];
-    const configManager = new ConfigManager();
-    const hideEmpty = configManager.get('cacheHideEmptyFolders', false);
+    const hideEmpty = this._configManager.get('cacheHideEmptyFolders', false);
 
     const folders = tasks.map(task => {
       const files = this._taskFilesCache.get(task.id) || [];
@@ -530,8 +541,7 @@ export class SidebarProvider implements vscode.WebviewViewProvider, vscode.Dispo
   }
 
   private _buildContextFolders(): FolderItem[] {
-    const configManager = new ConfigManager();
-    const hideEmpty = configManager.get('cacheHideEmptyFolders', false);
+    const hideEmpty = this._configManager.get('cacheHideEmptyFolders', false);
 
     const folders = this._contexts.map(ctx => {
       const files = this._contextFilesCache.get(ctx.id) || [];
