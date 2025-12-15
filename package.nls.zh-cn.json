@@ -1,8 +1,8 @@
 {
     "extension.displayName": "Toolkit for Antigravity",
     "extension.description": "Google Antigravity IDE 用户的必备工具箱。提供本地配额监控、缓存管理和系统指标可视化。",
-    "extension.category": "Antigravity Panel",
-    "viewsContainers.gagp-sidebar.title": "Antigravity Panel",
+    "extension.category": "Antigravity 工具箱",
+    "viewsContainers.gagp-sidebar.title": "工具箱",
     "views.gagp.sidebar.name": "Toolkit",
     "command.openPanel.title": "打开面板",
     "command.showCacheSize.title": "显示缓存大小",

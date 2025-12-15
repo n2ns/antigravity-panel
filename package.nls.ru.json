@@ -1,9 +1,9 @@
 {
-    "extension.displayName": "Antigravity Panel",
+    "extension.displayName": "Toolkit for Antigravity",
     "extension.description": "Вспомогательная утилита для Google Antigravity IDE с локальной визуализацией квот, управлением кешем и инструментами рабочего процесса",
-    "extension.category": "Antigravity Panel",
-    "viewsContainers.gagp-sidebar.title": "Antigravity Panel",
-    "views.gagp.sidebar.name": "Antigravity Panel",
+    "extension.category": "Antigravity Toolkit",
+    "viewsContainers.gagp-sidebar.title": "Toolkit",
+    "views.gagp.sidebar.name": "Toolkit",
     "command.openPanel.title": "Открыть панель",
     "command.showCacheSize.title": "Показать размер кеша",
     "command.cleanCache.title": "Очистить кеш",

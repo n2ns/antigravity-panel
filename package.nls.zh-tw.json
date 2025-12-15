@@ -1,9 +1,9 @@
 {
-    "extension.displayName": "Antigravity Panel",
+    "extension.displayName": "Toolkit for Antigravity",
     "extension.description": "專為 Google Antigravity IDE 設計的本機配額視覺化、快取管理與工作流程增強輔助工具",
-    "extension.category": "Antigravity Panel",
-    "viewsContainers.gagp-sidebar.title": "Antigravity Panel",
-    "views.gagp.sidebar.name": "Antigravity Panel",
+    "extension.category": "Antigravity 工具箱",
+    "viewsContainers.gagp-sidebar.title": "工具箱",
+    "views.gagp.sidebar.name": "工具箱",
     "command.openPanel.title": "開啟面板",
     "command.showCacheSize.title": "顯示快取大小",
     "command.cleanCache.title": "清理快取",

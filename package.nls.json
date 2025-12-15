@@ -1,8 +1,8 @@
 {
     "extension.displayName": "Toolkit for Antigravity",
     "extension.description": "The essential toolkit for Google Antigravity IDE users. Monitor quotas, manage caches, and visualize system metrics.",
-    "extension.category": "Antigravity Panel",
-    "viewsContainers.gagp-sidebar.title": "Antigravity Panel",
+    "extension.category": "Antigravity Toolkit",
+    "viewsContainers.gagp-sidebar.title": "Toolkit",
     "views.gagp.sidebar.name": "Toolkit",
     "command.openPanel.title": "Open Panel",
     "command.showCacheSize.title": "Show Cache Size",

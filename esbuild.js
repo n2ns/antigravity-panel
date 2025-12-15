@@ -57,6 +57,12 @@ async function run() {
 
   console.log("Building Extension and Webview...");
 
+  // Ensure dist directory exists
+  const distDir = path.resolve(__dirname, "dist");
+  if (!fs.existsSync(distDir)) {
+    fs.mkdirSync(distDir);
+  }
+
   // Copy CSS file to dist directory
   const srcCss = path.resolve(__dirname, "src", "ui", "webview.css");
   const distCss = path.resolve(__dirname, "dist", "webview.css");

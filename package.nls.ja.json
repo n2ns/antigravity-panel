@@ -1,9 +1,9 @@
 {
-    "extension.displayName": "Antigravity Panel",
+    "extension.displayName": "Toolkit for Antigravity",
     "extension.description": "Google Antigravity IDE 用のローカルクォータ可視化、キャッシュ管理、ワークフロー強化のためのコンパニオンユーティリティ",
-    "extension.category": "Antigravity Panel",
-    "viewsContainers.gagp-sidebar.title": "Antigravity Panel",
-    "views.gagp.sidebar.name": "Antigravity Panel",
+    "extension.category": "Antigravity Toolkit",
+    "viewsContainers.gagp-sidebar.title": "Toolkit",
+    "views.gagp.sidebar.name": "Toolkit",
     "command.openPanel.title": "パネルを開く",
     "command.showCacheSize.title": "キャッシュサイズを表示",
     "command.cleanCache.title": "キャッシュをクリア",

@@ -1,4 +1,4 @@
 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
   <rect x="3" y="3" width="18" height="18" rx="2" stroke="currentColor" stroke-width="1.5"/>
-  <text x="12" y="16" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" font-weight="bold" fill="currentColor">A<tspan fill="#ff0000" dy="-2.5">.</tspan><tspan dy="2.5">P</tspan></text>
+  <text x="12" y="16" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" font-weight="bold" fill="currentColor">T<tspan fill="#ff0000" dy="-2.5">.</tspan><tspan dy="2.5">A</tspan></text>
 </svg>

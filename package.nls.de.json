@@ -1,9 +1,9 @@
 {
-    "extension.displayName": "Antigravity Panel",
+    "extension.displayName": "Toolkit for Antigravity",
     "extension.description": "Ein Begleitprogramm für Google Antigravity IDE mit lokaler Kontingentvisualisierung, Cache-Verwaltung und Tools zur Workflow-Verbesserung",
-    "extension.category": "Antigravity Panel",
-    "viewsContainers.gagp-sidebar.title": "Antigravity Panel",
-    "views.gagp.sidebar.name": "Antigravity Panel",
+    "extension.category": "Antigravity Toolkit",
+    "viewsContainers.gagp-sidebar.title": "Toolkit",
+    "views.gagp.sidebar.name": "Toolkit",
     "command.openPanel.title": "Panel öffnen",
     "command.showCacheSize.title": "Cache-Größe anzeigen",
     "command.cleanCache.title": "Cache bereinigen",

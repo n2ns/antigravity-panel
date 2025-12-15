@@ -1,9 +1,9 @@
 {
-    "extension.displayName": "Antigravity Panel",
+    "extension.displayName": "Toolkit for Antigravity",
     "extension.description": "로컬 할당량 시각화, 캐시 관리 및 워크플로우 향상 기능을 갖춘 Google Antigravity IDE용 보조 유틸리티",
-    "extension.category": "Antigravity Panel",
-    "viewsContainers.gagp-sidebar.title": "Antigravity Panel",
-    "views.gagp.sidebar.name": "Antigravity Panel",
+    "extension.category": "Antigravity Toolkit",
+    "viewsContainers.gagp-sidebar.title": "Toolkit",
+    "views.gagp.sidebar.name": "Toolkit",
     "command.openPanel.title": "패널 열기",
     "command.showCacheSize.title": "캐시 크기 표시",
     "command.cleanCache.title": "캐시 정리",
