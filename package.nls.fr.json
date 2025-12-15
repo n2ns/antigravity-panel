@@ -33,7 +33,7 @@
     "config.cacheWarningThreshold.description": "Afficher un avertissement lorsque la taille du cache dépasse cette valeur en Mo (défaut : 500 Mo)",
     "config.cacheHideEmptyFolders.description": "Masquer les dossiers vides dans les arborescences Brain et Code Tracker",
     "config.autoCleanCache.description": "⚠️ NON IMPLÉMENTÉ - Vider automatiquement le cache lorsqu'il dépasse le seuil d'avertissement (nécessite une confirmation)",
-    "config.debugMode.description": "Activer la journalisation de débogage dans le canal de sortie 'Antigravity Panel'",
+    "config.debugMode.description": "Activer la journalisation de débogage dans le canal de sortie 'Toolkit for Antigravity'",
     "config.advanced.title": "Avancé",
     "config.advancedQuotaApiPath.description": "⚠️ Avancé : Point d'accès API personnalisé pour les métriques de quota. Modifier à vos propres risques. Nécessite le rechargement de l'extension.",
     "config.advancedServerHost.description": "⚠️ Avancé : Nom d'hôte du serveur personnalisé pour les métriques de quota. Par défaut : 127.0.0.1 (localhost). Modifier à vos propres risques."

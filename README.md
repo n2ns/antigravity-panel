@@ -27,7 +27,7 @@ English | [中文文档](README_zh.md)
 
 ## 📸 Screenshots
 
-![Antigravity Panel Interface](assets/preview.png)
+![Toolkit Interface](assets/preview.png)
 
 *Real-time quota monitoring, usage trends, and cache management in one place*
 
@@ -83,7 +83,7 @@ English | [中文文档](README_zh.md)
 
 1. Open **Antigravity IDE**
 2. Press `Ctrl+Shift+X` (Windows/Linux) or `Cmd+Shift+X` (macOS) to open Extensions
-3. Search for `Antigravity Panel`
+3. Search for `Toolkit for Antigravity`
 4. Click **Install**
 
 **Or install from web:**
@@ -96,7 +96,7 @@ English | [中文文档](README_zh.md)
 
 Click the **Antigravity** icon in the sidebar, or:
 - Press `Ctrl+Shift+P` (Windows/Linux) or `Cmd+Shift+P` (macOS)
-- Type `Antigravity Panel: Open Panel`
+- Type `Antigravity Toolkit: Open Panel`
 - Press Enter
 
 ### Step 2: Monitor Your Quota
@@ -120,10 +120,10 @@ Open Command Palette (`Ctrl+Shift+P` / `Cmd+Shift+P`) and search for:
 
 | Command | What it does |
 |---------|-------------|
-| `Antigravity Panel: Open Panel` | Open the sidebar panel |
-| `Antigravity Panel: Refresh Quota` | Manually refresh quota data |
-| `Antigravity Panel: Show Cache Size` | Show total cache size notification |
-| `Antigravity Panel: Clean Cache` | Delete all cache data (use with caution!) |
+| `Antigravity Toolkit: Open Panel` | Open the sidebar panel |
+| `Antigravity Toolkit: Refresh Quota` | Manually refresh quota data |
+| `Antigravity Toolkit: Show Cache Size` | Show total cache size notification |
+| `Antigravity Toolkit: Clean Cache` | Delete all cache data (use with caution!) |
 
 ## ⚙️ Configuration
 
@@ -153,7 +153,7 @@ Open Settings (`Ctrl+,` / `Cmd+,`) in Antigravity IDE and search for `gagp` to c
 
 **Your data stays yours.**
 
-Antigravity Panel does not collect, transmit, or store any user data. All operations are performed locally on your machine. The extension only communicates with your local Antigravity Language Server—nothing is sent to external servers.
+Toolkit for Antigravity does not collect, transmit, or store any user data. All operations are performed locally on your machine. The extension only communicates with your local Antigravity Language Server—nothing is sent to external servers.
 
 **Experimental Feature Notice:**
 The *Smart Quota Monitoring* feature relies on internal metrics exposed by the local Antigravity environment. This functionality is experimental and provided "as-is" to help users better understand their personal usage. It is not an official Google product and may be subject to changes in future IDE updates.

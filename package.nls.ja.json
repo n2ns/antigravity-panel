@@ -33,7 +33,7 @@
     "config.cacheWarningThreshold.description": "キャッシュサイズがこの値 (MB) を超えた場合に警告を表示 (デフォルト: 500MB)",
     "config.cacheHideEmptyFolders.description": "Brain と Code Tracker のツリービューで空のフォルダを非表示にする",
     "config.autoCleanCache.description": "⚠️ 未実装 - 警告しきい値を超えた場合にキャッシュを自動的にクリアする (確認が必要)",
-    "config.debugMode.description": "'Antigravity Panel' 出力チャンネルへのデバッグログを有効にする",
+    "config.debugMode.description": "'Toolkit for Antigravity' 出力チャンネルへのデバッグログを有効にする",
     "config.advanced.title": "詳細設定",
     "config.advancedQuotaApiPath.description": "⚠️ 詳細設定: クォータ取得用のカスタムAPIエンドポイント。変更は自己責任で。拡張機能の再読み込みが必要です。",
     "config.advancedServerHost.description": "⚠️ 詳細設定: クォータ取得用のカスタムサーバーホスト名。デフォルト: 127.0.0.1 (localhost)。変更は自己責任で。"

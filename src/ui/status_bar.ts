@@ -21,13 +21,13 @@ export class StatusBarManager implements vscode.Disposable {
 
   showLoading(): void {
     this.item.text = "$(sync~spin) GAGP";
-    this.item.tooltip = "Antigravity Panel: Detecting...";
+    this.item.tooltip = "Toolkit: Detecting...";
     this.item.show();
   }
 
   showError(message: string): void {
     this.item.text = "$(warning) GAGP";
-    this.item.tooltip = `Antigravity Panel: ${message}`;
+    this.item.tooltip = `Toolkit: ${message}`;
     this.item.show();
   }
 

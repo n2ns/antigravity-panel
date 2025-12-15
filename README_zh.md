@@ -27,7 +27,7 @@
 
 ## 📸 界面预览
 
-![Antigravity Panel 界面](assets/preview.png)
+![Toolkit 界面](assets/preview.png)
 
 *实时配额监控、用量趋势和缓存管理，一目了然*
 
@@ -83,7 +83,7 @@
 
 1. 打开 **Antigravity IDE**
 2. 按 `Ctrl+Shift+X`（Windows/Linux）或 `Cmd+Shift+X`（macOS）打开扩展面板
-3. 搜索 `Antigravity Panel`
+3. 搜索 `Toolkit for Antigravity`
 4. 点击 **安装**
 
 **或从网页安装：**
@@ -96,7 +96,7 @@
 
 点击侧边栏的 **Antigravity** 图标，或者：
 - 按 `Ctrl+Shift+P`（Windows/Linux）或 `Cmd+Shift+P`（macOS）
-- 输入 `Antigravity Panel: Open Panel`
+- 输入 `Antigravity 工具箱: Open Panel`
 - 按回车
 
 ### 第二步：监控配额
@@ -120,10 +120,10 @@
 
 | 命令 | 功能 |
 |------|------|
-| `Antigravity Panel: Open Panel` | 打开侧边栏面板 |
-| `Antigravity Panel: Refresh Quota` | 手动刷新配额数据 |
-| `Antigravity Panel: Show Cache Size` | 显示缓存总大小通知 |
-| `Antigravity Panel: Clean Cache` | 删除所有缓存数据（谨慎使用！）|
+| `Antigravity 工具箱: Open Panel` | 打开侧边栏面板 |
+| `Antigravity 工具箱: Refresh Quota` | 手动刷新配额数据 |
+| `Antigravity 工具箱: Show Cache Size` | 显示缓存总大小通知 |
+| `Antigravity 工具箱: Clean Cache` | 删除所有缓存数据（谨慎使用！）|
 
 ## ⚙️ 配置选项
 
@@ -153,7 +153,7 @@
 
 **你的数据属于你自己。**
 
-Antigravity Panel 不会收集、传输或存储任何用户数据。所有操作都在你的本地计算机上执行。扩展仅与你本地的 Antigravity Language Server 通信——不会向任何外部服务器发送数据。
+Toolkit for Antigravity 不会收集、传输或存储任何用户数据。所有操作都在你的本地计算机上执行。扩展仅与你本地的 Antigravity Language Server 通信——不会向任何外部服务器发送数据。
 
 **实验性功能提示：**
 本扩展的“智能配额监控”功能依赖于本地 Antigravity 环境所暴露的内部指标。该功能属于实验性质，仅按“原样”提供，旨在帮助用户更好地了解个人资源使用情况。它不是 Google 的官方产品，并且在未来的 IDE 更新中可能会发生变化。

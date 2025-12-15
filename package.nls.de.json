@@ -33,7 +33,7 @@
     "config.cacheWarningThreshold.description": "Warnung anzeigen, wenn die Cache-Größe diesen Wert in MB überschreitet (Standard: 500MB)",
     "config.cacheHideEmptyFolders.description": "Leere Ordner in Brain- und Code-Tracker-Baumansichten ausblenden",
     "config.autoCleanCache.description": "⚠️ NICHT IMPLEMENTIERT - Cache automatisch bereinigen, wenn der Warnschwellenwert überschritten wird (erfordert Bestätigung)",
-    "config.debugMode.description": "Debug-Protokollierung im 'Antigravity Panel' Ausgabekanal aktivieren",
+    "config.debugMode.description": "Debug-Protokollierung im 'Toolkit for Antigravity' Ausgabekanal aktivieren",
     "config.advanced.title": "Erweitert",
     "config.advancedQuotaApiPath.description": "⚠️ Erweitert: Benutzerdefinierter API-Endpunkt für Kontingentmetriken. Änderung auf eigene Gefahr. Erfordert Neuladen der Erweiterung.",
     "config.advancedServerHost.description": "⚠️ Erweitert: Benutzerdefinierter Server-Hostname für Kontingentmetriken. Standard: 127.0.0.1 (localhost). Änderung auf eigene Gefahr."

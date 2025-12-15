@@ -33,7 +33,7 @@
     "config.cacheWarningThreshold.description": "缓存大小超过此值（MB）时显示警告（默认：500MB）",
     "config.cacheHideEmptyFolders.description": "在 Brain 和 Code Tracker 树视图中隐藏空目录",
     "config.autoCleanCache.description": "⚠️ 未实现 - 缓存超过警告阈值时自动清理（需要确认）",
-    "config.debugMode.description": "启用调试日志输出到 'Antigravity Panel' 输出通道",
+    "config.debugMode.description": "启用调试日志输出到 'Toolkit for Antigravity' 输出通道",
     "config.advanced.title": "高级",
     "config.advancedQuotaApiPath.description": "⚠️ 高级：自定义配额查询 API 端点。修改风险自负，需要重新加载扩展。",
     "config.advancedServerHost.description": "⚠️ 高级：自定义配额查询服务器地址。默认：127.0.0.1（本地）。修改风险自负。"

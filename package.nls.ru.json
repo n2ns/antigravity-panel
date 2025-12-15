@@ -33,7 +33,7 @@
     "config.cacheWarningThreshold.description": "Показать предупреждение, когда размер кеша превышает это значение в МБ (по умолч.: 500МБ)",
     "config.cacheHideEmptyFolders.description": "Скрывать пустые папки в древовидных представлениях Brain и Code Tracker",
     "config.autoCleanCache.description": "⚠️ НЕ РЕАЛИЗОВАНО - Автоматически очищать кеш при превышении порога (требуется подтверждение)",
-    "config.debugMode.description": "Включить ведение журнала отладки в канале вывода 'Antigravity Panel'",
+    "config.debugMode.description": "Включить ведение журнала отладки в канале вывода 'Toolkit for Antigravity'",
     "config.advanced.title": "Дополнительно",
     "config.advancedQuotaApiPath.description": "⚠️ Дополнительно: Пользовательская конечная точка API для метрик квоты. Изменяйте на свой страх и риск. Требуется перезагрузка расширения.",
     "config.advancedServerHost.description": "⚠️ Дополнительно: Пользовательское имя хоста сервера для метрик квоты. По умолчанию: 127.0.0.1 (localhost). Изменяйте на свой страх и риск."

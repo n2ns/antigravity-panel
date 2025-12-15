@@ -33,7 +33,7 @@
     "config.cacheWarningThreshold.description": "Mostra avviso quando la dimensione della cache supera questo valore in MB (predefinito: 500MB)",
     "config.cacheHideEmptyFolders.description": "Nascondi cartelle vuote nelle viste ad albero Brain e Code Tracker",
     "config.autoCleanCache.description": "⚠️ NON IMPLEMENTATO - Pulisci automaticamente la cache quando supera la soglia di avviso (richiede conferma)",
-    "config.debugMode.description": "Abilita la registrazione di debug nel canale di output 'Antigravity Panel'",
+    "config.debugMode.description": "Abilita la registrazione di debug nel canale di output 'Toolkit for Antigravity'",
     "config.advanced.title": "Avanzate",
     "config.advancedQuotaApiPath.description": "⚠️ Avanzate: Endpoint API personalizzato per le metriche di quota. Modifica a tuo rischio. Richiede il ricaricamento dell'estensione.",
     "config.advancedServerHost.description": "⚠️ Avanzate: Hostname del server personalizzato per le metriche di quota. Predefinito: 127.0.0.1 (localhost). Modifica a tuo rischio."

@@ -68,7 +68,7 @@ let sidebarProvider: SidebarProvider;
 export async function activate(context: vscode.ExtensionContext): Promise<void> {
   // Initialize Logger
   initLogger(context);
-  infoLog("Antigravity Panel: Activating...");
+  infoLog("Toolkit: Activating...");
 
   // Initialize core services with dependency injection
   configReader = new VscodeConfigReader();
@@ -299,7 +299,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     setDebugMode(newConfig.debugMode);
   }, configManager);
 
-  infoLog("Antigravity Panel: Activated");
+  infoLog("Toolkit: Activated");
 }
 
 async function processQuotaUpdate(snapshot: QuotaSnapshot): Promise<void> {
@@ -423,5 +423,5 @@ async function checkCacheThreshold(): Promise<void> {
 
 export function deactivate(): void {
   scheduler?.dispose();
-  infoLog("Antigravity Panel: Deactivated");
+  infoLog("Toolkit: Deactivated");
 }

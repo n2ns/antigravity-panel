@@ -33,7 +33,7 @@
     "config.cacheWarningThreshold.description": "Mostrar aviso quando o tamanho do cache exceder este valor em MB (padrão: 500MB)",
     "config.cacheHideEmptyFolders.description": "Ocultar pastas vazias nas visualizações em árvore de Brain e Code Tracker",
     "config.autoCleanCache.description": "⚠️ NÃO IMPLEMENTADO - Limpar cache automaticamente quando exceder o limite de aviso (requer confirmação)",
-    "config.debugMode.description": "Habilitar registro de depuração no canal de saída 'Antigravity Panel'",
+    "config.debugMode.description": "Habilitar registro de depuração no canal de saída 'Toolkit for Antigravity'",
     "config.advanced.title": "Avançado",
     "config.advancedQuotaApiPath.description": "⚠️ Avançado: Endpoint de API personalizado para métricas de cota. Modifique por sua conta e risco. Requer recarregar a extensão.",
     "config.advancedServerHost.description": "⚠️ Avançado: Nome de host do servidor personalizado para métricas de cota. Padrão: 127.0.0.1 (localhost). Modifique por sua conta e risco."

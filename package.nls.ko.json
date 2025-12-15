@@ -33,7 +33,7 @@
     "config.cacheWarningThreshold.description": "캐시 크기가 이 값(MB)을 초과하면 경고 표시 (기본값: 500MB)",
     "config.cacheHideEmptyFolders.description": "Brain 및 Code Tracker 트리 뷰에서 빈 폴더 숨기기",
     "config.autoCleanCache.description": "⚠️ 미구현 - 경고 임계값을 초과할 때 자동으로 캐시 정리 (확인 필요)",
-    "config.debugMode.description": "'Antigravity Panel' 출력 채널에 디버그 로깅 활성화",
+    "config.debugMode.description": "'Toolkit for Antigravity' 출력 채널에 디버그 로깅 활성화",
     "config.advanced.title": "고급",
     "config.advancedQuotaApiPath.description": "⚠️ 고급: 할당량 메트릭용 사용자 정의 API 엔드포인트. 수정 시 위험 부담. 확장 프로그램 다시 로드 필요.",
     "config.advancedServerHost.description": "⚠️ 고급: 할당량 메트릭용 사용자 정의 서버 호스트명. 기본값: 127.0.0.1 (localhost). 수정 시 위험 부담."

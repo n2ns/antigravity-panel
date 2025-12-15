@@ -33,7 +33,7 @@
     "config.cacheWarningThreshold.description": "Show warning when cache size exceeds this value in MB (default: 500MB)",
     "config.cacheHideEmptyFolders.description": "Hide empty folders in Brain and Code Tracker tree views",
     "config.autoCleanCache.description": "⚠️ NOT IMPLEMENTED - Automatically clean cache when it exceeds the warning threshold (requires confirmation)",
-    "config.debugMode.description": "Enable debug logging to 'Antigravity Panel' output channel",
+    "config.debugMode.description": "Enable debug logging to 'Toolkit for Antigravity' output channel",
     "config.advanced.title": "Advanced",
     "config.advancedQuotaApiPath.description": "⚠️ Advanced: Custom API endpoint for quota metrics. Modify at your own risk. Requires extension reload.",
     "config.advancedServerHost.description": "⚠️ Advanced: Custom server hostname for quota metrics. Default: 127.0.0.1 (localhost). Modify at your own risk."

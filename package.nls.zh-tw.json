@@ -33,7 +33,7 @@
     "config.cacheWarningThreshold.description": "快取大小超過此值（MB）時顯示警告（預設：500MB）",
     "config.cacheHideEmptyFolders.description": "在 Brain 和 Code Tracker 樹狀視圖中隱藏空目錄",
     "config.autoCleanCache.description": "⚠️ 未實作 - 快取超過警告閾值時自動清理（需要確認）",
-    "config.debugMode.description": "啟用偵錯記錄輸出到 'Antigravity Panel' 輸出通道",
+    "config.debugMode.description": "啟用偵錯記錄輸出到 'Toolkit for Antigravity' 輸出通道",
     "config.advanced.title": "進階",
     "config.advancedQuotaApiPath.description": "⚠️ 進階：自訂配額查詢 API 端點。修改風險自負，需要重新載入擴充功能。",
     "config.advancedServerHost.description": "⚠️ 進階：自訂配額查詢伺服器地址。預設：127.0.0.1（本機）。修改風險自負。"

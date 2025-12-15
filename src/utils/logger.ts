@@ -14,7 +14,7 @@ let isDebugMode = false;
  * 初始化 Logger
  */
 export function initLogger(context: vscode.ExtensionContext): vscode.OutputChannel {
-  outputChannel = vscode.window.createOutputChannel("Antigravity Panel");
+  outputChannel = vscode.window.createOutputChannel("Toolkit for Antigravity");
   context.subscriptions.push(outputChannel);
   return outputChannel;
 }
