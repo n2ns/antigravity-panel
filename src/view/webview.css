@@ -37,104 +37,162 @@ body {
   }
 }
 
-/* Pie chart styles */
-/* Donut chart styles */
+/* Quota Gauge Styles - Ultra Premium Refinement */
 quota-pie {
-  flex: 1 1 100px;
-  min-width: 100px;
-  max-width: 140px;
+  flex: 1 1 110px;
+  min-width: 110px;
+  max-width: 160px;
   display: block;
-  position: relative;
 }
 
-.pie-container {
-  position: relative;
-  width: 80px;
-  height: 80px;
-  margin: 0 auto 8px;
-  border-radius: 50%;
-  background: var(--vscode-sideBar-background);
-  /* Mask background */
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+.gauge-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 10px 4px 2px 4px;
+  /* Reduced bottom padding */
+  transition: transform 0.2s ease;
 }
 
-/* Donut ring body */
-.pie-ring {
-  position: absolute;
-  top: 0;
-  left: 0;
+.gauge-container:hover {
+  transform: translateY(-2px);
+}
+
+.gauge-visual {
+  position: relative;
+  width: 110px;
+}
+
+.style-semi-arc .gauge-visual {
+  height: 62px;
+  margin-bottom: 0px;
+}
+
+.gauge-svg {
   width: 100%;
   height: 100%;
-  border-radius: 50%;
-  /* Gradient controlled by component inline styles */
-  mask: radial-gradient(transparent 58%, black 60%);
-  -webkit-mask: radial-gradient(transparent 58%, black 60%);
+  overflow: visible;
 }
 
-/* 中心内容 */
-.pie-content {
+.gauge-track-bg {
+  fill: none;
+  stroke: var(--vscode-widget-border);
+  stroke-width: 3.2;
+  /* Widened from 2.2 */
+  stroke-linecap: butt;
+  opacity: 0.15;
+}
+
+.gauge-track-fg {
+  fill: none;
+  stroke: var(--vscode-foreground);
+  stroke-width: 1.5;
+  /* Widened from 1.0 */
+  stroke-linecap: butt;
+  opacity: 0.25;
+}
+
+.gauge-separator {
+  fill: none;
+  stroke: #000000;
+  /* True black for separation */
+  stroke-width: 1.5;
+  /* Equal to fg tracks */
+  stroke-linecap: butt;
+  opacity: 0.8;
+  /* Strong enough to block color bleed */
+}
+
+.gauge-fill {
+  fill: none;
+  stroke-width: 5.8;
+  stroke-linecap: butt;
+  transition: stroke-dashoffset 1s cubic-bezier(0.16, 1, 0.3, 1);
+  /* Sharp focused glow, minimal diffusion to avoid separator bleed */
+  filter: drop-shadow(0 0 1px currentColor) drop-shadow(0 0 2px currentColor);
+}
+
+.style-semi-arc .gauge-center-text {
+  top: 64%;
+  /* Balanced for R=43 semi-arc */
+}
+
+.gauge-center-text {
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+  top: 50%;
+  /* Default center */
+  left: 50%;
+  transform: translate(-50%, -50%);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  z-index: 1;
-}
-
-.pie-value {
-  font-size: 1.4em;
-  font-weight: 700;
-  line-height: 1;
+  width: 100%;
+  pointer-events: none;
   color: var(--vscode-foreground);
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
-.pie-percent-symbol {
-  font-size: 0.5em;
-  opacity: 0.7;
-  vertical-align: super;
+.gauge-value {
+  font-size: 1.12em;
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: -0.01em;
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
 }
 
-.pie-label {
-  margin-top: 4px;
-  font-size: 0.85em;
+.gauge-unit {
+  font-size: 0.55em;
+  font-weight: 400;
+  opacity: 0.8;
+  margin-left: 1px;
+}
+
+.gauge-reset-inner {
+  font-size: 0.78em;
+  font-weight: 500;
+  color: var(--vscode-descriptionForeground);
+  opacity: 0.85;
+  margin-top: 2px;
+}
+
+.gauge-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+.gauge-label {
+  font-size: 0.75em;
   font-weight: 600;
-  color: var(--vscode-descriptionForeground);
+  color: var(--vscode-foreground);
+  /* Model name uses main foreground */
   text-align: center;
-}
-
-.pie-sub-label {
-  margin-top: -2px;
-  margin-bottom: 2px;
-  font-size: 0.6em;
-  color: var(--vscode-descriptionForeground);
-  opacity: 0.7;
-  text-align: center;
+  white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  white-space: nowrap;
-  max-width: 100%;
+  max-width: 120px;
+  opacity: 0.9;
 }
 
-.pie-reset {
-  margin-top: 2px;
-  font-size: 0.75em;
+.gauge-sub-label {
+  font-size: 0.62em;
   color: var(--vscode-descriptionForeground);
-  opacity: 0.7;
-  text-align: center;
+  opacity: 0.4;
+  margin-top: 0px;
 }
 
-/* 仪表盘样式 */
+/* 仪表盘容器样式 */
 .pies-container {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
   justify-items: center;
-  gap: 12px 0;
-  padding: 14px;
+  gap: 12px 8px;
+  /* Reduced vertical gap between rows */
+  padding: 20px 12px 10px 12px;
+  /* Reduced bottom padding */
   background: var(--vscode-sideBar-background);
   border-bottom: 1px solid var(--vscode-widget-border);
 }
