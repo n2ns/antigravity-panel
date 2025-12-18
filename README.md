@@ -186,22 +186,17 @@ For major changes, please open an issue first to discuss your ideas.
 
 ## 📄 License
 
-[MIT License](LICENSE) - feel free to use this extension in your projects!
+Licensed under the [GNU General Public License v3.0](LICENSE). 
 
----
-
-## 📚 Documentation
-
-- [Features](docs/FEATURES.md) - Complete feature list
-- [Changelog](CHANGELOG.md) - Version history
-- [TODO](docs/TODO.md) - Planned features
+**Personal & Educational Use**: 100% Free.
+**Enterprise & Commercial Integration**: Please contact Datafrog LLC for commercial licensing if you wish to integrate this technology into proprietary products.
 
 ---
 
 <div align="center">
 
-**Made with ❤️ by [n2n studio](https://github.com/n2ns)**
+**Developed by [Datafrog LLC](https://datafrog.io)**
 
-[Feedback & Support](https://github.com/n2ns/antigravity-panel/issues) · [Documentation](https://github.com/n2ns/antigravity-panel/wiki)
+[Website](https://datafrog.io) · [Feedback & Support](https://github.com/n2ns/antigravity-panel/issues) · [Commercial Inquiry](mailto:support@datafrog.io)
 
 </div>

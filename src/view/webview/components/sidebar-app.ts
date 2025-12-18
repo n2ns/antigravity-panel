@@ -195,6 +195,13 @@ export class SidebarApp extends LitElement {
     });
   }
 
+  private _onVisitWebsite(): void {
+    this._vscode.postMessage({
+      type: 'openUrl',
+      path: 'https://datafrog.io'
+    });
+  }
+
   // ==================== 渲染 ====================
 
   protected render() {
@@ -236,6 +243,10 @@ export class SidebarApp extends LitElement {
           <i class="codicon codicon-github"></i>
           <span>${(window as unknown as WindowWithVsCode).__TRANSLATIONS__?.projectHome || "Project Home"}</span>
         </button>
+      </div>
+
+      <div class="branding-footer" @click=${this._onVisitWebsite}>
+        Managed by <span>Datafrog LLC</span>
       </div>
     `;
   }

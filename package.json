@@ -4,7 +4,7 @@
   "description": "%extension.description%",
   "version": "2.2.0",
   "publisher": "n2ns",
-  "license": "MIT",
+  "license": "GPL-3.0-only",
   "repository": {
     "type": "git",
     "url": "https://github.com/n2ns/antigravity-panel.git"

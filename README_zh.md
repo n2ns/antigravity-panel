@@ -186,22 +186,17 @@ Toolkit for Antigravity 不会收集、传输或存储任何用户数据。所�
 
 ## 📄 许可证
 
-[MIT License](LICENSE) - 欢迎在你的项目中使用本扩展！
+本项目采用 [GNU General Public License v3.0](LICENSE) 开源许可证。
 
----
-
-## 📚 文档
-
-- [功能特性](docs/FEATURES_zh.md) - 完整功能列表
-- [更新日志](docs/CHANGELOG_zh.md) - 版本历史
-- [待办事项](docs/TODO_zh.md) - 计划中的功能
+**个人及教学用途**：100% 免费使用。
+**企业级及商业集成**：如需将本扩展的技术集成至商业闭源产品，请联系 Datafrog LLC 获取商业授权。
 
 ---
 
 <div align="center">
 
-**用 ❤️ 制作 by [n2n studio](https://github.com/n2ns)**
+**由 [Datafrog LLC](https://datafrog.io) 开发并维护**
 
-[反馈与支持](https://github.com/n2ns/antigravity-panel/issues) · [文档中心](https://github.com/n2ns/antigravity-panel/wiki)
+[官方网站](https://datafrog.io) · [反馈与支持](https://github.com/n2ns/antigravity-panel/issues) · [商业咨询](mailto:support@datafrog.io)
 
 </div>

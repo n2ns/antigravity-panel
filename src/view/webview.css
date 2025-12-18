@@ -539,3 +539,24 @@ quota-pie {
 .discussions-btn .codicon {
   font-size: 16px;
 }
+/* Datafrog Branding Footer */
+.branding-footer {
+  padding: 8px;
+  text-align: center;
+  font-size: 0.75em;
+  opacity: 0.5;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+  user-select: none;
+  border-top: 1px solid var(--vscode-widget-border);
+  background: var(--vscode-sideBar-background);
+}
+
+.branding-footer:hover {
+  opacity: 0.9;
+}
+
+.branding-footer span {
+  font-weight: 600;
+  color: var(--vscode-textLink-foreground);
+}
