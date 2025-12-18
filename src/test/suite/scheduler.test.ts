@@ -1,5 +1,5 @@
 import * as assert from 'assert';
-import { Scheduler } from '../../core/scheduler';
+import { Scheduler } from '../../shared/utils/scheduler';
 
 suite('Scheduler Test Suite', () => {
     let scheduler: Scheduler;
@@ -16,7 +16,7 @@ suite('Scheduler Test Suite', () => {
         const task = {
             name: 'test-task',
             interval: 100,
-            execute: () => {}
+            execute: () => { }
         };
         scheduler.register(task);
         assert.deepStrictEqual(scheduler.getRegisteredTasks(), ['test-task']);
@@ -26,7 +26,7 @@ suite('Scheduler Test Suite', () => {
         const task = {
             name: 'test-task',
             interval: 100,
-            execute: () => {}
+            execute: () => { }
         };
         scheduler.register(task);
         scheduler.unregister('test-task');
@@ -38,7 +38,7 @@ suite('Scheduler Test Suite', () => {
             name: 'immediate-task',
             interval: 1000,
             execute: () => {
-                done(); 
+                done();
             },
             immediate: true
         };
@@ -77,7 +77,7 @@ suite('Scheduler Test Suite', () => {
         setTimeout(() => {
             scheduler.stop('stop-task');
             const oldCount = count;
-            
+
             setTimeout(() => {
                 assert.strictEqual(count, oldCount);
                 done();
@@ -102,7 +102,7 @@ suite('Scheduler Test Suite', () => {
             },
             immediate: true
         };
-        
+
         scheduler.register(task);
         scheduler.start('error-task');
     });
@@ -119,7 +119,7 @@ suite('Scheduler Test Suite', () => {
                 }
             }
         };
-        
+
         scheduler.register(task);
         scheduler.start('update-interval-task');
 
@@ -127,7 +127,7 @@ suite('Scheduler Test Suite', () => {
         // This is hard to test precisely with setTimeout variance, so we just check it returns true
         const result = scheduler.updateInterval('update-interval-task', 100);
         assert.strictEqual(result, true);
-        
+
         done();
     });
 });

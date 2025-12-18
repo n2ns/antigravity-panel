@@ -10,7 +10,7 @@ import {
     getMcpConfigPath,
     getBrowserAllowlistPath,
     getCodeTrackerActiveDir
-} from '../../utils/paths';
+} from '../../shared/utils/paths';
 
 suite('Paths Utils Test Suite', () => {
     const homeDir = os.homedir();

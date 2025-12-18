@@ -1,5 +1,5 @@
 import * as assert from 'assert';
-import { retry, createRetry } from '../../utils/retry';
+import { retry, createRetry } from '../../shared/utils/retry';
 
 suite('Retry Utils Test Suite', () => {
     test('should succeed on first attempt', async () => {

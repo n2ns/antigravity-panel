@@ -2,6 +2,20 @@
 
 This file contains detailed technical changes for developers. For user-facing changes, see CHANGELOG.md.
 
+## [2.0.0] - 2025-12-17
+
+### Added
+- **MVVM Architecture**: Complete refactoring of the codebase into strict Model, View-Model, View, Shared, and Config layers.
+  - **Services**: Introduced `QuotaService`, `CacheService`, `StorageService` for robust data handling.
+  - **ViewModel**: `AppViewModel` now serves as the single source of truth for all UI state.
+- **New Model Support**: Added support for **Gemini 3 Flash** (Internal ID: `MODEL_PLACEHOLDER_M18`), automatically detected via `QuotaService`.
+- **Debug Tools**: Added `src/scripts/debug_server.ts` for inspecting local Language Server API responses.
+
+### Changed
+- **Testing**: Complete overhaul of the test suite (`src/test/suite`), achieving 152 passing unit tests in a pure Node.js environment.
+- **Configuration**: moved `quota_strategy.json` to `src/shared/config/` and updated all import paths.
+- **Shared Utilities**: Centralized common utilities (formatting, networking, logging, retry) in `src/shared`.
+
 ## [1.1.0] - 2025-12-10
 
 ### Added

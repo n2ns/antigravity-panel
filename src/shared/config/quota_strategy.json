@@ -1,0 +1,83 @@
+{
+    "groups": [
+        {
+            "id": "gemini-flash",
+            "label": "Gemini Flash",
+            "shortLabel": "Flash",
+            "themeColor": "#40C4FF",
+            "prefixes": [
+                "gemini-3-flash"
+            ],
+            "models": [
+                {
+                    "id": "gemini-3-flash",
+                    "modelName": "MODEL_PLACEHOLDER_M18",
+                    "displayName": "Gemini 3 Flash"
+                }
+            ]
+        },
+        {
+            "id": "gemini-pro",
+            "label": "Gemini Pro",
+            "shortLabel": "Pro",
+            "themeColor": "#69F0AE",
+            "prefixes": [
+                "gemini"
+            ],
+            "models": [
+                {
+                    "id": "gemini-3-pro-high",
+                    "modelName": "MODEL_PLACEHOLDER_M8",
+                    "displayName": "Gemini 3 Pro (High)"
+                },
+                {
+                    "id": "gemini-3-pro-low",
+                    "modelName": "MODEL_PLACEHOLDER_M7",
+                    "displayName": "Gemini 3 Pro (Low)"
+                }
+            ]
+        },
+        {
+            "id": "claude",
+            "label": "Claude",
+            "shortLabel": "Claude",
+            "themeColor": "#FFAB40",
+            "prefixes": [
+                "claude"
+            ],
+            "models": [
+                {
+                    "id": "claude-4-5-sonnet",
+                    "modelName": "MODEL_CLAUDE_4_5_SONNET",
+                    "displayName": "Claude Sonnet 4.5"
+                },
+                {
+                    "id": "claude-4-5-sonnet-thinking",
+                    "modelName": "MODEL_CLAUDE_4_5_SONNET_THINKING",
+                    "displayName": "Claude Sonnet 4.5"
+                },
+                {
+                    "id": "claude-4-opus-thinking",
+                    "modelName": "MODEL_PLACEHOLDER_M12",
+                    "displayName": "Claude Opus 4.5"
+                }
+            ]
+        },
+        {
+            "id": "gpt",
+            "label": "GPT",
+            "shortLabel": "GPT",
+            "themeColor": "#FF5252",
+            "prefixes": [
+                "gpt"
+            ],
+            "models": [
+                {
+                    "id": "gpt-oss-120b-medium",
+                    "modelName": "MODEL_OPENAI_GPT_OSS_120B_MEDIUM",
+                    "displayName": "GPT-OSS 120B"
+                }
+            ]
+        }
+    ]
+}

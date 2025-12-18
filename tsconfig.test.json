@@ -10,14 +10,15 @@
         "noEmit": false
     },
     "include": [
-        "src/core/**/*",
-        "src/utils/**/*",
-        "src/config/**/*",
+        "src/shared/**/*",
+        "src/model/**/*",
+        "src/view-model/**/*",
+        "src/view/**/*",
         "src/test/**/*"
     ],
     "exclude": [
-        "src/ui/**/*",
         "src/extension.ts",
+        "src/view/webview/**/*",
         "node_modules"
     ]
 }

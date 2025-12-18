@@ -12,6 +12,7 @@ English | [中文文档](FEATURES_zh.md)
 - Visual quota display grouped by model families (Gemini, Claude, GPT, etc.)
 - Pie charts showing remaining quota percentage per group
 - Color-coded warnings when quota runs low (warning/critical thresholds)
+- Separate tracking and display for **Gemini 3 Flash**, Pro, and Ultra groups
 - Automatic refresh with configurable polling interval (minimum 60s)
 
 ### Active Group Detection
@@ -64,7 +65,8 @@ English | [中文文档](FEATURES_zh.md)
 ## 📱 Status Bar Integration
 
 ### Quota Display
-- Shows remaining quota percentage for active model group
+- Shows remaining quota percentage for active model group with concise labels (e.g., "Pro", "Flash")
+- Detailed tooltip on hover showing all active groups with full labels and reset times
 - Multiple display styles: percentage, reset time, used, remaining
 - Color-coded status: normal (green), warning (yellow), critical (red)
 - Configurable thresholds for warning (default 30%) and critical (default 10%)
@@ -84,6 +86,13 @@ English | [中文文档](FEATURES_zh.md)
 - Open extension settings
 
 ---
+
+## 💬 Community & Feedback
+
+### Feedback Integration
+- Report bugs via the built-in Intelligent Feedback System (pre-fills diagnostics)
+- Side-by-side buttons in footer for **Report Issue** (GitHub Issues) and **Project Home**
+- Full localization support for all UI elements and feedback instructions
 
 ## 🏗️ Architecture & Performance
 
@@ -151,7 +160,7 @@ English | [中文文档](FEATURES_zh.md)
 ## 🧪 Testing
 
 ### Unit Test Coverage
-- 169 tests across 15 test files
+- 152 tests across 15 test files
 - Pure Node.js environment (no VS Code runtime required)
 - Core modules fully tested:
   - ConfigManager, CacheManager, QuotaManager

@@ -2,7 +2,31 @@ English | [中文文档](docs/CHANGELOG_zh.md)
 
 # Changelog
 
-## [1.2.0] - 2025-12-12
+## [2.1.0] - 2025-12-17
+
+### Added
+- **Intelligent Feedback System**: Added a localization-aware bug reporting system with automatic diagnostic pre-filling (version, OS, error codes).
+- **Advanced Diagnostics**: `ProcessFinder` now identifies specific failure reasons: `no_process`, `ambiguous` (multi-instance), `no_port`, and `auth_failed`.
+- **Parsing Error Monitoring**: Added monitoring for server API response anomalies with dedicated feedback triggers.
+- **Localization Framework**: Implemented `vscode.l10n` for runtime notifications, ensuring 100% i18n alignment for error messages.
+- **Model Quota Granularity**: Separated Gemini 3 Flash and Pro into distinct tracking groups in the status bar and sidebar.
+- **Community Integration**: Added a prominent "Join Discussions" button in the sidebar footer to bridge user feedback and GitHub discussions.
+- **Quality Guard**: Integrated Husky and lint-staged to enforce code quality with automated ESLint checks and unit tests before every commit.
+- **Streamlined Status Bar**: Active group quota is now displayed with concise labels (Pro/Flash) and an enhanced hover tooltip showing all active groups' details.
+
+### Changed
+- **UI Realignment**: Fixed redundant naming in sidebar titles; now standardized as `Antigravity: Toolkit`.
+- **Architecture Refinement**: Extracted feedback logic into a reusable `FeedbackManager` component, maintaining MVVM cleanliness.
+- **Dashboard Sorting**: Quota disks now strictly follow the order defined in `quota_strategy.json`, ensuring Gemini Flash always appears first.
+
+### Fixed
+- **UI Sync Deadzone**: Resolved an issue where quota disks would display 0% instead of 100% when the reset timer hit "Ready".
+- **ESLint Technical Debt**: Cleaned up all 11+ identified linting errors and warnings for a cleaner codebase.
+
+
+## [2.0.0] - 2025-12-17
+
+> **The Architecture Update**: A complete recreation of the internal engine based on MVVM architecture, ensuring stability, testability, and future extensibility.
 
 ### Improved
 ### Changed

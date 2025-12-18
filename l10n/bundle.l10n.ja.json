@@ -1,0 +1,17 @@
+{
+    "button.feedback": "フィードバック",
+    "notification.no_process": "ローカルサーバーが見つかりません",
+    "notification.ambiguous": "ローカルサーバーが見つかりません。クオータ参照を取得できません",
+    "notification.no_port": "サーバープロセスは見つかりましたが、リスニングポートが検出されませんでした",
+    "notification.auth_failed": "サーバーとのハンドシェイクに失敗しました（CSRFチェック失敗）",
+    "notification.parsing_error": "サーバーデータの解析エラーが検出されました。一部の機能が制限されています",
+    "report.title": "診断システム情報（自動生成）",
+    "report.version": "拡張機能バージョン",
+    "report.os": "オペレーティングシステム",
+    "report.error_code": "エラーコード",
+    "report.candidate_count": "候補プロセス数",
+    "report.parsing_info": "解析詳細",
+    "report.description_placeholder": "**問題の説明**\n（この問題が発生した状況を簡単に説明してください。例：IDEをアップグレードしたばかりですか？）\n\n---",
+    "footer.reportIssue": "問題を報告",
+    "footer.projectHome": "プロジェクト"
+}

@@ -1,0 +1,17 @@
+{
+    "button.feedback": "Feedback",
+    "notification.no_process": "Lokaler Server nicht gefunden",
+    "notification.ambiguous": "Lokaler Server nicht gefunden, Quote kann nicht abgerufen werden",
+    "notification.no_port": "Serverprozess gefunden, aber kein Listening-Port erkannt",
+    "notification.auth_failed": "Handshake mit Server fehlgeschlagen (CSRF-Prüfung fehlgeschlagen)",
+    "notification.parsing_error": "Fehler beim Parsen der Serverdaten erkannt, einige Funktionen sind eingeschränkt",
+    "report.title": "Diagnose-Systeminformationen (Automatisch generiert)",
+    "report.version": "Erweiterungsversion",
+    "report.os": "Betriebssystem",
+    "report.error_code": "Fehlercode",
+    "report.candidate_count": "Prozesskandidatenanzahl",
+    "report.parsing_info": "Parsing-Details",
+    "report.description_placeholder": "**Problembeschreibung**\n(Bitte beschreiben Sie kurz, unter welcher Situation dieses Problem aufgetreten ist, z. B. haben Sie gerade die IDE aktualisiert?)\n\n---",
+    "footer.reportIssue": "Problem melden",
+    "footer.projectHome": "Projektseite"
+}

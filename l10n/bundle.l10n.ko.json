@@ -1,0 +1,17 @@
+{
+    "button.feedback": "피드백",
+    "notification.no_process": "로컬 서버를 찾을 수 없습니다",
+    "notification.ambiguous": "로컬 서버를 찾을 수 없어 쿼터 참조를 가져올 수 없습니다",
+    "notification.no_port": "서버 프로세스를 찾았으나 수신 포트가 감지되지 않았습니다",
+    "notification.auth_failed": "서버와의 핸드셰이크 실패 (CSRF 확인 실패)",
+    "notification.parsing_error": "서버 데이터 파싱 오류 감지됨, 일부 기능이 제한됩니다",
+    "report.title": "진단 시스템 정보 (자동 생성됨)",
+    "report.version": "확장 프로그램 버전",
+    "report.os": "운영 체제",
+    "report.error_code": "오류 코드",
+    "report.candidate_count": "후보 프로세스 수",
+    "report.parsing_info": "파싱 세부 정보",
+    "report.description_placeholder": "**문제 설명**\n(이 문제가 발생한 상황을 간략하게 설명해 주세요. 예: 방금 IDE를 업그레이드하셨나요?)\n\n---",
+    "footer.reportIssue": "문제 신고",
+    "footer.projectHome": "프로젝트 홈"
+}

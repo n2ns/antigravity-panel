@@ -1,0 +1,17 @@
+{
+    "button.feedback": "Feedback",
+    "notification.no_process": "Server locale non trovato",
+    "notification.ambiguous": "Server locale non trovato, impossibile ottenere il riferimento quota",
+    "notification.no_port": "Processo server trovato ma nessuna porta di ascolto rilevata",
+    "notification.auth_failed": "Handshake con il server fallito (verifica CSRF fallita)",
+    "notification.parsing_error": "Rilevato errore di analisi dati server, alcune funzionalità sono limitate",
+    "report.title": "Informazioni Diagnostiche di Sistema (Generate Automaticamente)",
+    "report.version": "Versione Estensione",
+    "report.os": "Sistema Operativo",
+    "report.error_code": "Codice Errore",
+    "report.candidate_count": "Conteggio Processi Candidati",
+    "report.parsing_info": "Dettagli Analisi",
+    "report.description_placeholder": "**Descrizione del Problema**\n(Descrivi brevemente la situazione in cui si è verificato questo problema, ad esempio, hai appena aggiornato l'IDE?)\n\n---",
+    "footer.reportIssue": "Segnala problema",
+    "footer.projectHome": "Pagina del progetto"
+}

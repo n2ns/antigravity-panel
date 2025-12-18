@@ -1,0 +1,17 @@
+{
+    "button.feedback": "问题反馈",
+    "notification.no_process": "未找到本地服务进程",
+    "notification.ambiguous": "未找到本地服务进程，无法获取配额参考",
+    "notification.no_port": "已找到服务进程但未检测到监听端口",
+    "notification.auth_failed": "与服务握手认证失败 (CSRF校验未通过)",
+    "notification.parsing_error": "检测到服务端数据解析异常，部分功能受限",
+    "report.title": "诊断系统信息 (自动生成)",
+    "report.version": "插件版本",
+    "report.os": "操作系统",
+    "report.error_code": "错误代码",
+    "report.candidate_count": "候选进程数",
+    "report.parsing_info": "解析详情",
+    "report.description_placeholder": "**问题描述**\n(请简要描述出现该问题时的情境，例如：刚升级完IDE？)\n\n---",
+    "footer.reportIssue": "反馈问题",
+    "footer.projectHome": "项目主页"
+}

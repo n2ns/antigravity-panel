@@ -6,7 +6,7 @@
  */
 
 import * as assert from 'assert';
-import { ConfigManager, IConfigReader, MIN_POLLING_INTERVAL, MIN_CACHE_CHECK_INTERVAL } from '../../core/config_manager';
+import { ConfigManager, IConfigReader, MIN_POLLING_INTERVAL, MIN_CACHE_CHECK_INTERVAL } from '../../shared/config/config_manager';
 
 /**
  * Mock config reader for testing

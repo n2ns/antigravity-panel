@@ -11,16 +11,16 @@ import Module from 'module';
 
 // Mock vscode module for tests
 const vscodeModulePath = path.resolve(__dirname, 'mocks', 'vscode.js');
-// @ts-ignore - Monkey patching Module.prototype.require
+// @ts-ignore
 const originalRequire = Module.prototype.require;
 // @ts-ignore
-Module.prototype.require = function(id: string) {
+Module.prototype.require = function (id: string, ...args: any[]) {
     if (id === 'vscode') {
         // @ts-ignore
         return originalRequire.call(this, vscodeModulePath);
     }
     // @ts-ignore
-    return originalRequire.apply(this, arguments);
+    return originalRequire.apply(this, [id, ...args]);
 };
 
 async function run(): Promise<void> {
@@ -33,8 +33,8 @@ async function run(): Promise<void> {
     const testsRoot = __dirname;
 
     try {
-        // 运行所有测试文件
-        const files = await glob('suite/*.test.js', { cwd: testsRoot });
+        // 运行所有测试文件 (包含子目录)
+        const files = await glob('suite/**/*.test.js', { cwd: testsRoot });
 
         if (files.length === 0) {
             console.log('No test files found');

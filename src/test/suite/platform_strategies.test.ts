@@ -1,5 +1,5 @@
 import * as assert from 'assert';
-import { WindowsStrategy, UnixStrategy } from '../../core/platform_strategies';
+import { WindowsStrategy, UnixStrategy } from '../../shared/platform/platform_strategies';
 
 suite('Platform Strategies Test Suite', () => {
     suite('WindowsStrategy', () => {
@@ -12,11 +12,11 @@ suite('Platform Strategies Test Suite', () => {
             });
 
             const result = strategy.parseProcessInfo(jsonOutput);
-            
+
             assert.ok(result, 'Should parse process info');
-            assert.strictEqual(result!.pid, 12345);
-            assert.strictEqual(result!.extensionPort, 42100);
-            assert.strictEqual(result!.csrfToken, 'abc123xyz');
+            assert.strictEqual(result![0].pid, 12345);
+            assert.strictEqual(result![0].extensionPort, 42100);
+            assert.strictEqual(result![0].csrfToken, 'abc123xyz');
         });
 
         test('should parse array of processes and filter Antigravity', () => {
@@ -36,10 +36,10 @@ suite('Platform Strategies Test Suite', () => {
             ]);
 
             const result = strategy.parseProcessInfo(jsonOutput);
-            
+
             assert.ok(result, 'Should find Antigravity process');
-            assert.strictEqual(result!.pid, 12345);
-            assert.strictEqual(result!.csrfToken, 'abc123xyz');
+            assert.strictEqual(result![0].pid, 12345);
+            assert.strictEqual(result![0].csrfToken, 'abc123xyz');
         });
 
         test('should handle process with --app_data_dir antigravity flag', () => {
@@ -49,9 +49,9 @@ suite('Platform Strategies Test Suite', () => {
             });
 
             const result = strategy.parseProcessInfo(jsonOutput);
-            
+
             assert.ok(result, 'Should recognize --app_data_dir antigravity');
-            assert.strictEqual(result!.pid, 12345);
+            assert.strictEqual(result![0].pid, 12345);
         });
 
         test('should return null for non-Antigravity process', () => {
@@ -81,7 +81,7 @@ suite('Platform Strategies Test Suite', () => {
             });
 
             const result = strategy.parseProcessInfo(jsonOutput);
-            assert.strictEqual(result!.extensionPort, 42100);
+            assert.strictEqual(result![0].extensionPort, 42100);
         });
 
         test('should handle port specified with space', () => {
@@ -91,7 +91,7 @@ suite('Platform Strategies Test Suite', () => {
             });
 
             const result = strategy.parseProcessInfo(jsonOutput);
-            assert.strictEqual(result!.extensionPort, 42100);
+            assert.strictEqual(result![0].extensionPort, 42100);
         });
 
         test('should parse listening ports from netstat output', () => {
@@ -102,7 +102,7 @@ suite('Platform Strategies Test Suite', () => {
   TCP    [::1]:42100            [::]:0                 LISTENING       12345
 `;
             const ports = strategy.parseListeningPorts(netstatOutput);
-            
+
             assert.strictEqual(ports.length, 3);
             assert.ok(ports.includes(42100));
             assert.ok(ports.includes(42101));
@@ -116,7 +116,7 @@ suite('Platform Strategies Test Suite', () => {
   TCP    127.0.0.1:3000         0.0.0.0:0              LISTENING       12345
 `;
             const ports = strategy.parseListeningPorts(netstatOutput);
-            
+
             assert.deepStrictEqual(ports, [3000, 8080, 42100]);
         });
 
@@ -132,40 +132,43 @@ suite('Platform Strategies Test Suite', () => {
             });
 
             const result = strategy.parseProcessInfo(jsonOutput);
-            assert.strictEqual(result!.extensionPort, 0);
+            assert.strictEqual(result![0].extensionPort, 0);
         });
     });
 
     suite('UnixStrategy - macOS', () => {
         const strategy = new UnixStrategy('darwin');
 
-        test('should parse pgrep output', () => {
-            const pgrepOutput = `12345 /Applications/Antigravity.app/Contents/MacOS/language_server_macos --extension_server_port=42100 --csrf_token=abc123xyz`;
+        test('should parse ps output', () => {
+            // Mock output of: ps -A -ww -o pid,ppid,command | grep ...
+            // PID PPID COMMAND
+            const psOutput = `12345 11111 /Applications/Antigravity.app/Contents/MacOS/language_server_macos --extension_server_port=42100 --csrf_token=abc123xyz`;
 
-            const result = strategy.parseProcessInfo(pgrepOutput);
+            const result = strategy.parseProcessInfo(psOutput);
 
             assert.ok(result, 'Should parse process info');
-            assert.strictEqual(result!.pid, 12345);
-            assert.strictEqual(result!.extensionPort, 42100);
-            assert.strictEqual(result!.csrfToken, 'abc123xyz');
+            assert.strictEqual(result![0].pid, 12345);
+            assert.strictEqual(result![0].ppid, 11111);
+            assert.strictEqual(result![0].extensionPort, 42100);
+            assert.strictEqual(result![0].csrfToken, 'abc123xyz');
         });
 
         test('should handle multiple processes and find the right one', () => {
-            const pgrepOutput = `11111 /usr/bin/node server.js
-12345 /Applications/Antigravity.app/language_server_macos --extension_server_port 42100 --csrf_token abc123
-22222 /usr/bin/python script.py`;
+            const psOutput = `11111 11000 /usr/bin/node server.js
+12345 30372 /Applications/Antigravity.app/language_server_macos --extension_server_port 42100 --csrf_token abc123
+22222 22000 /usr/bin/python script.py`;
 
-            const result = strategy.parseProcessInfo(pgrepOutput);
+            const result = strategy.parseProcessInfo(psOutput);
 
             assert.ok(result, 'Should find process with extension_server_port');
-            assert.strictEqual(result!.pid, 12345);
+            assert.strictEqual(result![0].pid, 12345);
         });
 
         test('should return null when no process has extension_server_port', () => {
-            const pgrepOutput = `11111 /usr/bin/node server.js
-22222 /usr/bin/python script.py`;
+            const psOutput = `11111 11000 /usr/bin/node server.js
+22222 22000 /usr/bin/python script.py`;
 
-            const result = strategy.parseProcessInfo(pgrepOutput);
+            const result = strategy.parseProcessInfo(psOutput);
             assert.strictEqual(result, null);
         });
 
@@ -196,15 +199,15 @@ language 12345 user   12u  IPv4 0x125  0t0  TCP *:3000 (LISTEN)`;
     suite('UnixStrategy - Linux', () => {
         const strategy = new UnixStrategy('linux');
 
-        test('should parse pgrep output', () => {
-            const pgrepOutput = `12345 /opt/antigravity/language_server_linux_x64 --extension_server_port=42100 --csrf_token=abc123xyz`;
+        test('should parse ps output', () => {
+            const psOutput = `12345 30372 /opt/antigravity/language_server_linux_x64 --extension_server_port=42100 --csrf_token=abc123xyz`;
 
-            const result = strategy.parseProcessInfo(pgrepOutput);
+            const result = strategy.parseProcessInfo(psOutput);
 
             assert.ok(result, 'Should parse process info');
-            assert.strictEqual(result!.pid, 12345);
-            assert.strictEqual(result!.extensionPort, 42100);
-            assert.strictEqual(result!.csrfToken, 'abc123xyz');
+            assert.strictEqual(result![0].pid, 12345);
+            assert.strictEqual(result![0].extensionPort, 42100);
+            assert.strictEqual(result![0].csrfToken, 'abc123xyz');
         });
 
         test('should parse ss output for Linux', () => {

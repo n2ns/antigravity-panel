@@ -41,7 +41,7 @@ async function run() {
 
   // Webview 构建配置 (浏览器 ESM 环境)
   const webviewContext = await esbuild.context({
-    entryPoints: [path.resolve(__dirname, "src", "ui", "webview", "index.ts")],
+    entryPoints: [path.resolve(__dirname, "src", "view", "webview", "index.ts")],
     bundle: true,
     platform: "browser",
     format: "esm",
@@ -64,7 +64,7 @@ async function run() {
   }
 
   // Copy CSS file to dist directory
-  const srcCss = path.resolve(__dirname, "src", "ui", "webview.css");
+  const srcCss = path.resolve(__dirname, "src", "view", "webview.css");
   const distCss = path.resolve(__dirname, "dist", "webview.css");
   fs.copyFileSync(srcCss, distCss);
   console.log("Copied webview.css to dist/");

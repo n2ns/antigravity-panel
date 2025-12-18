@@ -1,5 +1,7 @@
 [English](README.md) | 中文文档
 
+## 🔥 已支持 Google 最新版 Gemini 3 Flash！欢迎反馈！
+
 # Toolkit for Antigravity
 
 > 轻松监控 AI 配额使用和管理缓存
@@ -13,7 +15,7 @@
 [![下载量](https://img.shields.io/open-vsx/dt/n2ns/antigravity-panel?style=flat&cacheSeconds=10800)](https://open-vsx.org/extension/n2ns/antigravity-panel)
 [![最后更新](https://img.shields.io/github/last-commit/n2ns/antigravity-panel?style=flat&label=最后更新&cacheSeconds=10800)](https://github.com/n2ns/antigravity-panel/commits/main)
 
-**Toolkit for Antigravity**（原名 *Antigravity Panel*）帮助你掌控 **Google Antigravity IDE** 中的 AI 模型使用情况。实时配额监控、用量趋势分析、强大的缓存管理——一切尽在一个精美的侧边栏面板中。
+**Toolkit for Antigravity**（原名 *Antigravity Panel*）帮助你掌控 **Google Antigravity IDE** 中的 AI 模型使用情况。实时配额监控、用量趋势分析、缓存管理——一切均可在一个集成的侧边栏面板中完成。
 
 > **📢 注意：** 我们已从 "Antigravity Panel" 更名为 "**Toolkit for Antigravity**"，以更好地反映我们构建全面生态系统工具套件的愿景。同样强大的功能，更精准的定位！
 
@@ -22,8 +24,9 @@
 - 🎯 **监控配额** - 实时监控配额，可视化警告提醒
 - 📊 **了解用量** - 交互式图表展示使用趋势
 - 🧹 **保持整洁** - 一键管理 AI 对话缓存
-- 🎨 **界面精美** - 原生主题集成
-- 🌍 **多语言支持** - 提供 11 种语言
+- 🎨 **界面精美** - 原生主题集成，经过优化的 UI 组件
+- 🌍 **全面国际化** - 提供 11 种语言支持，运行时的弹窗消息现已实现 100% 对齐
+- 🛠️ **智能诊断反馈** - 内置故障诊断系统，提供自动化错误报告和“搜索优先”反馈机制
 
 ## 📸 界面预览
 
@@ -39,7 +42,6 @@
 - 按模型家族（Gemini、Claude、GPT 等）分组显示配额
 - 状态栏显示剩余配额和缓存大小
 - 配额不足时颜色警告
-- 自动连接本地 Antigravity Language Server
 
 ### 📈 用量趋势分析
 
@@ -50,7 +52,7 @@
 - 🔥 **消耗速率**: 实时消耗速度（%/小时）
 - ⏱️ **耗尽预测**: 预计配额耗尽时间
 
-### 🗂️ 强大的缓存管理
+### 🗂️ 缓存管理
 
 **保持工作区整洁**
 - **Brain 任务**: 浏览和删除 AI 对话缓存
@@ -133,34 +135,47 @@
 
 | 配置项 | 默认值 | 说明 |
 |--------|--------|------|
-| **轮询间隔** | `120秒` | 刷新配额的频率（最小 60 秒，推荐 120 秒）|
+| **轮询间隔** | `120秒` | 刷新配额的频率（最小 60 秒） |
 | **显示配额** | `✓` | 在状态栏显示配额信息 |
-| **可视化模式** | `groups` | 按 `groups`（分组）或 `models`（单个模型）显示 |
-| **警告阈值** | `30%` | 配额低于此值时显示警告 |
-| **严重阈值** | `10%` | 配额低于此值时显示严重警告 |
-| **历史范围** | `60 分钟` | 用量图表的时间范围（10-120 分钟）|
+| **状态栏样式** | `percentage` | 状态栏显示：百分比、时间、已用量或剩余量 |
+| **可视化模式** | `groups` | 仪表盘按 `groups`（分组）或 `models`（单个模型）显示 |
+| **显示 GPT 配额** | `✗` | 是否在面板中显示 GPT 系列模型的配额 |
+| **历史范围** | `90 分钟` | 用量图表的时间范围（10-120 分钟） |
+| **警告阈值** | `30%` | 配额低于此值时，状态栏变色提醒（警告） |
+| **严重阈值** | `10%` | 配额低于此值时，状态栏变色提醒（严重错误） |
 
 ### 💾 缓存设置
 
 | 配置项 | 默认值 | 说明 |
 |--------|--------|------|
 | **显示缓存大小** | `✓` | 在状态栏显示缓存大小 |
-| **检查间隔** | `120秒` | 检查缓存大小的频率（30-600秒）|
-| **警告阈值** | `500 MB` | 缓存超过此大小时显示警告 |
+| **检查间隔** | `120秒` | 检查缓存大小的频率（30-600秒） |
+| **警告阈值** | `500 MB` | 缓存超过此大小时状态栏显示警告颜色 |
 | **隐藏空目录** | `✗` | 在 Brain 和 Code Tracker 树中隐藏空目录 |
+| **自动清理** | `✗` | 是否在缓存过大时执行静默清理（仅保留最新 5 个任务） |
+
+### 🔧 高级设置
+
+| 配置项 | 默认值 | 说明 |
+|--------|--------|------|
+| **服务器主机** | `127.0.0.1` | Antigravity 语言服务器的地址 |
+| **API 路径** | `/exa...` | 获取用户状态的 gRPC-Web 路径 |
+| **调试模式** | `✗` | 开启后在输出面板显示详细的调试日志 |
 
 ## 🔒 隐私与安全免责声明
 
 **你的数据属于你自己。**
 
-Toolkit for Antigravity 不会收集、传输或存储任何用户数据。所有操作都在你的本地计算机上执行。扩展仅与你本地的 Antigravity Language Server 通信——不会向任何外部服务器发送数据。
+Toolkit for Antigravity 不会收集、传输或存储任何用户数据。所有操作都在你的本地计算机上执行。扩展仅与本地组件通信——不会向任何外部服务器发送数据。
 
 **实验性功能提示：**
 本扩展的“智能配额监控”功能依赖于本地 Antigravity 环境所暴露的内部指标。该功能属于实验性质，仅按“原样”提供，旨在帮助用户更好地了解个人资源使用情况。它不是 Google 的官方产品，并且在未来的 IDE 更新中可能会发生变化。
 
 ## 🤝 参与贡献
 
-欢迎贡献！你可以：
+欢迎贡献！如果你觉得这个工具有所帮助，请在 GitHub 上给我们一个 **Star** 🌟！这是对我们最大的支持和鼓励。
+
+你可以：
 
 1. **报告问题**：[提交 Issue](https://github.com/n2ns/antigravity-panel/issues)
 2. **建议功能**：[发起讨论](https://github.com/n2ns/antigravity-panel/discussions)
@@ -186,6 +201,6 @@ Toolkit for Antigravity 不会收集、传输或存储任何用户数据。所�
 
 **用 ❤️ 制作 by [n2n studio](https://github.com/n2ns)**
 
-[报告问题](https://github.com/n2ns/antigravity-panel/issues) · [功能建议](https://github.com/n2ns/antigravity-panel/issues) · [文档](https://github.com/n2ns/antigravity-panel/wiki)
+[反馈与支持](https://github.com/n2ns/antigravity-panel/issues) · [文档中心](https://github.com/n2ns/antigravity-panel/wiki)
 
 </div>

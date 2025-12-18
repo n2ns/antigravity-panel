@@ -7,7 +7,7 @@
  */
 
 import * as assert from 'assert';
-import { WebviewHtmlBuilder, generateNonce } from '../../ui/html_builder';
+import { WebviewHtmlBuilder, generateNonce } from '../../view/html-builder';
 
 suite('WebviewHtmlBuilder Test Suite', () => {
   const testCspSource = 'https://example.com';

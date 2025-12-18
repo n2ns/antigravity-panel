@@ -2,7 +2,7 @@ English | [中文文档](TODO_zh.md)
 
 # TODO List
 
-> Last Updated: 2025-12-12
+> Last Updated: 2025-12-17
 
 > ⚠️ **Note**: This document should only contain pending tasks. Completed tasks should be removed and documented in [CHANGELOG.md](../CHANGELOG.md) or [FEATURES.md](./FEATURES.md).
 
@@ -12,15 +12,11 @@ English | [中文文档](TODO_zh.md)
 
 ### Test Coverage Improvement
 
-- [ ] **Add remaining unit tests** (Target: 80%, Current: 169 tests)
+- [ ] **Add remaining unit tests** (Target: 80%, Current: 152 tests)
   - [ ] `HttpClient` - HTTPS→HTTP fallback, protocol cache
   - [ ] `StatusBarManager` - Status bar updates (requires VS Code integration tests)
   - [ ] `SidebarProvider` - Webview message handling (requires VS Code integration tests)
   - [ ] Webview Components - Lit component unit tests (using @web/test-runner)
-
-### Release Preparation
-
-- [ ] **Prepare Marketplace display images** (at least 3)
 
 ---
 
@@ -57,18 +53,12 @@ English | [中文文档](TODO_zh.md)
   - Burn rate calculation (quota/hour)
   - Estimated time to exhaustion (ETE)
   - Usage pattern analysis
-  - Weekly/monthly reports
 
 ### UI/UX Improvements
 
 - [ ] **Dark/Light Theme Support**
   - Ensure all custom colors respect VS Code theme
   - Test with popular themes (One Dark, Solarized, etc.)
-
-- [ ] **Accessibility (a11y)**
-  - Add ARIA labels to interactive elements
-  - Keyboard navigation support
-  - Screen reader compatibility
 
 ### Performance
 

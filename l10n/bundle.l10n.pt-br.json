@@ -1,0 +1,17 @@
+{
+    "button.feedback": "Feedback",
+    "notification.no_process": "Servidor local não encontrado",
+    "notification.ambiguous": "Servidor local não encontrado, impossível obter referência de cota",
+    "notification.no_port": "Processo do servidor encontrado, mas nenhuma porta de escuta detectada",
+    "notification.auth_failed": "Handshake com o servidor falhou (falha na verificação CSRF)",
+    "notification.parsing_error": "Erro de análise de dados do servidor detectado, alguns recursos limitados",
+    "report.title": "Informações do Sistema de Diagnóstico (Gerado Automaticamente)",
+    "report.version": "Versão da Extensão",
+    "report.os": "Sistema Operacional",
+    "report.error_code": "Código de Erro",
+    "report.candidate_count": "Contagem de Processos Candidatos",
+    "report.parsing_info": "Detalhes da Análise",
+    "report.description_placeholder": "**Descrição do Problema**\n(Por favor, descreva brevemente a situação em que este problema ocorreu, por exemplo, você acabou de atualizar o IDE?)\n\n---",
+    "footer.reportIssue": "Relatar problema",
+    "footer.projectHome": "Página do projeto"
+}

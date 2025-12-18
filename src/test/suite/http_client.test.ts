@@ -1,5 +1,5 @@
 import * as assert from 'assert';
-import { clearProtocolCache } from '../../utils/http_client';
+import { clearProtocolCache } from '../../shared/utils/http_client';
 
 suite('HttpClient Test Suite', () => {
     setup(() => {

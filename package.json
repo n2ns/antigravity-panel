@@ -1,8 +1,8 @@
 {
   "name": "antigravity-panel",
-  "displayName": "%extension.displayName%",
+  "displayName": "Toolkit for Antigravity",
   "description": "%extension.description%",
-  "version": "1.2.0",
+  "version": "2.1.0",
   "publisher": "n2ns",
   "license": "MIT",
   "repository": {
@@ -13,6 +13,7 @@
   "engines": {
     "vscode": "^1.104.0"
   },
+  "l10n": "./l10n",
   "main": "./dist/extension.js",
   "activationEvents": [
     "onStartupFinished"
@@ -167,7 +168,7 @@
           },
           "gagp.historyDisplayMinutes": {
             "type": "number",
-            "default": 60,
+            "default": 90,
             "minimum": 10,
             "maximum": 120,
             "description": "%config.historyDisplayMinutes.description%"
@@ -235,7 +236,8 @@
     "vscode:prepublish": "npm run build",
     "lint": "eslint src --ext .ts",
     "test": "tsc -p tsconfig.test.json && node ./out/test/runUnitTests.js",
-    "test:server": "tsc -p tsconfig.test.json && node ./out/test/runServerTests.js"
+    "test:server": "tsc -p tsconfig.test.json && node ./out/test/runServerTests.js",
+    "prepare": "husky"
   },
   "devDependencies": {
     "@types/mocha": "^10.0.10",
@@ -247,6 +249,8 @@
     "esbuild": "^0.27.1",
     "eslint": "^9.39.1",
     "glob": "^13.0.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.2.7",
     "mocha": "^11.7.5",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.48.1"
@@ -254,5 +258,10 @@
   "dependencies": {
     "@vscode/codicons": "^0.0.43",
     "lit": "^3.3.1"
+  },
+  "lint-staged": {
+    "src/**/*.ts": [
+      "eslint --fix --no-warn-ignored"
+    ]
   }
 }

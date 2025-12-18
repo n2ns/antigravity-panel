@@ -1,0 +1,17 @@
+{
+    "button.feedback": "Comentarios",
+    "notification.no_process": "Servidor local no encontrado",
+    "notification.ambiguous": "Servidor local no encontrado, no se puede obtener la referencia de cuota",
+    "notification.no_port": "Proceso del servidor encontrado pero no se detectó puerto de escucha",
+    "notification.auth_failed": "Falló el handshake con el servidor (falló la verificación CSRF)",
+    "notification.parsing_error": "Se detectó error al analizar datos del servidor, algunas funciones están limitadas",
+    "report.title": "Información del Sistema de Diagnóstico (Generada Automáticamente)",
+    "report.version": "Versión de la Extensión",
+    "report.os": "Sistema Operativo",
+    "report.error_code": "Código de Error",
+    "report.candidate_count": "Conteo de Procesos Candidatos",
+    "report.parsing_info": "Detalles del Análisis",
+    "report.description_placeholder": "**Descripción del Problema**\n(Por favor describa brevemente la situación en la que ocurrió este problema, por ejemplo, ¿acaba de actualizar el IDE?)\n\n---",
+    "footer.reportIssue": "Reportar problema",
+    "footer.projectHome": "Página del proyecto"
+}

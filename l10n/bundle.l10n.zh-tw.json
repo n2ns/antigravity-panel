@@ -1,0 +1,17 @@
+{
+    "button.feedback": "回報問題",
+    "notification.no_process": "找不到本機伺服器",
+    "notification.ambiguous": "找不到本機伺服器，無法取得配額參照",
+    "notification.no_port": "已找到伺服器處理程序，但未偵測到接聽連接埠",
+    "notification.auth_failed": "與伺服器交握失敗（CSRF 檢查失敗）",
+    "notification.parsing_error": "偵測到伺服器資料解析錯誤，部分功能受限",
+    "report.title": "診斷系統資訊（自動產生）",
+    "report.version": "延伸模組版本",
+    "report.os": "作業系統",
+    "report.error_code": "錯誤碼",
+    "report.candidate_count": "候選處理程序數量",
+    "report.parsing_info": "解析詳細資料",
+    "report.description_placeholder": "**問題描述**\n(請簡述此問題發生的情境，例如：您是否剛更新了 IDE？)\n\n---",
+    "footer.reportIssue": "回報問題",
+    "footer.projectHome": "專案首頁"
+}

@@ -1,5 +1,5 @@
 import * as assert from 'assert';
-import { ProcessFinder } from '../../core/process_finder';
+import { ProcessFinder } from '../../shared/platform/process_finder';
 
 /**
  * 跨平台测试用 ProcessFinder 子类
@@ -30,7 +30,7 @@ class MockProcessFinder extends ProcessFinder {
      * 设置多次调用的序列结果
      */
     private sequenceResults: Array<{ port: number; csrfToken: string } | null | Error> = [];
-    
+
     setMockSequence(results: Array<{ port: number; csrfToken: string } | null | Error>) {
         this.sequenceResults = [...results];
     }
@@ -66,7 +66,7 @@ suite('ProcessFinder Test Suite', () => {
         finder.setMockResult({ port: 44000, csrfToken: 'test-token-123' });
 
         const result = await finder.detect({ attempts: 1 });
-        
+
         assert.ok(result, 'Should return a result');
         assert.strictEqual(result?.port, 44000);
         assert.strictEqual(result?.csrfToken, 'test-token-123');
@@ -77,7 +77,7 @@ suite('ProcessFinder Test Suite', () => {
         finder.setMockResult(null);
 
         const result = await finder.detect({ attempts: 1 });
-        
+
         assert.strictEqual(result, null);
         assert.strictEqual(finder.tryDetectCallCount, 1);
     });
@@ -90,7 +90,7 @@ suite('ProcessFinder Test Suite', () => {
         ]);
 
         const result = await finder.detect({ attempts: 3, baseDelay: 10 });
-        
+
         assert.ok(result, 'Should return result after retry');
         assert.strictEqual(result?.port, 44000);
         assert.strictEqual(finder.tryDetectCallCount, 2);
@@ -104,7 +104,7 @@ suite('ProcessFinder Test Suite', () => {
         ]);
 
         const result = await finder.detect({ attempts: 3, baseDelay: 10 });
-        
+
         assert.ok(result, 'Should return result after error retry');
         assert.strictEqual(result?.csrfToken, 'error-then-success');
         assert.strictEqual(finder.tryDetectCallCount, 2);
@@ -115,7 +115,7 @@ suite('ProcessFinder Test Suite', () => {
         finder.setMockResult(null);
 
         const result = await finder.detect({ attempts: 3, baseDelay: 10 });
-        
+
         assert.strictEqual(result, null);
         assert.strictEqual(finder.tryDetectCallCount, 3, 'Should have tried 3 times');
     });
@@ -129,7 +129,7 @@ suite('ProcessFinder Test Suite', () => {
         ]);
 
         const result = await finder.detect({ attempts: 3, baseDelay: 10 });
-        
+
         assert.strictEqual(result, null);
         assert.strictEqual(finder.tryDetectCallCount, 3);
     });
@@ -138,7 +138,7 @@ suite('ProcessFinder Test Suite', () => {
         finder.setMockResult({ port: 12345, csrfToken: 'first-try' });
 
         const result = await finder.detect({ attempts: 5, baseDelay: 10 });
-        
+
         assert.ok(result);
         assert.strictEqual(result?.port, 12345);
         assert.strictEqual(finder.tryDetectCallCount, 1, 'Should only try once on success');
@@ -148,7 +148,7 @@ suite('ProcessFinder Test Suite', () => {
         finder.setMockResult({ port: 8080, csrfToken: 'default-opts' });
 
         const result = await finder.detect(); // 使用默认参数
-        
+
         assert.ok(result);
         assert.strictEqual(result?.port, 8080);
     });

@@ -1,0 +1,17 @@
+{
+    "button.feedback": "Commentaires",
+    "notification.no_process": "Serveur local non trouvé",
+    "notification.ambiguous": "Serveur local non trouvé, impossible d'obtenir la référence de quota",
+    "notification.no_port": "Processus serveur trouvé mais aucun port d'écoute détecté",
+    "notification.auth_failed": "Échec de la connexion avec le serveur (échec de la vérification CSRF)",
+    "notification.parsing_error": "Erreur d'analyse des données serveur détectée, certaines fonctionnalités sont limitées",
+    "report.title": "Informations Système de Diagnostic (Généré Automatiquement)",
+    "report.version": "Version de l'Extension",
+    "report.os": "Système d'Exploitation",
+    "report.error_code": "Code d'Erreur",
+    "report.candidate_count": "Nombre de Processus Candidats",
+    "report.parsing_info": "Détails de l'Analyse",
+    "report.description_placeholder": "**Description du Problème**\n(Veuillez décrire brièvement la situation dans laquelle ce problème est survenu, par exemple, venez-vous de mettre à jour l'IDE ?)\n\n---",
+    "footer.reportIssue": "Signaler un problème",
+    "footer.projectHome": "Page du projet"
+}

@@ -1,5 +1,7 @@
 English | [中文文档](README_zh.md)
 
+## 🔥 Now supporting Google's latest Gemini 3 Flash! Feedback welcome!
+
 # Toolkit for Antigravity
 
 > Monitor your AI quota usage and manage cache with ease
@@ -13,7 +15,7 @@ English | [中文文档](README_zh.md)
 [![Downloads](https://img.shields.io/open-vsx/dt/n2ns/antigravity-panel?style=flat&cacheSeconds=10800)](https://open-vsx.org/extension/n2ns/antigravity-panel)
 [![Last Commit](https://img.shields.io/github/last-commit/n2ns/antigravity-panel?style=flat&cacheSeconds=10800)](https://github.com/n2ns/antigravity-panel/commits/main)
 
-**Toolkit for Antigravity** (formerly *Antigravity Panel*) helps you stay on top of your AI model usage in **Google Antigravity IDE**. Get real-time quota monitoring, usage trends, and powerful cache management—all in one beautiful sidebar panel.
+**Toolkit for Antigravity** (formerly *Antigravity Panel*) helps you stay on top of your AI model usage in **Google Antigravity IDE**. Get real-time quota monitoring, usage trends, and cache management—all within an integrated sidebar panel.
 
 > **📢 Notice:** We have renamed from "Antigravity Panel" to "**Toolkit for Antigravity**" to better reflect our vision of building a comprehensive utility suite for the ecosystem. Same great features, just a more accurate name!
 
@@ -22,8 +24,9 @@ English | [中文文档](README_zh.md)
 - 🎯 **Track your quota** - Real-time monitoring with visual warnings
 - 📊 **Understand your usage** - Interactive charts showing usage trends
 - 🧹 **Keep things clean** - Manage AI conversation caches with one click
-- 🎨 **Beautiful UI** - Native theme integration
-- 🌍 **Speaks your language** - Available in 11 languages
+- 🎨 **Elegant Interface** - Native theme integration with refined UI components
+- 🌍 **Full Localization** - Support for 11 languages with runtime i18n notifications
+- 🛠️ **Intelligent Diagnostics** - Built-in feedback system with automatic error reporting
 
 ## 📸 Screenshots
 
@@ -39,7 +42,6 @@ English | [中文文档](README_zh.md)
 - Visual quota display grouped by model families (Gemini, Claude, GPT, etc.)
 - Status bar shows remaining quota and cache size
 - Color-coded warnings when quota runs low
-- Automatic connection to local Antigravity Language Server
 
 ### 📈 Usage Trends & Analytics
 
@@ -50,7 +52,7 @@ English | [中文文档](README_zh.md)
 - 🔥 **Usage Rate**: Real-time consumption speed (%/hour)
 - ⏱️ **Runway Prediction**: Estimated time until quota exhaustion
 
-### 🗂️ Powerful Cache Management
+### 🗂️ Cache Management
 
 **Keep your workspace clean**
 - **Brain Tasks**: Browse and delete AI conversation caches
@@ -133,12 +135,14 @@ Open Settings (`Ctrl+,` / `Cmd+,`) in Antigravity IDE and search for `gagp` to c
 
 | Setting | Default | Description |
 |---------|---------|-------------|
-| **Polling Interval** | `120s` | How often to refresh quota (min: 60s, recommended: 120s) |
+| **Polling Interval** | `120s` | How often to refresh quota (min: 60s) |
 | **Show Quota** | `✓` | Display quota in status bar |
-| **Visualization Mode** | `groups` | Show by `groups` (Gemini, Claude, etc.) or `models` (individual) |
-| **Warning Threshold** | `30%` | Show warning when quota drops below this |
-| **Critical Threshold** | `10%` | Show critical alert when quota drops below this |
-| **History Range** | `60 min` | Time range for usage chart (10-120 minutes) |
+| **Status Bar Style** | `percentage` | Display mode: percentage, resetTime, used, or remaining |
+| **Visualization Mode** | `groups` | Show dashboard by `groups` or `models` |
+| **Show GPT Quota** | `✗` | Whether to display GPT family models in the panel |
+| **History Range** | `90 min` | Time range for usage chart (10-120 minutes) |
+| **Warning Threshold** | `30%` | Status bar turns warning color at this level |
+| **Critical Threshold** | `10%` | Status bar turns critical color at this level |
 
 ### 💾 Cache Settings
 
@@ -146,21 +150,32 @@ Open Settings (`Ctrl+,` / `Cmd+,`) in Antigravity IDE and search for `gagp` to c
 |---------|---------|-------------|
 | **Show Cache Size** | `✓` | Display cache size in status bar |
 | **Check Interval** | `120s` | How often to check cache size (30-600s) |
-| **Warning Threshold** | `500 MB` | Show warning when cache exceeds this size |
+| **Warning Threshold** | `500 MB` | Status bar color warning when exceeded |
 | **Hide Empty Folders** | `✗` | Hide empty folders in Brain and Code Tracker trees |
+| **Auto Clean** | `✗` | Automatically clean cache when exceeded (keeps newest 5) |
+
+### 🔧 Advanced Settings
+
+| Setting | Default | Description |
+|---------|---------|-------------|
+| **Server Host** | `127.0.0.1` | Address of Antigravity Language Server |
+| **API Path** | `/exa...` | gRPC-Web path for User Status |
+| **Debug Mode** | `✗` | Enable verbose logging in Output panel |
 
 ## 🔒 Privacy & Safety Disclaimer
 
 **Your data stays yours.**
 
-Toolkit for Antigravity does not collect, transmit, or store any user data. All operations are performed locally on your machine. The extension only communicates with your local Antigravity Language Server—nothing is sent to external servers.
+Toolkit for Antigravity does not collect, transmit, or store any user data. All operations are performed locally on your machine. The extension only communicates with local components—nothing is sent to external servers.
 
 **Experimental Feature Notice:**
 The *Smart Quota Monitoring* feature relies on internal metrics exposed by the local Antigravity environment. This functionality is experimental and provided "as-is" to help users better understand their personal usage. It is not an official Google product and may be subject to changes in future IDE updates.
 
 ## 🤝 Contributing
 
-We welcome contributions! Here's how:
+We welcome contributions! If you find this toolkit helpful, please give us a **Star** 🌟 on GitHub! It's the best way to support our work and help others discover it.
+
+Here's how you can help:
 
 1. **Report bugs**: [Open an issue](https://github.com/n2ns/antigravity-panel/issues)
 2. **Suggest features**: [Start a discussion](https://github.com/n2ns/antigravity-panel/discussions)
@@ -186,6 +201,6 @@ For major changes, please open an issue first to discuss your ideas.
 
 **Made with ❤️ by [n2n studio](https://github.com/n2ns)**
 
-[Report Bug](https://github.com/n2ns/antigravity-panel/issues) · [Request Feature](https://github.com/n2ns/antigravity-panel/issues) · [Documentation](https://github.com/n2ns/antigravity-panel/wiki)
+[Feedback & Support](https://github.com/n2ns/antigravity-panel/issues) · [Documentation](https://github.com/n2ns/antigravity-panel/wiki)
 
 </div>

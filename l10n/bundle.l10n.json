@@ -1,0 +1,17 @@
+{
+    "button.feedback": "Feedback",
+    "notification.no_process": "Local server not found",
+    "notification.ambiguous": "Local server not found, unable to get quota reference",
+    "notification.no_port": "Server process found but no listening port detected",
+    "notification.auth_failed": "Handshake with server failed (CSRF check failed)",
+    "notification.parsing_error": "Server data parsing error detected, some features limited",
+    "report.title": "Diagnostic System Information (Auto-generated)",
+    "report.version": "Extension Version",
+    "report.os": "Operating System",
+    "report.error_code": "Error Code",
+    "report.candidate_count": "Candidate Process Count",
+    "report.parsing_info": "Parsing Details",
+    "report.description_placeholder": "**Problem Description**\n(Please briefly describe the situation under which this problem occurred, e.g., did you just upgrade the IDE?)\n\n---",
+    "footer.reportIssue": "Report Issue",
+    "footer.projectHome": "Project Home"
+}
