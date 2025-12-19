@@ -2,6 +2,15 @@ English | [中文文档](docs/CHANGELOG_zh.md)
 
 # Changelog
 
+## [2.3.0] - 2025-12-18
+
+### Changed
+- **Rebranding**: Global rebranding from `gagp` to `tfa` (Toolkit for Antigravity) for consistency.
+- **Configuration**: All settings now use the `tfa` prefix (e.g., `tfa.quotaDisplayStyle`).
+
+### Added
+- **Service Recovery UI**: Added dedicated "Restart Service" and "Reset Status" buttons in the sidebar for quick troubleshooting of Agent unresponsiveness and quota sync issues.
+
 ## [2.2.0] - 2025-12-18
 
 ### Added

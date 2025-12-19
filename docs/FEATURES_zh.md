@@ -61,7 +61,7 @@
 - 独立的缓存检查间隔（可配置，默认 120 秒）
 
 ### 隐藏空文件夹
-- 选项：在树形视图中隐藏空文件夹（`gagp.cacheHideEmptyFolders`）
+- 选项：在树形视图中隐藏空文件夹（`tfa.cacheHideEmptyFolders`）
 
 ---
 
@@ -76,7 +76,7 @@
 
 ### 缓存大小显示
 - 状态栏显示总缓存大小
-- 可通过 `gagp.statusBarShowCache` 开关
+- 可通过 `tfa.statusBarShowCache` 开关
 
 ---
 
@@ -180,19 +180,19 @@
 
 | 设置项 | 默认值 | 说明 |
 |--------|--------|------|
-| `gagp.statusBarShowQuota` | `true` | 状态栏显示配额 |
-| `gagp.statusBarShowCache` | `true` | 状态栏显示缓存大小 |
-| `gagp.statusBarStyle` | `percentage` | 显示样式：percentage/resetTime/used/remaining |
-| `gagp.statusBarThresholdWarning` | `30` | 警告阈值（%） |
-| `gagp.statusBarThresholdCritical` | `10` | 严重阈值（%） |
-| `gagp.pollingInterval` | `120` | 配额刷新间隔（秒，最小 60） |
-| `gagp.quotaDisplayStyle` | `semi-arc` | 仪表盘样式：semi-arc (半圆弧) 或 classic-donut (圆环) |
-| `gagp.visualizationMode` | `groups` | 显示模式：groups/models |
-| `gagp.showGptQuota` | `false` | 显示 GPT 配额（与 Claude 共享） |
-| `gagp.historyDisplayMinutes` | `60` | 使用图表时间范围（10-120 分钟） |
-| `gagp.cacheCheckInterval` | `120` | 缓存检查间隔（秒，最小 30） |
-| `gagp.cacheWarningThreshold` | `500` | 缓存警告阈值（MB） |
-| `gagp.cacheHideEmptyFolders` | `false` | 树形视图隐藏空文件夹 |
-| `gagp.autoCleanCache` | `false` | 自动清理缓存 |
-| `gagp.debugMode` | `false` | 启用调试日志 |
+| `tfa.statusBarShowQuota` | `true` | 状态栏显示配额 |
+| `tfa.statusBarShowCache` | `true` | 状态栏显示缓存大小 |
+| `tfa.statusBarStyle` | `percentage` | 显示样式：percentage/resetTime/used/remaining |
+| `tfa.statusBarThresholdWarning` | `30` | 警告阈值（%） |
+| `tfa.statusBarThresholdCritical` | `10` | 严重阈值（%） |
+| `tfa.pollingInterval` | `120` | 配额刷新间隔（秒，最小 60） |
+| `tfa.quotaDisplayStyle` | `semi-arc` | 仪表盘样式：semi-arc (半圆弧) 或 classic-donut (圆环) |
+| `tfa.visualizationMode` | `groups` | 显示模式：groups/models |
+| `tfa.showGptQuota` | `false` | 显示 GPT 配额（与 Claude 共享） |
+| `tfa.historyDisplayMinutes` | `60` | 使用图表时间范围（10-120 分钟） |
+| `tfa.cacheCheckInterval` | `120` | 缓存检查间隔（秒，最小 30） |
+| `tfa.cacheWarningThreshold` | `500` | 缓存警告阈值（MB） |
+| `tfa.cacheHideEmptyFolders` | `false` | 树形视图隐藏空文件夹 |
+| `tfa.autoCleanCache` | `false` | 自动清理缓存 |
+| `tfa.debugMode` | `false` | 启用调试日志 |
 

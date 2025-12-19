@@ -37,125 +37,125 @@ suite('ConfigManager Test Suite', () => {
 
   suite('Polling Interval Validation', () => {
     test('should enforce minimum of 60 seconds for low values', () => {
-      mockReader.set('pollingInterval', 30);
+      mockReader.set('1_dashboard.40_refreshRate', 30);
       const config = configManager.getConfig();
-      assert.strictEqual(config.pollingInterval, MIN_POLLING_INTERVAL);
+      assert.strictEqual(config["1_dashboard.40_refreshRate"], MIN_POLLING_INTERVAL);
     });
 
     test('should enforce minimum for zero value', () => {
-      mockReader.set('pollingInterval', 0);
+      mockReader.set('1_dashboard.40_refreshRate', 0);
       const config = configManager.getConfig();
-      assert.strictEqual(config.pollingInterval, MIN_POLLING_INTERVAL);
+      assert.strictEqual(config["1_dashboard.40_refreshRate"], MIN_POLLING_INTERVAL);
     });
 
     test('should enforce minimum for negative value', () => {
-      mockReader.set('pollingInterval', -10);
+      mockReader.set('1_dashboard.40_refreshRate', -10);
       const config = configManager.getConfig();
-      assert.strictEqual(config.pollingInterval, MIN_POLLING_INTERVAL);
+      assert.strictEqual(config["1_dashboard.40_refreshRate"], MIN_POLLING_INTERVAL);
     });
 
     test('should allow values at minimum', () => {
-      mockReader.set('pollingInterval', 60);
+      mockReader.set('1_dashboard.40_refreshRate', 60);
       const config = configManager.getConfig();
-      assert.strictEqual(config.pollingInterval, 60);
+      assert.strictEqual(config["1_dashboard.40_refreshRate"], 60);
     });
 
     test('should allow values above minimum', () => {
-      mockReader.set('pollingInterval', 300);
+      mockReader.set('1_dashboard.40_refreshRate', 300);
       const config = configManager.getConfig();
-      assert.strictEqual(config.pollingInterval, 300);
+      assert.strictEqual(config["1_dashboard.40_refreshRate"], 300);
     });
   });
 
   suite('Cache Check Interval Validation', () => {
     test('should enforce minimum of 30 seconds for low values', () => {
-      mockReader.set('cacheCheckInterval', 10);
+      mockReader.set('3_system.40_scanInterval', 10);
       const config = configManager.getConfig();
-      assert.strictEqual(config.cacheCheckInterval, MIN_CACHE_CHECK_INTERVAL);
+      assert.strictEqual(config["3_system.40_scanInterval"], MIN_CACHE_CHECK_INTERVAL);
     });
 
     test('should allow values at minimum', () => {
-      mockReader.set('cacheCheckInterval', 30);
+      mockReader.set('3_system.40_scanInterval', 30);
       const config = configManager.getConfig();
-      assert.strictEqual(config.cacheCheckInterval, 30);
+      assert.strictEqual(config["3_system.40_scanInterval"], 30);
     });
 
     test('should allow values above minimum', () => {
-      mockReader.set('cacheCheckInterval', 120);
+      mockReader.set('3_system.40_scanInterval', 120);
       const config = configManager.getConfig();
-      assert.strictEqual(config.cacheCheckInterval, 120);
+      assert.strictEqual(config["3_system.40_scanInterval"], 120);
     });
   });
 
   suite('Default Config Values', () => {
     test('should use default for statusBarShowQuota', () => {
       const config = configManager.getConfig();
-      assert.strictEqual(config.statusBarShowQuota, true);
+      assert.strictEqual(config["2_status.10_showQuota"], true);
     });
 
     test('should use default for statusBarStyle', () => {
       const config = configManager.getConfig();
-      assert.strictEqual(config.statusBarStyle, 'percentage');
+      assert.strictEqual(config["2_status.30_displayFormat"], 'percentage');
     });
 
     test('should use default for visualizationMode', () => {
       const config = configManager.getConfig();
-      assert.strictEqual(config.visualizationMode, 'groups');
+      assert.strictEqual(config["1_dashboard.20_viewMode"], 'groups');
     });
 
     test('should use default for debugMode', () => {
       const config = configManager.getConfig();
-      assert.strictEqual(config.debugMode, false);
+      assert.strictEqual(config["3_system.99_debugMode"], false);
     });
 
     test('should use default for quotaDisplayStyle', () => {
       const config = configManager.getConfig();
-      assert.strictEqual(config.quotaDisplayStyle, 'semi-arc');
+      assert.strictEqual(config["1_dashboard.10_gaugeStyle"], 'semi-arc');
     });
 
     test('should have valid threshold relationship', () => {
       const config = configManager.getConfig();
-      assert.ok(config.statusBarThresholdCritical < config.statusBarThresholdWarning);
+      assert.ok(config["2_status.50_criticalThreshold"] < config["2_status.40_warningThreshold"]);
     });
   });
 
   suite('Custom Config Values', () => {
     test('should read custom statusBarShowQuota', () => {
-      mockReader.set('statusBarShowQuota', false);
+      mockReader.set('2_status.10_showQuota', false);
       const config = configManager.getConfig();
-      assert.strictEqual(config.statusBarShowQuota, false);
+      assert.strictEqual(config["2_status.10_showQuota"], false);
     });
 
     test('should read custom statusBarStyle', () => {
-      mockReader.set('statusBarStyle', 'resetTime');
+      mockReader.set('2_status.30_displayFormat', 'resetTime');
       const config = configManager.getConfig();
-      assert.strictEqual(config.statusBarStyle, 'resetTime');
+      assert.strictEqual(config["2_status.30_displayFormat"], 'resetTime');
     });
 
     test('should read custom visualizationMode', () => {
-      mockReader.set('visualizationMode', 'models');
+      mockReader.set('1_dashboard.20_viewMode', 'models');
       const config = configManager.getConfig();
-      assert.strictEqual(config.visualizationMode, 'models');
+      assert.strictEqual(config["1_dashboard.20_viewMode"], 'models');
     });
 
     test('should read custom debugMode', () => {
-      mockReader.set('debugMode', true);
+      mockReader.set('3_system.99_debugMode', true);
       const config = configManager.getConfig();
-      assert.strictEqual(config.debugMode, true);
+      assert.strictEqual(config["3_system.99_debugMode"], true);
     });
 
     test('should read custom quotaDisplayStyle', () => {
-      mockReader.set('quotaDisplayStyle', 'classic-donut');
+      mockReader.set('1_dashboard.10_gaugeStyle', 'classic-donut');
       const config = configManager.getConfig();
-      assert.strictEqual(config.quotaDisplayStyle, 'classic-donut');
+      assert.strictEqual(config["1_dashboard.10_gaugeStyle"], 'classic-donut');
     });
 
     test('should read custom thresholds', () => {
-      mockReader.set('statusBarThresholdWarning', 50);
-      mockReader.set('statusBarThresholdCritical', 20);
+      mockReader.set('2_status.40_warningThreshold', 50);
+      mockReader.set('2_status.50_criticalThreshold', 20);
       const config = configManager.getConfig();
-      assert.strictEqual(config.statusBarThresholdWarning, 50);
-      assert.strictEqual(config.statusBarThresholdCritical, 20);
+      assert.strictEqual(config["2_status.40_warningThreshold"], 50);
+      assert.strictEqual(config["2_status.50_criticalThreshold"], 20);
     });
   });
 

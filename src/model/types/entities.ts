@@ -26,7 +26,7 @@ export type {
     CacheInfo,
 
     // Configuration Related
-    GagpConfig,
+    TfaConfig,
 
     // Callback Types
     QuotaUpdateCallback,

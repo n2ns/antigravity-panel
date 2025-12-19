@@ -5,7 +5,7 @@
 import * as vscode from 'vscode';
 import type { IQuotaService, ICacheService, IStorageService } from '../model/services/interfaces';
 import type { QuotaSnapshot, BrainTask, CacheInfo, CodeContext, FileItem } from '../model/types/entities';
-import type { GagpConfig } from '../shared/utils/types';
+import type { TfaConfig } from '../shared/utils/types';
 import type { QuotaStrategyManager } from '../model/strategy';
 import type { ConfigManager } from '../shared/config/config_manager';
 import { formatBytes } from '../shared/utils/format';
@@ -96,8 +96,8 @@ export class AppViewModel implements vscode.Disposable {
                 formattedConversations: '0 B'
             },
             tree: {
-                tasks: { expanded: true, folders: [] },
-                contexts: { expanded: true, folders: [] }
+                tasks: { expanded: false, folders: [] },
+                contexts: { expanded: false, folders: [] }
             },
             lastUpdated: 0
         };
@@ -369,8 +369,8 @@ export class AppViewModel implements vscode.Disposable {
     private buildChartData(activeGroupId: string, currentRemaining: number): UsageChartData {
         const config = this.configManager.getConfig();
         const buckets = this.storageService.calculateUsageBuckets(
-            config.historyDisplayMinutes,
-            config.pollingInterval / 60
+            config["1_dashboard.30_historyRange"],
+            config["1_dashboard.40_refreshRate"] / 60
         );
 
         const groupColors: Record<string, string> = {};
@@ -390,8 +390,8 @@ export class AppViewModel implements vscode.Disposable {
             buckets: coloredBuckets,
             maxUsage: this.storageService.getMaxUsage(buckets),
             groupColors,
-            displayMinutes: config.historyDisplayMinutes,
-            interval: config.pollingInterval,
+            displayMinutes: config["1_dashboard.30_historyRange"],
+            interval: config["1_dashboard.40_refreshRate"],
             prediction
         };
     }
@@ -400,7 +400,7 @@ export class AppViewModel implements vscode.Disposable {
         buckets: UsageBucket[],
         activeGroupId: string,
         currentRemaining: number,
-        config: GagpConfig
+        config: TfaConfig
     ): UsageChartData['prediction'] {
         let totalUsage = 0;
         for (const bucket of buckets) {
@@ -408,7 +408,8 @@ export class AppViewModel implements vscode.Disposable {
                 if (item.groupId === activeGroupId) totalUsage += item.usage;
             }
         }
-        const usageRate = (config.historyDisplayMinutes / 60) > 0 ? totalUsage / (config.historyDisplayMinutes / 60) : 0;
+        const historyDisplayMinutes = config["1_dashboard.30_historyRange"];
+        const usageRate = (historyDisplayMinutes / 60) > 0 ? totalUsage / (historyDisplayMinutes / 60) : 0;
         let runway = 'Stable';
         if (usageRate > 0 && currentRemaining > 0) {
             const estimatedUsageBeforeReset = usageRate * QUOTA_RESET_HOURS;
@@ -429,13 +430,13 @@ export class AppViewModel implements vscode.Disposable {
 
     private buildDisplayItems(groups: QuotaGroupState[]): QuotaDisplayItem[] {
         const config = this.configManager.getConfig();
-        const hiddenGroupId = config.showGptQuota ? null : 'gpt';
+        const hiddenGroupId = config["1_dashboard.50_includeSecondaryModels"] ? null : 'gpt';
 
         // Cache group order for sorting
         const strategyGroups = this.strategyManager.getGroups();
         const groupOrder = new Map(strategyGroups.map((g, i) => [g.id, i]));
 
-        if (config.visualizationMode === 'models' && this._lastSnapshot) {
+        if (config["1_dashboard.20_viewMode"] === 'models' && this._lastSnapshot) {
             const models = this._lastSnapshot.models || [];
             const filteredModels = hiddenGroupId ? models.filter(m => this.strategyManager.getGroupForModel(m.modelId, m.label).id !== hiddenGroupId) : models;
 
@@ -563,7 +564,7 @@ export class AppViewModel implements vscode.Disposable {
      */
     getChartData(): UsageChartData {
         const config = this.configManager.getConfig();
-        const hiddenGroupId = config.showGptQuota ? null : 'gpt';
+        const hiddenGroupId = config["1_dashboard.50_includeSecondaryModels"] ? null : 'gpt';
 
         if (!hiddenGroupId) {
             return this._state.quota.chart;
@@ -606,8 +607,8 @@ export class AppViewModel implements vscode.Disposable {
         }
 
         if (cachedTree) {
-            this._state.tree.tasks.expanded = cachedTree.brainExpanded ?? true;
-            this._state.tree.contexts.expanded = cachedTree.contextsExpanded ?? true;
+            this._state.tree.tasks.expanded = cachedTree.brainExpanded ?? false;
+            this._state.tree.contexts.expanded = cachedTree.contextsExpanded ?? false;
 
             this._state.tree.tasks.folders = (cachedTree.brainTasks || []).map(t => ({
                 id: t.id,

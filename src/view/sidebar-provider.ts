@@ -15,7 +15,7 @@ import { getMcpConfigPath, getBrowserAllowlistPath, getGlobalRulesPath } from ".
 import { WebviewHtmlBuilder } from "./html-builder";
 
 export class SidebarProvider implements vscode.WebviewViewProvider, vscode.Disposable {
-    public static readonly viewType = "gagp.sidebar";
+    public static readonly viewType = "tfa.sidebar";
     private _view?: vscode.WebviewView;
     private _disposables: vscode.Disposable[] = [];
 
@@ -108,6 +108,12 @@ export class SidebarProvider implements vscode.WebviewViewProvider, vscode.Dispo
                     vscode.env.openExternal(vscode.Uri.parse(msg.path));
                 }
                 break;
+            case "restartLanguageServer":
+                vscode.commands.executeCommand("tfa.restartLanguageServer");
+                break;
+            case "restartUserStatusUpdater":
+                vscode.commands.executeCommand("tfa.restartUserStatusUpdater");
+                break;
             case "webviewReady":
                 this._postStateUpdate();
                 break;
@@ -119,8 +125,8 @@ export class SidebarProvider implements vscode.WebviewViewProvider, vscode.Dispo
 
         // Get READ-ONLY view model data -> purely for display
         const data = this._viewModel.getSidebarData();
-        const config = vscode.workspace.getConfiguration('gagp');
-        data.gaugeStyle = config.get('quotaDisplayStyle', 'semi-arc');
+        const config = vscode.workspace.getConfiguration('tfa');
+        data.gaugeStyle = config.get('1_dashboard.10_gaugeStyle', 'semi-arc');
 
         this._view.webview.postMessage({ type: 'update', payload: data });
     }

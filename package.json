@@ -2,7 +2,7 @@
   "name": "antigravity-panel",
   "displayName": "Toolkit for Antigravity",
   "description": "%extension.description%",
-  "version": "2.2.0",
+  "version": "2.3.0",
   "publisher": "n2ns",
   "license": "GPL-3.0-only",
   "repository": {
@@ -22,93 +22,162 @@
     "viewsContainers": {
       "activitybar": [
         {
-          "id": "gagp-sidebar",
-          "title": "%viewsContainers.gagp-sidebar.title%",
+          "id": "tfa-sidebar",
+          "title": "%viewsContainers.tfa-sidebar.title%",
           "icon": "assets/icon.svg"
         }
       ]
     },
     "views": {
-      "gagp-sidebar": [
+      "tfa-sidebar": [
         {
           "type": "webview",
-          "id": "gagp.sidebar",
-          "name": "%views.gagp.sidebar.name%"
+          "id": "tfa.sidebar",
+          "name": "%views.tfa.sidebar.name%"
         }
       ]
     },
     "commands": [
       {
-        "command": "gagp.openPanel",
+        "command": "tfa.openPanel",
         "title": "%command.openPanel.title%",
         "category": "%extension.category%"
       },
       {
-        "command": "gagp.showCacheSize",
+        "command": "tfa.showCacheSize",
         "title": "%command.showCacheSize.title%",
         "category": "%extension.category%"
       },
       {
-        "command": "gagp.cleanCache",
+        "command": "tfa.cleanCache",
         "title": "%command.cleanCache.title%",
         "category": "%extension.category%",
         "icon": "$(trash)"
       },
       {
-        "command": "gagp.refreshQuota",
+        "command": "tfa.refreshQuota",
         "title": "%command.refreshQuota.title%",
         "category": "%extension.category%",
         "icon": "$(refresh)"
       },
       {
-        "command": "gagp.showDisclaimer",
+        "command": "tfa.showDisclaimer",
         "title": "%command.showDisclaimer.title%",
         "category": "%extension.category%",
         "icon": "$(info)"
       },
       {
-        "command": "gagp.openSettings",
+        "command": "tfa.openSettings",
         "title": "%command.openSettings.title%",
         "category": "%extension.category%",
         "icon": "$(gear)"
+      },
+      {
+        "command": "tfa.restartLanguageServer",
+        "title": "%command.restartLanguageServer.title%",
+        "category": "%extension.category%",
+        "icon": "$(sync)"
+      },
+      {
+        "command": "tfa.restartUserStatusUpdater",
+        "title": "%command.restartUserStatusUpdater.title%",
+        "category": "%extension.category%",
+        "icon": "$(refresh)"
       }
     ],
     "menus": {
       "view/title": [
         {
-          "command": "gagp.refreshQuota",
-          "when": "view == gagp.sidebar",
+          "command": "tfa.refreshQuota",
+          "when": "view == tfa.sidebar",
           "group": "navigation"
         },
         {
-          "command": "gagp.showDisclaimer",
-          "when": "view == gagp.sidebar",
+          "command": "tfa.showDisclaimer",
+          "when": "view == tfa.sidebar",
           "group": "navigation"
         },
         {
-          "command": "gagp.openSettings",
-          "when": "view == gagp.sidebar",
+          "command": "tfa.openSettings",
+          "when": "view == tfa.sidebar",
           "group": "navigation"
         }
       ]
     },
     "configuration": [
       {
-        "title": "%config.statusBar.title%",
+        "title": "TFA: Dashboard",
         "properties": {
-          "gagp.statusBarShowQuota": {
+          "tfa.1_dashboard.10_gaugeStyle": {
+            "type": "string",
+            "default": "semi-arc",
+            "order": 10,
+            "enum": [
+              "semi-arc",
+              "classic-donut"
+            ],
+            "enumDescriptions": [
+              "%config.quotaDisplayStyle.semi-arc%",
+              "%config.quotaDisplayStyle.classic-donut%"
+            ],
+            "description": "%config.dashboard.10_gaugeStyle.description%"
+          },
+          "tfa.1_dashboard.20_viewMode": {
+            "type": "string",
+            "default": "groups",
+            "order": 20,
+            "enum": [
+              "groups",
+              "models"
+            ],
+            "enumDescriptions": [
+              "%config.visualizationMode.groups%",
+              "%config.visualizationMode.models%"
+            ],
+            "description": "%config.dashboard.20_viewMode.description%"
+          },
+          "tfa.1_dashboard.30_historyRange": {
+            "type": "number",
+            "default": 90,
+            "minimum": 10,
+            "maximum": 120,
+            "order": 30,
+            "description": "%config.dashboard.30_historyRange.description%"
+          },
+          "tfa.1_dashboard.40_refreshRate": {
+            "type": "number",
+            "default": 120,
+            "minimum": 60,
+            "order": 40,
+            "description": "%config.dashboard.40_refreshRate.description%"
+          },
+          "tfa.1_dashboard.50_includeSecondaryModels": {
+            "type": "boolean",
+            "default": false,
+            "order": 50,
+            "description": "%config.dashboard.50_includeSecondaryModels.description%"
+          }
+        }
+      },
+      {
+        "title": "TFA: Status Bar",
+        "properties": {
+          "tfa.2_status.10_showQuota": {
             "type": "boolean",
             "default": true,
-            "description": "%config.statusBarShowQuota.description%"
+            "order": 10,
+            "description": "%config.status.10_showQuota.description%"
           },
-          "gagp.statusBarShowCache": {
+          "tfa.2_status.20_showCache": {
             "type": "boolean",
             "default": true,
-            "description": "%config.statusBarShowCache.description%"
+            "order": 20,
+            "description": "%config.status.20_showCache.description%"
           },
-          "gagp.statusBarStyle": {
+          "tfa.2_status.30_displayFormat": {
             "type": "string",
             "default": "percentage",
+            "order": 30,
             "enum": [
               "percentage",
               "resetTime",
@@ -121,123 +190,73 @@
               "%config.statusBarStyle.used%",
               "%config.statusBarStyle.remaining%"
             ],
-            "description": "%config.statusBarStyle.description%"
+            "description": "%config.status.30_displayFormat.description%"
           },
-          "gagp.statusBarThresholdWarning": {
+          "tfa.2_status.40_warningThreshold": {
             "type": "number",
             "default": 30,
             "minimum": 5,
             "maximum": 100,
-            "description": "%config.statusBarThresholdWarning.description%"
+            "order": 40,
+            "description": "%config.status.40_warningThreshold.description%"
           },
-          "gagp.statusBarThresholdCritical": {
+          "tfa.2_status.50_criticalThreshold": {
             "type": "number",
             "default": 10,
             "minimum": 1,
             "maximum": 50,
-            "description": "%config.statusBarThresholdCritical.description%"
+            "order": 50,
+            "description": "%config.status.50_criticalThreshold.description%"
           }
         }
       },
       {
-        "title": "%config.quota.title%",
+        "title": "TFA: System & Maintenance",
         "properties": {
-          "gagp.pollingInterval": {
+          "tfa.3_system.10_cacheWarningSize": {
             "type": "number",
-            "default": 120,
-            "minimum": 60,
-            "description": "%config.pollingInterval.description%"
+            "default": 500,
+            "minimum": 100,
+            "order": 10,
+            "description": "%config.system.10_cacheWarningSize.description%"
           },
-          "gagp.quotaDisplayStyle": {
-            "type": "string",
-            "default": "semi-arc",
-            "enum": [
-              "semi-arc",
-              "classic-donut"
-            ],
-            "enumDescriptions": [
-              "%config.quotaDisplayStyle.semi-arc%",
-              "%config.quotaDisplayStyle.classic-donut%"
-            ],
-            "description": "%config.quotaDisplayStyle.description%"
-          },
-          "gagp.visualizationMode": {
-            "type": "string",
-            "default": "groups",
-            "enum": [
-              "groups",
-              "models"
-            ],
-            "enumDescriptions": [
-              "%config.visualizationMode.groups%",
-              "%config.visualizationMode.models%"
-            ],
-            "description": "%config.visualizationMode.description%"
-          },
-          "gagp.showGptQuota": {
+          "tfa.3_system.20_autoClean": {
             "type": "boolean",
             "default": false,
-            "description": "%config.showGptQuota.description%"
+            "order": 20,
+            "description": "%config.system.20_autoClean.description%"
           },
-          "gagp.historyDisplayMinutes": {
-            "type": "number",
-            "default": 90,
-            "minimum": 10,
-            "maximum": 120,
-            "description": "%config.historyDisplayMinutes.description%"
-          }
-        }
-      },
-      {
-        "title": "%config.cache.title%",
-        "properties": {
-          "gagp.cacheCheckInterval": {
+          "tfa.3_system.30_hideEmptyFolders": {
+            "type": "boolean",
+            "default": false,
+            "order": 30,
+            "description": "%config.system.30_hideEmptyFolders.description%"
+          },
+          "tfa.3_system.40_scanInterval": {
             "type": "number",
             "default": 120,
             "minimum": 30,
             "maximum": 600,
-            "description": "%config.cacheCheckInterval.description%"
+            "order": 40,
+            "description": "%config.system.40_scanInterval.description%"
           },
-          "gagp.cacheWarningThreshold": {
-            "type": "number",
-            "default": 500,
-            "minimum": 100,
-            "description": "%config.cacheWarningThreshold.description%"
-          },
-          "gagp.cacheHideEmptyFolders": {
-            "type": "boolean",
-            "default": false,
-            "description": "%config.cacheHideEmptyFolders.description%"
-          },
-          "gagp.autoCleanCache": {
-            "type": "boolean",
-            "default": false,
-            "description": "%config.autoCleanCache.description%"
-          }
-        }
-      },
-      {
-        "title": "%config.advanced.title%",
-        "properties": {
-          "gagp.advancedQuotaApiPath": {
-            "type": "string",
-            "default": "/exa.language_server_pb.LanguageServerService/GetUserStatus",
-            "description": "%config.advancedQuotaApiPath.description%"
-          },
-          "gagp.advancedServerHost": {
+          "tfa.3_system.50_serverHost": {
             "type": "string",
             "default": "127.0.0.1",
-            "description": "%config.advancedServerHost.description%"
-          }
-        }
-      },
-      {
-        "title": "%config.debug.title%",
-        "properties": {
-          "gagp.debugMode": {
+            "order": 50,
+            "description": "%config.system.50_serverHost.description%"
+          },
+          "tfa.3_system.60_apiPath": {
+            "type": "string",
+            "default": "/exa.language_server_pb.LanguageServerService/GetUserStatus",
+            "order": 60,
+            "description": "%config.system.60_apiPath.description%"
+          },
+          "tfa.3_system.99_debugMode": {
             "type": "boolean",
             "default": false,
-            "description": "%config.debugMode.description%"
+            "order": 99,
+            "description": "%config.system.99_debugMode.description%"
           }
         }
       }

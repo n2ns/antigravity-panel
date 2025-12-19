@@ -232,10 +232,10 @@ Cache:  {cacheSize}
 
 | 配置项 | 默认值 | 说明 |
 |--------|--------|------|
-| `pollingInterval` | 120 | 轮询间隔（秒） |
-| `historyDisplayMinutes` | 60 | 图表显示的历史时长（分钟） |
-| `showQuota` | true | 是否在状态栏显示配额 |
-| `showCacheSize` | true | 是否在状态栏显示缓存大小 |
+| `tfa.pollingInterval` | 120 | 轮询间隔（秒） |
+| `tfa.historyDisplayMinutes` | 60 | 图表显示的历史时长（分钟） |
+| `tfa.showQuota` | true | 是否在状态栏显示配额 |
+| `tfa.showCacheSize` | true | 是否在状态栏显示缓存大小 |
 
 ---
 

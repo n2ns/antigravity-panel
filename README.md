@@ -129,7 +129,7 @@ Open Command Palette (`Ctrl+Shift+P` / `Cmd+Shift+P`) and search for:
 
 ## ⚙️ Configuration
 
-Open Settings (`Ctrl+,` / `Cmd+,`) in Antigravity IDE and search for `gagp` to customize:
+Open Settings (`Ctrl+,` / `Cmd+,`) in Antigravity IDE and search for `tfa` to customize:
 
 ### 📊 Quota Settings
 

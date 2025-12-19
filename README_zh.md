@@ -129,7 +129,7 @@
 
 ## ⚙️ 配置选项
 
-在 Antigravity IDE 设置（`Ctrl+,` / `Cmd+,`）中搜索 `gagp` 进行自定义：
+在 Antigravity IDE 设置（`Ctrl+,` / `Cmd+,`）中搜索 `tfa` 进行自定义：
 
 ### 📊 配额设置
 

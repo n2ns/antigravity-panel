@@ -3,7 +3,7 @@
  */
 
 // Config
-export { ConfigManager, type IConfigReader, type GagpConfig } from './config/config_manager';
+export { ConfigManager, type IConfigReader, type TfaConfig } from './config/config_manager';
 
 // Platform
 export { ProcessFinder } from './platform/process_finder';

@@ -61,7 +61,7 @@ English | [中文文档](FEATURES_zh.md)
 - Independent cache check interval (configurable, default 120s)
 
 ### Hide Empty Folders
-- Option to hide empty folders in tree views (`gagp.cacheHideEmptyFolders`)
+- Option to hide empty folders in tree views (`tfa.cacheHideEmptyFolders`)
 
 ---
 
@@ -76,7 +76,7 @@ English | [中文文档](FEATURES_zh.md)
 
 ### Cache Size Display
 - Shows total cache size in status bar
-- Toggleable via `gagp.statusBarShowCache` setting
+- Toggleable via `tfa.statusBarShowCache` setting
 
 ---
 
@@ -178,19 +178,19 @@ English | [中文文档](FEATURES_zh.md)
 
 | Setting | Default | Description |
 |---------|---------|-------------|
-| `gagp.statusBarShowQuota` | `true` | Show quota in status bar |
-| `gagp.statusBarShowCache` | `true` | Show cache size in status bar |
-| `gagp.statusBarStyle` | `percentage` | Display style: percentage/resetTime/used/remaining |
-| `gagp.statusBarThresholdWarning` | `30` | Warning threshold (%) |
-| `gagp.statusBarThresholdCritical` | `10` | Critical threshold (%) |
-| `gagp.pollingInterval` | `120` | Quota refresh interval (seconds, min 60) |
-| `gagp.quotaDisplayStyle` | `semi-arc` | Gauge style: semi-arc or classic-donut |
-| `gagp.visualizationMode` | `groups` | Display mode: groups/models |
-| `gagp.showGptQuota` | `false` | Show GPT quota (shares with Claude) |
-| `gagp.historyDisplayMinutes` | `60` | Usage chart time range (10-120 min) |
-| `gagp.cacheCheckInterval` | `120` | Cache check interval (seconds, min 30) |
-| `gagp.cacheWarningThreshold` | `500` | Cache warning threshold (MB) |
-| `gagp.cacheHideEmptyFolders` | `false` | Hide empty folders in tree views |
-| `gagp.autoCleanCache` | `false` | Auto-clean cache |
-| `gagp.debugMode` | `false` | Enable debug logging |
+| `tfa.statusBarShowQuota` | `true` | Show quota in status bar |
+| `tfa.statusBarShowCache` | `true` | Show cache size in status bar |
+| `tfa.statusBarStyle` | `percentage` | Display style: percentage/resetTime/used/remaining |
+| `tfa.statusBarThresholdWarning` | `30` | Warning threshold (%) |
+| `tfa.statusBarThresholdCritical` | `10` | Critical threshold (%) |
+| `tfa.pollingInterval` | `120` | Quota refresh interval (seconds, min 60) |
+| `tfa.quotaDisplayStyle` | `semi-arc` | Gauge style: semi-arc or classic-donut |
+| `tfa.visualizationMode` | `groups` | Display mode: groups/models |
+| `tfa.showGptQuota` | `false` | Show GPT quota (shares with Claude) |
+| `tfa.historyDisplayMinutes` | `60` | Usage chart time range (10-120 min) |
+| `tfa.cacheCheckInterval` | `120` | Cache check interval (seconds, min 30) |
+| `tfa.cacheWarningThreshold` | `500` | Cache warning threshold (MB) |
+| `tfa.cacheHideEmptyFolders` | `false` | Hide empty folders in tree views |
+| `tfa.autoCleanCache` | `false` | Auto-clean cache |
+| `tfa.debugMode` | `false` | Enable debug logging |
 

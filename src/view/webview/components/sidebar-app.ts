@@ -234,6 +234,17 @@ export class SidebarApp extends LitElement {
         @toggle=${this._onToggleContexts}
       ></folder-tree>
 
+      <div class="recovery-actions">
+        <button class="recovery-btn primary" @click=${() => this._vscode.postMessage({ type: 'restartLanguageServer' })} title="Restart Antigravity Agent Service (Fix Terminal/AI)">
+          <i class="codicon codicon-sync"></i>
+          <span>Restart Service</span>
+        </button>
+        <button class="recovery-btn" @click=${() => this._vscode.postMessage({ type: 'restartUserStatusUpdater' })} title="Reset User Status Updater (Fix Quota/Sync)">
+          <i class="codicon codicon-refresh"></i>
+          <span>Reset Status</span>
+        </button>
+      </div>
+
       <div class="sidebar-footer">
         <button class="discussions-btn" @click=${this._onReportIssue} title=${(window as unknown as WindowWithVsCode).__TRANSLATIONS__?.reportIssue || "Report Issue"}>
           <i class="codicon codicon-bug"></i>

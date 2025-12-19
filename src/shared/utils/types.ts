@@ -153,50 +153,46 @@ export interface CacheInfo {
 /**
  * Extension configuration
  */
-export interface GagpConfig {
-  // ===== Status Bar Settings =====
-  /** Whether to show quota in status bar */
-  statusBarShowQuota: boolean;
-  /** Whether to show cache size in status bar */
-  statusBarShowCache: boolean;
-  /** Status bar quota display style */
-  statusBarStyle: "percentage" | "resetTime" | "used" | "remaining";
-  /** Status bar warning threshold (%) */
-  statusBarThresholdWarning: number;
-  /** Status bar critical threshold (%) */
-  statusBarThresholdCritical: number;
-
-  // ===== Quota Settings =====
-  /** Polling interval (seconds), minimum value 60 */
-  pollingInterval: number;
-  /** Quota visualization mode */
-  visualizationMode: "groups" | "models";
-  /** Whether to show GPT quota (GPT shares quota with Claude) */
-  showGptQuota: boolean;
-  /** History chart display time range (minutes), default 60 */
-  historyDisplayMinutes: number;
+export interface TfaConfig {
+  // ===== 1. Dashboard Settings =====
   /** Quota visualization style in sidebar */
-  quotaDisplayStyle?: "semi-arc" | "classic-donut";
+  "1_dashboard.10_gaugeStyle": "semi-arc" | "classic-donut";
+  /** Quota visualization mode */
+  "1_dashboard.20_viewMode": "groups" | "models";
+  /** History chart display time range (minutes), default 90 */
+  "1_dashboard.30_historyRange": number;
+  /** Polling interval (seconds), minimum value 60 */
+  "1_dashboard.40_refreshRate": number;
+  /** Whether to show GPT quota (GPT shares quota with Claude) */
+  "1_dashboard.50_includeSecondaryModels": boolean;
 
-  // ===== Cache Settings =====
-  /** Cache check interval (seconds), minimum 30 */
-  cacheCheckInterval: number;
+  // ===== 2. Status Bar Settings =====
+  /** Whether to show quota in status bar */
+  "2_status.10_showQuota": boolean;
+  /** Whether to show cache size in status bar */
+  "2_status.20_showCache": boolean;
+  /** Status bar display format */
+  "2_status.30_displayFormat": "percentage" | "resetTime" | "used" | "remaining";
+  /** Status bar warning threshold (%) */
+  "2_status.40_warningThreshold": number;
+  /** Status bar critical threshold (%) */
+  "2_status.50_criticalThreshold": number;
+
+  // ===== 3. System & Maintenance Settings =====
   /** Cache warning threshold (MB) */
-  cacheWarningThreshold: number;
-  /** Hide empty folders in tree views */
-  cacheHideEmptyFolders: boolean;
+  "3_system.10_cacheWarningSize": number;
   /** Whether to auto-clean cache */
-  autoCleanCache: boolean;
-
-  // ===== Debug Settings =====
-  /** Whether to enable debug mode */
-  debugMode: boolean;
-
-  // ===== Advanced Settings =====
-  /** Custom API path for quota metrics (advanced users only) */
-  advancedQuotaApiPath: string;
+  "3_system.20_autoClean": boolean;
+  /** Hide empty folders in tree views */
+  "3_system.30_hideEmptyFolders": boolean;
+  /** Cache check interval (seconds), minimum 30 */
+  "3_system.40_scanInterval": number;
   /** Custom server hostname for quota metrics (advanced users only) */
-  advancedServerHost: string;
+  "3_system.50_serverHost": string;
+  /** Custom API path for quota metrics (advanced users only) */
+  "3_system.60_apiPath": string;
+  /** Whether to enable debug mode */
+  "3_system.99_debugMode": boolean;
 }
 
 // ==================== Callback Types ====================

@@ -90,7 +90,7 @@ export class QuotaService implements IQuotaService {
      */
     private async doFetchQuota(): Promise<QuotaSnapshot | null> {
         const config = this.configManager.getConfig();
-        const apiPath = config.advancedQuotaApiPath;
+        const apiPath = config["3_system.60_apiPath"];
 
         const response = await this.request<ServerUserStatusResponse>(
             apiPath,
@@ -133,7 +133,7 @@ export class QuotaService implements IQuotaService {
         }
 
         const config = this.configManager.getConfig();
-        const host = config.advancedServerHost;
+        const host = config["3_system.50_serverHost"];
 
         const response = await httpRequest<T>({
             hostname: host,

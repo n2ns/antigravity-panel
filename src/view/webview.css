@@ -39,8 +39,8 @@ body {
 
 /* Quota Gauge Styles - Ultra Premium Refinement */
 quota-pie {
-  flex: 1 1 110px;
-  min-width: 110px;
+  flex: 1 1 70px;
+  min-width: 70px;
   max-width: 160px;
   display: block;
 }
@@ -61,23 +61,24 @@ quota-pie {
 /* Base visual container */
 .gauge-visual {
   position: relative;
-  width: 110px;
+  width: 70px;
   display: flex;
   justify-content: center;
   align-items: center;
 }
 
 .style-semi-arc .gauge-visual {
-  height: 62px;
-  margin-bottom: 0px;
+  width: 82px;
+  /* Arc (Width 86 in 100 viewBox) @ 82px ≈ 70px actual width */
+  height: 56px;
+  margin: 0 auto 0px;
 }
 
 /* Classic Donut Specifics */
 .style-classic-donut .gauge-visual {
   width: 70px;
-  /* More compact for full circle */
   height: 70px;
-  margin: 0 auto 8px;
+  margin: 0 auto 0px;
 }
 
 .style-classic-donut .pie-ring {
@@ -145,8 +146,12 @@ quota-pie {
 }
 
 .style-semi-arc .gauge-center-text {
-  top: 64%;
+  top: 66%;
   /* Balanced for R=43 semi-arc */
+}
+
+.style-semi-arc .gauge-value {
+  margin-top: -6px;
 }
 
 .gauge-center-text {
@@ -186,7 +191,8 @@ quota-pie {
   font-weight: 500;
   color: var(--vscode-descriptionForeground);
   opacity: 0.85;
-  margin-top: 2px;
+  margin-top: 0px;
+  line-height: 1.1;
 }
 
 .gauge-info {
@@ -194,6 +200,7 @@ quota-pie {
   flex-direction: column;
   align-items: center;
   width: 100%;
+  margin-top: -2px;
 }
 
 .gauge-label {
@@ -205,8 +212,9 @@ quota-pie {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 120px;
+  max-width: 74px;
   opacity: 0.9;
+  line-height: 1.2;
 }
 
 .gauge-sub-label {
@@ -219,12 +227,10 @@ quota-pie {
 /* 仪表盘容器样式 */
 .pies-container {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(70px, 1fr));
   justify-items: center;
-  gap: 12px 8px;
-  /* Reduced vertical gap between rows */
-  padding: 20px 12px 10px 12px;
-  /* Reduced bottom padding */
+  gap: 8px 4px;
+  padding: 16px 8px 10px 8px;
   background: var(--vscode-sideBar-background);
   border-bottom: 1px solid var(--vscode-widget-border);
 }
@@ -496,7 +502,6 @@ quota-pie {
 /* Footer styles */
 /* Footer styles */
 .sidebar-footer {
-  margin-top: auto;
   padding: 10px 8px;
   /* Slightly tighter padding */
   background: var(--vscode-sideBar-background);
@@ -539,6 +544,7 @@ quota-pie {
 .discussions-btn .codicon {
   font-size: 16px;
 }
+
 /* Datafrog Branding Footer */
 .branding-footer {
   padding: 8px;
@@ -559,4 +565,56 @@ quota-pie {
 .branding-footer span {
   font-weight: 600;
   color: var(--vscode-textLink-foreground);
+}
+
+/* Recovery Actions */
+.recovery-actions {
+  margin-top: auto;
+  display: flex;
+  gap: 8px;
+  padding: 10px 12px;
+  background: var(--vscode-sideBar-background);
+  border-top: 1px solid var(--vscode-widget-border);
+}
+
+.recovery-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 6px 4px;
+  background: var(--vscode-button-secondaryBackground);
+  color: var(--vscode-button-secondaryForeground);
+  border: 1px solid var(--vscode-button-border, transparent);
+  border-radius: 4px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.82em;
+  font-weight: 500;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  white-space: nowrap;
+}
+
+.recovery-btn:hover {
+  background: var(--vscode-button-secondaryHoverBackground);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.recovery-btn:active {
+  transform: translateY(0);
+}
+
+.recovery-btn.primary {
+  background: var(--vscode-button-background);
+  color: var(--vscode-button-foreground);
+}
+
+.recovery-btn.primary:hover {
+  background: var(--vscode-button-hoverBackground);
+}
+
+.recovery-btn .codicon {
+  font-size: 14px;
 }

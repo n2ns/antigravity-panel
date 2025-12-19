@@ -9,7 +9,7 @@ import { AppViewModel } from "../view-model/app.vm";
 import { StatusBarData, StatusBarGroupItem } from "../view-model/types";
 import { ConfigManager } from "../shared/config/config_manager";
 import { formatBytes } from "../shared/utils/format";
-import { GagpConfig } from "../shared/utils/types";
+import { TfaConfig } from "../shared/utils/types";
 
 export class StatusBarManager implements vscode.Disposable {
     private item: vscode.StatusBarItem;
@@ -23,7 +23,7 @@ export class StatusBarManager implements vscode.Disposable {
             vscode.StatusBarAlignment.Right,
             100
         );
-        this.item.command = "gagp.openPanel";
+        this.item.command = "tfa.openPanel";
 
         // Subscribe to state changes
         this._disposables.push(
@@ -34,13 +34,13 @@ export class StatusBarManager implements vscode.Disposable {
     }
 
     showLoading(): void {
-        this.item.text = "$(sync~spin) GAGP";
+        this.item.text = "$(sync~spin) TFA";
         this.item.tooltip = "Toolkit: Detecting...";
         this.item.show();
     }
 
     showError(message: string): void {
-        this.item.text = "$(warning) GAGP";
+        this.item.text = "$(warning) TFA";
         this.item.tooltip = `Toolkit: ${message}`;
         this.item.show();
     }
@@ -55,15 +55,15 @@ export class StatusBarManager implements vscode.Disposable {
         const cache = appState.cache;
 
         // Show if either quota or cache is enabled
-        if (config.statusBarShowQuota || config.statusBarShowCache) {
+        if (config["2_status.10_showQuota"] || config["2_status.20_showCache"]) {
             this.render(
                 statusData,
                 cache,
-                config.statusBarShowQuota,
-                config.statusBarShowCache,
-                config.statusBarStyle,
-                config.statusBarThresholdWarning,
-                config.statusBarThresholdCritical
+                config["2_status.10_showQuota"],
+                config["2_status.20_showCache"],
+                config["2_status.30_displayFormat"],
+                config["2_status.40_warningThreshold"],
+                config["2_status.50_criticalThreshold"]
             );
         } else {
             this.item.hide();
@@ -75,7 +75,7 @@ export class StatusBarManager implements vscode.Disposable {
         cache: { totalSize: number } | null,
         showQuota: boolean,
         showCache: boolean,
-        statusBarStyle: GagpConfig['statusBarStyle'],
+        statusBarStyle: TfaConfig['2_status.30_displayFormat'],
         warningThreshold: number,
         criticalThreshold: number
     ): void {
@@ -111,7 +111,7 @@ export class StatusBarManager implements vscode.Disposable {
         }
 
         if (parts.length === 0) {
-            this.item.text = "$(dashboard) GAGP";
+            this.item.text = "$(dashboard) TFA";
         } else {
             this.item.text = `$(dashboard) ${parts.join(" | ")}`;
         }
@@ -122,7 +122,7 @@ export class StatusBarManager implements vscode.Disposable {
 
     private formatQuotaDisplay(
         group: StatusBarGroupItem,
-        style: GagpConfig['statusBarStyle']
+        style: TfaConfig['2_status.30_displayFormat']
     ): string {
         const val = style === 'used' ? (100 - group.percentage) : group.percentage;
         return `${group.shortLabel} ${val}%`;

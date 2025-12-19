@@ -12,7 +12,7 @@ import type { QuotaHistoryPoint, UsageBucket, CachedTreeState, BucketItem } from
 // Re-export types for backward compatibility
 export type { QuotaHistoryPoint, UsageBucket, CachedTreeState, BucketItem };
 
-const STORAGE_KEY = 'gagp.quotaHistory_v2';
+const STORAGE_KEY = 'tfa.quotaHistory_v2';
 const MAX_HISTORY_HOURS = 24 * 7; // 7 days
 
 /**
@@ -129,23 +129,23 @@ export class StorageService implements IStorageService {
     // ==================== View State Cache ====================
 
     getLastViewState<T>(): T | null {
-        return this.globalState.get<T>('gagp.lastViewState') ?? null;
+        return this.globalState.get<T>('tfa.lastViewState') ?? null;
     }
 
     async setLastViewState<T>(state: T): Promise<void> {
-        await this.globalState.update('gagp.lastViewState', state);
+        await this.globalState.update('tfa.lastViewState', state);
     }
 
     getLastTreeState(): CachedTreeState | null {
-        return this.globalState.get<CachedTreeState>('gagp.lastTreeState') ?? null;
+        return this.globalState.get<CachedTreeState>('tfa.lastTreeState') ?? null;
     }
 
     async setLastTreeState(state: CachedTreeState): Promise<void> {
-        await this.globalState.update('gagp.lastTreeState', state);
+        await this.globalState.update('tfa.lastTreeState', state);
     }
 
     getLastSnapshot<T>(): T | null {
-        const cached = this.globalState.get<{ data: T; timestamp: number }>('gagp.lastSnapshot');
+        const cached = this.globalState.get<{ data: T; timestamp: number }>('tfa.lastSnapshot');
         if (!cached) return null;
 
         // Apply 7-day expiry
@@ -156,7 +156,7 @@ export class StorageService implements IStorageService {
     }
 
     async setLastSnapshot<T>(snapshot: T): Promise<void> {
-        await this.globalState.update('gagp.lastSnapshot', {
+        await this.globalState.update('tfa.lastSnapshot', {
             data: snapshot,
             timestamp: Date.now()
         });
@@ -165,53 +165,53 @@ export class StorageService implements IStorageService {
     // ==================== Metadata ====================
 
     getLastCacheWarningTime(): number {
-        return this.globalState.get<number>('gagp.lastCacheWarningTime') ?? 0;
+        return this.globalState.get<number>('tfa.lastCacheWarningTime') ?? 0;
     }
 
     async setLastCacheWarningTime(time: number): Promise<void> {
-        await this.globalState.update('gagp.lastCacheWarningTime', time);
+        await this.globalState.update('tfa.lastCacheWarningTime', time);
     }
 
     getLastDisplayPercentage(): number {
-        return this.globalState.get<number>('gagp.lastDisplayPercentage') ?? 0;
+        return this.globalState.get<number>('tfa.lastDisplayPercentage') ?? 0;
     }
 
     async setLastDisplayPercentage(pct: number): Promise<void> {
-        await this.globalState.update('gagp.lastDisplayPercentage', pct);
+        await this.globalState.update('tfa.lastDisplayPercentage', pct);
     }
 
     getLastCacheSize(): number {
-        return this.globalState.get<number>('gagp.lastCacheSize') ?? 0;
+        return this.globalState.get<number>('tfa.lastCacheSize') ?? 0;
     }
 
     async setLastCacheSize(size: number): Promise<void> {
-        await this.globalState.update('gagp.lastCacheSize', size);
+        await this.globalState.update('tfa.lastCacheSize', size);
     }
 
     getLastCacheDetails(): { brain: number; workspace: number } {
         return {
-            brain: this.globalState.get<number>('gagp.lastBrainSize') ?? 0,
-            workspace: this.globalState.get<number>('gagp.lastWorkspaceSize') ?? 0
+            brain: this.globalState.get<number>('tfa.lastBrainSize') ?? 0,
+            workspace: this.globalState.get<number>('tfa.lastWorkspaceSize') ?? 0
         };
     }
 
     async setLastCacheDetails(brain: number, workspace: number): Promise<void> {
-        await this.globalState.update('gagp.lastBrainSize', brain);
-        await this.globalState.update('gagp.lastWorkspaceSize', workspace);
+        await this.globalState.update('tfa.lastBrainSize', brain);
+        await this.globalState.update('tfa.lastWorkspaceSize', workspace);
     }
 
     getLastPrediction(): { usageRate: number; runway: string; groupId: string } {
         return {
-            usageRate: this.globalState.get<number>('gagp.lastUsageRate') ?? 0,
-            runway: this.globalState.get<string>('gagp.lastRunway') ?? 'Stable',
-            groupId: this.globalState.get<string>('gagp.lastPredictionGroup') ?? 'gemini'
+            usageRate: this.globalState.get<number>('tfa.lastUsageRate') ?? 0,
+            runway: this.globalState.get<string>('tfa.lastRunway') ?? 'Stable',
+            groupId: this.globalState.get<string>('tfa.lastPredictionGroup') ?? 'gemini'
         };
     }
 
     async setLastPrediction(usageRate: number, runway: string, groupId: string): Promise<void> {
-        await this.globalState.update('gagp.lastUsageRate', usageRate);
-        await this.globalState.update('gagp.lastRunway', runway);
-        await this.globalState.update('gagp.lastPredictionGroup', groupId);
+        await this.globalState.update('tfa.lastUsageRate', usageRate);
+        await this.globalState.update('tfa.lastRunway', runway);
+        await this.globalState.update('tfa.lastPredictionGroup', groupId);
     }
 
     // ==================== Core Logic ====================
@@ -243,12 +243,12 @@ export class StorageService implements IStorageService {
 
     /** Legacy: Get last active category */
     getLastActiveCategory(): 'gemini' | 'other' {
-        return this.globalState.get<'gemini' | 'other'>('gagp.activeCategory') || 'gemini';
+        return this.globalState.get<'gemini' | 'other'>('tfa.activeCategory') || 'gemini';
     }
 
     /** Legacy: Set active category */
     async setActiveCategory(category: 'gemini' | 'other'): Promise<void> {
-        await this.globalState.update('gagp.activeCategory', category);
+        await this.globalState.update('tfa.activeCategory', category);
     }
 
     /** Legacy: Record quota history (same as recordQuotaPoint) */

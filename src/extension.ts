@@ -8,7 +8,7 @@ import { QuotaService } from "./model/services/quota.service";
 import { CacheService } from "./model/services/cache.service";
 import { StorageService } from "./model/services/storage.service";
 import { QuotaStrategyManager } from "./model/strategy";
-import { ConfigManager, IConfigReader, GagpConfig } from "./shared/config/config_manager";
+import { ConfigManager, IConfigReader, TfaConfig } from "./shared/config/config_manager";
 import { Scheduler } from "./shared/utils/scheduler";
 import { FeedbackManager } from './shared/utils/feedback_manager';
 import { AppViewModel } from "./view-model/app.vm";
@@ -21,7 +21,7 @@ import { initLogger, setDebugMode, infoLog, errorLog } from "./shared/utils/logg
  * VS Code implementation of IConfigReader
  */
 class VscodeConfigReader implements IConfigReader, vscode.Disposable {
-  private readonly section = "gagp";
+  private readonly section = "tfa";
   private disposables: vscode.Disposable[] = [];
 
   get<T>(key: string, defaultValue: T): T {
@@ -34,7 +34,7 @@ class VscodeConfigReader implements IConfigReader, vscode.Disposable {
     await config.update(key, value, vscode.ConfigurationTarget.Global);
   }
 
-  onConfigChange(callback: (config: GagpConfig) => void, configManager: ConfigManager): vscode.Disposable {
+  onConfigChange(callback: (config: TfaConfig) => void, configManager: ConfigManager): vscode.Disposable {
     const disposable = vscode.workspace.onDidChangeConfiguration((e) => {
       if (e.affectsConfiguration(this.section)) {
         callback(configManager.getConfig());
@@ -61,7 +61,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
   // 1. Initialize Core & Configuration
   const configReader = new VscodeConfigReader();
   const configManager = new ConfigManager(configReader);
-  setDebugMode(configManager.get('debugMode', false));
+  setDebugMode(configManager.get('3_system.99_debugMode', false));
   context.subscriptions.push(configReader);
 
   // 2. Initialize Model Services
@@ -234,19 +234,40 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
 
   // 7. Register Commands (Delegating to VM/View)
   context.subscriptions.push(
-    vscode.commands.registerCommand("gagp.openPanel", () => {
-      vscode.commands.executeCommand(`workbench.view.extension.gagp-sidebar`);
+    vscode.commands.registerCommand("tfa.openPanel", () => {
+      vscode.commands.executeCommand(`workbench.view.extension.tfa-sidebar`);
     }),
-    vscode.commands.registerCommand("gagp.refreshQuota", () => appViewModel.refreshQuota()),
-    vscode.commands.registerCommand("gagp.cleanCache", () => appViewModel.cleanCache()),
-    vscode.commands.registerCommand("gagp.showCacheSize", () => {
+    vscode.commands.registerCommand("tfa.refreshQuota", async () => {
+      await appViewModel.refreshQuota();
+      vscode.window.showInformationMessage("Toolkit: Data Updated.");
+    }),
+    vscode.commands.registerCommand("tfa.restartLanguageServer", async () => {
+      try {
+        await vscode.commands.executeCommand("antigravity.restartLanguageServer");
+        vscode.window.showInformationMessage("Toolkit: Agent Service restarted.");
+      } catch (e) {
+        errorLog("Failed to restart Language Server", e);
+        vscode.window.showErrorMessage("Failed to restart Antigravity Agent Service.");
+      }
+    }),
+    vscode.commands.registerCommand("tfa.restartUserStatusUpdater", async () => {
+      try {
+        await vscode.commands.executeCommand("antigravity.restartUserStatusUpdater");
+        vscode.window.showInformationMessage("Toolkit: User status updater reset.");
+      } catch (e) {
+        errorLog("Failed to reset Status Updater", e);
+        vscode.window.showErrorMessage("Failed to reset Antigravity status updater.");
+      }
+    }),
+    vscode.commands.registerCommand("tfa.cleanCache", () => appViewModel.cleanCache()),
+    vscode.commands.registerCommand("tfa.showCacheSize", () => {
       const state = appViewModel.getState();
       vscode.window.showInformationMessage(`Cache size: ${state.cache.formattedTotal}`);
     }),
-    vscode.commands.registerCommand("gagp.openSettings", () => {
-      vscode.commands.executeCommand("workbench.action.openSettings", "gagp");
+    vscode.commands.registerCommand("tfa.openSettings", () => {
+      vscode.commands.executeCommand("workbench.action.openSettings", "tfa");
     }),
-    vscode.commands.registerCommand("gagp.showDisclaimer", async () => {
+    vscode.commands.registerCommand("tfa.showDisclaimer", async () => {
       const isZh = vscode.env.language.startsWith('zh');
       const fileName = isZh ? "DISCLAIMER_zh.md" : "DISCLAIMER.md";
       const url = `https://github.com/n2ns/antigravity-panel/blob/main/${fileName}`;
