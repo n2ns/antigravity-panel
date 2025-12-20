@@ -41,11 +41,14 @@ export class FeedbackManager {
      * Common helper to show a standard error notification with functional feedback button.
      */
     public static async showFeedbackNotification(message: string, meta: DiagnosticMetadata): Promise<void> {
-        const btnLabel = vscode.l10n.t("Feedback");
-        const selection = await vscode.window.showWarningMessage(message, btnLabel);
-        if (selection === btnLabel) {
+        const feedbackBtn = vscode.l10n.t("Feedback");
+        const diagnosticBtn = vscode.l10n.t("Run Diagnostics");
+        const selection = await vscode.window.showWarningMessage(message, feedbackBtn, diagnosticBtn);
+        if (selection === feedbackBtn) {
             const url = this.getFeedbackUrl(meta);
             await vscode.env.openExternal(url);
+        } else if (selection === diagnosticBtn) {
+            await vscode.commands.executeCommand("tfa.runDiagnostics");
         }
     }
 }

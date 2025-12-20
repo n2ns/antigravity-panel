@@ -25,5 +25,6 @@
     "Handshake failed (possible login issue).": "Handshake failed (possible login issue).",
     "Detection failed": "Detection failed",
     "Found {0} candidates. Duration: {1}s.": "Found {0} candidates. Duration: {1}s.",
-    "Show Details": "Show Details"
+    "Show Details": "Show Details",
+    "Run Diagnostics": "Run Diagnostics"
 }

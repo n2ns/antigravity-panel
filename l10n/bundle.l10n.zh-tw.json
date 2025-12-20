@@ -25,5 +25,6 @@
     "Handshake failed (possible login issue).": "交握失敗（可能是登入問題）。",
     "Detection failed": "偵测失败",
     "Found {0} candidates. Duration: {1}s.": "偵测到 {0} 個候選。耗時：{1}秒。",
-    "Show Details": "顯示詳細資料"
+    "Show Details": "顯示詳細資料",
+    "Run Diagnostics": "執行診斷"
 }
