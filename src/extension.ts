@@ -15,6 +15,7 @@ import { AppViewModel } from "./view-model/app.vm";
 import { StatusBarManager } from "./view/status-bar";
 import { SidebarProvider } from "./view/sidebar-provider";
 import { initLogger, setDebugMode, infoLog, errorLog, getLogger } from "./shared/utils/logger";
+import { CommunicationAttempt } from "./shared/utils/types";
 
 
 /**
@@ -333,15 +334,16 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
 
             outputChannel.appendLine(`COMMUNICATION ATTEMPTS PER PID:`);
 
-            const groupedAttempts = attempts.reduce((acc: any, curr: any) => {
+            const groupedAttempts = attempts.reduce((acc: Record<number, CommunicationAttempt[]>, curr: CommunicationAttempt) => {
               if (!acc[curr.pid]) acc[curr.pid] = [];
               acc[curr.pid].push(curr);
               return acc;
             }, {});
 
-            Object.keys(groupedAttempts).forEach(pid => {
+            Object.keys(groupedAttempts).forEach(pidStr => {
+              const pid = parseInt(pidStr, 10);
               outputChannel.appendLine(`[PID ${pid}]`);
-              groupedAttempts[pid].forEach((a: any) => {
+              groupedAttempts[pid].forEach((a: CommunicationAttempt) => {
                 const status = a.statusCode ? `${a.statusCode}` : "FAILED";
                 const errorLabel = a.error ? ` | Error: ${a.error}` : "";
                 outputChannel.appendLine(`  --> Port ${a.port.toString().padEnd(5)} | Status: ${status.padEnd(3)}${errorLabel}`);

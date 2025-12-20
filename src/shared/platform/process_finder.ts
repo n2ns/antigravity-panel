@@ -14,7 +14,7 @@ import {
 import { retry } from "../utils/retry";
 import { testPort as httpTestPort } from "../utils/http_client";
 import { debugLog } from "../utils/logger";
-import { LanguageServerInfo, DetectOptions } from "../utils/types";
+import { LanguageServerInfo, DetectOptions, CommunicationAttempt } from "../utils/types";
 
 const execAsync = promisify(exec);
 
@@ -30,7 +30,7 @@ export class ProcessFinder {
   // Number of candidate processes found
   public candidateCount: number = 0;
   // Detailed info about attempts (for diagnostics)
-  public attemptDetails: Array<{ pid: number, port: number, statusCode: number, error?: string }> = [];
+  public attemptDetails: CommunicationAttempt[] = [];
 
   constructor() {
     const platform = process.platform;

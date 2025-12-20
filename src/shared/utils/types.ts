@@ -60,6 +60,16 @@ export interface LanguageServerInfo {
 }
 
 /**
+ * Detailed information about a single communication attempt (for diagnostics)
+ */
+export interface CommunicationAttempt {
+  pid: number;
+  port: number;
+  statusCode: number;
+  error?: string;
+}
+
+/**
  * Process detection options
  */
 export interface DetectOptions {
