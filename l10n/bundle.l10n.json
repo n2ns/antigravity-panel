@@ -59,5 +59,13 @@
     "Brain": "Brain",
     "Code Tracker": "Code Tracker",
     "No tasks found": "No tasks found",
-    "No code context cache": "No code context cache"
+    "No code context cache": "No code context cache",
+    "Auto-Accept: ON": "Auto-Accept: ON",
+    "Auto-Accept: OFF": "Auto-Accept: OFF",
+    "Auto-Accept": "Auto-Accept",
+    "Hands-free Mode: Automatically accept agent suggested edits and terminal commands": "Hands-free Mode: Automatically accept agent suggested edits and terminal commands",
+    "Auto-Accept: ON - Agent steps will be accepted automatically.": "Auto-Accept: ON - Agent steps will be accepted automatically.",
+    "Auto-Accept: OFF - Manual approval required.": "Auto-Accept: OFF - Manual approval required.",
+    "Reload Window": "Reload Window",
+    "Restart Agent Service": "Restart Agent Service"
 }

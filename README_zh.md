@@ -210,6 +210,14 @@ Toolkit for Antigravity 不会收集、传输或存储任何用户数据。所�
 
 对于重大更改，请先开启 issue 讨论你的想法。
 
+## 🌐 本地化策略 (Localization Policy)
+
+为了确保技术术语的一致性和跨语言使用的专业度，本项目遵循以下原则：
+- **UI 标签与技术术语**：在所有语言版本中均保持为**英文**（如 `Rules`, `MCP`, `Auto-Accept`, `Reset Status`）。
+- **工具提示与详细说明**：全量**本地化**翻译，以在用户悬停或阅读设置时提供清晰的本国语言描述。
+
+更多细节请参考 [LOCALIZATION_RULES.md](docs/LOCALIZATION_RULES.md)。
+
 ## 📄 许可证
 
 本项目采用 [Apache License, Version 2.0](LICENSE) 开源许可证。

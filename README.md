@@ -225,6 +225,14 @@ Here's how you can help:
 
 For major changes, please open an issue first to discuss your ideas.
 
+## 🌐 Localization Policy
+
+To ensure technical consistency and professional standard across all 13 supported languages:
+- **UI Labels & Technical Terms**: Remain in **English** (e.g., `Rules`, `MCP`, `Auto-Accept`, `Reset Status`).
+- **Tooltips & Descriptions**: Fully **localized** to provide detailed explanations in the user's native language.
+
+For more details, see [LOCALIZATION_RULES.md](docs/LOCALIZATION_RULES.md).
+
 ## 📄 License
 
 Licensed under the [Apache License, Version 2.0](LICENSE).
