@@ -60,10 +60,10 @@
     "Code Tracker": "Code Tracker (Kontext)",
     "No tasks found": "Keine Aufgaben gefunden",
     "No code context cache": "Kein Code-Kontext-Cache",
-    "Auto-Accept: ON": "Auto-Accept: ON",
-    "Auto-Accept: OFF": "Auto-Accept: OFF",
-    "Auto-Accept": "Auto-Accept",
-    "Hands-free Mode: Automatically accept agent suggested edits and terminal commands": "Hands-free Mode: Automatically accept agent suggested edits and terminal commands",
-    "Auto-Accept: ON - Agent steps will be accepted automatically.": "Auto-Accept: ON - Agent steps will be accepted automatically.",
-    "Auto-Accept: OFF - Manual approval required.": "Auto-Accept: OFF - Manual approval required."
+    "Auto-Accept: ON": "Auto-Akzeptieren: EIN",
+    "Auto-Accept: OFF": "Auto-Akzeptieren: AUS",
+    "Auto-Accept": "Auto-Akzeptieren",
+    "Hands-free Mode: Automatically accept agent suggested edits and terminal commands": "Freihandmodus: Vorgeschlagene Bearbeitungen des Agenten und Terminalbefehle automatisch akzeptieren",
+    "Auto-Accept: ON - Agent steps will be accepted automatically.": "Auto-Akzeptieren: EIN – Agentenschritte werden automatisch akzeptiert.",
+    "Auto-Accept: OFF - Manual approval required.": "Auto-Akzeptieren: AUS – Manuelle Genehmigung erforderlich."
 }

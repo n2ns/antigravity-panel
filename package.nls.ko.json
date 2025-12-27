@@ -13,8 +13,8 @@
     "command.restartLanguageServer.title": "에이전트 서비스 재시작",
     "command.restartUserStatusUpdater.title": "상태 초기화",
     "command.runDiagnostics.title": "연결 진단 실행",
-    "command.toggleAutoAccept": "Toggle Auto-Accept",
-    "command.toggleAutoAccept.title": "Toggle Agent Auto-Accept",
+    "command.toggleAutoAccept": "자동 승인 토글",
+    "command.toggleAutoAccept.title": "AI 자동 승인 토글",
     "config.statusBarStyle.percentage": "남은 할당량을 백분율로 표시 (예: 75%)",
     "config.statusBarStyle.resetTime": "할당량 초기화까지 남은 시간 표시 (예: 2h 30m)",
     "config.statusBarStyle.used": "사용된 할당량 표시 (예: 25/100)",
@@ -43,9 +43,9 @@
     "config.system.serverHost.description": "⚠️ 고급: 할당량 메트릭용 사용자 정의 서버 호스트명 (기본값: 127.0.0.1)",
     "config.system.apiPath.description": "⚠️ 고급: 할당량 메트릭용 사용자 정의 API 엔드포인트",
     "config.system.debugMode.description": "'Toolkit for Antigravity' 출력 채널에 디버그 로깅 활성화",
-    "config.system.autoAccept.description": "Automatically accept AI agent commands and file edits. (Hands-free Mode)",
-    "config.system.autoAcceptInterval.description": "Interval for checking auto-accept in milliseconds (default: 800ms). Lower values are faster but consume more resources.",
-    "Auto-Accept: ON": "Auto-Accept: ON",
-    "Auto-Accept: OFF": "Auto-Accept: OFF",
-    "Hands-free Mode: Automatically accept agent suggested edits and terminal commands": "Hands-free Mode: Automatically accept agent suggested edits and terminal commands"
+    "config.system.autoAccept.description": "AI 에이전트 명령 및 파일 수정을 자동으로 승인합니다. (핸즈프리 모드)",
+    "config.system.autoAcceptInterval.description": "자동 승인 확인 간격(밀리초, 기본값: 800ms). 값이 작을수록 빠르지만 리소스가 더 많이 소모됩니다.",
+    "Auto-Accept: ON": "자동 승인: 켜짐",
+    "Auto-Accept: OFF": "자동 승인: 꺼짐",
+    "Hands-free Mode: Automatically accept agent suggested edits and terminal commands": "핸즈프리 모드: 에이전트의 제안된 수정 및 터미널 명령을 자동으로 승인합니다"
 }

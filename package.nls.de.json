@@ -13,8 +13,8 @@
     "command.restartLanguageServer.title": "Agent-Dienst neu starten",
     "command.restartUserStatusUpdater.title": "Status zurücksetzen",
     "command.runDiagnostics.title": "Verbindungsdiagnose ausführen",
-    "command.toggleAutoAccept": "Toggle Auto-Accept",
-    "command.toggleAutoAccept.title": "Toggle Agent Auto-Accept",
+    "command.toggleAutoAccept": "Auto-Akzeptieren umschalten",
+    "command.toggleAutoAccept.title": "KI-Auto-Akzeptieren umschalten",
     "config.statusBarStyle.percentage": "Verbleibendes Kontingent als Prozentsatz anzeigen (z.B. 75%)",
     "config.statusBarStyle.resetTime": "Zeit bis zum Zurücksetzen des Kontingents anzeigen (z.B. 2h 30m)",
     "config.statusBarStyle.used": "Verbrauchtes Kontingent anzeigen (z.B. 25/100)",
@@ -43,9 +43,9 @@
     "config.system.serverHost.description": "⚠️ Erweitert: Benutzerdefinierter Server-Hostname für Kontingentmetriken (Standard: 127.0.0.1)",
     "config.system.apiPath.description": "⚠️ Erweitert: Benutzerdefinierter API-Endpunkt für Kontingentmetriken",
     "config.system.debugMode.description": "Debug-Protokollierung im 'Toolkit for Antigravity' Ausgabekanal aktivieren",
-    "config.system.autoAccept.description": "Automatically accept AI agent commands and file edits. (Hands-free Mode)",
-    "config.system.autoAcceptInterval.description": "Interval for checking auto-accept in milliseconds (default: 800ms). Lower values are faster but consume more resources.",
-    "Auto-Accept: ON": "Auto-Accept: ON",
-    "Auto-Accept: OFF": "Auto-Accept: OFF",
-    "Hands-free Mode: Automatically accept agent suggested edits and terminal commands": "Hands-free Mode: Automatically accept agent suggested edits and terminal commands"
+    "config.system.autoAccept.description": "Befehle des KI-Agenten und Dateibearbeitungen automatisch akzeptieren (Freihandmodus)",
+    "config.system.autoAcceptInterval.description": "Intervall für die Annahmeprüfung in Millisekunden (Standard: 800ms). Niedrigere Werte sind schneller, verbrauchen aber mehr Ressourcen.",
+    "Auto-Accept: ON": "Auto-Akzeptieren: EIN",
+    "Auto-Accept: OFF": "Auto-Akzeptieren: AUS",
+    "Hands-free Mode: Automatically accept agent suggested edits and terminal commands": "Freihandmodus: Vorgeschlagene Bearbeitungen des Agenten und Terminalbefehle automatisch akzeptieren"
 }

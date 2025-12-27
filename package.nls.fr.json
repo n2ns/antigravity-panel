@@ -13,8 +13,8 @@
     "command.restartLanguageServer.title": "Redémarrer le service Agent",
     "command.restartUserStatusUpdater.title": "Réinitialiser le statut",
     "command.runDiagnostics.title": "Exécuter le diagnostic de connexion",
-    "command.toggleAutoAccept": "Toggle Auto-Accept",
-    "command.toggleAutoAccept.title": "Toggle Agent Auto-Accept",
+    "command.toggleAutoAccept": "Basculer l'acceptation automatique",
+    "command.toggleAutoAccept.title": "Basculer l'acceptation automatique de l'IA",
     "config.statusBarStyle.percentage": "Afficher le quota restant en pourcentage (ex : 75%)",
     "config.statusBarStyle.resetTime": "Afficher le temps avant la réinitialisation du quota (ex : 2h 30m)",
     "config.statusBarStyle.used": "Afficher la quantité de quota utilisée (ex : 25/100)",
@@ -43,9 +43,9 @@
     "config.system.serverHost.description": "⚠️ Avancé : Nom d'hôte personnalisé pour les métriques de quota (par défaut : 127.0.0.1)",
     "config.system.apiPath.description": "⚠️ Avancé : Point d'accès API personnalisé pour les métriques de quota",
     "config.system.debugMode.description": "Activer la journalisation de débogage dans le canal 'Toolkit for Antigravity'",
-    "config.system.autoAccept.description": "Automatically accept AI agent commands and file edits. (Hands-free Mode)",
-    "config.system.autoAcceptInterval.description": "Interval for checking auto-accept in milliseconds (default: 800ms). Lower values are faster but consume more resources.",
-    "Auto-Accept: ON": "Auto-Accept: ON",
-    "Auto-Accept: OFF": "Auto-Accept: OFF",
-    "Hands-free Mode: Automatically accept agent suggested edits and terminal commands": "Hands-free Mode: Automatically accept agent suggested edits and terminal commands"
+    "config.system.autoAccept.description": "Accepter automatiquement les commandes de l'agent IA et les modifications de fichiers. (Mode mains libres)",
+    "config.system.autoAcceptInterval.description": "Intervalle de vérification de l'acceptation automatique en millisecondes (par défaut : 800 ms). Des valeurs plus basses sont plus rapides mais consomment plus de ressources.",
+    "Auto-Accept: ON": "Acceptation auto : ACTIVÉE",
+    "Auto-Accept: OFF": "Acceptation auto : DÉSACTIVÉE",
+    "Hands-free Mode: Automatically accept agent suggested edits and terminal commands": "Mode mains libres : accepter automatiquement les modifications suggérées par l'agent et les commandes du terminal"
 }

@@ -60,10 +60,10 @@
     "Code Tracker": "Code Tracker (Контекст)",
     "No tasks found": "Задачи не найдены",
     "No code context cache": "Кэш контекста пуст",
-    "Auto-Accept: ON": "Auto-Accept: ON",
-    "Auto-Accept: OFF": "Auto-Accept: OFF",
-    "Auto-Accept": "Auto-Accept",
-    "Hands-free Mode: Automatically accept agent suggested edits and terminal commands": "Hands-free Mode: Automatically accept agent suggested edits and terminal commands",
-    "Auto-Accept: ON - Agent steps will be accepted automatically.": "Auto-Accept: ON - Agent steps will be accepted automatically.",
-    "Auto-Accept: OFF - Manual approval required.": "Auto-Accept: OFF - Manual approval required."
+    "Auto-Accept: ON": "Автопринятие: ВКЛ",
+    "Auto-Accept: OFF": "Автопринятие: ВЫКЛ",
+    "Auto-Accept": "Автопринятие",
+    "Hands-free Mode: Automatically accept agent suggested edits and terminal commands": "Режим «Без рук»: автоматическое принятие предложенных агентом правок и команд терминала",
+    "Auto-Accept: ON - Agent steps will be accepted automatically.": "Автопринятие: ВКЛ — шаги агента будут приниматься автоматически.",
+    "Auto-Accept: OFF - Manual approval required.": "Автопринятие: ВЫКЛ — требуется ручное подтверждение."
 }

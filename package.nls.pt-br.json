@@ -13,8 +13,8 @@
     "command.restartLanguageServer.title": "Reiniciar serviço do Agente",
     "command.restartUserStatusUpdater.title": "Redefinir status",
     "command.runDiagnostics.title": "Executar diagnóstico de conexão",
-    "command.toggleAutoAccept": "Toggle Auto-Accept",
-    "command.toggleAutoAccept.title": "Toggle Agent Auto-Accept",
+    "command.toggleAutoAccept": "Alternar aceitação automática",
+    "command.toggleAutoAccept.title": "Alternar aceitação automática de IA",
     "config.statusBarStyle.percentage": "Mostrar cota restante como porcentagem (ex: 75%)",
     "config.statusBarStyle.resetTime": "Mostrar tempo até o reinício da cota (ex: 2h 30m)",
     "config.statusBarStyle.used": "Mostrar quantidade de cota usada (ex: 25/100)",
@@ -43,9 +43,9 @@
     "config.system.serverHost.description": "⚠️ Avançado: Nome de host personalizado para métricas de cota (padrão: 127.0.0.1)",
     "config.system.apiPath.description": "⚠️ Avançado: Endpoint de API personalizado para métricas de cota",
     "config.system.debugMode.description": "Ativar registro de depuração no canal 'Toolkit for Antigravity'",
-    "config.system.autoAccept.description": "Automatically accept AI agent commands and file edits. (Hands-free Mode)",
-    "config.system.autoAcceptInterval.description": "Interval for checking auto-accept in milliseconds (default: 800ms). Lower values are faster but consume more resources.",
-    "Auto-Accept: ON": "Auto-Accept: ON",
-    "Auto-Accept: OFF": "Auto-Accept: OFF",
-    "Hands-free Mode: Automatically accept agent suggested edits and terminal commands": "Hands-free Mode: Automatically accept agent suggested edits and terminal commands"
+    "config.system.autoAccept.description": "Aceitar automaticamente comandos do agente de IA e edições de arquivos. (Modo Mãos Livres)",
+    "config.system.autoAcceptInterval.description": "Intervalo para verificação de aceitação automática em milissegundos (padrão: 800 ms). Valores mais baixos são mais rápidos, mas consomem mais recursos.",
+    "Auto-Accept: ON": "Aceitação automática: LIGADA",
+    "Auto-Accept: OFF": "Aceitação automática: DESLIGADA",
+    "Hands-free Mode: Automatically accept agent suggested edits and terminal commands": "Modo Mãos Livres: aceita automaticamente edições sugeridas pelo agente e comandos de terminal"
 }

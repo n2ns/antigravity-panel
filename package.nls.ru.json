@@ -13,8 +13,8 @@
     "command.restartLanguageServer.title": "Перезапустить службу агента",
     "command.restartUserStatusUpdater.title": "Сбросить статус",
     "command.runDiagnostics.title": "Запустить диагностику подключения",
-    "command.toggleAutoAccept": "Toggle Auto-Accept",
-    "command.toggleAutoAccept.title": "Toggle Agent Auto-Accept",
+    "command.toggleAutoAccept": "Переключить автопринятие",
+    "command.toggleAutoAccept.title": "Переключить автопринятие ИИ",
     "config.statusBarStyle.percentage": "Показывать остаток квоты в процентах (например, 75%)",
     "config.statusBarStyle.resetTime": "Показывать время до сброса квоты (например, 2ч 30м)",
     "config.statusBarStyle.used": "Показывать использованную квоту (например, 25/100)",
@@ -43,9 +43,9 @@
     "config.system.serverHost.description": "⚠️ Расширенные: Пользовательское имя хоста для метрик квоты (по умолчанию: 127.0.0.1)",
     "config.system.apiPath.description": "⚠️ Расширенные: Пользовательская конечная точка API для метрик квоты",
     "config.system.debugMode.description": "Включить журнал отладки в канале 'Toolkit for Antigravity'",
-    "config.system.autoAccept.description": "Automatically accept AI agent commands and file edits. (Hands-free Mode)",
-    "config.system.autoAcceptInterval.description": "Interval for checking auto-accept in milliseconds (default: 800ms). Lower values are faster but consume more resources.",
-    "Auto-Accept: ON": "Auto-Accept: ON",
-    "Auto-Accept: OFF": "Auto-Accept: OFF",
-    "Hands-free Mode: Automatically accept agent suggested edits and terminal commands": "Hands-free Mode: Automatically accept agent suggested edits and terminal commands"
+    "config.system.autoAccept.description": "Автоматически принимать команды ИИ-агента и изменения файлов (режим «Без рук»)",
+    "config.system.autoAcceptInterval.description": "Интервал проверки автоматического принятия в миллисекундах (по умолчанию: 800 мс). Меньшие значения обеспечивают более быструю реакцию, но потребляют больше ресурсов.",
+    "Auto-Accept: ON": "Автопринятие: ВКЛ",
+    "Auto-Accept: OFF": "Автопринятие: ВЫКЛ",
+    "Hands-free Mode: Automatically accept agent suggested edits and terminal commands": "Режим «Без рук»: автоматическое принятие предложенных агентом правок и команд терминала"
 }

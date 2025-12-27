@@ -60,10 +60,10 @@
     "Code Tracker": "Code Tracker (Takip)",
     "No tasks found": "Görev bulunamadı",
     "No code context cache": "Kod bağlamı önbelleği yok",
-    "Auto-Accept: ON": "Auto-Accept: ON",
-    "Auto-Accept: OFF": "Auto-Accept: OFF",
-    "Auto-Accept": "Auto-Accept",
-    "Hands-free Mode: Automatically accept agent suggested edits and terminal commands": "Hands-free Mode: Automatically accept agent suggested edits and terminal commands",
-    "Auto-Accept: ON - Agent steps will be accepted automatically.": "Auto-Accept: ON - Agent steps will be accepted automatically.",
-    "Auto-Accept: OFF - Manual approval required.": "Auto-Accept: OFF - Manual approval required."
+    "Auto-Accept: ON": "Otomatik Kabul: AÇIK",
+    "Auto-Accept: OFF": "Otomatik Kabul: KAPALI",
+    "Auto-Accept": "Otomatik Kabul",
+    "Hands-free Mode: Automatically accept agent suggested edits and terminal commands": "Eller Serbest Modu: aracının önerdiği düzenlemeleri ve terminal komutlarını otomatik olarak kabul eder",
+    "Auto-Accept: ON - Agent steps will be accepted automatically.": "Otomatik Kabul: AÇIK - Aracı adımları otomatik olarak kabul edilecektir.",
+    "Auto-Accept: OFF - Manual approval required.": "Otomatik Kabul: KAPALI - Manuel onay gerekiyor."
 }

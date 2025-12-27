@@ -13,8 +13,8 @@
     "command.restartLanguageServer.title": "Zrestartuj usługę agenta",
     "command.restartUserStatusUpdater.title": "Zresetuj status",
     "command.runDiagnostics.title": "Uruchom diagnostykę połączenia",
-    "command.toggleAutoAccept": "Toggle Auto-Accept",
-    "command.toggleAutoAccept.title": "Toggle Agent Auto-Accept",
+    "command.toggleAutoAccept": "Przełącz auto-akceptację",
+    "command.toggleAutoAccept.title": "Przełącz auto-akceptację AI",
     "config.statusBarStyle.percentage": "Pokaż pozostały limit jako procent (np. 75%)",
     "config.statusBarStyle.resetTime": "Pokaż czas do resetu limitu (np. 2h 30m)",
     "config.statusBarStyle.used": "Pokaż ilość zużytego limitu (np. 25/100)",
@@ -43,9 +43,9 @@
     "config.system.serverHost.description": "⚠️ Zaawansowane: Niestandardowa nazwa hosta serwera dla metryk limitów. Domyślnie: 127.0.0.1",
     "config.system.apiPath.description": "⚠️ Zaawansowane: Niestandardowy punkt końcowy API dla metryk limitów",
     "config.system.debugMode.description": "Włącz logowanie debugowania do kanału wyjściowego 'Toolkit for Antigravity'",
-    "config.system.autoAccept.description": "Automatically accept AI agent commands and file edits. (Hands-free Mode)",
-    "config.system.autoAcceptInterval.description": "Interval for checking auto-accept in milliseconds (default: 800ms). Lower values are faster but consume more resources.",
-    "Auto-Accept: ON": "Auto-Accept: ON",
-    "Auto-Accept: OFF": "Auto-Accept: OFF",
-    "Hands-free Mode: Automatically accept agent suggested edits and terminal commands": "Hands-free Mode: Automatically accept agent suggested edits and terminal commands"
+    "config.system.autoAccept.description": "Automatycznie akceptuj polecenia agenta AI i edycje plików. (Tryb bez użycia rąk)",
+    "config.system.autoAcceptInterval.description": "Interwał sprawdzania automatycznego akceptowania w milisekundach (domyślnie: 800 ms). Niższe wartości są szybsze, ale zużywają więcej zasobów.",
+    "Auto-Accept: ON": "Auto-akceptacja: WŁ.",
+    "Auto-Accept: OFF": "Auto-akceptacja: WYŁ.",
+    "Hands-free Mode: Automatically accept agent suggested edits and terminal commands": "Tryb bez użycia rąk: automatycznie akceptuje sugerowane przez agenta edycje i polecenia terminala"
 }

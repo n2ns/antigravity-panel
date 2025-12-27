@@ -13,8 +13,8 @@
     "command.restartLanguageServer.title": "Ajan Servisini Yeniden Başlat",
     "command.restartUserStatusUpdater.title": "Durumu Sıfırla",
     "command.runDiagnostics.title": "Bağlantı Tanılarını Çalıştır",
-    "command.toggleAutoAccept": "Toggle Auto-Accept",
-    "command.toggleAutoAccept.title": "Toggle Agent Auto-Accept",
+    "command.toggleAutoAccept": "Otomatik kabulü aç/kapat",
+    "command.toggleAutoAccept.title": "Yapay zeka otomatik kabulünü aç/kapat",
     "config.statusBarStyle.percentage": "Kalan kotayı yüzde olarak göster (örneğin: %75)",
     "config.statusBarStyle.resetTime": "Kota sıfırlanana kadar kalan süreyi göster (örneğin: 2sa 30dk)",
     "config.statusBarStyle.used": "Kullanılan kota miktarını göster (örneğin: 25/100)",
@@ -43,9 +43,9 @@
     "config.system.serverHost.description": "⚠️ Gelişmiş: Kota metrikleri için özel sunucu ana bilgisayar adı. Varsayılan: 127.0.0.1",
     "config.system.apiPath.description": "⚠️ Gelişmiş: Kota metrikleri için özel API uç noktası",
     "config.system.debugMode.description": "'Toolkit for Antigravity' çıktı kanalına hata ayıklama günlüklerini etkinleştir",
-    "config.system.autoAccept.description": "Automatically accept AI agent commands and file edits. (Hands-free Mode)",
-    "config.system.autoAcceptInterval.description": "Interval for checking auto-accept in milliseconds (default: 800ms). Lower values are faster but consume more resources.",
-    "Auto-Accept: ON": "Auto-Accept: ON",
-    "Auto-Accept: OFF": "Auto-Accept: OFF",
-    "Hands-free Mode: Automatically accept agent suggested edits and terminal commands": "Hands-free Mode: Automatically accept agent suggested edits and terminal commands"
+    "config.system.autoAccept.description": "Yapay zeka aracısı komutlarını ve dosya düzenlemelerini otomatik olarak kabul et. (Eller Serbest Modu)",
+    "config.system.autoAcceptInterval.description": "Milisaniye cinsinden otomatik kabul kontrol aralığı (varsayılan: 800 ms). Daha düşük değerler daha hızlıdır ancak daha fazla kaynak tüketir.",
+    "Auto-Accept: ON": "Otomatik Kabul: AÇIK",
+    "Auto-Accept: OFF": "Otomatik Kabul: KAPALI",
+    "Hands-free Mode: Automatically accept agent suggested edits and terminal commands": "Eller Serbest Modu: aracının önerdiği düzenlemeleri ve terminal komutlarını otomatik olarak kabul eder"
 }
