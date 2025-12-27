@@ -67,5 +67,6 @@
     "Auto-Accept: ON - Agent steps will be accepted automatically.": "자동 승인: 켜짐 - 에이전트 단계가 자동으로 승인됩니다.",
     "Auto-Accept: OFF - Manual approval required.": "자동 승인: 꺼짐 - 수동 승인이 필요합니다.",
     "Reload Window": "Reload Window",
+    "Reload the entire window (use when Agent panel is blank or unresponsive)": "창 전체를 다시 로드합니다(에이전트 패널이 비어 있거나 반응이 없을 때 사용).",
     "Restart Agent Service": "Restart Agent Service"
 }

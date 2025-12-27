@@ -67,5 +67,6 @@
     "Auto-Accept: ON - Agent steps will be accepted automatically.": "Автопринятие: ВКЛ — шаги агента будут приниматься автоматически.",
     "Auto-Accept: OFF - Manual approval required.": "Автопринятие: ВЫКЛ — требуется ручное подтверждение.",
     "Reload Window": "Reload Window",
+    "Reload the entire window (use when Agent panel is blank or unresponsive)": "Перезагрузить все окно (используйте, если панель Agent пуста или не отвечает)",
     "Restart Agent Service": "Restart Agent Service"
 }

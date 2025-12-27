@@ -67,5 +67,6 @@
     "Auto-Accept: ON - Agent steps will be accepted automatically.": "自动接受：开启 - 将自动接受智能体的操作步骤。",
     "Auto-Accept: OFF - Manual approval required.": "自动接受：关闭 - 需要手动批准。",
     "Reload Window": "Reload Window",
+    "Reload the entire window (use when Agent panel is blank or unresponsive)": "重新加载整个窗口（当 Agent 面板空白或无响应时使用）",
     "Restart Agent Service": "Restart Agent Service"
 }

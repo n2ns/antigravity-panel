@@ -67,5 +67,6 @@
     "Auto-Accept: ON - Agent steps will be accepted automatically.": "Auto-Akzeptieren: EIN – Agentenschritte werden automatisch akzeptiert.",
     "Auto-Accept: OFF - Manual approval required.": "Auto-Akzeptieren: AUS – Manuelle Genehmigung erforderlich.",
     "Reload Window": "Reload Window",
+    "Reload the entire window (use when Agent panel is blank or unresponsive)": "Das gesamte Fenster neu laden (verwenden, wenn das Agent-Panel leer ist oder nicht reagiert)",
     "Restart Agent Service": "Restart Agent Service"
 }

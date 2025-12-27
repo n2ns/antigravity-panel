@@ -67,5 +67,6 @@
     "Auto-Accept: ON - Agent steps will be accepted automatically.": "自動承認: オン - エージェントのステップが自動的に承認されます。",
     "Auto-Accept: OFF - Manual approval required.": "自動承認: オフ - 手動での承認が必要です。",
     "Reload Window": "Reload Window",
+    "Reload the entire window (use when Agent panel is blank or unresponsive)": "ウィンドウ全体を再読み込みします（エージェントパネルが空白になったり反応しなくなったりした場合に使用）",
     "Restart Agent Service": "Restart Agent Service"
 }

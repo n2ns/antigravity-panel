@@ -67,5 +67,6 @@
     "Auto-Accept: ON - Agent steps will be accepted automatically.": "Otomatik Kabul: AÇIK - Aracı adımları otomatik olarak kabul edilecektir.",
     "Auto-Accept: OFF - Manual approval required.": "Otomatik Kabul: KAPALI - Manuel onay gerekiyor.",
     "Reload Window": "Reload Window",
+    "Reload the entire window (use when Agent panel is blank or unresponsive)": "Tüm pencereyi yeniden yükle (Agent paneli boş olduğunda veya yanıt vermediğinde kullanın)",
     "Restart Agent Service": "Restart Agent Service"
 }

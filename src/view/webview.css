@@ -727,24 +727,24 @@ sidebar-footer {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 8px 10px;
+  padding: 6px 10px;
   background: linear-gradient(135deg,
       rgba(66, 133, 244, 0.1) 0%,
       rgba(66, 133, 244, 0.03) 100%);
-  border-radius: 6px;
+  border-radius: 4px;
 }
 
 .action-label {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 0.9em;
+  font-size: 0.82em;
   font-weight: 600;
   color: var(--vscode-foreground);
 }
 
 .action-label .codicon {
-  font-size: 16px;
+  font-size: 14px;
   opacity: 0.9;
 }
 
@@ -802,8 +802,8 @@ sidebar-footer {
 .toggle-switch {
   position: relative;
   display: inline-block;
-  width: 44px;
-  height: 24px;
+  width: 32px;
+  height: 16px;
   cursor: pointer;
   flex-shrink: 0;
 }
@@ -829,25 +829,40 @@ sidebar-footer {
 .toggle-slider::before {
   content: "";
   position: absolute;
-  height: 18px;
-  width: 18px;
+  height: 12px;
+  width: 12px;
   left: 2px;
-  bottom: 2px;
-  background-color: var(--vscode-foreground, #cccccc);
+  top: 50%;
+  transform: translateY(-50%);
+  background: radial-gradient(circle at 30% 30%,
+      #ffffff 0%,
+      #f0f0f0 20%,
+      #d4d4d4 40%,
+      #a3a3a3 70%,
+      #737373 100%);
   border-radius: 50%;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.6),
+    inset 0 1px 1px rgba(255, 255, 255, 0.9),
+    inset 0 -1px 1px rgba(0, 0, 0, 0.3);
+  border: 0.5px solid rgba(0, 0, 0, 0.2);
 }
 
 .toggle-switch input:checked+.toggle-slider {
   background-color: var(--vscode-charts-green, #388e3c);
   border-color: var(--vscode-charts-green, #388e3c);
-  box-shadow: 0 0 8px rgba(56, 142, 60, 0.4);
+  box-shadow: 0 0 8px rgba(56, 142, 60, 0.5);
 }
 
 .toggle-switch input:checked+.toggle-slider::before {
-  transform: translateX(20px);
-  background-color: #ffffff;
+  transform: translateY(-50%) translateX(16px);
+  background: radial-gradient(circle at 30% 30%,
+      #ffffff 0%,
+      #fafafa 20%,
+      #e5e5e5 40%,
+      #cccccc 70%,
+      #999999 100%);
 }
 
 .toggle-switch:hover .toggle-slider {
