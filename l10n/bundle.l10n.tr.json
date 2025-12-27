@@ -53,11 +53,17 @@
     "Usage History": "Kullanım Geçmişi",
     "max": "max",
     "Last": "Last",
-    "s": "s",
     "min": "dk",
+    "s": "s",
     "bar": "bar",
     "Brain": "Brain (Görev Hafızası)",
     "Code Tracker": "Code Tracker (Takip)",
     "No tasks found": "Görev bulunamadı",
-    "No code context cache": "Kod bağlamı önbelleği yok"
+    "No code context cache": "Kod bağlamı önbelleği yok",
+    "Auto-Accept: ON": "Auto-Accept: ON",
+    "Auto-Accept: OFF": "Auto-Accept: OFF",
+    "Auto-Accept": "Auto-Accept",
+    "Hands-free Mode: Automatically accept agent suggested edits and terminal commands": "Hands-free Mode: Automatically accept agent suggested edits and terminal commands",
+    "Auto-Accept: ON - Agent steps will be accepted automatically.": "Auto-Accept: ON - Agent steps will be accepted automatically.",
+    "Auto-Accept: OFF - Manual approval required.": "Auto-Accept: OFF - Manual approval required."
 }

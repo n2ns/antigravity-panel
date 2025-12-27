@@ -53,11 +53,17 @@
     "Usage History": "사용 기록",
     "max": "max",
     "Last": "Last",
-    "s": "s",
     "min": "분",
+    "s": "s",
     "bar": "bar",
     "Brain": "Brain (작업 기억)",
     "Code Tracker": "Code Tracker (추적)",
     "No tasks found": "작업을 찾을 수 없습니다",
-    "No code context cache": "코드 컨텍스트 캐시가 없습니다"
+    "No code context cache": "코드 컨텍스트 캐시가 없습니다",
+    "Auto-Accept: ON": "Auto-Accept: ON",
+    "Auto-Accept: OFF": "Auto-Accept: OFF",
+    "Auto-Accept": "Auto-Accept",
+    "Hands-free Mode: Automatically accept agent suggested edits and terminal commands": "Hands-free Mode: Automatically accept agent suggested edits and terminal commands",
+    "Auto-Accept: ON - Agent steps will be accepted automatically.": "Auto-Accept: ON - Agent steps will be accepted automatically.",
+    "Auto-Accept: OFF - Manual approval required.": "Auto-Accept: OFF - Manual approval required."
 }

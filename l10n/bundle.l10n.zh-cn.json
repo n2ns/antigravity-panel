@@ -59,5 +59,11 @@
     "Brain": "任务记忆 (Brain)",
     "Code Tracker": "代码追踪 (Tracker)",
     "No tasks found": "未找到任务记录",
-    "No code context cache": "暂无代码上下文缓存"
+    "No code context cache": "暂无代码上下文缓存",
+    "Auto-Accept: ON": "自动接受: 开启",
+    "Auto-Accept: OFF": "自动接受: 关闭",
+    "Auto-Accept": "自动接受",
+    "Hands-free Mode: Automatically accept agent suggested edits and terminal commands": "无人值守模式：自动接受智能体建议的文件修改和终端命令",
+    "Auto-Accept: ON - Agent steps will be accepted automatically.": "自动接受：开启 - 将自动接受智能体的操作步骤。",
+    "Auto-Accept: OFF - Manual approval required.": "自动接受：关闭 - 需要手动批准。"
 }

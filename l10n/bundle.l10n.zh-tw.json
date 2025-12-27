@@ -53,11 +53,17 @@
     "Usage History": "使用歷史",
     "max": "max",
     "Last": "Last",
-    "s": "s",
     "min": "分鐘",
+    "s": "s",
     "bar": "bar",
     "Brain": "任務記憶 (Brain)",
     "Code Tracker": "程式碼追踪 (Tracker)",
     "No tasks found": "未找到任務記錄",
-    "No code context cache": "暫无程式碼上下文快取"
+    "No code context cache": "暫无程式碼上下文快取",
+    "Auto-Accept: ON": "自動接受：開啟",
+    "Auto-Accept: OFF": "自動接受：關閉",
+    "Auto-Accept": "自動接受",
+    "Hands-free Mode: Automatically accept agent suggested edits and terminal commands": "無人值守模式：自動接受代理建議的檔案修改和終端機指令",
+    "Auto-Accept: ON - Agent steps will be accepted automatically.": "自動接受：開啟 - 將自動接受代理的操作步驟。",
+    "Auto-Accept: OFF - Manual approval required.": "自動接受：關閉 - 需要手動核准。"
 }

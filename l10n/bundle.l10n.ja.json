@@ -53,11 +53,17 @@
     "Usage History": "使用履歴",
     "max": "max",
     "Last": "Last",
-    "s": "s",
     "min": "分",
+    "s": "s",
     "bar": "bar",
     "Brain": "Brain (タスク記憶)",
     "Code Tracker": "Code Tracker (追跡)",
     "No tasks found": "タスクが見つかりませんでした",
-    "No code context cache": "コードコンテキストキャッシュがありません"
+    "No code context cache": "コードコンテキストキャッシュがありません",
+    "Auto-Accept: ON": "Auto-Accept: ON",
+    "Auto-Accept: OFF": "Auto-Accept: OFF",
+    "Auto-Accept": "Auto-Accept",
+    "Hands-free Mode: Automatically accept agent suggested edits and terminal commands": "Hands-free Mode: Automatically accept agent suggested edits and terminal commands",
+    "Auto-Accept: ON - Agent steps will be accepted automatically.": "Auto-Accept: ON - Agent steps will be accepted automatically.",
+    "Auto-Accept: OFF - Manual approval required.": "Auto-Accept: OFF - Manual approval required."
 }

@@ -37,7 +37,6 @@
     "View": "Visualizar",
     "Settings": "Configurações",
     "Cache size ({0}) exceeds threshold.": "O tamanho do cache ({0}) excede o limite.",
-    "Feedback": "Feedback",
     "Star": "Estrela",
     "Restart the background Agent language server (use when code analysis is stuck)": "Reiniciar o servidor de linguagem do Agente (use quando a análise de código travar)",
     "Reset user subscription and quota refresh status (use when quota display is not updating)": "Redefinir status de cotas e assinaturas (use quando as cotas não atualizarem)",
@@ -54,11 +53,17 @@
     "Usage History": "Histórico",
     "max": "max",
     "Last": "Last",
-    "s": "s",
     "min": "min",
+    "s": "s",
     "bar": "bar",
     "Brain": "Brain (Tarefas)",
     "Code Tracker": "Code Tracker (Contexto)",
     "No tasks found": "Nenhuma tarefa encontrada",
-    "No code context cache": "Sem cache de contexto"
+    "No code context cache": "Sem cache de contexto",
+    "Auto-Accept: ON": "Auto-Accept: ON",
+    "Auto-Accept: OFF": "Auto-Accept: OFF",
+    "Auto-Accept": "Auto-Accept",
+    "Hands-free Mode: Automatically accept agent suggested edits and terminal commands": "Hands-free Mode: Automatically accept agent suggested edits and terminal commands",
+    "Auto-Accept: ON - Agent steps will be accepted automatically.": "Auto-Accept: ON - Agent steps will be accepted automatically.",
+    "Auto-Accept: OFF - Manual approval required.": "Auto-Accept: OFF - Manual approval required."
 }

@@ -1,5 +1,5 @@
 {
-    "Feedback": "Comentarios",
+    "Feedback": "Opinión",
     "Local server not found": "Servidor local no encontrado",
     "Local server not found, unable to get quota reference": "Servidor local no encontrado, no se puede obtener la referencia de cuota",
     "Server process found but no listening port detected": "Proceso del servidor encontrado pero no se detectó puerto de escucha",
@@ -37,7 +37,6 @@
     "View": "Ver",
     "Settings": "Configuración",
     "Cache size ({0}) exceeds threshold.": "El tamaño del caché ({0}) excede el umbral.",
-    "Feedback": "Opinión",
     "Star": "Estrella",
     "Restart the background Agent language server (use when code analysis is stuck)": "Reiniciar el servicio de lenguaje del Agente en segundo plano (usar cuando el análisis de código esté bloqueado)",
     "Reset user subscription and quota refresh status (use when quota display is not updating)": "Restablecer el estado de suscripción y actualización de cuotas (usar cuando la cuota no se actualice)",
@@ -54,11 +53,17 @@
     "Usage History": "Historial",
     "max": "max",
     "Last": "Last",
-    "s": "s",
     "min": "min",
+    "s": "s",
     "bar": "bar",
     "Brain": "Brain (Tareas)",
     "Code Tracker": "Code Tracker (Contexto)",
     "No tasks found": "No se encontraron tareas",
-    "No code context cache": "Sin caché de contexto"
+    "No code context cache": "Sin caché de contexto",
+    "Auto-Accept: ON": "Auto-Accept: ON",
+    "Auto-Accept: OFF": "Auto-Accept: OFF",
+    "Auto-Accept": "Auto-Accept",
+    "Hands-free Mode: Automatically accept agent suggested edits and terminal commands": "Hands-free Mode: Automatically accept agent suggested edits and terminal commands",
+    "Auto-Accept: ON - Agent steps will be accepted automatically.": "Auto-Accept: ON - Agent steps will be accepted automatically.",
+    "Auto-Accept: OFF - Manual approval required.": "Auto-Accept: OFF - Manual approval required."
 }
