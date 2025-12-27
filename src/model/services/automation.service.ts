@@ -69,6 +69,10 @@ export class AutomationService implements IAutomationService, vscode.Disposable 
         return this._enabled;
     }
 
+    updateInterval(ms: number): void {
+        this.scheduler.updateInterval(this.taskName, ms);
+    }
+
     dispose(): void {
         this.scheduler.dispose();
     }

@@ -269,4 +269,9 @@ export interface IAutomationService {
      * @returns New state
      */
     toggle(): boolean;
+
+    /**
+     * Update execution interval
+     */
+    updateInterval(ms: number): void;
 }

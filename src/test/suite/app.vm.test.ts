@@ -11,7 +11,8 @@ const defaultMockAutomationService: IAutomationService = {
     start: () => { },
     stop: () => { },
     isRunning: () => false,
-    toggle: () => false
+    toggle: () => false,
+    updateInterval: () => { }
 };
 
 // Mock Config Reader (reused)

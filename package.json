@@ -301,6 +301,14 @@
             "default": false,
             "order": 30,
             "description": "%config.system.autoAccept.description%"
+          },
+          "tfa.system.autoAcceptInterval": {
+            "type": "number",
+            "default": 800,
+            "minimum": 200,
+            "maximum": 5000,
+            "order": 31,
+            "description": "%config.system.autoAcceptInterval.description%"
           }
         }
       }

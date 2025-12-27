@@ -18,6 +18,9 @@ export const MIN_POLLING_INTERVAL = 60;
 /** Minimum cache check interval in seconds */
 export const MIN_CACHE_CHECK_INTERVAL = 30;
 
+/** Minimum auto-accept interval in milliseconds */
+export const MIN_AUTO_ACCEPT_INTERVAL = 200;
+
 /** Default quota API path */
 export const DEFAULT_QUOTA_API_PATH = "/exa.language_server_pb.LanguageServerService/GetUserStatus";
 
@@ -80,6 +83,10 @@ export class ConfigManager {
       "system.apiPath": this.reader.get<string>("system.apiPath", DEFAULT_QUOTA_API_PATH),
       "system.debugMode": this.reader.get<boolean>("system.debugMode", false),
       "system.autoAccept": this.reader.get<boolean>("system.autoAccept", false),
+      "system.autoAcceptInterval": Math.max(
+        this.reader.get<number>("system.autoAcceptInterval", 800),
+        MIN_AUTO_ACCEPT_INTERVAL
+      ),
     };
   }
 

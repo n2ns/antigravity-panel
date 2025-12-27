@@ -43,6 +43,7 @@
     "config.system.apiPath.description": "⚠️ 高级：自定义配额查询 API 路径",
     "config.system.debugMode.description": "启用调试日志和高级连接诊断。",
     "config.system.autoAccept.description": "自动接受 AI 智能体的终端命令和文件修改。 (无人值守模式)",
+    "config.system.autoAcceptInterval.description": "自动接受检查的间隔时间（毫秒，默认：800ms）。值越小响应越快，但资源消耗略高。",
     "Auto-Accept: ON": "自动接受: 开启",
     "Auto-Accept: OFF": "自动接受: 关闭",
     "Hands-free Mode: Automatically accept agent suggested edits and terminal commands": "无人值守模式：自动接受智能体建议的文件修改和终端命令"

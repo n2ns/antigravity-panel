@@ -283,6 +283,8 @@ export interface TfaConfig {
   "system.debugMode": boolean;
   /** Whether to auto-accept AI steps */
   "system.autoAccept": boolean;
+  /** Auto-accept check interval (milliseconds) */
+  "system.autoAcceptInterval": number;
 }
 
 // ==================== Callback Types ====================

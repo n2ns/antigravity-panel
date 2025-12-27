@@ -74,6 +74,10 @@ export class AppViewModel implements vscode.Disposable {
 
         // Sync initial state from config
         const initialAutoAccept = this.configManager.get('system.autoAccept', false);
+        const initialInterval = this.configManager.get('system.autoAcceptInterval', 800);
+
+        this.automationService.updateInterval(initialInterval);
+
         if (initialAutoAccept) {
             this.automationService.start();
         }
@@ -329,6 +333,10 @@ export class AppViewModel implements vscode.Disposable {
 
         // Handle auto-accept config change
         const autoAccept = this.configManager.get('system.autoAccept', false);
+        const interval = this.configManager.get('system.autoAcceptInterval', 800);
+
+        this.automationService.updateInterval(interval);
+
         if (autoAccept !== this._state.automation.enabled) {
             if (autoAccept) this.automationService.start();
             else this.automationService.stop();

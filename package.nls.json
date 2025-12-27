@@ -44,6 +44,7 @@
     "config.system.apiPath.description": "⚠️ Advanced: Custom API endpoint for quota metrics",
     "config.system.debugMode.description": "Enable debug logging and advanced connection diagnostics.",
     "config.system.autoAccept.description": "Automatically accept AI agent commands and file edits. (Hands-free Mode)",
+    "config.system.autoAcceptInterval.description": "Interval for checking auto-accept in milliseconds (default: 800ms). Lower values are faster but consume more resources.",
     "Auto-Accept: ON": "Auto-Accept: ON",
     "Auto-Accept: OFF": "Auto-Accept: OFF",
     "Hands-free Mode: Automatically accept agent suggested edits and terminal commands": "Hands-free Mode: Automatically accept agent suggested edits and terminal commands"
