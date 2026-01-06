@@ -1,4 +1,4 @@
-[English](README.md) | 中文文档
+[English](../README.md) | 中文文档
 
 ## 🔥 已支持 Google 最新版 Gemini 3 Flash！欢迎反馈！
 
@@ -8,7 +8,7 @@
 
 [![Antigravity IDE](https://img.shields.io/badge/Antigravity-IDE-4285F4?style=flat)](https://antigravity.google)
 [![VS Code](https://img.shields.io/badge/VS%20Code-%3E%3D1.104.0-007ACC?logo=visual-studio-code&style=flat&cacheSeconds=10800)](https://code.visualstudio.com/)
-[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](../LICENSE)
 [![Stars](https://img.shields.io/github/stars/n2ns/antigravity-panel?style=flat&logo=github&cacheSeconds=10800)](https://github.com/n2ns/antigravity-panel/stargazers)
 
 [![GitHub 版本](https://img.shields.io/github/v/release/n2ns/antigravity-panel?style=flat&label=%E7%89%88%E6%9C%AC&cacheSeconds=10800)](https://github.com/n2ns/antigravity-panel/releases)
@@ -35,7 +35,7 @@
 
 | | |
 |:---:|:---:|
-| ![配额仪表盘](assets/preview1.png) | ![用量分析](assets/preview2.png) |\r\n| ![缓存管理](assets/preview3.png) | ![设置与配置](assets/preview4.png) |
+| ![配额仪表盘](../assets/preview1.png) | ![用量分析](../assets/preview2.png) |\r\n| ![缓存管理](../assets/preview3.png) | ![设置与配置](../assets/preview4.png) |
 
 *实时配额监控、用量趋势和缓存管理，一目了然*
 
@@ -218,11 +218,11 @@ Toolkit for Antigravity 不会收集、传输或存储任何用户数据。所�
 - **UI 标签与技术术语**：在所有语言版本中均保持为**英文**（如 `Rules`, `MCP`, `Auto-Accept`, `Reset Status`）。
 - **工具提示与详细说明**：全量**本地化**翻译，以在用户悬停或阅读设置时提供清晰的本国语言描述。
 
-更多细节请参考 [LOCALIZATION_RULES.md](docs/LOCALIZATION_RULES.md)。
+更多细节请参考 [LOCALIZATION_RULES.md](LOCALIZATION_RULES.md)。
 
 ## 📄 许可证
 
-本项目采用 [Apache License, Version 2.0](LICENSE) 开源许可证。
+本项目采用 [Apache License, Version 2.0](../LICENSE) 开源许可证。
 
 
 ---

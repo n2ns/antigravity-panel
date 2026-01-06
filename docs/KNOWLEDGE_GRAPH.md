@@ -35,7 +35,7 @@
   - All hover tooltips, settings descriptions, and system notifications must be fully localized in all 13 supported languages to provide clear functional explanations.
   - All user-facing technical UI labels and command titles (e.g., 'Restart Service', 'Rules', 'MCP', 'Auto-Accept') must remain in English across all supported locales to maintain technical consistency.
   - The project supports 13 languages: English, Simplified Chinese, Traditional Chinese, Japanese, Korean, German, Spanish, French, Italian, Polish, Brazilian Portuguese, Russian, and Turkish.
-  - This strategy is documented in 'docs/LOCALIZATION_RULES.md'.
+  - This strategy is documented in 'LOCALIZATION_RULES.md'.
 
 ### Projects Directory (Code Contexts)
 
