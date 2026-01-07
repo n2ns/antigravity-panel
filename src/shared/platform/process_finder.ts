@@ -83,6 +83,7 @@ export class ProcessFinder {
       onRetry: (attempt, delay) => {
         // Log to output channel so users can see progress in case of slow startup
         warnLog(`ProcessFinder: Attempt ${attempt} failed, retrying in ${delay}ms...`);
+        this.retryCount++;
         if (verbose) {
           debugLog(`ProcessFinder: Attempt ${attempt} failed, retrying in ${delay}ms...`);
         }
