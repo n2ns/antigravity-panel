@@ -26,6 +26,14 @@ class MockStrategy implements PlatformStrategy {
             return [];
         }
     }
+
+    getDiagnosticCommand(): string {
+        return 'mock_diag';
+    }
+
+    getTroubleshootingTips(): string[] {
+        return ['Mock tip 1', 'Mock tip 2'];
+    }
 }
 
 /**

@@ -75,7 +75,7 @@ export class WindowsStrategy implements PlatformStrategy {
         const wsMatch = commandLine.match(/--workspace_id[=\s]+(?:["']?)([a-zA-Z0-9\-_.]+)(?:["']?)/);
 
         if (tokenMatch?.[1]) {
-          // STRICT CHECK: Ensure process belongs to antigravity (borrowed from competitor analysis)
+          // STRICT CHECK: Ensure process belongs to Antigravity
           if (!commandLine.includes('--app_data_dir') || !/app_data_dir\s+["']?antigravity/i.test(commandLine)) {
             continue;
           }
@@ -113,12 +113,38 @@ export class WindowsStrategy implements PlatformStrategy {
     }
     return ports.sort((a, b) => a - b);
   }
+
+  /**
+   * Get diagnostic command to list all language/antigravity related processes
+   * Used when detection fails to help troubleshoot
+   */
+  getDiagnosticCommand(): string {
+    const utf8Header = '[Console]::OutputEncoding = [System.Text.Encoding]::UTF8; ';
+    return `chcp 65001 >nul && powershell -NoProfile -Command "${utf8Header}Get-Process | Where-Object { $_.ProcessName -match 'language|antigravity' } | Select-Object Id,ProcessName,Path | Format-Table -AutoSize"`;
+  }
+
+  /**
+   * Get troubleshooting tips for Windows
+   */
+  getTroubleshootingTips(): string[] {
+    return [
+      'Ensure Antigravity IDE is running',
+      'Check if language_server_windows_x64.exe is in Task Manager',
+      'Try restarting Antigravity IDE / VS Code',
+      'If PowerShell errors occur, try: Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned',
+      'If WMI errors occur, try: net start winmgmt (run as admin)'
+    ];
+  }
 }
 
 /**
  * Unix (macOS / Linux) platform strategy using ps and lsof
  */
 export class UnixStrategy implements PlatformStrategy {
+  // Dynamic port command detection (learned from competitor: vscode-antigravity-cockpit)
+  private availablePortCommand: 'lsof' | 'ss' | 'netstat' | null = null;
+  private portCommandChecked: boolean = false;
+
   constructor(private platform: "darwin" | "linux") { }
 
   getProcessListCommand(processName: string): string {
@@ -159,7 +185,7 @@ export class UnixStrategy implements PlatformStrategy {
           const wsMatch = cmd.match(/--workspace_id[=\s]+(?:["']?)([a-zA-Z0-9\-_.]+)(?:["']?)/);
 
           if (tokenMatch?.[1]) {
-            // STRICT CHECK: Ensure process belongs to antigravity
+            // STRICT CHECK: Ensure process belongs to Antigravity
             if (!cmd.includes('--app_data_dir') || !/app_data_dir\s+["']?antigravity/i.test(cmd)) {
               continue;
             }
@@ -180,9 +206,56 @@ export class UnixStrategy implements PlatformStrategy {
   }
 
   getPortListCommand(pid: number): string {
-    return this.platform === "darwin"
-      ? `lsof -iTCP -sTCP:LISTEN -n -P -p ${pid}`
-      : `ss -tlnp 2>/dev/null | grep "pid=${pid}" || lsof -iTCP -sTCP:LISTEN -n -P -p ${pid} 2>/dev/null`;
+    // macOS: Use -a (AND all conditions) and grep to filter by PID at command level
+    // This ensures we only get ports from the target process, not other processes
+    // Reference: Learned from competitor analysis (vscode-antigravity-cockpit)
+    if (this.platform === "darwin") {
+      return `lsof -nP -a -iTCP -sTCP:LISTEN -p ${pid} 2>/dev/null | grep -E "^\\S+\\s+${pid}\\s"`;
+    }
+
+    // Linux: Use detected command, fallback to chain if not yet detected
+    switch (this.availablePortCommand) {
+      case 'lsof':
+        return `lsof -nP -a -iTCP -sTCP:LISTEN -p ${pid} 2>/dev/null | grep -E "^\\S+\\s+${pid}\\s"`;
+      case 'ss':
+        return `ss -tlnp 2>/dev/null | grep "pid=${pid},"`;
+      case 'netstat':
+        return `netstat -tulpn 2>/dev/null | grep ${pid}`;
+      default:
+        // Fallback: try multiple commands in order
+        return `ss -tlnp 2>/dev/null | grep "pid=${pid}" || lsof -nP -a -iTCP -sTCP:LISTEN -p ${pid} 2>/dev/null | grep -E "^\\S+\\s+${pid}\\s"`;
+    }
+  }
+
+  /**
+   * Detect available port detection command on the system
+   * Priority: lsof > ss > netstat
+   * Call this before getPortListCommand for optimal command selection
+   */
+  async detectAvailablePortCommand(): Promise<void> {
+    if (this.portCommandChecked || this.platform === 'darwin') {
+      return; // macOS always uses lsof, no need to detect
+    }
+    this.portCommandChecked = true;
+
+    const { exec } = await import('child_process');
+    const { promisify } = await import('util');
+    const execAsync = promisify(exec);
+
+    const commands = ['lsof', 'ss', 'netstat'] as const;
+
+    for (const cmd of commands) {
+      try {
+        await execAsync(`which ${cmd}`, { timeout: 3000 });
+        this.availablePortCommand = cmd;
+        // debugLog would be nice here but we don't have access to it in this file
+        return;
+      } catch {
+        // Command not available, try next
+      }
+    }
+
+    // No command available, will use fallback chain in getPortListCommand
   }
 
   parseListeningPorts(stdout: string, pid: number): number[] {
@@ -235,6 +308,30 @@ export class UnixStrategy implements PlatformStrategy {
       }
     }
     return ports.sort((a, b) => a - b);
+  }
+
+  /**
+   * Get diagnostic command to list all language/antigravity related processes
+   * Used when detection fails to help troubleshoot
+   */
+  getDiagnosticCommand(): string {
+    return `ps aux | grep -E 'language|antigravity' | grep -v grep`;
+  }
+
+  /**
+   * Get troubleshooting tips for Unix
+   */
+  getTroubleshootingTips(): string[] {
+    const processName = this.platform === 'darwin'
+      ? 'language_server_macos_*'
+      : 'language_server_linux_x64';
+
+    return [
+      'Ensure Antigravity IDE is running',
+      `Check if ${processName} process is running: ps aux | grep language_server`,
+      'Try restarting Antigravity IDE',
+      'Check system logs for any process crashes'
+    ];
   }
 }
 

@@ -90,12 +90,20 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
   // State for one-time notification
   let hasShownNotification = false;
 
-  // Detect server for QuotaService (Async, non-blocking)
-  const processFinder = new ProcessFinder();
+  // External retry configuration (learned from competitor: vscode-antigravity-cockpit)
+  const MAX_BOOT_RETRY = 3;
+  const BOOT_RETRY_DELAY_MS = 5000;
+  let bootRetryCount = 0;
 
-  // 3s Initial Delay to allow server to initialize ports (as per User Request)
-  setTimeout(() => {
-    processFinder.detect().then(async serverInfo => {
+  /**
+   * Boot server connection with external retry mechanism
+   * This provides an additional layer of retry on top of ProcessFinder's internal retries
+   */
+  async function bootServerConnection(): Promise<void> {
+    const processFinder = new ProcessFinder();
+
+    try {
+      const serverInfo = await processFinder.detect();
       const extVersion = context.extension.packageJSON.version;
       const ideVersion = vscode.version;
       const commonMeta = {
@@ -110,6 +118,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
       if (serverInfo) {
         quotaService.setServerInfo(serverInfo);
         appViewModel.setConnectionStatus('connected');
+        bootRetryCount = 0; // Reset on success
 
         // Update UI and check for parsing errors
         await appViewModel.refreshQuota();
@@ -129,7 +138,23 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
           });
           hasShownNotification = true;
         }
+
+        infoLog("Server connection established successfully");
       } else {
+        // ProcessFinder internal retries failed, try external retry
+        if (bootRetryCount < MAX_BOOT_RETRY) {
+          bootRetryCount++;
+          infoLog(`Boot retry ${bootRetryCount}/${MAX_BOOT_RETRY} in ${BOOT_RETRY_DELAY_MS / 1000}s...`);
+          appViewModel.setConnectionStatus('connecting');
+
+          setTimeout(() => {
+            bootServerConnection();
+          }, BOOT_RETRY_DELAY_MS);
+          return;
+        }
+
+        // All retries exhausted, show failure notification
+        bootRetryCount = 0;
         appViewModel.setConnectionStatus('failed');
         if (hasShownNotification) return;
 
@@ -173,16 +198,36 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
             portsFromCmdline: processFinder.portsFromCmdline,
             portsFromNetstat: processFinder.portsFromNetstat,
             protocolUsed: processFinder.protocolUsed,
-            retryCount: processFinder.retryCount
+            retryCount: processFinder.retryCount,
+            bootRetryCount: MAX_BOOT_RETRY // Include external retry info
           });
           hasShownNotification = true;
         }
       }
-    }).catch(e => {
+    } catch (e) {
       errorLog("Server detection failed", e);
+
+      // Also retry on exception
+      if (bootRetryCount < MAX_BOOT_RETRY) {
+        bootRetryCount++;
+        infoLog(`Boot retry ${bootRetryCount}/${MAX_BOOT_RETRY} after error in ${BOOT_RETRY_DELAY_MS / 1000}s...`);
+        appViewModel.setConnectionStatus('connecting');
+
+        setTimeout(() => {
+          bootServerConnection();
+        }, BOOT_RETRY_DELAY_MS);
+        return;
+      }
+
+      bootRetryCount = 0;
       appViewModel.setConnectionStatus('failed');
-    });
-  }, 3000); // 3000ms delay
+    }
+  }
+
+  // 3s Initial Delay to allow server to initialize ports (as per User Request)
+  setTimeout(() => {
+    bootServerConnection();
+  }, 3000);
 
   // 4. Initialize View Components (The Face)
   const sidebarProvider = new SidebarProvider(context.extensionUri, appViewModel);

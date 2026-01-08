@@ -39,6 +39,8 @@ export class ProcessFinder {
   public portsFromNetstat: number = 0;  // Count of ports from netstat
   public retryCount: number = 0;  // Number of retry attempts
   public protocolUsed: 'https' | 'http' | 'none' = 'none';  // Final protocol used
+  // PowerShell warm-up state (learned from competitor: vscode-antigravity-cockpit)
+  private powershellTimeoutRetried: boolean = false;
 
   constructor() {
     const platform = process.platform;
@@ -75,6 +77,9 @@ export class ProcessFinder {
       verbose = false,
     } = options;
 
+    // Reset PowerShell warm-up state for this detection cycle
+    this.powershellTimeoutRetried = false;
+
     return retry(() => this.tryDetect(), {
       attempts,
       baseDelay,
@@ -88,14 +93,67 @@ export class ProcessFinder {
           debugLog(`ProcessFinder: Attempt ${attempt} failed, retrying in ${delay}ms...`);
         }
       },
-    }).then(result => {
+    }).then(async result => {
       if (!result) {
         errorLog(`ProcessFinder: Detection failed after ${attempts} attempts. Reason: ${this.failureReason || 'unknown'}`);
+        // Run diagnostics to help troubleshoot
+        await this.runDiagnostics();
       } else {
         infoLog(`ProcessFinder: Language Server detected successfully on port ${result.port}`);
       }
       return result;
     });
+  }
+
+  /**
+   * Run diagnostics when detection fails
+   * Lists related processes and provides troubleshooting tips
+   */
+  private async runDiagnostics(): Promise<void> {
+    warnLog('⚠️ Running diagnostics to help troubleshoot...');
+    infoLog(`Target process: ${this.processName}`);
+    infoLog(`Platform: ${process.platform}, Arch: ${process.arch}`);
+
+    // Output troubleshooting tips
+    const tips = this.strategy.getTroubleshootingTips();
+    if (tips.length > 0) {
+      infoLog('📋 Troubleshooting Tips:');
+      tips.forEach((tip, i) => infoLog(`  ${i + 1}. ${tip}`));
+    }
+
+    // Try to list related processes
+    try {
+      const diagCmd = this.strategy.getDiagnosticCommand();
+      debugLog(`Diagnostic command: ${diagCmd}`);
+
+      const { stdout, stderr } = await this.execute(diagCmd);
+
+      // Sanitize output: hide csrf_token to prevent leaking sensitive info
+      const sanitize = (text: string) => text.replace(/(--csrf_token[=\s]+)([a-f0-9-]+)/gi, '$1***REDACTED***');
+
+      if (stdout && stdout.trim()) {
+        infoLog(`📋 Related processes found:\n${sanitize(stdout).substring(0, 2000)}`);
+      } else {
+        warnLog('❌ No related processes found (language_server/antigravity)');
+        infoLog('💡 This usually means Antigravity IDE is not running or the process name has changed.');
+      }
+
+      if (stderr && stderr.trim()) {
+        warnLog(`Diagnostic stderr: ${sanitize(stderr).substring(0, 500)}`);
+      }
+    } catch (e) {
+      const error = e instanceof Error ? e : new Error(String(e));
+      debugLog(`Diagnostic command failed: ${error.message}`);
+
+      // Provide manual commands for the user to try
+      if (process.platform === 'win32') {
+        infoLog('💡 Try running this command manually in PowerShell:');
+        infoLog('   Get-Process | Where-Object { $_.ProcessName -match "language|antigravity" }');
+      } else {
+        infoLog('💡 Try running this command manually in Terminal:');
+        infoLog('   ps aux | grep -E "language|antigravity"');
+      }
+    }
   }
 
   /**
@@ -131,13 +189,14 @@ export class ProcessFinder {
     this.portsFromCmdline = 0; // Reset port counts
     this.portsFromNetstat = 0;
     this.protocolUsed = 'none';
+    // Note: powershellTimeoutRetried is NOT reset here - it persists across retries within one detect() call
 
     try {
       const expectedIds = this.getExpectedWorkspaceIds();
       debugLog(`ProcessFinder: Expected Workspace IDs: ${expectedIds.join(", ") || "none"}`);
 
       const cmd = this.strategy.getProcessListCommand(this.processName);
-      const { stdout } = await this.execute(cmd);
+      const { stdout } = await this.executeWithPowershellWarmup(cmd);
 
       let infos: ProcessInfo[] | null = this.strategy.parseProcessInfo(stdout);
 
@@ -145,7 +204,7 @@ export class ProcessFinder {
         if (this.strategy.getProcessListByKeywordCommand) {
           debugLog("ProcessFinder: Process name scan failed, trying keyword scan (csrf_token)...");
           const keywordCmd = this.strategy.getProcessListByKeywordCommand("csrf_token");
-          const { stdout: keywordStdout } = await this.execute(keywordCmd);
+          const { stdout: keywordStdout } = await this.executeWithPowershellWarmup(keywordCmd);
           infos = this.strategy.parseProcessInfo(keywordStdout);
         }
 
@@ -299,6 +358,11 @@ export class ProcessFinder {
 
   private async getListeningPorts(pid: number): Promise<number[]> {
     try {
+      // Ensure port command is detected on Linux (dynamic command selection)
+      if (this.strategy instanceof UnixStrategy) {
+        await this.strategy.detectAvailablePortCommand();
+      }
+
       const cmd = this.strategy.getPortListCommand(pid);
       const { stdout } = await this.execute(cmd);
       return this.strategy.parseListeningPorts(stdout, pid);
@@ -367,6 +431,44 @@ export class ProcessFinder {
     command: string
   ): Promise<{ stdout: string; stderr: string }> {
     return execAsync(command, { timeout: 3000 });
+  }
+
+  /**
+   * Execute command with PowerShell warm-up handling (Windows only)
+   * First timeout gets a free retry after 3s warm-up period
+   * Reference: vscode-antigravity-cockpit hunter.ts
+   */
+  private async executeWithPowershellWarmup(
+    command: string
+  ): Promise<{ stdout: string; stderr: string }> {
+    try {
+      return await this.execute(command);
+    } catch (e) {
+      const error = e instanceof Error ? e : new Error(String(e));
+      const errorMsg = error.message.toLowerCase();
+
+      // PowerShell warm-up: First timeout on Windows gets a free retry
+      if (process.platform === 'win32' && !this.powershellTimeoutRetried) {
+        const isTimeout = errorMsg.includes('timeout') ||
+          errorMsg.includes('timed out') ||
+          errorMsg.includes('etimedout');
+
+        if (isTimeout) {
+          warnLog('ProcessFinder: PowerShell command timed out (likely cold start), warming up...');
+          this.powershellTimeoutRetried = true;
+
+          // Wait 3 seconds for PowerShell to warm up
+          await new Promise(resolve => setTimeout(resolve, 3000));
+
+          // Retry with longer timeout
+          debugLog('ProcessFinder: Retrying after PowerShell warm-up...');
+          return execAsync(command, { timeout: 5000 });
+        }
+      }
+
+      // Re-throw for other errors or if warm-up already attempted
+      throw e;
+    }
   }
 
   /**
