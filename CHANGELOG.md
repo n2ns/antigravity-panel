@@ -2,6 +2,16 @@ English | [中文文档](docs/CHANGELOG_zh.md)
 
 # Change Log
 
+## [2.4.6] - 2026-01-08
+### Fixed
+- **macOS Port Detection**: Improved `lsof` command with `-a` flag and grep PID filter to ensure only target process ports are captured.
+- **PowerShell Cold Start**: Added warm-up handling for first timeout on Windows - now waits 3 seconds and retries without consuming retry count.
+- **Linux Port Detection**: Added dynamic command detection (lsof > ss > netstat) to avoid errors when specific commands are unavailable.
+
+### Added
+- **External Boot Retry**: Added 3 additional retries at extension level with 5-second intervals, providing extra resilience on top of ProcessFinder's internal retries.
+- **Diagnostic Output**: When detection fails, now outputs related processes and platform-specific troubleshooting tips to help users debug connectivity issues.
+
 ## [2.4.4] - 2026-01-05
 ### Fixed
 - **WSL Multi-Profile Support**: Fixed an issue where inaccurate quota data was displayed in WSL environments when using multiple VS Code profiles.
