@@ -2,6 +2,14 @@ English | [中文文档](docs/CHANGELOG_zh.md)
 
 # Change Log
 
+## [2.4.7] - 2026-01-10
+### Fixed
+- **Windows Workspace ID Mismatch**: Fixed Language Server detection failing on Windows due to path normalization differences. Extension now correctly encodes drive letter colon as `_3A_` and preserves directory case to match Language Server format.
+- **Error Reporting Clarity**: Added `workspace_mismatch` failure reason for clearer diagnostics when all candidates are rejected due to Workspace ID mismatch.
+
+### Changed
+- **Module Refactoring**: Extracted Workspace ID normalization logic to `shared/utils/workspace_id.ts` for better maintainability and testability.
+
 ## [2.4.6] - 2026-01-08
 ### Fixed
 - **macOS Port Detection**: Improved `lsof` command with `-a` flag and grep PID filter to ensure only target process ports are captured.

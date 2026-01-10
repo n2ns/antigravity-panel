@@ -1,7 +1,5 @@
 English | [中文文档](docs/README_zh.md)
 
-## 🔥 Now supporting Google's latest Gemini 3 Flash! Feedback welcome!
-
 # Toolkit for Antigravity
 
 > Monitor your AI quota usage and manage cache with ease

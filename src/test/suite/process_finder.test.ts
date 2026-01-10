@@ -153,3 +153,68 @@ suite('ProcessFinder Test Suite', () => {
         assert.strictEqual(result?.port, 8080);
     });
 });
+
+/**
+ * Test subclass to expose private normalization methods for testing
+ * Now imports from the workspace_id module
+ */
+import { normalizeWindowsPath, normalizeUnixPath } from '../../shared/utils/workspace_id';
+
+suite('Workspace ID Normalization Test Suite', () => {
+
+    suite('Windows Path Normalization', () => {
+        test('should encode drive letter and colon correctly', () => {
+            // V:\DevSpace\daisy-box → file_v_3A_DevSpace_daisy_box
+            const result = normalizeWindowsPath('V:\\DevSpace\\daisy-box');
+            assert.strictEqual(result, 'file_v_3A_DevSpace_daisy_box');
+        });
+
+        test('should handle simple drive path', () => {
+            // D:\Tools → file_d_3A_Tools
+            const result = normalizeWindowsPath('D:\\Tools');
+            assert.strictEqual(result, 'file_d_3A_Tools');
+        });
+
+        test('should preserve directory case', () => {
+            // C:\Users\MyProject → file_c_3A_Users_MyProject
+            const result = normalizeWindowsPath('C:\\Users\\MyProject');
+            assert.strictEqual(result, 'file_c_3A_Users_MyProject');
+        });
+
+        test('should handle spaces in path', () => {
+            // E:\My Projects\Test App → file_e_3A_My_Projects_Test_App
+            const result = normalizeWindowsPath('E:\\My Projects\\Test App');
+            assert.strictEqual(result, 'file_e_3A_My_Projects_Test_App');
+        });
+
+        test('should handle lowercase drive letter', () => {
+            const result = normalizeWindowsPath('c:\\temp');
+            assert.strictEqual(result, 'file_c_3A_temp');
+        });
+    });
+
+    suite('Unix Path Normalization', () => {
+        test('should normalize simple path', () => {
+            // /home/deploy/projects → file_home_deploy_projects
+            const result = normalizeUnixPath('/home/deploy/projects');
+            assert.strictEqual(result, 'file_home_deploy_projects');
+        });
+
+        test('should convert to lowercase', () => {
+            // /Home/User/MyProject → file_home_user_myproject
+            const result = normalizeUnixPath('/Home/User/MyProject');
+            assert.strictEqual(result, 'file_home_user_myproject');
+        });
+
+        test('should handle hyphens', () => {
+            // /home/user/my-project → file_home_user_my_project
+            const result = normalizeUnixPath('/home/user/my-project');
+            assert.strictEqual(result, 'file_home_user_my_project');
+        });
+
+        test('should handle trailing slashes', () => {
+            const result = normalizeUnixPath('/home/user/project/');
+            assert.strictEqual(result, 'file_home_user_project');
+        });
+    });
+});

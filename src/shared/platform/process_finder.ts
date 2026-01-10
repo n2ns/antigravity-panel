@@ -4,7 +4,7 @@
  * Supports automatic HTTPS → HTTP fallback
  */
 
-import * as vscode from "vscode";
+
 import { exec } from "child_process";
 import { promisify } from "util";
 import {
@@ -16,6 +16,7 @@ import { retry } from "../utils/retry";
 import { testPort as httpTestPort } from "../utils/http_client";
 import { debugLog, infoLog, warnLog, errorLog } from "../utils/logger";
 import { isWsl, getWslHostIp } from "../utils/wsl";
+import { getExpectedWorkspaceIds } from "../utils/workspace_id";
 import { LanguageServerInfo, DetectOptions, CommunicationAttempt, ProcessInfo } from "../utils/types";
 
 const execAsync = promisify(exec);
@@ -28,9 +29,11 @@ export class ProcessFinder {
   private processName: string;
 
   // Stores the reason for the last detection failure
-  public failureReason: 'no_process' | 'ambiguous' | 'no_port' | 'auth_failed' | null = null;
+  public failureReason: 'no_process' | 'ambiguous' | 'no_port' | 'auth_failed' | 'workspace_mismatch' | null = null;
   // Number of candidate processes found
   public candidateCount: number = 0;
+  // Number of candidates skipped due to workspace ID mismatch
+  public skippedForWorkspace: number = 0;
   // Detailed info about attempts (for diagnostics)
   public attemptDetails: CommunicationAttempt[] = [];
   // Enhanced diagnostics
@@ -156,27 +159,7 @@ export class ProcessFinder {
     }
   }
 
-  /**
-   * Calculate the expected Workspace IDs for all current VS Code workspace folders
-   */
-  private getExpectedWorkspaceIds(): string[] {
-    const folders = vscode.workspace.workspaceFolders;
-    if (!folders || folders.length === 0) return [];
 
-    return folders.map(folder => {
-      const rootPath = folder.uri.fsPath;
-
-      // Normalize path: lowercase, strip leading/trailing non-alphanumeric, replace separator with underscore
-      // This matches the LS internal naming convention
-      const normalizedPath = rootPath
-        .toLowerCase()
-        .replace(/^[^a-z0-9]+/, "")    // Strip leading non-alphanumeric
-        .replace(/[^a-z0-9]+$/, "")    // Strip trailing non-alphanumeric
-        .replace(/[^a-z0-9]/g, "_");   // Replace everything else with underscore
-
-      return `file_${normalizedPath}`;
-    });
-  }
 
   /**
    * Single detection attempt without retry
@@ -184,6 +167,7 @@ export class ProcessFinder {
   protected async tryDetect(): Promise<LanguageServerInfo | null> {
     this.failureReason = null; // Reset failure reason
     this.candidateCount = 0;   // Reset candidate count
+    this.skippedForWorkspace = 0; // Reset workspace mismatch counter
     this.attemptDetails = [];  // Reset attempts
     this.tokenPreview = '';    // Reset token preview
     this.portsFromCmdline = 0; // Reset port counts
@@ -192,7 +176,7 @@ export class ProcessFinder {
     // Note: powershellTimeoutRetried is NOT reset here - it persists across retries within one detect() call
 
     try {
-      const expectedIds = this.getExpectedWorkspaceIds();
+      const expectedIds = getExpectedWorkspaceIds();
       debugLog(`ProcessFinder: Expected Workspace IDs: ${expectedIds.join(", ") || "none"}`);
 
       const cmd = this.strategy.getProcessListCommand(this.processName);
@@ -289,6 +273,7 @@ export class ProcessFinder {
         // STRICT ISOLATION: If we have expected IDs, don't connect to a process that has a DIFFERENT ID
         if (expectedIds.length > 0 && info.workspaceId && !expectedIds.includes(info.workspaceId)) {
           debugLog(`ProcessFinder: Skipping PID ${info.pid} - belongs to a different workspace (${info.workspaceId})`);
+          this.skippedForWorkspace++;
           continue;
         }
 
@@ -297,6 +282,16 @@ export class ProcessFinder {
           debugLog(`ProcessFinder: Connection successful for generic PID ${info.pid} after verification.`);
           return result;
         }
+      }
+
+      // Set appropriate failureReason based on what happened (only if not already set by verifyAndConnect)
+      if (!this.failureReason) {
+        if (this.skippedForWorkspace > 0 && this.skippedForWorkspace === infos.length) {
+          // All candidates were skipped due to workspace mismatch
+          this.failureReason = 'workspace_mismatch';
+          debugLog(`ProcessFinder: All ${this.skippedForWorkspace} candidates rejected due to workspace ID mismatch. Expected: [${expectedIds.join(', ')}]`);
+        }
+        // Note: If verifyAndConnect was called and failed, it already set failureReason to 'no_port' or 'auth_failed'
       }
 
       return null;

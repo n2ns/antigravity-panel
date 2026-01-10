@@ -1,7 +1,5 @@
 [English](../README.md) | 中文文档
 
-## 🔥 已支持 Google 最新版 Gemini 3 Flash！欢迎反馈！
-
 # Toolkit for Antigravity
 
 > 轻松监控 AI 配额使用和管理缓存
