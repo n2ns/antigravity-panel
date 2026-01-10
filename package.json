@@ -96,6 +96,18 @@
         "title": "%command.toggleAutoAccept.title%",
         "category": "%extension.category%",
         "icon": "$(check-all)"
+      },
+      {
+        "command": "tfa.generateCommitMessageClaude",
+        "title": "%command.generateCommitMessageClaude.title%",
+        "category": "%extension.category%",
+        "icon": "$(sparkle)"
+      },
+      {
+        "command": "tfa.setAnthropicApiKey",
+        "title": "%command.setAnthropicApiKey.title%",
+        "category": "%extension.category%",
+        "icon": "$(key)"
       }
     ],
     "menus": {
@@ -323,6 +335,45 @@
             "maximum": 5000,
             "order": 31,
             "description": "%config.system.autoAcceptInterval.description%"
+          }
+        }
+      },
+      {
+        "title": "TFA: Commit Message (Local LLM)",
+        "properties": {
+          "tfa.commitMessageClaude.endpoint": {
+            "type": "string",
+            "default": "http://localhost:11434/api/generate",
+            "order": 5,
+            "description": "%config.commitMessageClaude.endpoint.description%"
+          },
+          "tfa.commitMessageClaude.model": {
+            "type": "string",
+            "default": "llama3.2",
+            "order": 10,
+            "description": "%config.commitMessageClaude.model.description%"
+          },
+          "tfa.commitMessageClaude.maxDiffChars": {
+            "type": "number",
+            "default": 80000,
+            "minimum": 1000,
+            "maximum": 200000,
+            "order": 20,
+            "description": "%config.commitMessageClaude.maxDiffChars.description%"
+          },
+          "tfa.commitMessageClaude.format": {
+            "type": "string",
+            "default": "conventional",
+            "order": 30,
+            "enum": [
+              "conventional",
+              "simple"
+            ],
+            "enumDescriptions": [
+              "%config.commitMessageClaude.format.conventional%",
+              "%config.commitMessageClaude.format.simple%"
+            ],
+            "description": "%config.commitMessageClaude.format.description%"
           }
         }
       }
