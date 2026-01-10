@@ -50,5 +50,13 @@
     "config.system.autoAcceptInterval.description": "Interval for checking auto-accept in milliseconds (default: 800ms). Lower values are faster but consume more resources.",
     "Auto-Accept: ON": "Auto-Accept: ON",
     "Auto-Accept: OFF": "Auto-Accept: OFF",
-    "Hands-free Mode: Automatically accept agent suggested edits and terminal commands": "Hands-free Mode: Automatically accept agent suggested edits and terminal commands"
+    "Hands-free Mode: Automatically accept agent suggested edits and terminal commands": "Hands-free Mode: Automatically accept agent suggested edits and terminal commands",
+    "command.generateCommitMessageClaude.title": "Generate Commit Message (Local LLM)",
+    "command.setAnthropicApiKey.title": "Set LLM API Key",
+    "config.commitMessageClaude.endpoint.description": "LLM API endpoint URL. Default: Ollama at localhost:11434. Also supports OpenAI-compatible and Anthropic APIs.",
+    "config.commitMessageClaude.model.description": "Model name to use (e.g., llama3.2,  mistral, codellama)",
+    "config.commitMessageClaude.maxDiffChars.description": "Maximum characters of diff to send to the LLM",
+    "config.commitMessageClaude.format.description": "Commit message format style",
+    "config.commitMessageClaude.format.conventional": "Conventional: type(scope): description",
+    "config.commitMessageClaude.format.simple": "Simple: plain description"
 }

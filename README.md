@@ -80,6 +80,29 @@ English | [中文文档](docs/README_zh.md)
 - Toggle on/off via the sidebar "Rocket" switch or command
 - Ideal for rapid prototyping when you trust the Agent's output
 
+### ✨ Commit Message Generator (Claude)
+
+**Generate conventional commit messages using Claude AI**
+
+A workaround for when the built-in "Generate commit message" feature is unavailable.
+
+**Setup:**
+1. Get an API key from [Anthropic Console](https://console.anthropic.com/)
+2. Run `Antigravity Toolkit: Set Anthropic API Key`
+3. Enter your API key (stored securely, never in plaintext)
+
+**Usage:**
+1. Stage your changes with `git add`
+2. Run `Antigravity Toolkit: Generate Commit Message (Claude)`
+3. The commit message auto-populates in the SCM input box
+
+**Configuration:**
+- **Model**: Choose between Claude Sonnet 4, 3.5 Sonnet, or Opus
+- **Max Diff Size**: Limit characters sent (default: 80,000)
+- **Format**: Conventional commits or simple style
+
+> ⚠️ **Privacy**: Your staged diff is sent to Anthropic's API to generate the message.
+
 ### 🔄 Service Recovery Tools
 
 **Built-in troubleshooting**

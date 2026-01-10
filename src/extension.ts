@@ -19,6 +19,7 @@ import { initLogger, setDebugMode, infoLog, errorLog, getLogger } from "./shared
 import { formatBytes } from "./shared/utils/format";
 import { CommunicationAttempt } from "./shared/utils/types";
 import { getDetailedOSVersion } from "./shared/utils/platform";
+import { generateCommitMessageCommand, setAnthropicApiKeyCommand } from "./commitMessageClaude";
 
 
 /**
@@ -401,6 +402,9 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
         vscode.window.showInformationMessage(vscode.l10n.t("Auto-Accept: OFF - Manual approval required."));
       }
     }),
+    // Claude commit message generator commands
+    vscode.commands.registerCommand("tfa.generateCommitMessageClaude", () => generateCommitMessageCommand(context)),
+    vscode.commands.registerCommand("tfa.setAnthropicApiKey", () => setAnthropicApiKeyCommand(context)),
     vscode.commands.registerCommand("tfa.runDiagnostics", async () => {
       await vscode.window.withProgress({
         location: vscode.ProgressLocation.Notification,
