@@ -80,9 +80,13 @@ export function normalizeWindowsPath(path: string): string {
  * // → "file_home_deploy_projects"
  */
 export function normalizeUnixPath(path: string): string {
-    // First, URL-encode the path to match what the language server does
+    // First, normalize backslashes to forward slashes (for UNC/Windows paths)
+    // This prevents backslashes from being URL-encoded as %5C → _5C
+    const normalizedSlashes = path.replace(/\\/g, '/');
+
+    // URL-encode the path to match what the language server does
     // This handles spaces as %20 and other special characters
-    const urlEncoded = path
+    const urlEncoded = normalizedSlashes
         .split('/')
         .map(segment => {
             // Encode each path segment, which converts spaces to %20
