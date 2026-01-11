@@ -3,7 +3,7 @@ English | [中文文档](docs/CHANGELOG_zh.md)
 # Change Log
 
 
-## [2.5.0] - Unreleased
+## [2.5.0] - 2026-01-11
 
 ### Added
 - **AI Commit Message Generator**: Added a flexible Commit Message Generator supporting both **Local LLM (Ollama)** and **Anthropic Claude**.
