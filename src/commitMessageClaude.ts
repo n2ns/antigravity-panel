@@ -482,23 +482,21 @@ export async function setAnthropicApiKeyCommand(context: vscode.ExtensionContext
     const existingKey = await getApiKey(context);
 
     const input = await vscode.window.showInputBox({
-        prompt: vscode.l10n.t('Enter your Anthropic API key'),
-        placeHolder: 'sk-ant-...',
+        prompt: vscode.l10n.t('Enter your API key (Anthropic, OpenAI, or other provider)'),
+        placeHolder: 'sk-ant-... or sk-...',
         password: true,
         value: existingKey ? '••••••••' : undefined,
         validateInput: (value: string) => {
             if (!value || value === '••••••••') {
                 return existingKey ? null : vscode.l10n.t('API key is required');
             }
-            if (!value.startsWith('sk-ant-')) {
-                return vscode.l10n.t('Invalid API key format. Should start with sk-ant-');
-            }
+            // Accept any key - support for Anthropic, OpenAI, and other providers
             return null;
         }
     });
 
     if (input && input !== '••••••••') {
         await setApiKey(context, input);
-        vscode.window.showInformationMessage(vscode.l10n.t('Anthropic API key saved securely'));
+        vscode.window.showInformationMessage(vscode.l10n.t('API key saved securely'));
     }
 }

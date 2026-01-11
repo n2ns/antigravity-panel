@@ -135,7 +135,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
 
         // Enhanced diagnostics: Log successful connection
         infoLog(`✅ Connected to language server on port ${serverInfo.port}`);
-        infoLog(`🔑 CSRF Token: ${serverInfo.csrfToken.substring(0, 8)}...`);
+        debugLog(`🔑 CSRF Token: ${serverInfo.csrfToken.substring(0, 8)}...`);
         debugLog(`📊 Connection stats: ${processFinder.attemptDetails.length} attempts, Protocol: ${processFinder.protocolUsed}`);
         debugLog(`📡 Ports: ${processFinder.portsFromCmdline} from cmdline, ${processFinder.portsFromNetstat} from netstat`);
 
