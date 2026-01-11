@@ -1,9 +1,10 @@
 /**
  * esbuild 构建配置
  *
- * 双入口构建：
+ * 三入口构建：
  * - Extension: Node.js CJS 格式
- * - Webview: 浏览器 ESM 格式 (Lit 组件)
+ * - Webview JS: 浏览器 ESM 格式 (Lit 组件)
+ * - Webview CSS: 合并模块化 CSS 文件
  */
 
 const esbuild = require("esbuild");
@@ -40,7 +41,7 @@ async function run() {
     }]
   });
 
-  // Webview 构建配置 (浏览器 ESM 环境)
+  // Webview JS 构建配置 (浏览器 ESM 环境)
   const webviewContext = await esbuild.context({
     entryPoints: [path.resolve(__dirname, "src", "view", "webview", "index.ts")],
     bundle: true,
@@ -56,7 +57,16 @@ async function run() {
     },
   });
 
-  console.log("Building Extension and Webview...");
+  // Webview CSS 构建配置 (合并模块化 CSS)
+  const cssContext = await esbuild.context({
+    entryPoints: [path.resolve(__dirname, "src", "view", "webview.css")],
+    bundle: true,
+    outfile: path.resolve(__dirname, "dist", "webview.css"),
+    logLevel: "info",
+    minify: !isWatch,
+  });
+
+  console.log("Building Extension, Webview JS, and Webview CSS...");
 
   // Ensure dist directory exists
   const distDir = path.resolve(__dirname, "dist");
@@ -64,27 +74,24 @@ async function run() {
     fs.mkdirSync(distDir);
   }
 
-  // Copy CSS file to dist directory
-  const srcCss = path.resolve(__dirname, "src", "view", "webview.css");
-  const distCss = path.resolve(__dirname, "dist", "webview.css");
-  fs.copyFileSync(srcCss, distCss);
-  console.log("Copied webview.css to dist/");
-
   if (isWatch) {
     console.log("Watch mode enabled");
     await Promise.all([
       extensionContext.watch(),
       webviewContext.watch(),
+      cssContext.watch(),
     ]);
     console.log("Watching for changes...");
   } else {
     await Promise.all([
       extensionContext.rebuild(),
       webviewContext.rebuild(),
+      cssContext.rebuild(),
     ]);
     console.log("Build completed successfully!");
     await extensionContext.dispose();
     await webviewContext.dispose();
+    await cssContext.dispose();
   }
 }
 

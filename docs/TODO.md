@@ -2,7 +2,7 @@ English | [中文文档](TODO_zh.md)
 
 # TODO List
 
-> Last Updated: 2025-12-17
+> Last Updated: 2026-01-11
 
 > ⚠️ **Note**: This document should only contain pending tasks. Completed tasks should be removed and documented in [CHANGELOG.md](../CHANGELOG.md) or [FEATURES.md](./FEATURES.md).
 
@@ -12,7 +12,7 @@ English | [中文文档](TODO_zh.md)
 
 ### Test Coverage Improvement
 
-- [ ] **Maintain high unit test coverage** (Target: 80%, Current: 165 tests)
+- [ ] **Maintain high unit test coverage** (Target: 80%, Current: 243 tests)
   - [ ] `HttpClient` - HTTPS→HTTP fallback, protocol cache
   - [ ] `StatusBarManager` - Status bar updates (requires VS Code integration tests)
   - [ ] `SidebarProvider` - Webview message handling (requires VS Code integration tests)
@@ -89,10 +89,10 @@ English | [中文文档](TODO_zh.md)
 
 ## 🔧 Technical Debt
 
-- [ ] **Improve Error Handling**
-  - Add user-friendly error messages for network failures
-  - Log detailed errors in Output Channel
-  - Avoid exposing technical details in UI
+- [x] **Improve Error Handling** (Phase 1 completed in v2.5.0)
+  - Standards-compliant error handling using `NodeJS.ErrnoException`
+  - Reduced boilerplate and improved type safety in async operations
+  - Log detailed errors in Output Channel (Implemented for Commit Generator)
 
 - [x] **Webview i18n Support** (Completed in v2.1.0)
   - Implemented dynamic translation passing to webview components.

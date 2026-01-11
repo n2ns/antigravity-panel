@@ -1,0 +1,190 @@
+/**
+ * Tree Styles
+ * 
+ * File tree, folder nodes, section headers
+ */
+
+/* Folder Tree Card wrapper */
+.folder-tree-card {
+    margin: 8px 6px;
+    background: var(--vscode-sideBar-background);
+    border: 1px solid var(--vscode-widget-border, rgba(255, 255, 255, 0.1));
+    border-radius: 6px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+    overflow: hidden;
+}
+
+/* Section Header (using secondary button theme) */
+.section-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    height: 28px;
+    box-sizing: border-box;
+    cursor: pointer;
+    user-select: none;
+    font-size: 0.85em;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--vscode-foreground);
+    background: var(--vscode-button-secondaryBackground);
+    border-bottom: 1px solid var(--vscode-button-border, rgba(0, 0, 0, 0.2));
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.section-header:hover {
+    background: var(--vscode-button-secondaryHoverBackground);
+}
+
+.section-title {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.3);
+}
+
+.section-stats {
+    color: var(--vscode-foreground);
+    font-size: 0.9em;
+    font-weight: 400;
+    text-transform: none;
+    letter-spacing: normal;
+    opacity: 0.85;
+}
+
+.tree-container {
+    padding: 4px 0;
+}
+
+.tree-container.hidden {
+    display: none !important;
+}
+
+/* Folder Node Styles */
+.folder {
+    cursor: pointer;
+    padding: 4px 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.folder:hover {
+    background: var(--vscode-list-hoverBackground);
+}
+
+.folder-icon {
+    color: var(--vscode-symbolIcon-folderForeground, #dcb67a);
+}
+
+.folder-label {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    line-height: 16px;
+}
+
+.folder-size {
+    color: var(--vscode-foreground);
+    font-size: 0.85em;
+    margin-right: 4px;
+    margin-left: 24px;
+}
+
+.folder-delete {
+    opacity: 0.6;
+    cursor: pointer;
+}
+
+.folder-delete.codicon,
+.codicon.folder-delete {
+    font-size: 12px !important;
+}
+
+.folder-delete:hover {
+    opacity: 1;
+}
+
+.files-container {
+    padding-left: 8px;
+}
+
+/* File Item Styles */
+.file {
+    padding: 3px 8px 3px 32px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    border: 1px solid transparent;
+}
+
+.file:hover {
+    background: var(--vscode-list-hoverBackground);
+}
+
+.file.selected {
+    background: var(--vscode-list-activeSelectionBackground);
+    color: var(--vscode-list-activeSelectionForeground);
+    outline: 1px solid var(--vscode-list-focusOutline);
+}
+
+.file-icon {
+    color: var(--vscode-symbolIcon-fileForeground, #c5c5c5);
+    flex-shrink: 0;
+}
+
+.file-icon-media {
+    color: var(--vscode-symbolIcon-colorForeground, #ce9178);
+}
+
+.file-icon-code {
+    color: var(--vscode-symbolIcon-classForeground, #ee9d28);
+}
+
+.file-icon-md {
+    color: var(--vscode-symbolIcon-keywordForeground, #569cd6);
+}
+
+.file-icon-json {
+    color: var(--vscode-symbolIcon-enumeratorForeground, #b5cea8);
+}
+
+.file-name {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.file-actions {
+    display: none;
+    margin-left: auto;
+    flex-shrink: 0;
+}
+
+.file:hover .file-actions,
+.file.selected .file-actions {
+    display: flex;
+}
+
+.file-action-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: inherit;
+    padding: 2px;
+    display: flex;
+    align-items: center;
+    opacity: 0.7;
+}
+
+.file-action-btn:hover {
+    opacity: 1;
+    background: var(--vscode-toolbar-hoverBackground);
+    border-radius: 3px;
+}

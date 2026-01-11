@@ -52,7 +52,7 @@ export class FileItemComponent extends LitElement {
         <i class="${this._getIconClass()}"></i>
         <span class="file-name">${this.name}</span>
         <div class="file-actions">
-          <button class="action-btn" title="Delete File" @click=${this._onDelete}>
+          <button class="file-action-btn" title="Delete File" @click=${this._onDelete}>
             <i class="codicon codicon-trash"></i>
           </button>
         </div>

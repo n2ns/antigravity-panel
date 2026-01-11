@@ -1,0 +1,266 @@
+/**
+ * Footer & User Info Styles
+ * 
+ * Sidebar footer, credits bar, user info card
+ */
+
+/* Footer styles */
+sidebar-footer {
+    display: block;
+    background: var(--vscode-sideBar-background);
+    border-top: 1px solid var(--vscode-widget-border);
+    box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.2);
+    /* Ensure it sits above scrollable content */
+}
+
+.sidebar-footer {
+    padding: 4px 8px 8px 8px;
+    /* Tighter top padding */
+    background: var(--vscode-sideBar-background);
+    border-top: 1px solid var(--vscode-widget-border);
+    display: flex;
+    flex-flow: row wrap;
+    gap: 6px;
+}
+
+.discussions-btn {
+    flex: 1 1 110px;
+    /* Basis for wrapping */
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 6px 4px;
+    background: var(--vscode-button-secondaryBackground);
+    color: var(--vscode-foreground);
+    border: 1px solid var(--vscode-button-border, transparent);
+    border-radius: 3px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 0.82em;
+    font-weight: 500;
+    transition: background 0.2s ease;
+    white-space: nowrap;
+}
+
+.discussions-btn span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.discussions-btn:hover {
+    background: var(--vscode-button-secondaryHoverBackground);
+}
+
+.discussions-btn .codicon {
+    font-size: 16px;
+}
+
+/* Sidebar Tagline - Engraved Nameplate Effect */
+.sidebar-tagline {
+    text-align: center;
+    font-size: 0.72em;
+    font-style: italic;
+    color: var(--vscode-foreground);
+    padding: 4px 16px 12px;
+    opacity: 0.5;
+    width: 100%;
+    box-sizing: border-box;
+    margin-top: 0;
+    background: rgba(0, 0, 0, 0.08);
+    border-radius: 4px;
+    box-shadow:
+        inset 0 1px 2px rgba(0, 0, 0, 0.15),
+        inset 0 -1px 0 rgba(255, 255, 255, 0.05);
+    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.1);
+    letter-spacing: 0.5px;
+}
+
+/* Credits Bar Styles - Card wrapper */
+.credits-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 12px;
+    padding: 10px 12px;
+    margin: 4px 6px 8px 6px;
+    background: var(--vscode-sideBar-background);
+    border: 1px solid var(--vscode-widget-border, rgba(255, 255, 255, 0.1));
+    border-radius: 6px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+}
+
+.credits-title {
+    width: 100%;
+    font-size: 0.85em;
+    color: var(--vscode-foreground);
+    margin-bottom: 4px;
+}
+
+.credits-bar .credit-item {
+    flex: 1 1 100px;
+    min-width: 100px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.8em;
+}
+
+.credits-bar .credit-label {
+    color: var(--vscode-foreground);
+    font-weight: 500;
+}
+
+.credits-bar .credit-value {
+    color: var(--vscode-foreground);
+    font-weight: 600;
+    font-family: var(--vscode-editor-font-family, monospace);
+    font-size: 0.9em;
+}
+
+.credits-bar .credit-progress {
+    width: 100%;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-top: 2px;
+}
+
+.credits-bar .credit-fill {
+    height: 100%;
+    border-radius: 2px;
+    transition: width 0.5s ease;
+}
+
+/* User Info Card Styles */
+.user-info-card {
+    padding: 10px 14px;
+    background: var(--vscode-sideBar-background);
+    border: 1px solid var(--vscode-widget-border, rgba(255, 255, 255, 0.25));
+    border-radius: 4px;
+    margin: 10px 8px;
+    /* Slightly more vertical spacing */
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+}
+
+.user-info-card .user-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.user-info-card .user-profile-info {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex: 0 1 auto;
+    min-width: 0;
+    /* Allow shrinking for ellipsis */
+}
+
+.user-info-card .user-header .codicon {
+    font-size: 16px;
+    color: var(--vscode-foreground);
+    opacity: 0.9;
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.user-info-card .user-email {
+    font-size: 0.85em;
+    font-weight: 500;
+    color: var(--vscode-foreground);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    line-height: normal;
+}
+
+.user-info-card .tier-badge {
+    padding: 3px 8px;
+    border-radius: 3px;
+    background: var(--vscode-badge-background);
+    color: var(--vscode-badge-foreground);
+    font-size: 0.7em;
+    font-weight: 600;
+    flex-shrink: 0;
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    line-height: 1;
+}
+
+.user-info-card .user-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.85em;
+}
+
+.user-info-card .user-label {
+    color: var(--vscode-foreground);
+    min-width: 40px;
+}
+
+.user-info-card .user-value {
+    color: var(--vscode-foreground);
+    font-weight: 500;
+}
+
+.user-info-card .token-section {
+    margin-top: 6px;
+    padding-top: 8px;
+    border-top: 1px solid var(--vscode-widget-border);
+}
+
+.user-info-card .token-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.82em;
+}
+
+.user-info-card .token-label {
+    color: var(--vscode-foreground);
+}
+
+.user-info-card .token-value {
+    color: var(--vscode-foreground);
+    font-weight: 500;
+    font-family: var(--vscode-editor-font-family, monospace);
+}
+
+.user-info-card .progress-bar {
+    height: 6px;
+    background: var(--vscode-progressBar-background, rgba(255, 255, 255, 0.1));
+    border-radius: 3px;
+    margin: 6px 0;
+    overflow: hidden;
+}
+
+.user-info-card .progress-fill {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 0.5s ease, background 0.3s ease;
+}
+
+.user-info-card .usage-info {
+    font-size: 0.78em;
+    opacity: 0.8;
+}
+
+.user-info-card .usage-label {
+    color: var(--vscode-foreground);
+}
+
+.user-info-card .usage-value {
+    font-weight: 600;
+}

@@ -51,6 +51,10 @@ export function getWorkspaceRoot(): string | undefined {
     return folders[0].uri.fsPath;
 }
 
+function isErrnoException(error: unknown): error is NodeJS.ErrnoException {
+    return error instanceof Error && typeof (error as NodeJS.ErrnoException).code === 'string';
+}
+
 /**
  * Check if git is available and workspace is a git repo
  */
@@ -58,8 +62,8 @@ export async function verifyGitRepo(workspaceRoot: string): Promise<{ valid: boo
     try {
         await execFileAsync('git', ['rev-parse', '--show-toplevel'], { cwd: workspaceRoot });
         return { valid: true };
-    } catch (e: any) {
-        if (e.code === 'ENOENT') {
+    } catch (e: unknown) {
+        if (isErrnoException(e) && e.code === 'ENOENT') {
             return { valid: false, error: 'Git is not installed or not in PATH' };
         }
         return { valid: false, error: 'Not a git repository' };
@@ -316,8 +320,9 @@ export async function callLLMApi(
 
         const data = await response.json() as LLMResponse;
         return parseLLMResponse(data);
-    } catch (e: any) {
-        return { success: false, error: e.message || 'Unknown error occurred' };
+    } catch (e: unknown) {
+        const errorMessage = e instanceof Error ? e.message : String(e);
+        return { success: false, error: errorMessage || 'Unknown error occurred' };
     }
 }
 
@@ -462,9 +467,10 @@ export async function generateCommitMessageCommand(context: vscode.ExtensionCont
                 vscode.window.showInformationMessage(vscode.l10n.t('Commit message generated successfully'));
             }
 
-        } catch (e: any) {
+        } catch (e: unknown) {
             errorLog('Generate commit message failed', e);
-            vscode.window.showErrorMessage(vscode.l10n.t('Failed to generate commit message: {0}', e.message));
+            const errorMessage = e instanceof Error ? e.message : String(e);
+            vscode.window.showErrorMessage(vscode.l10n.t('Failed to generate commit message: {0}', errorMessage));
         }
     });
 }

@@ -25,3 +25,6 @@ Thumbs.db
 *.swo
 /local_bak
 /tmp/
+
+# Backup files
+*.bak

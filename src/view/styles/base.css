@@ -1,0 +1,88 @@
+/**
+ * Base Styles
+ * 
+ * Global resets, CSS variables, and common utility classes
+ */
+
+/* Base styles */
+body {
+  font-family: var(--vscode-font-family);
+  padding: 0;
+  margin: 0;
+  color: var(--vscode-foreground);
+  font-size: var(--vscode-font-size);
+  overflow: hidden;
+  /* Disable body scroll */
+  height: 100%;
+  /* Full height */
+}
+
+html {
+  height: 100%;
+}
+
+sidebar-app {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* Common styles */
+.codicon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Tooltip Utility - Follows VS Code Theme */
+[data-tooltip] {
+  position: relative;
+  cursor: help;
+}
+
+/* Global Tooltip Element (Managed by TooltipManager.ts) */
+.global-tooltip {
+  padding: 6px 10px;
+  background-color: var(--vscode-editorHoverWidget-background, #252526);
+  color: var(--vscode-editorHoverWidget-foreground, #cccccc);
+  border: 1px solid var(--vscode-editorHoverWidget-border, #454545);
+  border-radius: 3px;
+  font-size: 0.78em;
+  line-height: 1.4;
+  white-space: normal;
+  word-wrap: break-word;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  text-align: left;
+  /* Width controlled by JS */
+  width: max-content;
+}
+
+.loading {
+  padding: 12px;
+  display: flex;
+  justify-content: center;
+  color: var(--vscode-foreground);
+}
+
+.empty-state {
+  padding: 12px;
+  color: var(--vscode-foreground);
+  font-style: italic;
+  text-align: center;
+}

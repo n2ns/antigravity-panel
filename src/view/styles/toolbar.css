@@ -1,0 +1,324 @@
+/**
+ * Toolbar & Action Styles
+ * 
+ * Buttons, action cards, toggle switches, recovery actions
+ */
+
+/* Toolbar Styles - Card wrapper */
+.toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    padding: 8px;
+    margin: 8px 6px;
+    background: var(--vscode-sideBar-background);
+    border: 1px solid var(--vscode-widget-border, rgba(255, 255, 255, 0.1));
+    border-radius: 6px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+}
+
+.toolbar-btn {
+    flex: 1 1 70px;
+    /* Base width for auto-wrapping instead of squeezing */
+    min-width: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    padding: 6px 4px;
+    font-size: 0.85em;
+    background: var(--vscode-button-secondaryBackground);
+    color: var(--vscode-foreground);
+    border: 1px solid var(--vscode-button-border, transparent);
+    border-radius: 3px;
+    cursor: pointer;
+    font-family: inherit;
+    white-space: nowrap;
+    /* Disable text wrapping inside button, force entire button to wrap */
+}
+
+.toolbar-btn .codicon-globe {
+    font-size: 14px;
+    /* Fix large globe icon */
+}
+
+.toolbar-btn:hover {
+    background: var(--vscode-button-secondaryHoverBackground);
+}
+
+.toolbar-btn.primary {
+    background: var(--vscode-button-background);
+    color: var(--vscode-foreground);
+}
+
+.toolbar-btn.primary:hover {
+    background: var(--vscode-button-hoverBackground);
+}
+
+/* ==================== Action Card Layout ==================== */
+
+/* Main Action Card */
+.action-card {
+    margin: 8px;
+    padding: 8px;
+    background: var(--vscode-sideBar-background);
+    border: 1px solid var(--vscode-widget-border, rgba(255, 255, 255, 0.15));
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Action Row Base */
+.action-row {
+    margin-bottom: 8px;
+}
+
+.action-row:last-child {
+    margin-bottom: 0;
+}
+
+/* Auto-Accept Row */
+.action-row.auto-accept-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 10px;
+    background: var(--vscode-button-secondaryBackground);
+    border-radius: 4px;
+}
+
+.action-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.82em;
+    font-weight: 600;
+    color: var(--vscode-foreground);
+}
+
+.action-label .codicon {
+    font-size: 14px;
+    opacity: 0.9;
+}
+
+/* Action Buttons Row - Responsive layout controlled by JS */
+.action-buttons {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+}
+
+/* Single column mode - toggled by JS when panel is narrow */
+.action-buttons.single-column {
+    grid-template-columns: 1fr;
+}
+
+
+.action-btn {
+    flex: 1 1 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 6px 8px;
+    background: var(--vscode-button-secondaryBackground);
+    color: var(--vscode-foreground);
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 0.82em;
+    font-weight: 500;
+    transition: all 0.15s ease;
+    white-space: nowrap;
+}
+
+.action-btn.primary {
+    background: var(--vscode-button-background, #0e639c);
+    color: var(--vscode-foreground);
+}
+
+.action-btn:hover {
+    background: var(--vscode-button-secondaryHoverBackground);
+}
+
+.action-btn.primary:hover {
+    background: var(--vscode-button-hoverBackground, #1177bb);
+}
+
+.action-btn .codicon {
+    font-size: 14px;
+}
+
+
+/* Android-style Toggle Switch */
+.toggle-switch {
+    position: relative;
+    display: inline-block;
+    width: 32px;
+    height: 16px;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.toggle-slider {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: color-mix(in srgb, var(--vscode-foreground) 18%, transparent);
+    border: 1.5px solid var(--vscode-checkbox-border, #6b6b6b);
+    border-radius: 24px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.toggle-slider::before {
+    content: "";
+    position: absolute;
+    height: 12px;
+    width: 12px;
+    left: 2px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: radial-gradient(circle at 30% 30%,
+            #ffffff 0%,
+            #f0f0f0 20%,
+            #d4d4d4 40%,
+            #a3a3a3 70%,
+            #737373 100%);
+    border-radius: 50%;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow:
+        0 1px 2px rgba(0, 0, 0, 0.6),
+        inset 0 1px 1px rgba(255, 255, 255, 0.9),
+        inset 0 -1px 1px rgba(0, 0, 0, 0.3);
+    border: 0.5px solid rgba(0, 0, 0, 0.2);
+}
+
+.toggle-switch input:checked+.toggle-slider {
+    background-color: var(--vscode-charts-green, #388e3c);
+    border-color: var(--vscode-charts-green, #388e3c);
+    box-shadow: 0 0 8px rgba(56, 142, 60, 0.5);
+}
+
+.toggle-switch input:checked+.toggle-slider::before {
+    transform: translateY(-50%) translateX(16px);
+    background: radial-gradient(circle at 30% 30%,
+            #ffffff 0%,
+            #fafafa 20%,
+            #e5e5e5 40%,
+            #cccccc 70%,
+            #999999 100%);
+}
+
+.toggle-switch:hover .toggle-slider {
+    box-shadow: 0 0 4px rgba(255, 255, 255, 0.15);
+}
+
+/* Footer Links */
+.footer-links {
+    display: flex;
+    gap: 8px;
+    padding: 8px;
+    margin: 0 8px;
+}
+
+.link-btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 6px 12px;
+    background: var(--vscode-button-secondaryBackground);
+    color: var(--vscode-foreground);
+    border: none;
+    border-radius: 2px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 0.8em;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.link-btn:hover {
+    background: var(--vscode-button-secondaryHoverBackground);
+    color: var(--vscode-foreground);
+}
+
+.link-btn .codicon {
+    font-size: 14px;
+}
+
+
+/* Recovery Actions */
+.recovery-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 12px 12px 4px 12px;
+    /* Tighter bottom padding */
+    background: var(--vscode-sideBar-background);
+    /* Border removed as it is now on the container */
+}
+
+.recovery-btn {
+    flex: 1 1 130px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 6px 4px;
+    background: var(--vscode-button-secondaryBackground);
+    color: var(--vscode-foreground);
+    border: 1px solid var(--vscode-button-border, transparent);
+    border-radius: 4px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 0.82em;
+    font-weight: 500;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    white-space: nowrap;
+}
+
+.recovery-btn:hover {
+    background: var(--vscode-button-secondaryHoverBackground);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.recovery-btn:active {
+    transform: translateY(0);
+}
+
+.recovery-btn.primary {
+    background: var(--vscode-button-background);
+    color: var(--vscode-foreground);
+}
+
+.recovery-btn.primary:hover {
+    background: var(--vscode-button-hoverBackground);
+}
+
+.recovery-btn.primary.active {
+    background: var(--vscode-charts-green, #388e3c);
+    color: var(--vscode-foreground);
+    border-color: rgba(0, 0, 0, 0.1);
+    box-shadow: 0 0 8px rgba(56, 142, 60, 0.3);
+}
+
+.recovery-btn.primary.active:hover {
+    background: var(--vscode-charts-green, #43a047);
+    filter: brightness(1.1);
+}
+
+.recovery-btn .codicon {
+    font-size: 14px;
+}

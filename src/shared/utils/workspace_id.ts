@@ -13,7 +13,10 @@ import * as vscode from "vscode";
  * @returns Array of workspace IDs matching Language Server format
  */
 export function getExpectedWorkspaceIds(): string[] {
-    const folders = vscode.workspace.workspaceFolders;
+    return getWorkspaceIdsFromFolders(vscode.workspace.workspaceFolders || []);
+}
+
+export function getWorkspaceIdsFromFolders(folders: readonly vscode.WorkspaceFolder[]): string[] {
     if (!folders || folders.length === 0) return [];
 
     return folders.map(folder => {

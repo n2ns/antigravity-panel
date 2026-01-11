@@ -50,5 +50,13 @@
     "config.system.autoAcceptInterval.description": "자동 승인 확인 간격(밀리초, 기본값: 800ms). 값이 작을수록 빠르지만 리소스가 더 많이 소모됩니다.",
     "Auto-Accept: ON": "Auto-Accept: ON",
     "Auto-Accept: OFF": "Auto-Accept: OFF",
-    "Hands-free Mode: Automatically accept agent suggested edits and terminal commands": "핸즈프리 모드: 에이전트의 제안된 수정 및 터미널 명령을 자동으로 승인합니다"
+    "Hands-free Mode: Automatically accept agent suggested edits and terminal commands": "핸즈프리 모드: 에이전트가 제안한 편집 및 터미널 명령 자동 수락",
+    "command.generateCommitMessageClaude.title": "Generate Commit Message (Local & Claude)",
+    "command.setAnthropicApiKey.title": "Set Anthropic API Key",
+    "config.commitMessageClaude.endpoint.description": "API 엔드포인트 URL. 기본값: http://localhost:11434/api/generate (Ollama). Anthropic API도 지원합니다.",
+    "config.commitMessageClaude.model.description": "사용할 모델 이름 (예: llama3, claude-3-haiku)",
+    "config.commitMessageClaude.maxDiffChars.description": "LLM으로 보낼 최대 Diff 문자 수",
+    "config.commitMessageClaude.format.description": "커밋 메시지 형식 스타일",
+    "config.commitMessageClaude.format.conventional": "관례적 (Conventional): type(scope): description",
+    "config.commitMessageClaude.format.simple": "단순 (Simple): 순수 설명"
 }

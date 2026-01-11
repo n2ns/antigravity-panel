@@ -2,7 +2,7 @@
   "name": "antigravity-panel",
   "displayName": "Antigravity Panel",
   "description": "Antigravity Panel Extension",
-  "version": "2.4.7",
+  "version": "2.5.1",
   "publisher": "n2ns",
   "license": "Apache-2.0",
   "repository": {
@@ -400,6 +400,7 @@
   "devDependencies": {
     "@types/mocha": "^10.0.10",
     "@types/node": "^24.10.1",
+    "@types/sinon": "^21.0.0",
     "@types/vscode": "^1.104.0",
     "@typescript-eslint/eslint-plugin": "^8.50.1",
     "@typescript-eslint/parser": "^8.50.1",
@@ -411,6 +412,7 @@
     "husky": "^9.1.7",
     "lint-staged": "^16.2.7",
     "mocha": "^11.7.5",
+    "sinon": "^21.0.1",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.50.1"
   },

@@ -1,0 +1,272 @@
+/**
+ * Gauge Styles
+ * 
+ * Quota pie/arc visualization components
+ */
+
+/* Specific fix for dashboard components which might have stacking contexts */
+quota-pie:hover {
+    z-index: 2000;
+    position: relative;
+}
+
+/* Quota Gauge Styles - Ultra Premium Refinement */
+quota-pie {
+    flex: 1 1 70px;
+    min-width: 70px;
+    max-width: 160px;
+    display: block;
+}
+
+.gauge-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 10px 4px 2px 4px;
+    /* Reduced bottom padding */
+    transition: transform 0.2s ease;
+}
+
+.gauge-container:hover {
+    transform: translateY(-2px);
+}
+
+/* Base visual container */
+.gauge-visual {
+    position: relative;
+    width: 70px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.style-semi-arc .gauge-visual {
+    width: 82px;
+    /* Arc (Width 86 in 100 viewBox) @ 82px ≈ 70px actual width */
+    height: 56px;
+    margin: 0 auto 0px;
+}
+
+/* Classic Donut Specifics */
+.style-classic-donut .gauge-visual {
+    width: 70px;
+    height: 70px;
+    margin: 0 auto 0px;
+}
+
+.style-classic-donut .pie-ring {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    /* Mask creates the donut hole */
+    mask: radial-gradient(transparent 60%, black 62%);
+    -webkit-mask: radial-gradient(transparent 60%, black 62%);
+}
+
+.style-classic-donut .gauge-center-text {
+    top: 50%;
+}
+
+.style-classic-donut .gauge-value {
+    font-size: 1.15em;
+}
+
+.style-classic-donut .gauge-info {
+    margin-top: 4px;
+    /* Keep proper spacing between model name and circle */
+}
+
+.style-classic-donut .gauge-label {
+    min-height: auto;
+    /* Remove min-height, let reset time follow naturally */
+}
+
+.style-classic-donut .gauge-reset-inner {
+    margin-top: 2px;
+    /* Keep proper spacing between reset time and model name */
+}
+
+.gauge-svg {
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+}
+
+.gauge-track-bg {
+    fill: none;
+    stroke: var(--vscode-widget-border);
+    stroke-width: 3.2;
+    /* Widened from 2.2 */
+    stroke-linecap: butt;
+    opacity: 0.15;
+}
+
+.gauge-track-fg {
+    fill: none;
+    stroke: var(--vscode-foreground);
+    stroke-width: 1.5;
+    /* Widened from 1.0 */
+    stroke-linecap: butt;
+    opacity: 0.25;
+}
+
+.gauge-separator {
+    fill: none;
+    stroke: var(--vscode-widget-border);
+    /* True black for separation */
+    stroke-width: 1.5;
+    /* Equal to fg tracks */
+    stroke-linecap: butt;
+    opacity: 0.8;
+    /* Strong enough to block color bleed */
+}
+
+.gauge-fill {
+    fill: none;
+    stroke-width: 5.8;
+    stroke-linecap: butt;
+    transition: stroke-dashoffset 1s cubic-bezier(0.16, 1, 0.3, 1);
+    /* Sharp focused glow, minimal diffusion to avoid separator bleed */
+    filter: drop-shadow(0 0 1px currentColor) drop-shadow(0 0 2px currentColor);
+}
+
+.style-semi-arc .gauge-center-text {
+    top: 66%;
+    /* Balanced for R=43 semi-arc */
+}
+
+.style-semi-arc .gauge-value {
+    margin-top: -6px;
+}
+
+.style-semi-arc .gauge-reset-inner {
+    margin-top: 4px;
+}
+
+.gauge-center-text {
+    position: absolute;
+    top: 50%;
+    /* Default center */
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    pointer-events: none;
+    color: var(--vscode-foreground);
+}
+
+.gauge-value {
+    font-size: 1.12em;
+    font-weight: 500;
+    line-height: 1;
+    letter-spacing: -0.01em;
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+}
+
+.gauge-unit {
+    font-size: 0.55em;
+    font-weight: 400;
+    opacity: 0.8;
+    margin-left: 1px;
+}
+
+.gauge-reset-inner {
+    font-size: 0.78em;
+    font-weight: 500;
+    color: var(--vscode-foreground);
+    opacity: 0.85;
+    margin-top: 0px;
+    line-height: 1.1;
+}
+
+.gauge-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    margin-top: -2px;
+}
+
+.gauge-label {
+    font-size: 0.72em;
+    /* Slightly smaller to fit more text */
+    font-weight: 600;
+    color: var(--vscode-foreground);
+    text-align: center;
+    white-space: normal;
+    /* Allow wrapping */
+    word-break: break-word;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    /* Max 2 lines */
+    -webkit-box-orient: vertical;
+    min-height: 2.4em;
+    /* Reserve 2 lines of space for alignment */
+    max-width: 90px;
+    /* Increased from 74px */
+    opacity: 0.9;
+    line-height: 1.2;
+}
+
+.gauge-sub-label {
+    font-size: 0.62em;
+    color: var(--vscode-foreground);
+    opacity: 0.4;
+    margin-top: 0px;
+}
+
+/* Dashboard Container Styles */
+.pies-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(85px, 1fr));
+    /* Increased min-width */
+    justify-items: center;
+    gap: 12px 6px;
+    /* Slightly more gap */
+    padding: 16px 8px 10px 8px;
+    background: var(--vscode-sideBar-background);
+    border-bottom: 1px solid var(--vscode-widget-border);
+}
+
+/* Connection Hint Banner */
+.connection-hint {
+    background-color: var(--vscode-button-secondaryBackground);
+    color: var(--vscode-foreground);
+    padding: 8px 12px;
+    margin: 8px;
+    border-radius: 6px;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    font-size: 0.85em;
+    line-height: 1.4;
+    border: 1px solid var(--vscode-button-border, rgba(255, 255, 255, 0.1));
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.connection-hint .codicon-warning {
+    color: var(--vscode-notificationsWarningIcon-foreground, #cca700);
+    font-size: 16px;
+    margin-top: 1px;
+}
+
+.connection-hint a {
+    color: var(--vscode-textLink-foreground);
+    text-decoration: none;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.connection-hint a:hover {
+    text-decoration: underline;
+}
