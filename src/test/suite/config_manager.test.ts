@@ -159,6 +159,31 @@ suite('ConfigManager Test Suite', () => {
     });
   });
 
+  suite('UI Scale Validation', () => {
+    test('should use default value of 1.0', () => {
+      const config = configManager.getConfig();
+      assert.strictEqual(config["dashboard.uiScale"], 1.0);
+    });
+
+    test('should allow valid scale in range', () => {
+      mockReader.set('dashboard.uiScale', 1.5);
+      const config = configManager.getConfig();
+      assert.strictEqual(config["dashboard.uiScale"], 1.5);
+    });
+
+    test('should clamp values below 0.8', () => {
+      mockReader.set('dashboard.uiScale', 0.5);
+      const config = configManager.getConfig();
+      assert.strictEqual(config["dashboard.uiScale"], 0.8);
+    });
+
+    test('should clamp values above 2.0', () => {
+      mockReader.set('dashboard.uiScale', 2.5);
+      const config = configManager.getConfig();
+      assert.strictEqual(config["dashboard.uiScale"], 2.0);
+    });
+  });
+
   suite('get() method', () => {
     test('should return value from reader', () => {
       mockReader.set('testKey', 'testValue');

@@ -63,6 +63,7 @@ export class ConfigManager {
       "dashboard.refreshRate": pollingInterval,
       "dashboard.includeSecondaryModels": this.reader.get<boolean>("dashboard.includeSecondaryModels", false),
       "dashboard.showCreditsCard": this.reader.get<boolean>("dashboard.showCreditsCard", true),
+      "dashboard.uiScale": Math.min(Math.max(this.reader.get<number>("dashboard.uiScale", 1.0), 0.8), 2.0),
 
       // 2. Status Bar Settings
       "status.showQuota": this.reader.get<boolean>("status.showQuota", true),

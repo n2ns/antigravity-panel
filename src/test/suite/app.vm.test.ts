@@ -296,4 +296,18 @@ suite('AppViewModel Test Suite', () => {
 
         disposable.dispose();
     });
+
+    test('getSidebarData should include configuration fields', () => {
+        const data = vm.getSidebarData();
+        assert.ok(data.hasOwnProperty('uiScale'), 'Should include uiScale');
+        assert.ok(data.hasOwnProperty('gaugeStyle'), 'Should include gaugeStyle');
+        assert.ok(data.hasOwnProperty('showUserInfoCard'), 'Should include showUserInfoCard');
+        assert.ok(data.hasOwnProperty('showCreditsCard'), 'Should include showCreditsCard');
+
+        // Verify default values or values from mock reader
+        assert.strictEqual(data.uiScale, 1.0);
+        assert.strictEqual(data.gaugeStyle, 'semi-arc');
+        assert.strictEqual(data.showUserInfoCard, true);
+        assert.strictEqual(data.showCreditsCard, true);
+    });
 });

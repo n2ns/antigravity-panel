@@ -5,9 +5,21 @@ English | [中文文档](docs/CHANGELOG_zh.md)
 
 ## [2.5.1] - 2026-01-11
 
+### Added
+- **UI Scaling**: Introduced `tfa.dashboard.uiScale` setting allowing users to adjust the panel's scale factor from `0.8` to `2.0`.
+- **Proportional Scaling**: Re-engineered gauges (circular and semi-arc) using `rem` units to ensure they scale proportionally with the global UI font size.
+- **Automated Quality Guard**: 
+  - Added NLS alignment tests to ensure perfect 1:1 mapping across all 13 supported languages.
+  - Added automated placeholder verification between `package.json` and NLS bundles.
+  - Added unit tests for UI Scale clamping and data distribution logic.
+
+### Improved
+- **Localization Audit**: Conducted a full audit of all 13 language packs, synchronizing `package.nls.json` and `bundle.l10n.json` to ensure 100% completion.
+- **Service Recovery UI**: Updated documentation and refined the Restart, Reset, and Reload tools for better stability.
+- **Service Stability**: Integrated UI configuration management into the ViewModel for consistent state distribution.
+
 ### Changed
-- **Code Cleanup**: Removed ~320 lines of unused legacy CSS styles from `shared.ts`. The obsolete `globalStyles` export was a remnant from an earlier Shadow DOM implementation and had been superseded by the external `webview.css` file.
-- **CSS Modularization**: Split the 1191-line monolithic `webview.css` into 6 component-based modules (`base.css`, `gauge.css`, `chart.css`, `toolbar.css`, `tree.css`, `footer.css`). Updated `esbuild.js` to bundle CSS with `@import` support for a "develop split, build merged" workflow.
+- **Code Cleanup**: Removed ~320 lines of unused legacy CSS styles and modularized `webview.css` into separate component files (`gauge.css`, `chart.css`, etc.) for better maintainability.
 
 ## [2.5.0] - 2026-01-11
 

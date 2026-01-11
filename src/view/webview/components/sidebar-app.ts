@@ -88,7 +88,7 @@ export class SidebarApp extends LitElement {
   private _connectionStatus: ConnectionStatus = 'detecting';
 
   @state()
-  private _fontScale: number = 1.0;
+  private _uiScale: number = 1.0;
 
   private _vscode = acquireVsCodeApi();
 
@@ -228,9 +228,9 @@ export class SidebarApp extends LitElement {
     if (state.connectionStatus) {
       this._connectionStatus = state.connectionStatus;
     }
-    if (state.fontScale !== undefined) {
-      this._fontScale = state.fontScale;
-      document.documentElement.style.setProperty('--antigravity-font-scale', this._fontScale.toString());
+    if (state.uiScale !== undefined) {
+      this._uiScale = state.uiScale;
+      document.documentElement.style.setProperty('--antigravity-font-scale', this._uiScale.toString());
     }
   }
 

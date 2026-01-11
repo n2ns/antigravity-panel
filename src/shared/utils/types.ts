@@ -262,6 +262,8 @@ export interface TfaConfig {
   "dashboard.includeSecondaryModels": boolean;
   /** Whether to show AI Credits card */
   "dashboard.showCreditsCard": boolean;
+  /** UI Scale factor (0.8 - 2.0), default 1.0 */
+  "dashboard.uiScale": number;
 
   // ===== 2. Status Bar Settings =====
   /** Whether to show quota in status bar */

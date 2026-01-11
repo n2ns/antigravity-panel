@@ -28,6 +28,8 @@ English | [中文文档](docs/README_zh.md)
 - 🛠️ **Diagnostics** - Built-in connection check and error reporting
 - 🤖 **Hands-free Mode** - Auto-accept agent commands for heavy workflows
 - ✍️ **AI Commit** - Generate commit messages via Local LLM or Claude
+- ⚙️ **Quick Config Access** - One-click editing for Rules, MCP, and Allowlist
+- 🔄 **Service Recovery** - Restart, Reset, and Reload tools for Antigravity IDE stability
 
 ## 📸 Screenshots
 
@@ -188,6 +190,7 @@ Open Command Palette (`Ctrl+Shift+P` / `Cmd+Shift+P`) and search for:
 | `Antigravity Toolkit: Restart Language Server` | Restart Antigravity Agent Service |
 | `Antigravity Toolkit: Reset User Status` | Reset the status updater |
 | `Antigravity Toolkit: Run Diagnostics` | Run connectivity diagnostics |
+| `Antigravity Toolkit: Reload Window` | Refresh the webview to resolve UI glitches |
 | `Antigravity Toolkit: Toggle Auto-Accept` | Enable/Disable automatic command acceptance |
 | `Antigravity Toolkit: Generate Commit Message` | Generate commit message using Local LLM or Claude |
 | `Antigravity Toolkit: Set Anthropic API Key` | Configure Anthropic API Key |
@@ -205,6 +208,7 @@ Open Settings (`Ctrl+,` / `Cmd+,`) in Antigravity IDE and search for `tfa` to cu
 | **Status Bar Style** | `percentage` | Display mode: percentage, resetTime, used, or remaining |
 | **Quota Style** | `semi-arc` | Visualization style: `semi-arc` or `classic-donut` |
 | **Visualization Mode** | `groups` | Show dashboard by `groups` or `models` |
+| **UI Scale** | `1.0` | Global scale factor for panel elements (0.8 to 2.0) |
 | **Show GPT Quota** | `✗` | Whether to display GPT family models in the panel |
 | **History Range** | `90 min` | Time range for usage chart (10-120 minutes) |
 | **Warning Threshold** | `30%` | Status bar turns warning color at this level |

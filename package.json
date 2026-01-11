@@ -1,7 +1,7 @@
 {
   "name": "antigravity-panel",
-  "displayName": "Antigravity Panel",
-  "description": "Antigravity Panel Extension",
+  "displayName": "%extension.displayName%",
+  "description": "%extension.description%",
   "version": "2.5.1",
   "publisher": "n2ns",
   "license": "Apache-2.0",
@@ -131,7 +131,7 @@
     },
     "configuration": [
       {
-        "title": "TFA: Dashboard",
+        "title": "%config.title.dashboard%",
         "properties": {
           "tfa.dashboard.gaugeStyle": {
             "type": "string",
@@ -147,13 +147,13 @@
             ],
             "description": "%config.dashboard.gaugeStyle.description%"
           },
-          "tfa.dashboard.fontScale": {
+          "tfa.dashboard.uiScale": {
             "type": "number",
             "default": 1.0,
             "minimum": 0.8,
-            "maximum": 1.5,
+            "maximum": 2.0,
             "order": 15,
-            "description": "%config.dashboard.fontScale.description%"
+            "description": "%config.dashboard.uiScale.description%"
           },
           "tfa.dashboard.showUserInfoCard": {
             "type": "boolean",
@@ -205,7 +205,7 @@
         }
       },
       {
-        "title": "TFA: Status Bar",
+        "title": "%config.title.status%",
         "properties": {
           "tfa.status.showQuota": {
             "type": "boolean",
@@ -270,7 +270,7 @@
         }
       },
       {
-        "title": "TFA: Cache",
+        "title": "%config.title.cache%",
         "properties": {
           "tfa.cache.autoClean": {
             "type": "boolean",
@@ -310,7 +310,7 @@
         }
       },
       {
-        "title": "TFA: System & Maintenance",
+        "title": "%config.title.system%",
         "properties": {
           "tfa.system.serverHost": {
             "type": "string",
@@ -347,7 +347,7 @@
         }
       },
       {
-        "title": "TFA: Commit Message (Local LLM)",
+        "title": "%config.title.commitMessage%",
         "properties": {
           "tfa.commitMessageClaude.endpoint": {
             "type": "string",

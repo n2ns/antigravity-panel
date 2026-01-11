@@ -683,6 +683,7 @@ export class AppViewModel implements vscode.Disposable {
     }
 
     getSidebarData(): SidebarData {
+        const config = this.configManager.getConfig();
         return {
             quotas: this._state.quota.displayItems,
             chart: this._state.quota.chart,
@@ -692,7 +693,11 @@ export class AppViewModel implements vscode.Disposable {
             tasks: this._state.tree.tasks,
             contexts: this._state.tree.contexts,
             connectionStatus: this._state.connectionStatus,
-            autoAcceptEnabled: this._state.automation.enabled
+            autoAcceptEnabled: this._state.automation.enabled,
+            gaugeStyle: config["dashboard.gaugeStyle"],
+            showUserInfoCard: this.configManager.get('dashboard.showUserInfoCard', true),
+            showCreditsCard: config["dashboard.showCreditsCard"],
+            uiScale: config["dashboard.uiScale"]
         };
     }
 

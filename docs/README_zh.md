@@ -27,7 +27,9 @@
 - 🌍 **多语言支持** - 支持 13 种语言，包括界面和运行时通知
 - 🛠️ **连接诊断** - 内置连接检查和错误报告工具
 - 🤖 **无人值守模式** - 自动接受 Agent 命令，加速繁重的工作流
-- ✍️ **智能提交** - 使用本地 LLM 或 Claude 自动生成提交信息系统
+- ✍️ **智能提交** - 使用本地 LLM 或 Claude 自动生成提交信息
+- ⚙️ **配置快捷访问** - 一键编辑 Rules、MCP 和浏览器白名单
+- 🔄 **服务恢复** - 内置重启、重置与刷新工具，确保 Antigravity IDE 稳定运行
 
 ## 📸 界面预览
 
@@ -79,6 +81,14 @@
 - 编辑全局规则
 - 配置 MCP 设置
 - 管理浏览器白名单
+
+### 🔄 服务恢复工具
+
+**内置故障排除功能**
+- **Restart**: 当 Agent 无响应时，重启后台语言服务（解决分析进度卡住）
+- **Reset**: 清除状态缓存，修复配额显示不更新的问题
+- **Reload**: 刷新 VS Code 窗口，解决界面显示异常或无响应
+
 
 ### 🌐 全平台支持
 
@@ -179,6 +189,7 @@
 | `Antigravity Toolkit: Restart Language Server` | 重启 Antigravity 代理服务 |
 | `Antigravity Toolkit: Reset User Status` | 重置状态更新器 |
 | `Antigravity Toolkit: Run Diagnostics` | 运行连接诊断 |
+| `Antigravity Toolkit: Reload Window` | 重新加载窗口（解决界面卡死） |
 | `Antigravity Toolkit: Toggle Auto-Accept` | 开启/关闭自动接受命令模式 |
 | `Antigravity Toolkit: Generate Commit Message` | 使用本地 LLM 或 Claude 生成提交信息 |
 | `Antigravity Toolkit: Set Anthropic API Key` | 设置 Anthropic API 密钥 |
@@ -196,6 +207,7 @@
 | **状态栏样式** | `percentage` | 状态栏显示：百分比、时间、已用量或剩余量 |
 | **仪表盘样式** | `semi-arc` | 模型配额呈现样式：`semi-arc`（半圆弧）或 `classic-donut`（经典圆环） |
 | **可视化模式** | `groups` | 仪表盘按 `groups`（分组）或 `models`（单个模型）显示 |
+| **UI 缩放** | `1.0` | 面板元素的全局缩放比例（0.8 到 2.0） |
 | **显示 GPT 配额** | `✗` | 是否在面板中显示 GPT 系列模型的配额 |
 | **历史范围** | `90 分钟` | 用量图表的时间范围（10-120 分钟） |
 | **警告阈值** | `30%` | 配额低于此值时，状态栏变色提醒（警告） |

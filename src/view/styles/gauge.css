@@ -12,9 +12,9 @@ quota-pie:hover {
 
 /* Quota Gauge Styles - Ultra Premium Refinement */
 quota-pie {
-    flex: 1 1 70px;
-    min-width: 70px;
-    max-width: 160px;
+    flex: 1 1 5.4rem;
+    min-width: 5.4rem;
+    max-width: 12rem;
     display: block;
 }
 
@@ -22,7 +22,7 @@ quota-pie {
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 10px 4px 2px 4px;
+    padding: 0.75rem 0.3rem 0.15rem 0.3rem;
     /* Reduced bottom padding */
     transition: transform 0.2s ease;
 }
@@ -34,23 +34,23 @@ quota-pie {
 /* Base visual container */
 .gauge-visual {
     position: relative;
-    width: 70px;
+    width: 5.4rem;
     display: flex;
     justify-content: center;
     align-items: center;
 }
 
 .style-semi-arc .gauge-visual {
-    width: 82px;
+    width: 6.3rem;
     /* Arc (Width 86 in 100 viewBox) @ 82px ≈ 70px actual width */
-    height: 56px;
+    height: 4.3rem;
     margin: 0 auto 0px;
 }
 
 /* Classic Donut Specifics */
 .style-classic-donut .gauge-visual {
-    width: 70px;
-    height: 70px;
+    width: 5.4rem;
+    height: 5.4rem;
     margin: 0 auto 0px;
 }
 
@@ -71,7 +71,7 @@ quota-pie {
 }
 
 .style-classic-donut .gauge-value {
-    font-size:  1.15rem;
+    font-size: 1.15rem;
 }
 
 .style-classic-donut .gauge-info {
@@ -139,7 +139,7 @@ quota-pie {
 }
 
 .style-semi-arc .gauge-value {
-    margin-top: -6px;
+    margin-top: -0.45rem;
 }
 
 .style-semi-arc .gauge-reset-inner {
@@ -162,7 +162,7 @@ quota-pie {
 }
 
 .gauge-value {
-    font-size:  1.15rem;
+    font-size: 1.15rem;
     font-weight: 500;
     line-height: 1;
     letter-spacing: -0.01em;
@@ -172,14 +172,14 @@ quota-pie {
 }
 
 .gauge-unit {
-    font-size:  0.55rem;
+    font-size: 0.55rem;
     font-weight: 400;
     opacity: 0.8;
     margin-left: 1px;
 }
 
 .gauge-reset-inner {
-    font-size:  0.8rem;
+    font-size: 0.8rem;
     font-weight: 500;
     color: var(--vscode-foreground);
     opacity: 0.85;
@@ -196,7 +196,7 @@ quota-pie {
 }
 
 .gauge-label {
-    font-size:  0.75rem;
+    font-size: 0.75rem;
     /* Slightly smaller to fit more text */
     font-weight: 600;
     color: var(--vscode-foreground);
@@ -210,16 +210,16 @@ quota-pie {
     line-clamp: 2;
     /* Max 2 lines */
     -webkit-box-orient: vertical;
-    min-height:  2.4rem;
+    min-height: 2.4rem;
     /* Reserve 2 lines of space for alignment */
-    max-width: 90px;
+    max-width: 6.9rem;
     /* Increased from 74px */
     opacity: 0.9;
     line-height: 1.2;
 }
 
 .gauge-sub-label {
-    font-size:  0.62rem;
+    font-size: 0.62rem;
     color: var(--vscode-foreground);
     opacity: 0.4;
     margin-top: 0px;
@@ -228,12 +228,12 @@ quota-pie {
 /* Dashboard Container Styles */
 .pies-container {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(85px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(6.5rem, 1fr));
     /* Increased min-width */
     justify-items: center;
-    gap: 12px 6px;
+    gap: 0.9rem 0.45rem;
     /* Slightly more gap */
-    padding: 16px 8px 10px 8px;
+    padding: 1.2rem 0.6rem 0.75rem 0.6rem;
     background: var(--vscode-sideBar-background);
     border-bottom: 1px solid var(--vscode-widget-border);
 }
@@ -248,7 +248,7 @@ quota-pie {
     display: flex;
     align-items: flex-start;
     gap: 10px;
-    font-size:  0.85rem;
+    font-size: 0.85rem;
     line-height: 1.4;
     border: 1px solid var(--vscode-button-border, rgba(255, 255, 255, 0.1));
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);

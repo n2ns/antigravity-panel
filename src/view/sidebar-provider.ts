@@ -141,11 +141,6 @@ export class SidebarProvider implements vscode.WebviewViewProvider, vscode.Dispo
 
         // Get READ-ONLY view model data -> purely for display
         const data = this._viewModel.getSidebarData();
-        const config = vscode.workspace.getConfiguration('tfa');
-        data.gaugeStyle = config.get('dashboard.gaugeStyle', 'semi-arc');
-        data.showUserInfoCard = config.get('dashboard.showUserInfoCard', true);
-        data.showCreditsCard = config.get('dashboard.showCreditsCard', true);
-        data.fontScale = config.get('dashboard.fontScale', 1.0);
 
         this._view.webview.postMessage({ type: 'update', payload: data });
     }
