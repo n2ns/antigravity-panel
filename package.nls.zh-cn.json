@@ -50,5 +50,13 @@
     "config.system.autoAcceptInterval.description": "自动接受检查的间隔时间（毫秒，默认：800ms）。值越小响应越快，但资源消耗略高。",
     "Auto-Accept: ON": "Auto-Accept: ON",
     "Auto-Accept: OFF": "Auto-Accept: OFF",
-    "Hands-free Mode: Automatically accept agent suggested edits and terminal commands": "无人值守模式：自动接受智能体建议的文件修改和终端命令"
+    "Hands-free Mode: Automatically accept agent suggested edits and terminal commands": "无人值守模式：自动接受智能体建议的文件修改和终端命令",
+    "command.generateCommitMessageClaude.title": "Generate Commit Message (Local & Claude)",
+    "command.setAnthropicApiKey.title": "Set Anthropic API Key",
+    "config.commitMessageClaude.endpoint.description": "API 端点 URL。默认: http://localhost:11434/api/generate (Ollama)。同时也支持 Anthropic API。",
+    "config.commitMessageClaude.model.description": "使用的模型名称 (例如 llama3, claude-3-haiku)",
+    "config.commitMessageClaude.maxDiffChars.description": "发送给 LLM 的最大 Diff 字符数",
+    "config.commitMessageClaude.format.description": "提交信息格式风格",
+    "config.commitMessageClaude.format.conventional": "约定式: type(scope): description",
+    "config.commitMessageClaude.format.simple": "简单: 纯文本描述"
 }

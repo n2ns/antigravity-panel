@@ -50,5 +50,13 @@
     "config.system.autoAcceptInterval.description": "Intervall für die Annahmeprüfung in Millisekunden (Standard: 800ms). Niedrigere Werte sind schneller, verbrauchen aber mehr Ressourcen.",
     "Auto-Accept: ON": "Auto-Accept: ON",
     "Auto-Accept: OFF": "Auto-Accept: OFF",
-    "Hands-free Mode: Automatically accept agent suggested edits and terminal commands": "Freihandmodus: Vorgeschlagene Bearbeitungen des Agenten und Terminalbefehle automatisch akzeptieren"
+    "Hands-free Mode: Automatically accept agent suggested edits and terminal commands": "Freisprechmodus: Von Agenten vorgeschlagene Änderungen und Terminalbefehle automatisch akzeptieren",
+    "command.generateCommitMessageClaude.title": "Generate Commit Message (Local & Claude)",
+    "command.setAnthropicApiKey.title": "Set Anthropic API Key",
+    "config.commitMessageClaude.endpoint.description": "API-Endpunkt-URL. Standard: http://localhost:11434/api/generate (Ollama). Unterstützt auch Anthropic API.",
+    "config.commitMessageClaude.model.description": "Modellname (z. B. llama3, claude-3-haiku)",
+    "config.commitMessageClaude.maxDiffChars.description": "Maximale Anzahl an Zeichen des Diffs, die an das LLM gesendet werden",
+    "config.commitMessageClaude.format.description": "Formatstil der Commit-Nachricht",
+    "config.commitMessageClaude.format.conventional": "Konventionell: type(scope): description",
+    "config.commitMessageClaude.format.simple": "Einfach: Reine Beschreibung"
 }

@@ -50,5 +50,13 @@
     "config.system.autoAcceptInterval.description": "Milisaniye cinsinden otomatik kabul kontrol aralığı (varsayılan: 800 ms). Daha düşük değerler daha hızlıdır ancak daha fazla kaynak tüketir.",
     "Auto-Accept: ON": "Auto-Accept: ON",
     "Auto-Accept: OFF": "Auto-Accept: OFF",
-    "Hands-free Mode: Automatically accept agent suggested edits and terminal commands": "Eller Serbest Modu: aracının önerdiği düzenlemeleri ve terminal komutlarını otomatik olarak kabul eder"
+    "Hands-free Mode: Automatically accept agent suggested edits and terminal commands": "Eller Serbest Modu: Temsilci tarafından önerilen düzenlemeleri ve terminal komutlarını otomatik olarak kabul et",
+    "command.generateCommitMessageClaude.title": "Generate Commit Message (Local & Claude)",
+    "command.setAnthropicApiKey.title": "Set Anthropic API Key",
+    "config.commitMessageClaude.endpoint.description": "API uç nokta URL'si. Varsayılan: http://localhost:11434/api/generate (Ollama). Ayrıca Anthropic API'yi de destekler.",
+    "config.commitMessageClaude.model.description": "Kullanılacak model adı (örn. llama3, claude-3-haiku)",
+    "config.commitMessageClaude.maxDiffChars.description": "LLM'e gönderilecek maksimum diff karakter sayısı",
+    "config.commitMessageClaude.format.description": "Commit mesajı format stili",
+    "config.commitMessageClaude.format.conventional": "Geleneksel: type(scope): description",
+    "config.commitMessageClaude.format.simple": "Basit: Saf açıklama"
 }

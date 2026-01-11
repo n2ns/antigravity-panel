@@ -18,16 +18,14 @@ English | [中文文档](docs/README_zh.md)
 
 **Toolkit for Antigravity** (formerly *Antigravity Panel*) helps you stay on top of your AI model usage in **Google Antigravity IDE**. Get real-time quota monitoring, usage trends, and cache management—all within an integrated sidebar panel.
 
-> **📢 Notice:** We have renamed from "Antigravity Panel" to "**Toolkit for Antigravity**" to better reflect our vision of building a comprehensive utility suite for the ecosystem. Same great features, just a more accurate name!
+## ✨ Features at a Glance
 
-## ✨ Why Toolkit for Antigravity?
-
-- 🎯 **Track your quota** - Real-time monitoring with visual warnings
-- 📊 **Understand your usage** - Interactive charts showing usage trends
-- 🧹 **Keep things clean** - Manage AI conversation caches with one click
-- 🎨 **Elegant Interface** - Native theme integration with refined UI components
-- 🌍 **Full Localization** - Support for 13 languages with runtime i18n notifications
-- 🛠️ **Intelligent Diagnostics** - Built-in feedback system with automatic error reporting
+- 🎯 **Quota Monitoring** - Real-time status with visual thresholds
+- 📊 **Usage Analytics** - Interactive charts and history tracking
+- 🧹 **Cache Management** - Manage AI conversation history and files
+- 🎨 **Native Integration** - UI components adapted to IDE themes
+- 🌍 **Localization** - Support for 13 languages including runtime notifications
+- 🛠️ **Diagnostics** - Built-in connection check and error reporting
 
 ## 📸 Screenshots
 
@@ -189,6 +187,8 @@ Open Command Palette (`Ctrl+Shift+P` / `Cmd+Shift+P`) and search for:
 | `Antigravity Toolkit: Reset User Status` | Reset the status updater |
 | `Antigravity Toolkit: Run Diagnostics` | Run connectivity diagnostics |
 | `Antigravity Toolkit: Toggle Auto-Accept` | Enable/Disable automatic command acceptance |
+| `Antigravity Toolkit: Generate Commit Message` | Generate commit message using Local LLM or Claude |
+| `Antigravity Toolkit: Set Anthropic API Key` | Configure Anthropic API Key |
 
 ## ⚙️ Configuration
 
@@ -226,6 +226,17 @@ Open Settings (`Ctrl+,` / `Cmd+,`) in Antigravity IDE and search for `tfa` to cu
 | **Server Host** | `127.0.0.1` | Address of Antigravity Language Server |
 | **API Path** | `/exa...` | gRPC-Web path for User Status |
 | **Debug Mode** | `✗` | Enable verbose logging in Output panel |
+
+
+
+### 🤖 Commit Message Settings
+
+| Setting | Default | Description |
+|---------|---------|-------------|
+| **Endpoint** | `http://localhost...` | API URL (Ollama, Anthropic, OpenAI compatible) |
+| **Model** | `llama3.2` | Model name (e.g. `llama3.2`, `claude-3-haiku`) |
+| **Max Diff Size** | `80000` | Max characters of diff to send to LLM |
+| **Format** | `conventional` | Message format (`conventional` or `simple`) |
 
 ## 🔒 Privacy & Safety Disclaimer
 
@@ -267,7 +278,7 @@ Licensed under the [Apache License, Version 2.0](LICENSE).
 
 **Developed by [datafrog.io](https://datafrog.io)**
 
-[Website](https://datafrog.io) · [Feedback & Support](https://github.com/n2ns/antigravity-panel/issues) · [Commercial Inquiry](mailto:support@datafrog.io)
+
 
 *For Antigravity. By Antigravity.*
 
