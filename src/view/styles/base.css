@@ -63,7 +63,7 @@ sidebar-app {
   color: var(--vscode-editorHoverWidget-foreground, #cccccc);
   border: 1px solid var(--vscode-editorHoverWidget-border, #454545);
   border-radius: 3px;
-  font-size: 0.78em;
+  font-size: 0.8em;
   line-height: 1.4;
   white-space: normal;
   word-wrap: break-word;

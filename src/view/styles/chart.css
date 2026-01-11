@@ -39,7 +39,7 @@
 
 .usage-legend {
     color: var(--vscode-foreground);
-    font-size: 0.78em;
+    font-size: 0.8em;
     margin-top: 4px;
     display: flex;
     justify-content: space-between;

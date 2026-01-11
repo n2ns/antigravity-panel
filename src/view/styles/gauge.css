@@ -162,7 +162,7 @@ quota-pie {
 }
 
 .gauge-value {
-    font-size: 1.12em;
+    font-size: 1.15em;
     font-weight: 500;
     line-height: 1;
     letter-spacing: -0.01em;
@@ -179,7 +179,7 @@ quota-pie {
 }
 
 .gauge-reset-inner {
-    font-size: 0.78em;
+    font-size: 0.8em;
     font-weight: 500;
     color: var(--vscode-foreground);
     opacity: 0.85;
@@ -196,7 +196,7 @@ quota-pie {
 }
 
 .gauge-label {
-    font-size: 0.72em;
+    font-size: 0.75em;
     /* Slightly smaller to fit more text */
     font-weight: 600;
     color: var(--vscode-foreground);
@@ -256,7 +256,7 @@ quota-pie {
 
 .connection-hint .codicon-warning {
     color: var(--vscode-notificationsWarningIcon-foreground, #cca700);
-    font-size: 16px;
+    font-size: 1.25em;
     margin-top: 1px;
 }
 

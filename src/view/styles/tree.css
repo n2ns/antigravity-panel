@@ -48,7 +48,7 @@
 
 .section-stats {
     color: var(--vscode-foreground);
-    font-size: 0.9em;
+    font-size: 0.8em;
     font-weight: 400;
     text-transform: none;
     letter-spacing: normal;
@@ -90,7 +90,7 @@
 
 .folder-size {
     color: var(--vscode-foreground);
-    font-size: 0.85em;
+    font-size: 0.8em;
     margin-right: 4px;
     margin-left: 24px;
 }
@@ -102,7 +102,7 @@
 
 .folder-delete.codicon,
 .codicon.folder-delete {
-    font-size: 12px !important;
+    font-size: 0.8em !important;
 }
 
 .folder-delete:hover {

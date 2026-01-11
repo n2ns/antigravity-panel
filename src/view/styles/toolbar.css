@@ -26,7 +26,7 @@
     justify-content: center;
     gap: 4px;
     padding: 6px 4px;
-    font-size: 0.85em;
+    font-size: 0.9em;
     background: var(--vscode-button-secondaryBackground);
     color: var(--vscode-foreground);
     border: 1px solid var(--vscode-button-border, transparent);
@@ -38,7 +38,7 @@
 }
 
 .toolbar-btn .codicon-globe {
-    font-size: 14px;
+    font-size: 1.1em;
     /* Fix large globe icon */
 }
 
@@ -90,13 +90,13 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    font-size: 0.82em;
+    font-size: 0.8em;
     font-weight: 600;
     color: var(--vscode-foreground);
 }
 
 .action-label .codicon {
-    font-size: 14px;
+    font-size: 1.1em;
     opacity: 0.9;
 }
 
@@ -126,7 +126,7 @@
     border-radius: 4px;
     cursor: pointer;
     font-family: inherit;
-    font-size: 0.82em;
+    font-size: 0.9em;
     font-weight: 500;
     transition: all 0.15s ease;
     white-space: nowrap;
@@ -146,7 +146,7 @@
 }
 
 .action-btn .codicon {
-    font-size: 14px;
+    font-size: 1.1em;
 }
 
 
@@ -243,7 +243,7 @@
     border-radius: 2px;
     cursor: pointer;
     font-family: inherit;
-    font-size: 0.8em;
+    font-size: 0.9em;
     font-weight: 500;
     transition: all 0.2s ease;
 }
@@ -254,7 +254,7 @@
 }
 
 .link-btn .codicon {
-    font-size: 14px;
+    font-size: 1.1em;
 }
 
 
@@ -282,7 +282,7 @@
     border-radius: 4px;
     cursor: pointer;
     font-family: inherit;
-    font-size: 0.82em;
+    font-size: 0.9em;
     font-weight: 500;
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     white-space: nowrap;
@@ -320,5 +320,5 @@
 }
 
 .recovery-btn .codicon {
-    font-size: 14px;
+    font-size: 1.1em;
 }
