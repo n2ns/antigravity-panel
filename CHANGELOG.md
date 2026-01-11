@@ -3,6 +3,11 @@ English | [中文文档](docs/CHANGELOG_zh.md)
 # Change Log
 
 
+## [2.5.1] - 2026-01-11
+
+### Changed
+- **Code Cleanup**: Removed ~320 lines of unused legacy CSS styles from `shared.ts`. The obsolete `globalStyles` export was a remnant from an earlier Shadow DOM implementation and had been superseded by the external `webview.css` file.
+
 ## [2.5.0] - 2026-01-11
 
 ### Added
