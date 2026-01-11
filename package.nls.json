@@ -13,6 +13,7 @@
     "command.restartLanguageServer.title": "Restart Agent Service",
     "command.restartUserStatusUpdater.title": "Reset Status",
     "command.runDiagnostics.title": "Connectivity Diagnostics",
+    "command.showLogs.title": "Show Logs",
     "command.toggleAutoAccept": "Toggle Auto-Accept",
     "command.toggleAutoAccept.title": "Toggle Agent Auto-Accept",
     "config.statusBarStyle.percentage": "Show remaining quota as percentage (e.g., 75%)",

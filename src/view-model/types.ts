@@ -191,6 +191,7 @@ export interface SidebarData {
     tasks: TreeSectionState;
     contexts: TreeSectionState;
     connectionStatus: ConnectionStatus;
+    failureReason?: 'no_process' | 'ambiguous' | 'no_port' | 'auth_failed' | 'workspace_mismatch' | null;
     gaugeStyle?: string;
     showUserInfoCard?: boolean;
     showCreditsCard?: boolean;
@@ -210,6 +211,7 @@ export interface AppState {
     tokenUsage?: TokenUsageViewState;
     tree: TreeViewState;
     connectionStatus: ConnectionStatus;
+    failureReason?: 'no_process' | 'ambiguous' | 'no_port' | 'auth_failed' | 'workspace_mismatch' | null;
     automation: {
         enabled: boolean;
     };

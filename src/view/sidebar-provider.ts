@@ -117,6 +117,12 @@ export class SidebarProvider implements vscode.WebviewViewProvider, vscode.Dispo
                     vscode.env.openExternal(vscode.Uri.parse(msg.path));
                 }
                 break;
+            case "runDiagnostics":
+                vscode.commands.executeCommand("tfa.runDiagnostics");
+                break;
+            case "showLogs":
+                vscode.commands.executeCommand("tfa.showLogs");
+                break;
             case "restartLanguageServer":
                 vscode.commands.executeCommand("tfa.restartLanguageServer");
                 break;

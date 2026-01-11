@@ -200,10 +200,10 @@ suite('Workspace ID Normalization Test Suite', () => {
             assert.strictEqual(result, 'file_home_deploy_projects');
         });
 
-        test('should convert to lowercase', () => {
-            // /Home/User/MyProject → file_home_user_myproject
+        test('should preserve case in path', () => {
+            // /Home/User/MyProject → file_Home_User_MyProject (preserves case)
             const result = normalizeUnixPath('/Home/User/MyProject');
-            assert.strictEqual(result, 'file_home_user_myproject');
+            assert.strictEqual(result, 'file_Home_User_MyProject');
         });
 
         test('should handle hyphens', () => {
@@ -215,6 +215,12 @@ suite('Workspace ID Normalization Test Suite', () => {
         test('should handle trailing slashes', () => {
             const result = normalizeUnixPath('/home/user/project/');
             assert.strictEqual(result, 'file_home_user_project');
+        });
+
+        test('should URL-encode spaces correctly', () => {
+            // /Users/bob/open source/project → file_Users_bob_open_20source_project
+            const result = normalizeUnixPath('/Users/bob/open source/project');
+            assert.strictEqual(result, 'file_Users_bob_open_20source_project');
         });
     });
 });

@@ -146,13 +146,15 @@ export class AppViewModel implements vscode.Disposable {
         if (quota) {
             await this.updateQuotaState(quota);
             this._state.connectionStatus = 'connected';
+            this._state.failureReason = null;
             this._onQuotaChange.fire(this._state.quota);
             this._onStateChange.fire(this._state);
         }
     }
 
-    setConnectionStatus(status: ConnectionStatus): void {
+    setConnectionStatus(status: ConnectionStatus, reason?: 'no_process' | 'ambiguous' | 'no_port' | 'auth_failed' | 'workspace_mismatch' | null): void {
         this._state.connectionStatus = status;
+        this._state.failureReason = status === 'failed' ? reason : null;
         this._onStateChange.fire(this._state);
     }
 
@@ -692,6 +694,7 @@ export class AppViewModel implements vscode.Disposable {
             tasks: this._state.tree.tasks,
             contexts: this._state.tree.contexts,
             connectionStatus: this._state.connectionStatus,
+            failureReason: this._state.failureReason,
             autoAcceptEnabled: this._state.automation.enabled
         };
     }

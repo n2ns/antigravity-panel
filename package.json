@@ -92,6 +92,12 @@
         "icon": "$(pulse)"
       },
       {
+        "command": "tfa.showLogs",
+        "title": "%command.showLogs.title%",
+        "category": "%extension.category%",
+        "icon": "$(output)"
+      },
+      {
         "command": "tfa.toggleAutoAccept",
         "title": "%command.toggleAutoAccept.title%",
         "category": "%extension.category%",

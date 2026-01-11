@@ -15,10 +15,11 @@ import { FeedbackManager } from './shared/utils/feedback_manager';
 import { AppViewModel } from "./view-model/app.vm";
 import { StatusBarManager } from "./view/status-bar";
 import { SidebarProvider } from "./view/sidebar-provider";
-import { initLogger, setDebugMode, infoLog, errorLog, getLogger } from "./shared/utils/logger";
+import { initLogger, setDebugMode, infoLog, errorLog, warnLog, debugLog, getLogger } from "./shared/utils/logger";
 import { formatBytes } from "./shared/utils/format";
 import { CommunicationAttempt } from "./shared/utils/types";
 import { getDetailedOSVersion } from "./shared/utils/platform";
+import { getExpectedWorkspaceIds } from "./shared/utils/workspace_id";
 import { generateCommitMessageCommand, setAnthropicApiKeyCommand } from "./commitMessageClaude";
 
 
@@ -104,6 +105,17 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     const processFinder = new ProcessFinder();
 
     try {
+      // Enhanced diagnostics: Log connection attempt details
+      infoLog(`🔍 Attempting to connect to Antigravity language server (attempt ${bootRetryCount + 1}/${MAX_BOOT_RETRY + 1})...`);
+      const expectedIds = getExpectedWorkspaceIds();
+      if (expectedIds.length > 0) {
+        debugLog(`📁 Expected workspace IDs: ${JSON.stringify(expectedIds)}`);
+      } else {
+        debugLog(`⚠️  No workspace folders open - workspace ID matching disabled`);
+      }
+      debugLog(`🖥️  Platform: ${process.platform}, Arch: ${process.arch}`);
+      debugLog(`🔢 Process PID: ${process.pid}, PPID: ${process.ppid}`);
+
       const serverInfo = await processFinder.detect();
       const extVersion = context.extension.packageJSON.version;
       const ideVersion = vscode.version;
@@ -118,8 +130,14 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
 
       if (serverInfo) {
         quotaService.setServerInfo(serverInfo);
-        appViewModel.setConnectionStatus('connected');
+        appViewModel.setConnectionStatus('connected', null);
         bootRetryCount = 0; // Reset on success
+
+        // Enhanced diagnostics: Log successful connection
+        infoLog(`✅ Connected to language server on port ${serverInfo.port}`);
+        infoLog(`🔑 CSRF Token: ${serverInfo.csrfToken.substring(0, 8)}...`);
+        debugLog(`📊 Connection stats: ${processFinder.attemptDetails.length} attempts, Protocol: ${processFinder.protocolUsed}`);
+        debugLog(`📡 Ports: ${processFinder.portsFromCmdline} from cmdline, ${processFinder.portsFromNetstat} from netstat`);
 
         // Update UI and check for parsing errors
         await appViewModel.refreshQuota();
@@ -145,8 +163,8 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
         // ProcessFinder internal retries failed, try external retry
         if (bootRetryCount < MAX_BOOT_RETRY) {
           bootRetryCount++;
-          infoLog(`Boot retry ${bootRetryCount}/${MAX_BOOT_RETRY} in ${BOOT_RETRY_DELAY_MS / 1000}s...`);
-          appViewModel.setConnectionStatus('connecting');
+          infoLog(`🔄 Boot retry ${bootRetryCount}/${MAX_BOOT_RETRY} in ${BOOT_RETRY_DELAY_MS / 1000}s...`);
+          appViewModel.setConnectionStatus('detecting', null);
 
           setTimeout(() => {
             bootServerConnection();
@@ -156,7 +174,16 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
 
         // All retries exhausted, show failure notification
         bootRetryCount = 0;
-        appViewModel.setConnectionStatus('failed');
+        appViewModel.setConnectionStatus('failed', processFinder.failureReason);
+
+        // Enhanced diagnostics: Log detailed failure information
+        warnLog(`❌ Connection failed. Reason: ${processFinder.failureReason || 'unknown'}`);
+        warnLog(`📊 Candidates found: ${processFinder.candidateCount}, Workspace mismatches: ${processFinder.skippedForWorkspace}`);
+        warnLog(`🔁 Internal retry attempts: ${processFinder.retryCount}, External retries: ${MAX_BOOT_RETRY}`);
+        if (processFinder.tokenPreview) {
+          debugLog(`🔑 Token preview found: ${processFinder.tokenPreview}...`);
+        }
+
         if (hasShownNotification) return;
 
         const reason = processFinder.failureReason || "unknown_failure";
@@ -212,7 +239,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
       if (bootRetryCount < MAX_BOOT_RETRY) {
         bootRetryCount++;
         infoLog(`Boot retry ${bootRetryCount}/${MAX_BOOT_RETRY} after error in ${BOOT_RETRY_DELAY_MS / 1000}s...`);
-        appViewModel.setConnectionStatus('connecting');
+        appViewModel.setConnectionStatus('detecting', null);
 
         setTimeout(() => {
           bootServerConnection();
@@ -221,14 +248,16 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
       }
 
       bootRetryCount = 0;
-      appViewModel.setConnectionStatus('failed');
+      appViewModel.setConnectionStatus('failed', processFinder.failureReason);
     }
   }
 
-  // 3s Initial Delay to allow server to initialize ports (as per User Request)
+  // Reduced 1s delay for faster connection (previously 3s)
+  // Set detecting status immediately to show progress
+  appViewModel.setConnectionStatus('detecting', null);
   setTimeout(() => {
     bootServerConnection();
-  }, 3000);
+  }, 1000);
 
   // 4. Initialize View Components (The Face)
   const sidebarProvider = new SidebarProvider(context.extensionUri, appViewModel);
@@ -385,6 +414,14 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     }),
     vscode.commands.registerCommand("tfa.openSettings", () => {
       vscode.commands.executeCommand("workbench.action.openSettings", "@ext:n2ns.antigravity-panel");
+    }),
+    vscode.commands.registerCommand("tfa.showLogs", () => {
+      const logger = getLogger();
+      if (logger) {
+        logger.show(true); // Focus output panel
+      } else {
+        vscode.window.showWarningMessage("Toolkit: Output channel not initialized.");
+      }
     }),
     vscode.commands.registerCommand("tfa.showDisclaimer", async () => {
       const isZh = vscode.env.language.startsWith('zh');
