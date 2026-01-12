@@ -26,14 +26,19 @@ export class WindowsStrategy implements PlatformStrategy {
     // 2. @( ... ): Forces result into an array structure
     // 3. if ($p): Ensures we return '[]' instead of empty string if no process is found
     // Note: Only using Get-CimInstance (no Get-WmiObject fallback) for pwsh 7 compatibility
-    // Note: Using string concatenation for $f to avoid nested quote issues with cmd.exe (fixes #40, #45)
+    // FIX: Use single-quote concatenation to build WQL filter string.
+    // Previous approach using double quotes inside the -Command string was stripped by cmd.exe
+    // when Node.js exec() passes through the Windows shell, causing PowerShell to misparse.
+    // Single quotes avoid cmd.exe interpretation entirely. (fixes #40, #45, #XX)
     const script = `
       [Console]::OutputEncoding = [System.Text.Encoding]::UTF8;
       $n = '${processName}';
-      try { $f = "name='$n'"; } catch { $f = "name='{0}'" -f $n; }
+      $f = 'name=''' + $n + '''';
       $p = Get-CimInstance Win32_Process -Filter $f -ErrorAction SilentlyContinue;
       if ($p) { @($p) | Select-Object ProcessId,ParentProcessId,CommandLine | ConvertTo-Json -Compress } else { '[]' }
-    `.replace(/\n\s+/g, ' ').trim();
+    `
+      .replace(/\n\s+/g, " ")
+      .trim();
 
     return `chcp 65001 >nul && powershell -ExecutionPolicy Bypass -NoProfile -Command "${script}"`;
   }
@@ -45,7 +50,9 @@ export class WindowsStrategy implements PlatformStrategy {
       $k = '${keyword}';
       $p = Get-CimInstance Win32_Process | Where-Object { $_.CommandLine -match $k } -ErrorAction SilentlyContinue;
       if ($p) { @($p) | Select-Object ProcessId,ParentProcessId,CommandLine | ConvertTo-Json -Compress } else { '[]' }
-    `.replace(/\n\s+/g, ' ').trim();
+    `
+      .replace(/\n\s+/g, " ")
+      .trim();
 
     return `chcp 65001 >nul && powershell -ExecutionPolicy Bypass -NoProfile -Command "${script}"`;
   }
@@ -58,34 +65,36 @@ export class WindowsStrategy implements PlatformStrategy {
     // Ideally we list all, but that's heavy. Let's try to filter by commandline buffer if possible?
     // WMIC 'where' clause on CommandLine is tricky.
     // Let's filter by name 'language_server%' OR 'antigravity%' to be safe.
-    return 'wmic process where "name like \'%language_server%\' or name like \'%antigravity%\'" get ProcessId,ParentProcessId,CommandLine /format:csv';
+    return "wmic process where \"name like '%language_server%' or name like '%antigravity%'\" get ProcessId,ParentProcessId,CommandLine /format:csv";
   }
 
   parseProcessInfo(stdout: string): ProcessInfo[] | null {
     try {
       // 1. Try parsing JSON (PowerShell output)
-      if (stdout.trim().startsWith('[') || stdout.trim().startsWith('{')) {
+      if (stdout.trim().startsWith("[") || stdout.trim().startsWith("{")) {
         const data = JSON.parse(stdout.trim());
-        const processList: WinProcessItem[] = Array.isArray(data) ? data : [data];
+        const processList: WinProcessItem[] = Array.isArray(data)
+          ? data
+          : [data];
         return this.mapProcessItems(processList);
       }
 
       // 2. Try parsing CSV (wmic output)
       // Header: Node,CommandLine,ParentProcessId,ProcessId (sorted alphabetically by column name in /format:csv)
-      if (stdout.includes('CommandLine') && stdout.includes('ProcessId')) {
-        const lines = stdout.trim().split('\n');
+      if (stdout.includes("CommandLine") && stdout.includes("ProcessId")) {
+        const lines = stdout.trim().split("\n");
         const results: ProcessInfo[] = [];
 
         for (const line of lines) {
           const row = line.trim();
-          if (!row || row.startsWith('Node,')) continue; // Skip header
+          if (!row || row.startsWith("Node,")) continue; // Skip header
 
           // WMIC CSV format: Node, "CommandLine", ParentProcessId, ProcessId
           // But sometimes quotes are missing or different.
           // Crucially, ProcessId is the last number.
 
           // Quick check: does it look like our process?
-          if (!row.includes('--extension_server_port')) continue;
+          if (!row.includes("--extension_server_port")) continue;
 
           // Extract PPID and PID (last two numbers)
           const idsMatch = row.match(/,(\d+),(\d+)\s*$/);
@@ -96,13 +105,22 @@ export class WindowsStrategy implements PlatformStrategy {
           // We mostly need CLI args from the string
           const commandLine = row;
 
-          const portMatch = commandLine.match(/--extension_server_port[=\s]+(\d+)/);
-          const tokenMatch = commandLine.match(/--csrf_token[=\s]+(?:["']?)([a-zA-Z0-9\-_.]+)(?:["']?)/);
-          const wsMatch = commandLine.match(/--workspace_id[=\s]+(?:["']?)([a-zA-Z0-9\-_.]+)(?:["']?)/);
+          const portMatch = commandLine.match(
+            /--extension_server_port[=\s]+(\d+)/,
+          );
+          const tokenMatch = commandLine.match(
+            /--csrf_token[=\s]+(?:["']?)([a-zA-Z0-9\-_.]+)(?:["']?)/,
+          );
+          const wsMatch = commandLine.match(
+            /--workspace_id[=\s]+(?:["']?)([a-zA-Z0-9\-_.]+)(?:["']?)/,
+          );
 
           if (tokenMatch?.[1]) {
             // STRICT CHECK: Ensure process belongs to Antigravity
-            if (!commandLine.includes('--app_data_dir') || !/app_data_dir\s+["']?antigravity/i.test(commandLine)) {
+            if (
+              !commandLine.includes("--app_data_dir") ||
+              !/app_data_dir\s+["']?antigravity/i.test(commandLine)
+            ) {
               continue;
             }
 
@@ -111,7 +129,7 @@ export class WindowsStrategy implements PlatformStrategy {
               ppid,
               extensionPort: portMatch?.[1] ? parseInt(portMatch[1], 10) : 0,
               csrfToken: tokenMatch[1],
-              workspaceId: wsMatch?.[1]
+              workspaceId: wsMatch?.[1],
             });
           }
         }
@@ -134,11 +152,18 @@ export class WindowsStrategy implements PlatformStrategy {
       if (!pid) continue;
 
       const portMatch = commandLine.match(/--extension_server_port[=\s]+(\d+)/);
-      const tokenMatch = commandLine.match(/--csrf_token[=\s]+(?:["']?)([a-zA-Z0-9\-_.]+)(?:["']?)/);
-      const wsMatch = commandLine.match(/--workspace_id[=\s]+(?:["']?)([a-zA-Z0-9\-_.]+)(?:["']?)/);
+      const tokenMatch = commandLine.match(
+        /--csrf_token[=\s]+(?:["']?)([a-zA-Z0-9\-_.]+)(?:["']?)/,
+      );
+      const wsMatch = commandLine.match(
+        /--workspace_id[=\s]+(?:["']?)([a-zA-Z0-9\-_.]+)(?:["']?)/,
+      );
 
       if (tokenMatch?.[1]) {
-        if (!commandLine.includes('--app_data_dir') || !/app_data_dir\s+["']?antigravity/i.test(commandLine)) {
+        if (
+          !commandLine.includes("--app_data_dir") ||
+          !/app_data_dir\s+["']?antigravity/i.test(commandLine)
+        ) {
           continue;
         }
         results.push({
@@ -153,15 +178,14 @@ export class WindowsStrategy implements PlatformStrategy {
     return results.length > 0 ? results : null;
   }
 
-
-
   getPortListCommand(pid: number): string {
     return `chcp 65001 >nul && netstat -ano | findstr "${pid}" | findstr "LISTENING"`;
   }
 
   parseListeningPorts(stdout: string, _pid: number): number[] {
     // Windows netstat + findstr already filters by PID, so we just parse all matches
-    const portRegex = /(?:127\.0\.0\.1|0\.0\.0\.0|\[::1?\]):(\d+)\s+\S+\s+LISTENING/gi;
+    const portRegex =
+      /(?:127\.0\.0\.1|0\.0\.0\.0|\[::1?\]):(\d+)\s+\S+\s+LISTENING/gi;
     const ports: number[] = [];
     let match;
     while ((match = portRegex.exec(stdout)) !== null) {
@@ -178,7 +202,8 @@ export class WindowsStrategy implements PlatformStrategy {
    * Used when detection fails to help troubleshoot
    */
   getDiagnosticCommand(): string {
-    const utf8Header = '[Console]::OutputEncoding = [System.Text.Encoding]::UTF8; ';
+    const utf8Header =
+      "[Console]::OutputEncoding = [System.Text.Encoding]::UTF8; ";
     return `chcp 65001 >nul && powershell -NoProfile -Command "${utf8Header}Get-Process | Where-Object { $_.ProcessName -match 'language|antigravity' } | Select-Object Id,ProcessName,Path | Format-Table -AutoSize"`;
   }
 
@@ -187,11 +212,11 @@ export class WindowsStrategy implements PlatformStrategy {
    */
   getTroubleshootingTips(): string[] {
     return [
-      'Ensure Antigravity IDE is running',
-      'Check if language_server_windows_x64.exe is in Task Manager',
-      'Try restarting Antigravity IDE / VS Code',
-      'If PowerShell errors occur, try: Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned',
-      'If WMI errors occur, try: net start winmgmt (run as admin)'
+      "Ensure Antigravity IDE is running",
+      "Check if language_server_windows_x64.exe is in Task Manager",
+      "Try restarting Antigravity IDE / VS Code",
+      "If PowerShell errors occur, try: Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned",
+      "If WMI errors occur, try: net start winmgmt (run as admin)",
     ];
   }
 }
@@ -201,10 +226,10 @@ export class WindowsStrategy implements PlatformStrategy {
  */
 export class UnixStrategy implements PlatformStrategy {
   // Dynamic port command detection (learned from competitor: vscode-antigravity-cockpit)
-  private availablePortCommand: 'lsof' | 'ss' | 'netstat' | null = null;
+  private availablePortCommand: "lsof" | "ss" | "netstat" | null = null;
   private portCommandChecked: boolean = false;
 
-  constructor(private platform: "darwin" | "linux") { }
+  constructor(private platform: "darwin" | "linux") {}
 
   getProcessListCommand(processName: string): string {
     // Use 'ps' to get PID, PPID, and full Arguments.
@@ -213,7 +238,10 @@ export class UnixStrategy implements PlatformStrategy {
     // args: Full command line (more reliable than 'command' on some systems)
     // grep: Filter for our process name (brackets [n] trick prevents grep from matching itself)
     // -ww: Unlimited width output to prevent command truncation
-    const grepPattern = processName.length > 0 ? `[${processName[0]}]${processName.slice(1)}` : processName;
+    const grepPattern =
+      processName.length > 0
+        ? `[${processName[0]}]${processName.slice(1)}`
+        : processName;
     return `ps -A -ww -o pid,ppid,args | grep "${grepPattern}"`;
   }
 
@@ -240,12 +268,19 @@ export class UnixStrategy implements PlatformStrategy {
         if (cmd.includes("--extension_server_port")) {
           const portMatch = cmd.match(/--extension_server_port[=\s]+(\d+)/);
           // Match workspace_id and csrf_token (handles optional quotes)
-          const tokenMatch = cmd.match(/--csrf_token[=\s]+(?:["']?)([a-zA-Z0-9\-_.]+)(?:["']?)/);
-          const wsMatch = cmd.match(/--workspace_id[=\s]+(?:["']?)([a-zA-Z0-9\-_.]+)(?:["']?)/);
+          const tokenMatch = cmd.match(
+            /--csrf_token[=\s]+(?:["']?)([a-zA-Z0-9\-_.]+)(?:["']?)/,
+          );
+          const wsMatch = cmd.match(
+            /--workspace_id[=\s]+(?:["']?)([a-zA-Z0-9\-_.]+)(?:["']?)/,
+          );
 
           if (tokenMatch?.[1]) {
             // STRICT CHECK: Ensure process belongs to Antigravity
-            if (!cmd.includes('--app_data_dir') || !/app_data_dir\s+["']?antigravity/i.test(cmd)) {
+            if (
+              !cmd.includes("--app_data_dir") ||
+              !/app_data_dir\s+["']?antigravity/i.test(cmd)
+            ) {
               continue;
             }
 
@@ -274,11 +309,11 @@ export class UnixStrategy implements PlatformStrategy {
 
     // Linux: Use detected command, fallback to chain if not yet detected
     switch (this.availablePortCommand) {
-      case 'lsof':
+      case "lsof":
         return `lsof -nP -a -iTCP -sTCP:LISTEN -p ${pid} 2>/dev/null | grep -E "^\\S+\\s+${pid}\\s"`;
-      case 'ss':
+      case "ss":
         return `ss -tlnp 2>/dev/null | grep "pid=${pid},"`;
-      case 'netstat':
+      case "netstat":
         return `netstat -tulpn 2>/dev/null | grep ${pid}`;
       default:
         // Fallback: try multiple commands in order
@@ -292,16 +327,16 @@ export class UnixStrategy implements PlatformStrategy {
    * Call this before getPortListCommand for optimal command selection
    */
   async detectAvailablePortCommand(): Promise<void> {
-    if (this.portCommandChecked || this.platform === 'darwin') {
+    if (this.portCommandChecked || this.platform === "darwin") {
       return; // macOS always uses lsof, no need to detect
     }
     this.portCommandChecked = true;
 
-    const { exec } = await import('child_process');
-    const { promisify } = await import('util');
+    const { exec } = await import("child_process");
+    const { promisify } = await import("util");
     const execAsync = promisify(exec);
 
-    const commands = ['lsof', 'ss', 'netstat'] as const;
+    const commands = ["lsof", "ss", "netstat"] as const;
 
     for (const cmd of commands) {
       try {
@@ -320,7 +355,7 @@ export class UnixStrategy implements PlatformStrategy {
   parseListeningPorts(stdout: string, pid: number): number[] {
     const ports: number[] = [];
     const pidStr = String(pid);
-    const lines = stdout.split('\n');
+    const lines = stdout.split("\n");
 
     if (this.platform === "darwin") {
       // lsof output format: COMMAND PID USER FD TYPE ... NAME
@@ -330,7 +365,9 @@ export class UnixStrategy implements PlatformStrategy {
         const parts = line.trim().split(/\s+/);
         // Check if line belongs to target PID (second column)
         if (parts.length >= 2 && parts[1] === pidStr) {
-          const portMatch = line.match(/(?:TCP|UDP)\s+(?:\*|[\d.]+|\[[\da-f:]+\]):(\d+)\s+\(LISTEN\)/i);
+          const portMatch = line.match(
+            /(?:TCP|UDP)\s+(?:\*|[\d.]+|\[[\da-f:]+\]):(\d+)\s+\(LISTEN\)/i,
+          );
           if (portMatch) {
             const port = parseInt(portMatch[1], 10);
             if (!ports.includes(port)) {
@@ -343,7 +380,8 @@ export class UnixStrategy implements PlatformStrategy {
       // Linux: ss output already filters by pid via grep in command
       // But we still apply PID check for lsof fallback
       let match;
-      const ssRegex = /LISTEN\s+\d+\s+\d+\s+(?:\*|[\d.]+|\[[\da-f:]*\]):(\d+)/gi;
+      const ssRegex =
+        /LISTEN\s+\d+\s+\d+\s+(?:\*|[\d.]+|\[[\da-f:]*\]):(\d+)/gi;
       while ((match = ssRegex.exec(stdout)) !== null) {
         const port = parseInt(match[1], 10);
         if (!ports.includes(port)) {
@@ -355,7 +393,9 @@ export class UnixStrategy implements PlatformStrategy {
         for (const line of lines) {
           const parts = line.trim().split(/\s+/);
           if (parts.length >= 2 && parts[1] === pidStr) {
-            const portMatch = line.match(/(?:TCP|UDP)\s+(?:\*|[\d.]+|\[[\da-f:]+\]):(\d+)\s+\(LISTEN\)/i);
+            const portMatch = line.match(
+              /(?:TCP|UDP)\s+(?:\*|[\d.]+|\[[\da-f:]+\]):(\d+)\s+\(LISTEN\)/i,
+            );
             if (portMatch) {
               const port = parseInt(portMatch[1], 10);
               if (!ports.includes(port)) {
@@ -381,16 +421,16 @@ export class UnixStrategy implements PlatformStrategy {
    * Get troubleshooting tips for Unix
    */
   getTroubleshootingTips(): string[] {
-    const processName = this.platform === 'darwin'
-      ? 'language_server_macos_*'
-      : 'language_server_linux_x64';
+    const processName =
+      this.platform === "darwin"
+        ? "language_server_macos_*"
+        : "language_server_linux_x64";
 
     return [
-      'Ensure Antigravity IDE is running',
+      "Ensure Antigravity IDE is running",
       `Check if ${processName} process is running: ps aux | grep language_server`,
-      'Try restarting Antigravity IDE',
-      'Check system logs for any process crashes'
+      "Try restarting Antigravity IDE",
+      "Check system logs for any process crashes",
     ];
   }
 }
-
