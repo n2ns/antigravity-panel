@@ -42,59 +42,110 @@ export class WindowsStrategy implements PlatformStrategy {
     return `chcp 65001 >nul && powershell -ExecutionPolicy Bypass -NoProfile -Command "${script}"`;
   }
 
+  getFallbackProcessListCommand(): string {
+    // Fallback: Use wmic (more robust on older/restricted systems than PowerShell CIM)
+    // /format:csv outputs: Node,CommandLine,ParentProcessId,ProcessId
+    // Note: We filter by name to reduce output, but 'language_server' might be renamed,
+    // so we trust the caller (process_finder) usually invokes this when primary failed.
+    // Ideally we list all, but that's heavy. Let's try to filter by commandline buffer if possible?
+    // WMIC 'where' clause on CommandLine is tricky.
+    // Let's filter by name 'language_server%' OR 'antigravity%' to be safe.
+    return 'wmic process where "name like \'%language_server%\' or name like \'%antigravity%\'" get ProcessId,ParentProcessId,CommandLine /format:csv';
+  }
+
   parseProcessInfo(stdout: string): ProcessInfo[] | null {
     try {
-      const data = JSON.parse(stdout.trim());
-      interface WindowsProcessItem {
-        ProcessId: number;
-        ParentProcessId: number;
-        CommandLine: string | null;
-      }
-      let processList: WindowsProcessItem[] = [];
-
-      if (Array.isArray(data)) {
-        processList = data;
-      } else {
-        processList = [data];
+      // 1. Try parsing JSON (PowerShell output)
+      if (stdout.trim().startsWith('[') || stdout.trim().startsWith('{')) {
+        const data = JSON.parse(stdout.trim());
+        const processList: any[] = Array.isArray(data) ? data : [data];
+        return this.mapProcessItems(processList);
       }
 
-      const results: ProcessInfo[] = [];
+      // 2. Try parsing CSV (wmic output)
+      // Header: Node,CommandLine,ParentProcessId,ProcessId (sorted alphabetically by column name in /format:csv)
+      if (stdout.includes('CommandLine') && stdout.includes('ProcessId')) {
+        const lines = stdout.trim().split('\n');
+        const results: ProcessInfo[] = [];
 
-      for (const item of processList) {
-        const commandLine = item.CommandLine || "";
-        const pid = item.ProcessId;
-        const ppid = item.ParentProcessId;
+        for (const line of lines) {
+          const row = line.trim();
+          if (!row || row.startsWith('Node,')) continue; // Skip header
 
-        if (!pid) {
-          continue;
-        }
+          // WMIC CSV format: Node, "CommandLine", ParentProcessId, ProcessId
+          // But sometimes quotes are missing or different.
+          // Crucially, ProcessId is the last number.
 
-        const portMatch = commandLine.match(/--extension_server_port[=\s]+(\d+)/);
-        // Match workspace_id and csrf_token (handles optional quotes)
-        const tokenMatch = commandLine.match(/--csrf_token[=\s]+(?:["']?)([a-zA-Z0-9\-_.]+)(?:["']?)/);
-        const wsMatch = commandLine.match(/--workspace_id[=\s]+(?:["']?)([a-zA-Z0-9\-_.]+)(?:["']?)/);
+          // Quick check: does it look like our process?
+          if (!row.includes('--extension_server_port')) continue;
 
-        if (tokenMatch?.[1]) {
-          // STRICT CHECK: Ensure process belongs to Antigravity
-          if (!commandLine.includes('--app_data_dir') || !/app_data_dir\s+["']?antigravity/i.test(commandLine)) {
-            continue;
+          // Extract PPID and PID (last two numbers)
+          const idsMatch = row.match(/,(\d+),(\d+)\s*$/);
+          if (!idsMatch) continue;
+
+          const ppid = parseInt(idsMatch[1], 10);
+          const pid = parseInt(idsMatch[2], 10);
+          // We mostly need CLI args from the string
+          const commandLine = row;
+
+          const portMatch = commandLine.match(/--extension_server_port[=\s]+(\d+)/);
+          const tokenMatch = commandLine.match(/--csrf_token[=\s]+(?:["']?)([a-zA-Z0-9\-_.]+)(?:["']?)/);
+          const wsMatch = commandLine.match(/--workspace_id[=\s]+(?:["']?)([a-zA-Z0-9\-_.]+)(?:["']?)/);
+
+          if (tokenMatch?.[1]) {
+            // STRICT CHECK: Ensure process belongs to Antigravity
+            if (!commandLine.includes('--app_data_dir') || !/app_data_dir\s+["']?antigravity/i.test(commandLine)) {
+              continue;
+            }
+
+            results.push({
+              pid,
+              ppid,
+              extensionPort: portMatch?.[1] ? parseInt(portMatch[1], 10) : 0,
+              csrfToken: tokenMatch[1],
+              workspaceId: wsMatch?.[1]
+            });
           }
-
-          results.push({
-            pid,
-            ppid,
-            extensionPort: portMatch?.[1] ? parseInt(portMatch[1], 10) : 0,
-            csrfToken: tokenMatch[1],
-            workspaceId: wsMatch?.[1],
-          });
         }
+        return results.length > 0 ? results : null;
       }
-
-      return results.length > 0 ? results : null;
+      return null;
     } catch {
       return null;
     }
   }
+
+  private mapProcessItems(processList: any[]): ProcessInfo[] | null {
+    const results: ProcessInfo[] = [];
+
+    for (const item of processList) {
+      const commandLine = item.CommandLine || "";
+      const pid = item.ProcessId;
+      const ppid = item.ParentProcessId;
+
+      if (!pid) continue;
+
+      const portMatch = commandLine.match(/--extension_server_port[=\s]+(\d+)/);
+      const tokenMatch = commandLine.match(/--csrf_token[=\s]+(?:["']?)([a-zA-Z0-9\-_.]+)(?:["']?)/);
+      const wsMatch = commandLine.match(/--workspace_id[=\s]+(?:["']?)([a-zA-Z0-9\-_.]+)(?:["']?)/);
+
+      if (tokenMatch?.[1]) {
+        if (!commandLine.includes('--app_data_dir') || !/app_data_dir\s+["']?antigravity/i.test(commandLine)) {
+          continue;
+        }
+        results.push({
+          pid,
+          ppid,
+          extensionPort: portMatch?.[1] ? parseInt(portMatch[1], 10) : 0,
+          csrfToken: tokenMatch[1],
+          workspaceId: wsMatch?.[1],
+        });
+      }
+    }
+    return results.length > 0 ? results : null;
+  }
+
+
 
   getPortListCommand(pid: number): string {
     return `chcp 65001 >nul && netstat -ano | findstr "${pid}" | findstr "LISTENING"`;

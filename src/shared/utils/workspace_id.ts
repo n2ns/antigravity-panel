@@ -38,11 +38,11 @@ export function getWorkspaceIdsFromFolders(folders: readonly vscode.WorkspaceFol
  * - Colon: URL-encoded as _3A_ 
  * - Backslash: replaced with _
  * - Directory names: preserve original case
- * - Special chars (like -): replaced with _
+ * - Special chars (except . and -): replaced with _
  * 
  * @example
  * normalizeWindowsPath("V:\\DevSpace\\daisy-box") 
- * // → "file_v_3A_DevSpace_daisy_box"
+ * // → "file_v_3A_DevSpace_daisy-box"
  */
 export function normalizeWindowsPath(path: string): string {
     // Split into drive and rest: "V:\DevSpace\daisy-box" → ["V:", "DevSpace\daisy-box"]
@@ -58,7 +58,7 @@ export function normalizeWindowsPath(path: string): string {
     // Process the rest: replace \ and special chars with _, preserve case
     const normalizedRest = restOfPath
         .replace(/\\/g, "_")           // Backslash → underscore
-        .replace(/[^a-zA-Z0-9_]/g, "_") // Other special chars → underscore
+        .replace(/[^a-zA-Z0-9_.-]/g, "_") // Other special chars → underscore (keep . and -)
         .replace(/^_+/, "");            // Strip leading underscores
 
     // Combine: file_ + driveLetter + _3A_ + rest

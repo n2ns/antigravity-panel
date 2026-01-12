@@ -166,7 +166,7 @@ suite('Workspace ID Normalization Test Suite', () => {
         test('should encode drive letter and colon correctly', () => {
             // V:\DevSpace\daisy-box → file_v_3A_DevSpace_daisy_box
             const result = normalizeWindowsPath('V:\\DevSpace\\daisy-box');
-            assert.strictEqual(result, 'file_v_3A_DevSpace_daisy_box');
+            assert.strictEqual(result, 'file_v_3A_DevSpace_daisy-box');
         });
 
         test('should handle simple drive path', () => {

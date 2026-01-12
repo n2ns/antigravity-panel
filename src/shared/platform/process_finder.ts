@@ -185,11 +185,21 @@ export class ProcessFinder {
       let infos: ProcessInfo[] | null = this.strategy.parseProcessInfo(stdout);
 
       if (!infos) {
+        // 1. Try Keyword Search (existing fallback)
         if (this.strategy.getProcessListByKeywordCommand) {
           debugLog("ProcessFinder: Process name scan failed, trying keyword scan (csrf_token)...");
           const keywordCmd = this.strategy.getProcessListByKeywordCommand("csrf_token");
-          const { stdout: keywordStdout } = await this.executeWithPowershellWarmup(keywordCmd);
+          // Use standard execute for keyword search to avoid double warm-up delay if first failed
+          const { stdout: keywordStdout } = await this.execute(keywordCmd).catch(() => ({ stdout: '', stderr: '' }));
           infos = this.strategy.parseProcessInfo(keywordStdout);
+        }
+
+        // 2. Try Platform Fallback (e.g., wmic for Windows) - NEW
+        if (!infos && this.strategy.getFallbackProcessListCommand) {
+          debugLog("ProcessFinder: Keyword scan failed, trying platform fallback (wmic)...");
+          const fallbackCmd = this.strategy.getFallbackProcessListCommand();
+          const { stdout: fallbackStdout } = await this.execute(fallbackCmd).catch(() => ({ stdout: '', stderr: '' }));
+          infos = this.strategy.parseProcessInfo(fallbackStdout);
         }
 
         if (!infos) {
@@ -272,9 +282,22 @@ export class ProcessFinder {
       for (const info of infos) {
         // STRICT ISOLATION: If we have expected IDs, don't connect to a process that has a DIFFERENT ID
         if (expectedIds.length > 0 && info.workspaceId && !expectedIds.includes(info.workspaceId)) {
-          debugLog(`ProcessFinder: Skipping PID ${info.pid} - belongs to a different workspace (${info.workspaceId})`);
-          this.skippedForWorkspace++;
-          continue;
+          // 1. Log the mismatch detail
+          debugLog(`ProcessFinder: Strict ID mismatch. PID:${info.pid} has '${info.workspaceId}', expected: [${expectedIds.join(', ')}]`);
+
+          // 2. Loose Matching (Fallback): Ignore separators (._-) and case
+          // This handles cases where our normalization logic still differs slightly from the server
+          const normalizeLoose = (id: string) => id.replace(/[._-]/g, '').toLowerCase();
+          const looseMatch = expectedIds.some(eid => normalizeLoose(eid) === normalizeLoose(info.workspaceId!));
+
+          if (looseMatch) {
+            warnLog(`ProcessFinder: Loosely matched PID ${info.pid} (Actual: ${info.workspaceId}) despite strict mismatch.`);
+            // Proceed to verify/connect despite the strict mismatch
+          } else {
+            debugLog(`ProcessFinder: Skipping PID ${info.pid} - belongs to a different workspace (${info.workspaceId})`);
+            this.skippedForWorkspace++;
+            continue;
+          }
         }
 
         const result = await this.verifyAndConnect(info);

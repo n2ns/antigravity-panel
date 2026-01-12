@@ -34,7 +34,16 @@ suite('Workspace ID Utilities Test Suite', () => {
     });
 
     test('normalizeWindowsPath should handle paths with special characters', () => {
-        assert.strictEqual(workspaceId.normalizeWindowsPath('C:\\My-Project'), 'file_c_3A_My_Project');
+        assert.strictEqual(workspaceId.normalizeWindowsPath('C:\\My-Project'), 'file_c_3A_My-Project');
+    });
+
+    test('normalizeWindowsPath should preserve dots and hyphens (Regression Test for #40)', () => {
+        // Dot handling
+        assert.strictEqual(workspaceId.normalizeWindowsPath('C:\\My.Project.v2'), 'file_c_3A_My.Project.v2');
+        // Mixed handling
+        assert.strictEqual(workspaceId.normalizeWindowsPath('D:\\Dev-Space\\node.js-app'), 'file_d_3A_Dev-Space_node.js-app');
+        // Multiple underscores vs dots
+        assert.strictEqual(workspaceId.normalizeWindowsPath('E:\\My_Project.dir'), 'file_e_3A_My_Project.dir');
     });
 
     test('normalizeWindowsPath should fallback to unix normalization for non-drive paths', () => {

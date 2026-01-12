@@ -3,6 +3,12 @@ English | [中文文档](docs/CHANGELOG_zh.md)
 # Change Log
 
 
+## [2.5.3] - 2026-01-12
+### Fixed
+- **Windows Process Detection**: Added `wmic` as a robust fallback for environments where PowerShell CIM is restricted or failing. Improved parser security with strict `--app_data_dir` verification.
+- **Workspace ID Mismatch**: Fixed "Wrong workspace detected" errors by correctly preserving dots (`.`) and hyphens (`-`) during path normalization on Windows. Added loose matching logic for better resilience.
+- **Documentation**: Updated `normalizeWindowsPath` documentation and added regression tests to ensure long-term stability for complex paths.
+
 ## [2.5.2] - 2026-01-11
 ### Improved
 - **Connection Diagnostics**: Enhanced the "Local service not detected" experience with actionable error messages (e.g., "Wrong workspace", "Auth failed") and a new `Run Diagnostics` tool.

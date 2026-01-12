@@ -188,6 +188,8 @@ export interface PlatformStrategy {
   parseListeningPorts(stdout: string, pid: number): number[];
   /** Get process list by keyword (fallback detection strategy) */
   getProcessListByKeywordCommand?(keyword: string): string;
+  /** Get fallback process list command (e.g. wmic/tasklist for Windows) + parser type hint */
+  getFallbackProcessListCommand?(): string;
   /** Get diagnostic command to list related processes */
   getDiagnosticCommand(): string;
   /** Get troubleshooting tips for the platform */

@@ -2,7 +2,7 @@
   "name": "antigravity-panel",
   "displayName": "%extension.displayName%",
   "description": "%extension.description%",
-  "version": "2.5.2",
+  "version": "2.5.3",
   "publisher": "n2ns",
   "license": "Apache-2.0",
   "repository": {
