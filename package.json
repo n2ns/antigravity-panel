@@ -2,7 +2,7 @@
   "name": "antigravity-panel",
   "displayName": "Toolkit for Antigravity",
   "description": "%extension.description%",
-  "version": "2.5.5",
+  "version": "2.5.6",
   "publisher": "n2ns",
   "license": "Apache-2.0",
   "repository": {
@@ -169,9 +169,9 @@
           },
           "tfa.dashboard.uiScale": {
             "type": "number",
-            "default": 1.0,
+            "default": 1,
             "minimum": 0.8,
-            "maximum": 2.0,
+            "maximum": 2,
             "order": 15,
             "description": "%config.dashboard.uiScale.description%"
           },
