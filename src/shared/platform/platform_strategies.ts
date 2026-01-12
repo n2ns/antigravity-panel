@@ -7,6 +7,13 @@ import { ProcessInfo, PlatformStrategy } from "../utils/types";
 // Re-export types for backward compatibility
 export type { ProcessInfo, PlatformStrategy };
 
+/** Windows process item from PowerShell/WMI output */
+interface WinProcessItem {
+  ProcessId?: number;
+  ParentProcessId?: number;
+  CommandLine?: string;
+}
+
 /**
  * Windows platform strategy using PowerShell
  * Compatible with PowerShell 5.1 and pwsh 7.x
@@ -59,7 +66,7 @@ export class WindowsStrategy implements PlatformStrategy {
       // 1. Try parsing JSON (PowerShell output)
       if (stdout.trim().startsWith('[') || stdout.trim().startsWith('{')) {
         const data = JSON.parse(stdout.trim());
-        const processList: any[] = Array.isArray(data) ? data : [data];
+        const processList: WinProcessItem[] = Array.isArray(data) ? data : [data];
         return this.mapProcessItems(processList);
       }
 
@@ -116,7 +123,7 @@ export class WindowsStrategy implements PlatformStrategy {
     }
   }
 
-  private mapProcessItems(processList: any[]): ProcessInfo[] | null {
+  private mapProcessItems(processList: WinProcessItem[]): ProcessInfo[] | null {
     const results: ProcessInfo[] = [];
 
     for (const item of processList) {
