@@ -3,6 +3,10 @@ English | [中文文档](docs/CHANGELOG_zh.md)
 # Change Log
 
 
+## [2.5.4] - 2026-01-12
+### Fixed
+- **Windows Process Detection**: Fixed PowerShell quote escaping issue (Issue #46) by implementing a robust hybrid strategy (Interpolated Strings + Format Operator fallback) to solve "ParserError" on certain Windows environments.
+
 ## [2.5.3] - 2026-01-12
 ### Fixed
 - **Windows Process Detection**: Added `wmic` as a robust fallback for environments where PowerShell CIM is restricted or failing. Improved parser security with strict `--app_data_dir` verification.

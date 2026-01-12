@@ -23,7 +23,7 @@ export class WindowsStrategy implements PlatformStrategy {
     const script = `
       [Console]::OutputEncoding = [System.Text.Encoding]::UTF8;
       $n = '${processName}';
-      $f = 'name=''' + $n + '''';
+      try { $f = "name='$n'"; } catch { $f = "name='{0}'" -f $n; }
       $p = Get-CimInstance Win32_Process -Filter $f -ErrorAction SilentlyContinue;
       if ($p) { @($p) | Select-Object ProcessId,ParentProcessId,CommandLine | ConvertTo-Json -Compress } else { '[]' }
     `.replace(/\n\s+/g, ' ').trim();
