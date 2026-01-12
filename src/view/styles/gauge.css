@@ -240,8 +240,8 @@ quota-pie {
 
 /* Connection Hint Banner */
 .connection-hint {
-    background-color: var(--vscode-button-secondaryBackground);
-    color: var(--vscode-foreground);
+    background-color: var(--vscode-button-background);
+    color: var(--vscode-button-foreground);
     padding: 8px 12px;
     margin: 8px;
     border-radius: 6px;
@@ -250,7 +250,7 @@ quota-pie {
     gap: 10px;
     font-size: 0.85rem;
     line-height: 1.4;
-    border: 1px solid var(--vscode-button-border, rgba(255, 255, 255, 0.1));
+    border: none;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 

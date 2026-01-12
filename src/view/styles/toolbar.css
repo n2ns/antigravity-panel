@@ -26,8 +26,8 @@
     justify-content: center;
     gap: 4px;
     padding: 6px 4px;
-    font-size:  0.9rem;
-    background: var(--vscode-button-secondaryBackground);
+    font-size: 0.9rem;
+    background: var(--vscode-input-background);
     color: var(--vscode-foreground);
     border: 1px solid var(--vscode-button-border, transparent);
     border-radius: 3px;
@@ -48,7 +48,7 @@
 
 .toolbar-btn.primary {
     background: var(--vscode-button-background);
-    color: var(--vscode-foreground);
+    color: var(--vscode-button-foreground);
 }
 
 .toolbar-btn.primary:hover {
@@ -82,7 +82,8 @@
     align-items: center;
     justify-content: space-between;
     padding: 6px 10px;
-    background: var(--vscode-button-secondaryBackground);
+    background: var(--vscode-input-background);
+    border: 1px solid var(--vscode-widget-border);
     border-radius: 4px;
 }
 
@@ -90,7 +91,7 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    font-size:  0.9rem;
+    font-size: 0.9rem;
     font-weight: 600;
     color: var(--vscode-foreground);
 }
@@ -120,13 +121,13 @@
     justify-content: center;
     gap: 6px;
     padding: 6px 8px;
-    background: var(--vscode-button-secondaryBackground);
+    background: var(--vscode-input-background);
     color: var(--vscode-foreground);
     border: none;
     border-radius: 4px;
     cursor: pointer;
     font-family: inherit;
-    font-size:  0.9rem;
+    font-size: 0.9rem;
     font-weight: 500;
     transition: all 0.15s ease;
     white-space: nowrap;
@@ -134,7 +135,7 @@
 
 .action-btn.primary {
     background: var(--vscode-button-background, #0e639c);
-    color: var(--vscode-foreground);
+    color: var(--vscode-button-foreground);
 }
 
 .action-btn:hover {
@@ -238,19 +239,19 @@
     gap: 6px;
     padding: 6px 12px;
     background: var(--vscode-button-secondaryBackground);
-    color: var(--vscode-foreground);
+    color: var(--vscode-button-secondaryForeground);
     border: none;
-    border-radius: 2px;
+    border-radius: 4px;
     cursor: pointer;
     font-family: inherit;
-    font-size:  0.9rem;
+    font-size: 0.9rem;
     font-weight: 500;
     transition: all 0.2s ease;
 }
 
 .link-btn:hover {
     background: var(--vscode-button-secondaryHoverBackground);
-    color: var(--vscode-foreground);
+    color: var(--vscode-button-secondaryForeground);
 }
 
 .link-btn .codicon {
@@ -276,13 +277,13 @@
     justify-content: center;
     gap: 6px;
     padding: 6px 4px;
-    background: var(--vscode-button-secondaryBackground);
+    background: var(--vscode-input-background);
     color: var(--vscode-foreground);
     border: 1px solid var(--vscode-button-border, transparent);
     border-radius: 4px;
     cursor: pointer;
     font-family: inherit;
-    font-size:  0.9rem;
+    font-size: 0.9rem;
     font-weight: 500;
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     white-space: nowrap;
@@ -300,7 +301,7 @@
 
 .recovery-btn.primary {
     background: var(--vscode-button-background);
-    color: var(--vscode-foreground);
+    color: var(--vscode-button-foreground);
 }
 
 .recovery-btn.primary:hover {
@@ -309,7 +310,7 @@
 
 .recovery-btn.primary.active {
     background: var(--vscode-charts-green, #388e3c);
-    color: var(--vscode-foreground);
+    color: var(--vscode-button-foreground);
     border-color: rgba(0, 0, 0, 0.1);
     box-shadow: 0 0 8px rgba(56, 142, 60, 0.3);
 }

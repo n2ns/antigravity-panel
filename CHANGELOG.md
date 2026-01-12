@@ -3,6 +3,11 @@ English | [中文文档](docs/CHANGELOG_zh.md)
 # Change Log
 
 
+## [2.5.5] - 2026-01-12
+### Fixed
+- **Light Theme Support**: Fixed sidebar panel CSS issues where text was invisible or had poor contrast in VS Code light themes. Replaced hardcoded colors with native VS Code theme variables (`--vscode-button-*`, `--vscode-button-secondary*`).
+- **Code Cleanup**: Removed unused `.discussions-btn` CSS class (~36 lines of dead code).
+
 ## [2.5.4] - 2026-01-12
 ### Fixed
 - **Windows Process Detection**: Fixed PowerShell quote escaping issue (Issue #46) by implementing a robust hybrid strategy (Interpolated Strings + Format Operator fallback) to solve "ParserError" on certain Windows environments.

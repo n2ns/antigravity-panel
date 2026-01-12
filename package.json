@@ -1,8 +1,8 @@
 {
   "name": "antigravity-panel",
-  "displayName": "%extension.displayName%",
+  "displayName": "Toolkit for Antigravity",
   "description": "%extension.description%",
-  "version": "2.5.4",
+  "version": "2.5.5",
   "publisher": "n2ns",
   "license": "Apache-2.0",
   "repository": {
@@ -12,12 +12,16 @@
   "homepage": "https://datafrog.io",
   "keywords": [
     "Antigravity",
+    "Antigravity Panel",
     "Gemini",
     "DeepMind",
     "Quota Monitor",
+    "Quota",
     "AI Agent",
     "Google AI",
-    "Toolkit"
+    "Toolkit",
+    "Panel",
+    "Dashboard"
   ],
   "icon": "assets/icon.png",
   "engines": {
