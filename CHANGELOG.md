@@ -8,7 +8,9 @@ English | [中文文档](docs/CHANGELOG_zh.md)
 
 - **Windows PowerShell Quote Escaping**: Fixed `cmd.exe` stripping double quotes when spawning PowerShell by using single-quote concatenation (`'name=''' + $n + ''''`) instead of interpolated strings. Resolves "ParserError" on Windows systems.
 - **Windows Workspace ID Normalization**: Fixed workspace ID mismatch between extension and Language Server by URL-encoding path segments and converting ALL special characters (including `.`, `-`, spaces) to underscores. Paths like `israel.toledo` and `Local Projects` now correctly match server format (`israel_toledo`, `Local_20Projects`).
+- **UI Contrast**: Fixed "Local service not detected" message readability in light themes by ensuring link colors inherit from button text color.
 - **Process Detection Timeout**: Increased PowerShell command timeouts (3s→8s execute, 5s→10s warmup) to accommodate cold start + WMI query latency on Windows.
+- Special thanks to @iskisraell for the contribution (PR #47).
 
 ## [2.5.5] - 2026-01-12
 

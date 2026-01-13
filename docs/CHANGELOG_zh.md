@@ -2,6 +2,13 @@
 
 # 更新日志
 
+## [2.5.6] - 2026-01-13
+### 修复
+- **Windows PowerShell 引号转义**: 修复了 `cmd.exe` 在启动 PowerShell 时剥离双引号的问题，采用单引号拼接 (`'name=''' + $n + ''''`) 替代插值字符串，解决了 Windows 系统上的 "ParserError" 解析错误。
+- **Windows 工作区 ID 规范化**: 修复了扩展与语言服务器之间的工作区 ID 不匹配问题。新逻辑会对路径段进行 URL 编码，并将所有特殊字符（包括 `.`、`-`、空格）转换为下划线。例如 `israel.toledo` 和 `Local Projects` 现在能正确匹配服务器格式 (`israel_toledo`, `Local_20Projects`)。
+- **UI 对比度**: 修复了浅色主题下 "Local service not detected" 提示信息中链接颜色不可读的问题，修正为继承按钮文本颜色。
+- **进程检测超时**: 增加了 PowerShell 命令的超时时间（执行 3s→8s，预热 5s→10s），以适应 Windows 上的冷启动和 WMI 查询延迟。
+- 特别感谢 @iskisraell 的贡献 (PR #47)。
 
 ## [2.5.5] - 2026-01-12
 ### 修复

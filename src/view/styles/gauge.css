@@ -261,12 +261,13 @@ quota-pie {
 }
 
 .connection-hint a {
-    color: var(--vscode-textLink-foreground);
-    text-decoration: none;
+    color: inherit;
+    text-decoration: underline;
     cursor: pointer;
     font-weight: 600;
 }
 
 .connection-hint a:hover {
-    text-decoration: underline;
+    text-decoration: none;
+    opacity: 0.8;
 }
