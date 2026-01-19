@@ -346,7 +346,7 @@
           },
           "tfa.system.debugMode": {
             "type": "boolean",
-            "default": false,
+            "default": true,
             "order": 99,
             "description": "%config.system.debugMode.description%"
           },

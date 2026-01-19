@@ -12,6 +12,7 @@ English | [中文文档](docs/CHANGELOG_zh.md)
 
 - **Connection Efficiency**: Optimized the language server detection process by tracking verified PIDs. This prevents redundant connection attempts to the same process through different discovery paths.
 - **Startup Stability**: Increased initial connection delay to 30 seconds to accommodate slow Language Server initialization (often caused by external Unleash feature flag timeouts).
+- **Debug Logging**: Changed `tfa.system.debugMode` default to enabled for better issue diagnostics and troubleshooting.
 - **Connection Diagnostics**: Added warning log output when quota refresh fails due to missing server info. The message now appears in the Output Channel with actionable guidance ("Try restarting the IDE or running diagnostics"), helping users diagnose silent refresh failures.
 
 ## [2.5.8] - 2026-01-16
