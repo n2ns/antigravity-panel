@@ -257,12 +257,14 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     }
   }
 
-  // Reduced 1s delay for faster connection (previously 3s)
-  // Set detecting status immediately to show progress
+  // Delay connection attempt to allow Language Server full initialization
+  // Server may take 30+ seconds to initialize (Unleash, auth, etc.)
+  // Connecting too early causes unnecessary retry cycles
+  const INITIAL_CONNECTION_DELAY_MS = 30000;
   appViewModel.setConnectionStatus('detecting', null);
   setTimeout(() => {
     bootServerConnection();
-  }, 1000);
+  }, INITIAL_CONNECTION_DELAY_MS);
 
   // 4. Initialize View Components (The Face)
   const sidebarProvider = new SidebarProvider(context.extensionUri, appViewModel);

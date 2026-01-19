@@ -2,6 +2,18 @@ English | [中文文档](docs/CHANGELOG_zh.md)
 
 # Change Log
 
+## [2.5.9] - 2026-01-16
+
+### Fixed
+
+- **WSL2 Mirrored Mode Connectivity**: Fixed a significant connection delay (up to 50s) in WSL2 Mirrored Networking Mode by filtering out the DNS resolver address (`10.255.255.254`), which was incorrectly probed as a host IP.
+
+### Improved
+
+- **Connection Efficiency**: Optimized the language server detection process by tracking verified PIDs. This prevents redundant connection attempts to the same process through different discovery paths.
+- **Startup Stability**: Increased initial connection delay to 30 seconds to accommodate slow Language Server initialization (often caused by external Unleash feature flag timeouts).
+- **Connection Diagnostics**: Added warning log output when quota refresh fails due to missing server info. The message now appears in the Output Channel with actionable guidance ("Try restarting the IDE or running diagnostics"), helping users diagnose silent refresh failures.
+
 ## [2.5.8] - 2026-01-16
 
 ### Fixed

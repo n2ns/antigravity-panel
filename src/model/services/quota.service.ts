@@ -7,7 +7,7 @@
 
 import { retry } from '../../shared/utils/retry';
 import { httpRequest } from '../../shared/utils/http_client';
-import { logQuotaParseError } from '../../shared/utils/logger';
+import { logQuotaParseError, warnLog } from '../../shared/utils/logger';
 import type { IQuotaService } from './interfaces';
 import type { ConfigManager } from '../../shared/config/config_manager';
 import type {
@@ -68,6 +68,7 @@ export class QuotaService implements IQuotaService {
     async fetchQuota(): Promise<QuotaSnapshot | null> {
         this.parsingError = null; // Reset
         if (!this.serverInfo) {
+            warnLog("Cannot fetch quota: server info not available. Try restarting the IDE or running diagnostics.");
             return null;
         }
 

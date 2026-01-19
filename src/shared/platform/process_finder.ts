@@ -196,6 +196,10 @@ export class ProcessFinder {
     this.protocolUsed = "none";
     // Note: powershellTimeoutRetried is NOT reset here - it persists across retries within one detect() call
 
+    // Track verified PIDs to avoid redundant verifyAndConnect calls for the same PID
+    // This is reset per tryDetect() call, so retries will re-verify PIDs (allowing for server startup delay)
+    const verifiedPids = new Set<number>();
+
     try {
       const expectedIds = getExpectedWorkspaceIds();
       debugLog(
@@ -257,7 +261,8 @@ export class ProcessFinder {
         const wsMatch = infos.find(
           (i) => i.workspaceId && expectedIds.includes(i.workspaceId),
         );
-        if (wsMatch) {
+        if (wsMatch && !verifiedPids.has(wsMatch.pid)) {
+          verifiedPids.add(wsMatch.pid);
           debugLog(
             `ProcessFinder: Strong Match! Workspace ID matches: ${wsMatch.workspaceId} (PID: ${wsMatch.pid})`,
           );
@@ -277,7 +282,8 @@ export class ProcessFinder {
           debugLog(
             `ProcessFinder: Child PID ${child.pid} has mismatching workspace ID ${child.workspaceId}, skipping.`,
           );
-        } else {
+        } else if (!verifiedPids.has(child.pid)) {
+          verifiedPids.add(child.pid);
           debugLog(
             `ProcessFinder: Inheritance Match! Found child process of EH (PID: ${child.pid}).`,
           );
@@ -297,7 +303,8 @@ export class ProcessFinder {
           debugLog(
             `ProcessFinder: Sibling PID ${sibling.pid} has mismatching workspace ID ${sibling.workspaceId}, skipping.`,
           );
-        } else {
+        } else if (!verifiedPids.has(sibling.pid)) {
+          verifiedPids.add(sibling.pid);
           debugLog(
             `ProcessFinder: Sibling Match! Found sibling process of EH (PID: ${sibling.pid}).`,
           );
@@ -326,11 +333,14 @@ export class ProcessFinder {
         let parent = info.ppid;
         for (let level = 0; level < 3; level++) {
           if (parent === myPid) {
-            debugLog(
-              `ProcessFinder: Ancestry Match at level ${level + 1}! PID ${info.pid} belongs to EH subtree.`,
-            );
-            const result = await this.verifyAndConnect(info);
-            if (result) return result;
+            if (!verifiedPids.has(info.pid)) {
+              verifiedPids.add(info.pid);
+              debugLog(
+                `ProcessFinder: Ancestry Match at level ${level + 1}! PID ${info.pid} belongs to EH subtree.`,
+              );
+              const result = await this.verifyAndConnect(info);
+              if (result) return result;
+            }
             break;
           }
           const nextParent = await this.getParentPid(parent);
@@ -376,6 +386,12 @@ export class ProcessFinder {
             continue;
           }
         }
+
+        // Skip if already verified in earlier priority levels
+        if (verifiedPids.has(info.pid)) {
+          continue;
+        }
+        verifiedPids.add(info.pid);
 
         const result = await this.verifyAndConnect(info);
         if (result) {
