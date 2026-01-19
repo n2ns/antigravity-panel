@@ -2,7 +2,7 @@
   "name": "antigravity-panel",
   "displayName": "Toolkit for Antigravity",
   "description": "%extension.description%",
-  "version": "2.5.8",
+  "version": "2.5.9",
   "publisher": "n2ns",
   "license": "Apache-2.0",
   "repository": {
