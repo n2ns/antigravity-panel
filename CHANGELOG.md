@@ -1,6 +1,22 @@
 English | [中文文档](docs/CHANGELOG_zh.md)
 
 # Change Log
+ 
+## [2.5.10] - 2026-01-24
+ 
+### Fixed
+ 
+- **Multi-root LS Detection**: Resolved an issue where Language Server detection failed in unsaved multi-root workspaces by trusting the Parent Process ID (PPID) relationship for direct child and sibling processes.
+- **Activation Stability**: Fixed "server info not available" warnings by removing premature quota refresh calls during extension activation.
+- **Quota Data Reliability**: Added a robust NaN check for `resetTime`, ensuring a 24-hour fallback if the server returns an invalid date format.
+ 
+### Improved
+ 
+- **API Performance**: Increased HTTP timeout to 12 seconds to prevent premature failures on slow local network responses.
+- **Quota Display**: Enhanced the reset timer to display days (e.g., `5d 13h`) for durations exceeding 24 hours.
+- **Default Thresholds**: Updated default quota warning threshold to 40% and critical threshold to 20%.
+- **Quota Logs**: Output now includes the user's email address for easier identification.
+
 
 ## [2.5.9] - 2026-01-19
 
