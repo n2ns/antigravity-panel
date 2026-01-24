@@ -65,5 +65,7 @@
     "extension.description": "Una utilidad complementaria para Google Antigravity IDE con visualización de cuota local, gestión de caché y herramientas de mejora del flujo de trabajo",
     "extension.displayName": "Toolkit for Antigravity",
     "views.tfa.sidebar.name": "Toolkit",
-    "viewsContainers.tfa-sidebar.title": "Antigravity"
+    "viewsContainers.tfa-sidebar.title": "Antigravity",
+    "quota.notification.warning": "Advertencia de cuota baja: la cuota de {0} está por debajo del {1}% ({2}% restante).",
+    "quota.notification.critical": "Cuota CRÍTICA: la cuota de {0} está por debajo del {1}% ({2}% restante). ¡Úselo con precaución!"
 }

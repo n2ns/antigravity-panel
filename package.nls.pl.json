@@ -65,5 +65,7 @@
     "extension.description": "Niezbędny przybornik dla użytkowników Google Antigravity IDE. Monitoruj limity, zarządzaj pamięcią podręczną i wizualizuj metryki systemowe.",
     "extension.displayName": "Toolkit for Antigravity",
     "views.tfa.sidebar.name": "Toolkit",
-    "viewsContainers.tfa-sidebar.title": "Antigravity"
+    "viewsContainers.tfa-sidebar.title": "Antigravity",
+    "quota.notification.warning": "Ostrzeżenie o niskim limicie: limit {0} wynosi poniżej {1}% (pozostało {2}%).",
+    "quota.notification.critical": "KRYTYCZNY limit: limit {0} wynosi poniżej {1}% (pozostało {2}%). Używaj ostrożnie!"
 }

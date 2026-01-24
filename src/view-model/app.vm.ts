@@ -45,6 +45,8 @@ export class AppViewModel implements vscode.Disposable {
     private _state: AppState;
     private _lastSnapshot: QuotaSnapshot | null = null;
     private _disposables: vscode.Disposable[] = [];
+    private _notificationCooldowns = new Map<string, number>();
+    private readonly NOTIFICATION_COOLDOWN = 30 * 60 * 1000; // 30 minutes
 
     private readonly _onStateChange = new vscode.EventEmitter<AppState>();
     readonly onStateChange = this._onStateChange.event;
@@ -434,6 +436,53 @@ export class AppViewModel implements vscode.Disposable {
         }
         if (this._state.tokenUsage) {
             await this.storageService.setLastTokenUsage(this._state.tokenUsage);
+        }
+
+        // Trigger notifications for the active group
+        this.checkQuotaNotifications(activeGroup);
+    }
+
+    /**
+     * Check if notifications should be shown for a quota group
+     */
+    private checkQuotaNotifications(group?: QuotaGroupState): void {
+        if (!group || !group.hasData) return;
+
+        const config = this.configManager.getConfig();
+        const warningThreshold = config["status.warningThreshold"] ?? 40;
+        const criticalThreshold = config["status.criticalThreshold"] ?? 20;
+
+        const now = Date.now();
+        const lastNotify = this._notificationCooldowns.get(group.id) || 0;
+
+        if (now - lastNotify < this.NOTIFICATION_COOLDOWN) {
+            return;
+        }
+
+        let message: string | undefined;
+        let severity: 'warning' | 'critical' | undefined;
+
+        if (group.remaining <= criticalThreshold) {
+            message = vscode.l10n.t(
+                "CRITICAL Quota: {0} quota is below {1}% ({2}% remaining). Use with caution!",
+                group.label, criticalThreshold, Math.round(group.remaining)
+            );
+            severity = 'critical';
+        } else if (group.remaining <= warningThreshold) {
+            message = vscode.l10n.t(
+                "Low Quota Warning: {0} quota is below {1}% ({2}% remaining).",
+                group.label, warningThreshold, Math.round(group.remaining)
+            );
+            severity = 'warning';
+        }
+
+        if (message) {
+            if (severity === 'critical') {
+                vscode.window.showWarningMessage(message);
+            } else {
+                vscode.window.showInformationMessage(message);
+            }
+            this._notificationCooldowns.set(group.id, now);
         }
     }
 

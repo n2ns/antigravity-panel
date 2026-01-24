@@ -65,5 +65,7 @@
     "extension.description": "Вспомогательная утилита для Google Antigravity IDE с локальной визуализацией квот, управлением кешем и инструментами рабочего процесса",
     "extension.displayName": "Toolkit for Antigravity",
     "views.tfa.sidebar.name": "Toolkit",
-    "viewsContainers.tfa-sidebar.title": "Antigravity"
+    "viewsContainers.tfa-sidebar.title": "Antigravity",
+    "quota.notification.warning": "Предупреждение о низком лимите: лимит {0} ниже {1}% (осталось {2}%).",
+    "quota.notification.critical": "КРИТИЧЕСКИЙ лимит: лимит {0} ниже {1}% (осталось {2}%)."
 }

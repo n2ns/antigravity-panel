@@ -65,5 +65,7 @@
     "extension.description": "Google Antigravity IDE kullanıcıları için temel araç kutusu. Kotaları izleyin, önbellekleri yönetin ve sistem metriklerini görselleştirin.",
     "extension.displayName": "Toolkit for Antigravity",
     "views.tfa.sidebar.name": "Toolkit",
-    "viewsContainers.tfa-sidebar.title": "Antigravity"
+    "viewsContainers.tfa-sidebar.title": "Antigravity",
+    "quota.notification.warning": "Düşük Kota Uyarısı: {0} kotası %{1}'in altında (kalan %{2}).",
+    "quota.notification.critical": "KRİTİK Kota: {0} kotası %{1}'in altında (kalan %{2}). Dikkatli kullanın!"
 }

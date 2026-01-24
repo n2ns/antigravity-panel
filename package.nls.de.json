@@ -65,5 +65,7 @@
     "extension.description": "Ein Begleitprogramm für Google Antigravity IDE mit lokaler Kontingentvisualisierung, Cache-Verwaltung und Tools zur Workflow-Verbesserung",
     "extension.displayName": "Toolkit for Antigravity",
     "views.tfa.sidebar.name": "Toolkit",
-    "viewsContainers.tfa-sidebar.title": "Antigravity"
+    "viewsContainers.tfa-sidebar.title": "Antigravity",
+    "quota.notification.warning": "Warnung bei niedrigem Kontingent: {0}-Kontingent liegt unter {1}% ({2}% verbleibend).",
+    "quota.notification.critical": "KRITISCHES Kontingent: {0}-Kontingent liegt unter {1}% ({2}% verbleibend). Mit Vorsicht verwenden!"
 }

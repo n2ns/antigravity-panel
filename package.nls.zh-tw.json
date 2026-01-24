@@ -65,5 +65,7 @@
     "extension.description": "專為 Google Antigravity IDE 設計的本機配額視覺化、快取管理與工作流程增強輔助工具",
     "extension.displayName": "Antigravity 輔助工具箱",
     "views.tfa.sidebar.name": "工具箱",
-    "viewsContainers.tfa-sidebar.title": "Antigravity"
+    "viewsContainers.tfa-sidebar.title": "Antigravity",
+    "quota.notification.warning": "配額不足提醒：{0} 的配額已低於 {1}%（目前剩餘 {2}%）。",
+    "quota.notification.critical": "配額嚴重不足提醒：{0} 的配額已低於 {1}%（目前剩餘 {2}%）。請謹慎使用！"
 }

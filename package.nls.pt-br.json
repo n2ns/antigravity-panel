@@ -65,5 +65,7 @@
     "extension.description": "Um utilitário complementar para o Google Antigravity IDE com visualização de cota local, gerenciamento de cache e ferramentas de fluxo de trabalho",
     "extension.displayName": "Toolkit for Antigravity",
     "views.tfa.sidebar.name": "Toolkit",
-    "viewsContainers.tfa-sidebar.title": "Antigravity"
+    "viewsContainers.tfa-sidebar.title": "Antigravity",
+    "quota.notification.warning": "Aviso de cota baixa: a cota de {0} está abaixo de {1}% ({2}% restante).",
+    "quota.notification.critical": "Cota CRÍTICA: a cota de {0} está abaixo de {1}% ({2}% restante). Use com cautela!"
 }

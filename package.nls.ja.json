@@ -65,5 +65,7 @@
     "extension.description": "Google Antigravity IDE 用のローカル使用量可視化、キャッシュ管理、ワークフロー強化のためのコンパニオンユーティリティ",
     "extension.displayName": "Antigravityのためのツールキット",
     "views.tfa.sidebar.name": "ツールキット",
-    "viewsContainers.tfa-sidebar.title": "Antigravity"
+    "viewsContainers.tfa-sidebar.title": "Antigravity",
+    "quota.notification.warning": "クォータ不足の警告：{0} のクォータが {1}% 未満です（残り {2}%）。",
+    "quota.notification.critical": "クォータが深刻な不足：{0} のクォータが {1}% 未満です（残り {2}%）。注意して使用してください！"
 }

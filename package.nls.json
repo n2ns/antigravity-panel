@@ -65,5 +65,7 @@
     "extension.description": "The essential toolkit for Google Antigravity IDE users. Monitor quotas, manage caches, and visualize system metrics.",
     "extension.displayName": "Toolkit for Antigravity",
     "views.tfa.sidebar.name": "Toolkit",
-    "viewsContainers.tfa-sidebar.title": "Antigravity"
+    "viewsContainers.tfa-sidebar.title": "Antigravity",
+    "quota.notification.warning": "Low Quota Warning: {0} quota is below {1}% ({2}% remaining).",
+    "quota.notification.critical": "CRITICAL Quota: {0} quota is below {1}% ({2}% remaining). Use with caution!"
 }

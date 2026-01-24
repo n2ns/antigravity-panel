@@ -65,5 +65,7 @@
     "extension.description": "Un'utility complementare per Google Antigravity IDE con visualizzazione della quota locale, gestione della cache e strumenti per il flusso di lavoro",
     "extension.displayName": "Toolkit for Antigravity",
     "views.tfa.sidebar.name": "Toolkit",
-    "viewsContainers.tfa-sidebar.title": "Antigravity"
+    "viewsContainers.tfa-sidebar.title": "Antigravity",
+    "quota.notification.warning": "Avviso quota insufficiente: la quota di {0} è inferiore al {1}% ({2}% rimanente).",
+    "quota.notification.critical": "Quota CRITICA: la quota di {0} è inferiore al {1}% ({2}% rimanente). Usare con cautela!"
 }

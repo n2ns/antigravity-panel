@@ -65,5 +65,7 @@
     "extension.description": "로컬 할당량 시각화, 캐시 관리 및 워크플로우 향상 기능을 갖춘 Google Antigravity IDE용 보조 유틸리티",
     "extension.displayName": "Toolkit for Antigravity",
     "views.tfa.sidebar.name": "Toolkit",
-    "viewsContainers.tfa-sidebar.title": "Antigravity"
+    "viewsContainers.tfa-sidebar.title": "Antigravity",
+    "quota.notification.warning": "할당량 부족 경고: {0} 할당량이 {1}% 미만입니다({2}% 남음).",
+    "quota.notification.critical": "심각한 할당량 부족: {0} 할당량이 {1}% 미만입니다({2}% 남음). 주의해서 사용하세요!"
 }

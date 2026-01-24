@@ -65,5 +65,7 @@
     "extension.description": "Google Antigravity IDE 用户的必备工具箱。提供本地配额监控、缓存管理和系统指标可视化。",
     "extension.displayName": "Antigravity 辅助工具箱",
     "views.tfa.sidebar.name": "工具箱",
-    "viewsContainers.tfa-sidebar.title": "Antigravity"
+    "viewsContainers.tfa-sidebar.title": "Antigravity",
+    "quota.notification.warning": "配额不足提醒：{0} 的配额已低于 {1}%（当前剩余 {2}%）。",
+    "quota.notification.critical": "配额严重不足提醒：{0} 的配额已低于 {1}%（当前剩余 {2}%）。请谨慎使用！"
 }
