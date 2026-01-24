@@ -135,7 +135,8 @@ export function logQuotaSnapshot(snapshot: QuotaSnapshot): void {
   // User Info
   if (snapshot.userInfo) {
     const tier = snapshot.userInfo.tier || snapshot.userInfo.planName || 'N/A';
-    lines.push(`User: ${snapshot.userInfo.name || 'Unknown'} (${tier})`);
+    const email = snapshot.userInfo.email ? ` <${snapshot.userInfo.email}>` : '';
+    lines.push(`User: ${snapshot.userInfo.name || 'Unknown'}${email} (${tier})`);
   }
 
   // Credits

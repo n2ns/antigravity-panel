@@ -69,8 +69,8 @@ export class ConfigManager {
       "status.showQuota": this.reader.get<boolean>("status.showQuota", true),
       "status.showCache": this.reader.get<boolean>("status.showCache", true),
       "status.displayFormat": this.reader.get<"percentage" | "resetTime" | "used" | "remaining">("status.displayFormat", "percentage"),
-      "status.warningThreshold": this.reader.get<number>("status.warningThreshold", 30),
-      "status.criticalThreshold": this.reader.get<number>("status.criticalThreshold", 10),
+      "status.warningThreshold": this.reader.get<number>("status.warningThreshold", 40),
+      "status.criticalThreshold": this.reader.get<number>("status.criticalThreshold", 20),
       "status.scope": this.reader.get<"primary" | "all">("status.scope", "all"),
 
       // 3. Cache Settings

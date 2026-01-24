@@ -272,45 +272,28 @@ export class ProcessFinder {
       }
 
       // Priority 2: Direct Child process of current Extension Host
+      // Trust PPID relationship - child of our Extension Host MUST be our LS
+      // This handles multi-root workspaces that use untitled_* IDs
       const child = infos.find((i) => i.ppid === myPid);
-      if (child) {
-        if (
-          expectedIds.length > 0 &&
-          child.workspaceId &&
-          !expectedIds.includes(child.workspaceId)
-        ) {
-          debugLog(
-            `ProcessFinder: Child PID ${child.pid} has mismatching workspace ID ${child.workspaceId}, skipping.`,
-          );
-        } else if (!verifiedPids.has(child.pid)) {
-          verifiedPids.add(child.pid);
-          debugLog(
-            `ProcessFinder: Inheritance Match! Found child process of EH (PID: ${child.pid}).`,
-          );
-          const result = await this.verifyAndConnect(child);
-          if (result) return result;
-        }
+      if (child && !verifiedPids.has(child.pid)) {
+        verifiedPids.add(child.pid);
+        debugLog(
+          `ProcessFinder: Inheritance Match! Found child process of EH (PID: ${child.pid}, workspace: ${child.workspaceId || "N/A"}).`,
+        );
+        const result = await this.verifyAndConnect(child);
+        if (result) return result;
       }
 
       // Priority 3: Sibling process (Same parent as EH)
+      // Trust sibling relationship - shares parent with our Extension Host
       const sibling = infos.find((i) => i.ppid === myPpid);
-      if (sibling) {
-        if (
-          expectedIds.length > 0 &&
-          sibling.workspaceId &&
-          !expectedIds.includes(sibling.workspaceId)
-        ) {
-          debugLog(
-            `ProcessFinder: Sibling PID ${sibling.pid} has mismatching workspace ID ${sibling.workspaceId}, skipping.`,
-          );
-        } else if (!verifiedPids.has(sibling.pid)) {
-          verifiedPids.add(sibling.pid);
-          debugLog(
-            `ProcessFinder: Sibling Match! Found sibling process of EH (PID: ${sibling.pid}).`,
-          );
-          const result = await this.verifyAndConnect(sibling);
-          if (result) return result;
-        }
+      if (sibling && !verifiedPids.has(sibling.pid)) {
+        verifiedPids.add(sibling.pid);
+        debugLog(
+          `ProcessFinder: Sibling Match! Found sibling process of EH (PID: ${sibling.pid}, workspace: ${sibling.workspaceId || "N/A"}).`,
+        );
+        const result = await this.verifyAndConnect(sibling);
+        if (result) return result;
       }
 
       // Priority 4: Ancestry Trace (Recursive search for grandparent/great-grandparent)

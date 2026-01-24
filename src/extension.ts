@@ -285,8 +285,9 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     statusBar.showLoading();
   }
 
-  // Initial Async Refresh
-  appViewModel.refresh().catch(e => errorLog("Initial refresh failed", e));
+  // Note: Initial quota refresh is handled by bootServerConnection() after connection is established
+  // Cache refresh can run independently since it doesn't require server connection
+  appViewModel.refreshCache().catch(e => errorLog("Initial cache refresh failed", e));
 
   // 6. Register Scheduler & Polling
   scheduler = new Scheduler({

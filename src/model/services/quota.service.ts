@@ -25,6 +25,9 @@ import type {
 // Re-export types for backward compatibility
 export type { ModelQuotaInfo, PromptCreditsInfo, QuotaSnapshot };
 
+/** HTTP request timeout for Language Server API calls */
+const HTTP_TIMEOUT_MS = 12000;
+
 /**
  * QuotaService implementation
  */
@@ -152,7 +155,7 @@ export class QuotaService implements IQuotaService {
                 'X-Codeium-Csrf-Token': this.serverInfo.csrfToken,
             },
             body: JSON.stringify(body),
-            timeout: 5000,
+            timeout: HTTP_TIMEOUT_MS,
             allowFallback: true,
         });
 
@@ -232,8 +235,15 @@ export class QuotaService implements IQuotaService {
         const models: ModelQuotaInfo[] = rawModels
             .filter((m: RawModelConfig) => m.quotaInfo)
             .map((m: RawModelConfig) => {
-                const resetTime = new Date(m.quotaInfo!.resetTime);
                 const now = new Date();
+                let resetTime = new Date(m.quotaInfo!.resetTime);
+
+                // Handle invalid resetTime - use 24h from now as fallback
+                if (Number.isNaN(resetTime.getTime())) {
+                    warnLog(`Invalid resetTime for model ${m.label}: ${m.quotaInfo!.resetTime}`);
+                    resetTime = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+                }
+
                 const diff = resetTime.getTime() - now.getTime();
                 const remainingFraction = m.quotaInfo!.remainingFraction ?? 0;
 
@@ -259,6 +269,11 @@ export class QuotaService implements IQuotaService {
             return `${mins}m`;
         }
         const hours = Math.floor(mins / 60);
+        if (hours >= 24) {
+            const days = Math.floor(hours / 24);
+            const remainingHours = hours % 24;
+            return `${days}d ${remainingHours}h`;
+        }
         return `${hours}h ${mins % 60}m`;
     }
 }
