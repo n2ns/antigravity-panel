@@ -426,6 +426,7 @@
     "@types/node": "^24.10.1",
     "@types/sinon": "^21.0.0",
     "@types/vscode": "^1.104.0",
+    "@types/ws": "^8.5.10",
     "@typescript-eslint/eslint-plugin": "^8.50.1",
     "@typescript-eslint/parser": "^8.50.1",
     "@vscode/vsce": "^3.7.1",
@@ -442,7 +443,8 @@
   },
   "dependencies": {
     "@vscode/codicons": "^0.0.44",
-    "lit": "^3.3.2"
+    "lit": "^3.3.2",
+    "ws": "^8.17.0"
   },
   "lint-staged": {
     "src/**/*.ts": [

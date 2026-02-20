@@ -74,12 +74,32 @@ English | [中文文档](docs/README_zh.md)
 - **Code Context**: Manage code analysis caches per project
 - **Smart Cleanup**: Automatically closes related editor tabs
 
-### 🤖 Auto-Accept (Hands-free Mode)
+### 🤖 Auto-Accept (CDP Hands-free Mode)
 
-**Streamline your workflow**
-- Automatically accepts Agent-suggested terminal commands and file edits
-- Toggle on/off via the sidebar "Rocket" switch or command
-- Ideal for rapid prototyping when you trust the Agent's output
+**Streamline your workflow with Chromium DevTools Protocol bypass**
+- Automatically accepts Agent-suggested terminal commands and file edits.
+- Bypasses recent Antigravity Webview sandboxing by injecting clicks via the debug port.
+- Toggle on/off via the sidebar "Rocket" switch.
+
+> [!IMPORTANT]
+> **Setup Required:** For this feature to work, Antigravity must be launched with the `--remote-debugging-port=9000` flag. Lingering background processes will block this port.
+
+**Recommended Setup (Dedicated Launcher):**
+Create a script to cleanly kill background instances before launching.
+
+**Windows (Save as `Launch_Antigravity.bat`):**
+```bat
+@echo off
+taskkill /F /IM Antigravity.exe /T 2>nul
+start "" "D:\Develop\Antigravity\Antigravity.exe" --remote-debugging-port=9000
+```
+
+**macOS/Linux (Save as `launch_antigravity.sh`):**
+```bash
+#!/bin/bash
+pkill -f "Antigravity"
+/Applications/Antigravity.app/Contents/MacOS/Electron --remote-debugging-port=9000 &
+```
 
 ### ✨ Commit Message Generator (Claude)
 
