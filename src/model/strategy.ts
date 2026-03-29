@@ -1,6 +1,6 @@
 /**
  * Quota Strategy Manager
- * 
+ *
  * Logic for grouping models and determining display properties based on configuration.
  */
 
@@ -50,20 +50,37 @@ export class QuotaStrategyManager {
       }
     }
 
-    // 2. Configuration Driven Prefix/Keyword Matching
+    // 2. Configuration Driven Prefix/Keyword Matching (longest prefix wins)
     const lowerId = modelId.toLowerCase();
     const lowerLabel = modelLabel?.toLowerCase() || '';
 
+    type PrefixMatch = { group: GroupDefinition; prefixLen: number };
+    const matches: PrefixMatch[] = [];
+
     for (const group of this.groups) {
-      if (group.prefixes) {
-        for (const prefix of group.prefixes) {
-          const p = prefix.toLowerCase();
-          // Priority 1: ID contains prefix
-          if (lowerId.includes(p)) return group;
-          // Priority 2: Label contains prefix (Fallback)
-          if (modelLabel && lowerLabel.includes(p)) return group;
+      if (!group.prefixes) continue;
+      for (const prefix of group.prefixes) {
+        const p = prefix.toLowerCase();
+        // The broad "gemini" prefix must not classify Gemini Flash (IDs and labels like "Gemini 3 Flash").
+        if (group.id === 'gemini-pro' && p === 'gemini') {
+          if (lowerId.includes('flash') || lowerLabel.includes('flash')) {
+            continue;
+          }
+        }
+        const inId = lowerId.includes(p);
+        const inLabel = modelLabel !== undefined && lowerLabel.includes(p);
+        if (inId || inLabel) {
+          matches.push({ group, prefixLen: p.length });
         }
       }
+    }
+
+    if (matches.length > 0) {
+      matches.sort((a, b) => {
+        if (b.prefixLen !== a.prefixLen) return b.prefixLen - a.prefixLen;
+        return this.groups.indexOf(a.group) - this.groups.indexOf(b.group);
+      });
+      return matches[0].group;
     }
 
     // 3. Classify as "Other"

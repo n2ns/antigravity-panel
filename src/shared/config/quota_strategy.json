@@ -6,7 +6,8 @@
             "shortLabel": "Flash",
             "themeColor": "#40C4FF",
             "prefixes": [
-                "gemini-3-flash"
+                "gemini-3-flash",
+                "flash"
             ],
             "models": [
                 {

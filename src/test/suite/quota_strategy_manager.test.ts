@@ -57,6 +57,14 @@ suite('QuotaStrategyManager Test Suite', () => {
         assert.strictEqual(group.id, 'gemini-pro');
     });
 
+    test('should classify Gemini Flash labels without mixing into Pro', () => {
+        const byHumanLabel = manager.getGroupForModel('opaque-internal-id', 'Gemini 3 Flash');
+        assert.strictEqual(byHumanLabel.id, 'gemini-flash');
+
+        const byId = manager.getGroupForModel('vendor-model-gemini-3-flash-preview');
+        assert.strictEqual(byId.id, 'gemini-flash');
+    });
+
     test('should return first group for unknown models', () => {
         const group = manager.getGroupForModel('completely-unknown-model');
         assert.ok(group, 'Should return a fallback group');
