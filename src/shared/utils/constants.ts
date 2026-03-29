@@ -11,6 +11,12 @@
  */
 export const QUOTA_RESET_HOURS_FALLBACK = 24;
 
+/**
+ * Quota groups that share one backend pool in Antigravity (Anthropic + OpenAI OSS rows).
+ * Aggregated remaining % and reset time use the minimum across all models in this pool.
+ */
+export const SHARED_QUOTA_POOL_GROUP_IDS = ['claude', 'gpt'] as const;
+
 // ==================== Path Related ====================
 
 /** Gemini root directory name (relative to user home) */

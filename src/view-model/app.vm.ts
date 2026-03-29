@@ -4,12 +4,12 @@
 
 import * as vscode from 'vscode';
 import type { IQuotaService, ICacheService, IStorageService, IAutomationService } from '../model/services/interfaces';
-import type { QuotaSnapshot, BrainTask, CacheInfo, CodeContext, FileItem } from '../model/types/entities';
+import type { QuotaSnapshot, BrainTask, CacheInfo, CodeContext, FileItem, ModelQuotaInfo } from '../model/types/entities';
 import type { TfaConfig } from '../shared/utils/types';
 import type { QuotaStrategyManager } from '../model/strategy';
 import type { ConfigManager } from '../shared/config/config_manager';
 import { formatBytes } from '../shared/utils/format';
-import { QUOTA_RESET_HOURS_FALLBACK } from '../shared/utils/constants';
+import { QUOTA_RESET_HOURS_FALLBACK, SHARED_QUOTA_POOL_GROUP_IDS } from '../shared/utils/constants';
 import type {
     AppState,
     QuotaViewState,
@@ -40,6 +40,8 @@ export type {
 };
 
 const ACTIVE_GROUP_THRESHOLD = 0.1;
+
+const SHARED_POOL_ID_SET = new Set<string>(SHARED_QUOTA_POOL_GROUP_IDS);
 
 export class AppViewModel implements vscode.Disposable {
     private _state: AppState;
@@ -496,14 +498,20 @@ export class AppViewModel implements vscode.Disposable {
         return value.toString();
     }
 
-    private aggregateGroups(snapshot: QuotaSnapshot): QuotaGroupState[] {
+    /** Claude + GPT share one pool; aggregate using all models in that pool, not per-row in isolation. */
+    private getModelsForGroupFromSnapshot(snapshot: QuotaSnapshot, groupId: string): ModelQuotaInfo[] {
         const models = snapshot.models || [];
+        if (SHARED_POOL_ID_SET.has(groupId)) {
+            return models.filter(m => SHARED_POOL_ID_SET.has(this.strategyManager.getGroupForModel(m.modelId, m.label).id));
+        }
+        return models.filter(m => this.strategyManager.getGroupForModel(m.modelId, m.label).id === groupId);
+    }
+
+    private aggregateGroups(snapshot: QuotaSnapshot): QuotaGroupState[] {
         const groups = this.strategyManager.getGroups();
 
         return groups.map(group => {
-            const groupModels = models.filter(m =>
-                this.strategyManager.getGroupForModel(m.modelId, m.label).id === group.id
-            );
+            const groupModels = this.getModelsForGroupFromSnapshot(snapshot, group.id);
 
             if (groupModels.length === 0) {
                 return {
@@ -537,13 +545,12 @@ export class AppViewModel implements vscode.Disposable {
 
     /**
      * Hours until the next quota reset for the active group, from API `resetTime` on the
-     * lowest-remaining model (same rule as aggregateGroups). Used for prediction instead of a fixed 5h window.
+     * lowest-remaining model (same rule as aggregateGroups, including Claude+GPT shared pool).
+     * Used for prediction instead of a fixed window.
      */
     private getHoursUntilResetForGroup(groupId: string): number | null {
         if (!this._lastSnapshot?.models?.length) return null;
-        const groupModels = this._lastSnapshot.models.filter(m =>
-            this.strategyManager.getGroupForModel(m.modelId, m.label).id === groupId
-        );
+        const groupModels = this.getModelsForGroupFromSnapshot(this._lastSnapshot, groupId);
         if (groupModels.length === 0) return null;
         const minModel = groupModels.reduce((min, m) =>
             m.remainingPercentage < min.remainingPercentage ? m : min
@@ -777,9 +784,7 @@ export class AppViewModel implements vscode.Disposable {
                 // Find the original model info to get absolute date
                 let resetDate: Date | undefined;
                 if (this._lastSnapshot && this._lastSnapshot.models) {
-                    const groupModels = this._lastSnapshot.models.filter(m =>
-                        this.strategyManager.getGroupForModel(m.modelId, m.label).id === g.id
-                    );
+                    const groupModels = this.getModelsForGroupFromSnapshot(this._lastSnapshot, g.id);
                     if (groupModels.length > 0) {
                         // Use the earliest reset time (min model) similar to aggregateGroups logic
                         const minModel = groupModels.reduce((min, m) =>

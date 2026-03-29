@@ -109,12 +109,12 @@ suite('AppViewModel Test Suite', () => {
     });
 
     test('refreshQuota should update state from service', async () => {
-        // Setup mock return
+        // Use Gemini Flash (not Claude/GPT shared pool) so exactly one group has quota data.
         const snapshot: QuotaSnapshot = {
             timestamp: new Date(),
             models: [{
-                modelId: 'gpt-4',
-                label: 'GPT-4',
+                modelId: 'MODEL_PLACEHOLDER_M18',
+                label: 'Gemini 3 Flash',
                 remainingPercentage: 50,
                 isExhausted: false,
                 resetTime: new Date(),
@@ -126,13 +126,9 @@ suite('AppViewModel Test Suite', () => {
         await vm.refreshQuota();
 
         const state = vm.getState();
-        // Assuming strategy config maps 'gpt-4' to a group (likely 'gpt' or 'gemini' depending on default internal config, 
-        // strictly speaking strategy.json defines this. Assuming 'gpt' group exists or default group)
-
-        // Note: strategy.ts imports local json. If that json has id="gpt", we check that.
-        // Let's check for ANY group having hasData=true
         const activeGroups = state.quota.groups.filter(g => g.hasData);
         assert.strictEqual(activeGroups.length, 1, 'Should have 1 active group');
+        assert.strictEqual(activeGroups[0].id, 'gemini-flash');
         assert.strictEqual(activeGroups[0].remaining, 50);
     });
 
@@ -183,6 +179,40 @@ suite('AppViewModel Test Suite', () => {
         if (claudeGroup) {
             assert.strictEqual(state.quota.activeGroupId, claudeGroup.id);
         }
+    });
+
+    test('Claude and GPT shared pool: both groups mirror min remaining and reset from combined models', async () => {
+        const gptReset = new Date(Date.now() + 48 * 3600000);
+        mockQuota.fetchQuota = async () => ({
+            timestamp: new Date(),
+            models: [
+                {
+                    modelId: 'MODEL_CLAUDE_4_5_SONNET',
+                    label: 'Claude Sonnet 4.5',
+                    remainingPercentage: 70,
+                    isExhausted: false,
+                    resetTime: new Date(Date.now() + 5 * 3600000),
+                    timeUntilReset: '5h'
+                },
+                {
+                    modelId: 'MODEL_OPENAI_GPT_OSS_120B_MEDIUM',
+                    label: 'GPT-OSS 120B (Medium)',
+                    remainingPercentage: 45,
+                    isExhausted: false,
+                    resetTime: gptReset,
+                    timeUntilReset: '2d'
+                }
+            ]
+        });
+        await vm.refreshQuota();
+        const state = vm.getState();
+        const claudeG = state.quota.groups.find(g => g.id === 'claude');
+        const gptG = state.quota.groups.find(g => g.id === 'gpt');
+        assert.ok(claudeG?.hasData && gptG?.hasData, 'both pool groups should have data');
+        assert.strictEqual(claudeG!.remaining, 45, 'Claude row should use pool minimum');
+        assert.strictEqual(gptG!.remaining, 45);
+        assert.strictEqual(claudeG!.resetTime, gptG!.resetTime);
+        assert.strictEqual(claudeG!.resetTime, '2d');
     });
 
     test('deleteTask should call service and refresh', async () => {
