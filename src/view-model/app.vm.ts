@@ -9,7 +9,7 @@ import type { TfaConfig } from '../shared/utils/types';
 import type { QuotaStrategyManager } from '../model/strategy';
 import type { ConfigManager } from '../shared/config/config_manager';
 import { formatBytes } from '../shared/utils/format';
-import { QUOTA_RESET_HOURS } from '../shared/utils/constants';
+import { QUOTA_RESET_HOURS_FALLBACK } from '../shared/utils/constants';
 import type {
     AppState,
     QuotaViewState,
@@ -535,6 +535,24 @@ export class AppViewModel implements vscode.Disposable {
         });
     }
 
+    /**
+     * Hours until the next quota reset for the active group, from API `resetTime` on the
+     * lowest-remaining model (same rule as aggregateGroups). Used for prediction instead of a fixed 5h window.
+     */
+    private getHoursUntilResetForGroup(groupId: string): number | null {
+        if (!this._lastSnapshot?.models?.length) return null;
+        const groupModels = this._lastSnapshot.models.filter(m =>
+            this.strategyManager.getGroupForModel(m.modelId, m.label).id === groupId
+        );
+        if (groupModels.length === 0) return null;
+        const minModel = groupModels.reduce((min, m) =>
+            m.remainingPercentage < min.remainingPercentage ? m : min
+        );
+        const ms = minModel.resetTime.getTime() - Date.now();
+        if (ms <= 0) return null;
+        return ms / 3_600_000;
+    }
+
     private detectActiveGroup(prevState: QuotaViewState, newGroups: QuotaGroupState[]): string {
         const config = this.configManager.getConfig();
         const hiddenGroupId = config["dashboard.includeSecondaryModels"] ? null : 'gpt';
@@ -605,6 +623,26 @@ export class AppViewModel implements vscode.Disposable {
         return max || 1;
     }
 
+    /** Human-readable runway for the usage chart when burn rate would exhaust quota before reset. */
+    private formatRunwayDuration(hours: number): string {
+        if (hours < 1) {
+            return `~${Math.round(hours * 60)}m`;
+        }
+        if (hours < 24) {
+            return `~${Math.round(hours)}h`;
+        }
+        const days = hours / 24;
+        if (days < 7) {
+            return `~${Math.round(days)}d`;
+        }
+        const weeks = Math.floor(days / 7);
+        const remDays = Math.round(days - weeks * 7);
+        if (remDays <= 0) {
+            return `~${weeks}w`;
+        }
+        return `~${weeks}w ${remDays}d`;
+    }
+
     private calculatePrediction(
         buckets: UsageBucket[],
         activeGroupId: string,
@@ -621,10 +659,12 @@ export class AppViewModel implements vscode.Disposable {
         const usageRate = (historyDisplayMinutes / 60) > 0 ? totalUsage / (historyDisplayMinutes / 60) : 0;
         let runway = 'Stable';
         if (usageRate > 0 && currentRemaining > 0) {
-            const estimatedUsageBeforeReset = usageRate * QUOTA_RESET_HOURS;
+            const hoursUntilReset =
+                this.getHoursUntilResetForGroup(activeGroupId) ?? QUOTA_RESET_HOURS_FALLBACK;
+            const estimatedUsageBeforeReset = usageRate * hoursUntilReset;
             if (estimatedUsageBeforeReset >= currentRemaining) {
                 const hoursUntilEmpty = currentRemaining / usageRate;
-                runway = hoursUntilEmpty >= 1 ? `~${Math.round(hoursUntilEmpty)}h` : `~${Math.round(hoursUntilEmpty * 60)}m`;
+                runway = this.formatRunwayDuration(hoursUntilEmpty);
             }
         }
         const activeGroup = this.strategyManager.getGroups().find(g => g.id === activeGroupId);

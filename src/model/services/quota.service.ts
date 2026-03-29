@@ -272,6 +272,20 @@ export class QuotaService implements IQuotaService {
         if (hours >= 24) {
             const days = Math.floor(hours / 24);
             const remainingHours = hours % 24;
+            if (days >= 7) {
+                const weeks = Math.floor(days / 7);
+                const remDays = days % 7;
+                if (remDays === 0 && remainingHours === 0) {
+                    return `${weeks}w`;
+                }
+                if (remDays === 0) {
+                    return `${weeks}w ${remainingHours}h`;
+                }
+                if (remainingHours === 0) {
+                    return `${weeks}w ${remDays}d`;
+                }
+                return `${weeks}w ${remDays}d ${remainingHours}h`;
+            }
             return `${days}d ${remainingHours}h`;
         }
         return `${hours}h ${mins % 60}m`;

@@ -5,10 +5,11 @@
 // ==================== Quota Related ====================
 
 /**
- * Google quota reset interval (hours)
- * All Google AI model quotas reset every 5 hours
+ * Fallback window (hours) for sidebar chart runway math only when the server does not
+ * provide a usable per-model reset time. Real cycles are defined by the API (rolling hours,
+ * multi-day, weekly, etc.).
  */
-export const QUOTA_RESET_HOURS = 5;
+export const QUOTA_RESET_HOURS_FALLBACK = 24;
 
 // ==================== Path Related ====================
 
