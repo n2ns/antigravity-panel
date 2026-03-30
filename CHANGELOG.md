@@ -2,6 +2,16 @@ English | [中文文档](docs/CHANGELOG_zh.md)
 
 # Change Log
  
+## [2.5.13] - 2026-03-30
+
+### Fixed
+
+- **Gemini Flash vs Pro Grouping** (#127): Corrected model classification so that Flash models (by ID or label) are never misrouted into the Gemini Pro group. Prefix matching now uses a longest-match-wins strategy with an explicit Flash exclusion guard on the broad `gemini` prefix.
+- **Sidebar Title**: Activity bar container title updated to "Antigravity Toolkit".
+- **Quota Reset Window** (#128): Replaced the fixed 5-hour prediction window with a dynamic value derived from each model group's actual `resetTime` field. Falls back to 24 h when the API value is unusable.
+- **Time Format Extension** (#128): Status-bar and chart runway now format multi-week durations (e.g. `2w 3d`, `~3w`) instead of capping at days.
+- **Claude + GPT Shared Pool** (#129): Claude and GPT rows share one backend quota pool. Remaining percentage, reset time, and chart prediction now use the minimum across both groups rather than double-counting.
+
 ## [2.5.12] - 2026-02-23
 
 ### Added
