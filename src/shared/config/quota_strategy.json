@@ -12,7 +12,7 @@
             "models": [
                 {
                     "id": "gemini-3-flash",
-                    "modelName": "MODEL_PLACEHOLDER_M18",
+                    "modelName": "MODEL_PLACEHOLDER_M47",
                     "displayName": "Gemini 3 Flash"
                 }
             ]
@@ -28,13 +28,13 @@
             "models": [
                 {
                     "id": "gemini-3-pro-high",
-                    "modelName": "MODEL_PLACEHOLDER_M8",
-                    "displayName": "Gemini 3 Pro (High)"
+                    "modelName": "MODEL_PLACEHOLDER_M37",
+                    "displayName": "Gemini 3.1 Pro (High)"
                 },
                 {
                     "id": "gemini-3-pro-low",
-                    "modelName": "MODEL_PLACEHOLDER_M7",
-                    "displayName": "Gemini 3 Pro (Low)"
+                    "modelName": "MODEL_PLACEHOLDER_M36",
+                    "displayName": "Gemini 3.1 Pro (Low)"
                 }
             ]
         },
@@ -48,19 +48,14 @@
             ],
             "models": [
                 {
-                    "id": "claude-4-5-sonnet",
-                    "modelName": "MODEL_CLAUDE_4_5_SONNET",
-                    "displayName": "Claude Sonnet 4.5"
+                    "id": "claude-4-6-sonnet-thinking",
+                    "modelName": "MODEL_PLACEHOLDER_M35",
+                    "displayName": "Claude Sonnet 4.6 (Thinking)"
                 },
                 {
-                    "id": "claude-4-5-sonnet-thinking",
-                    "modelName": "MODEL_CLAUDE_4_5_SONNET_THINKING",
-                    "displayName": "Claude Sonnet 4.5"
-                },
-                {
-                    "id": "claude-4-opus-thinking",
-                    "modelName": "MODEL_PLACEHOLDER_M12",
-                    "displayName": "Claude Opus 4.5"
+                    "id": "claude-4-6-opus-thinking",
+                    "modelName": "MODEL_PLACEHOLDER_M26",
+                    "displayName": "Claude Opus 4.6 (Thinking)"
                 }
             ]
         },

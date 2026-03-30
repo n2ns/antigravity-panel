@@ -292,6 +292,7 @@ Special thanks to our community contributors:
 *   [**@simbaTmotsi**](https://github.com/simbaTmotsi) - Local LLM Commit Message Generator.
 *   [**@A-vrice**](https://github.com/A-vrice) - Japanese localization.
 *   [**@restinnotes**](https://github.com/restinnotes) - CDP Auto-Accept implementation.
+*   [**@AMDphreak**](https://github.com/AMDphreak) - Sidebar title fix, Gemini Flash/Pro grouping, quota reset window alignment with API cycles, and Claude+GPT shared pool display.
 
 ## 🌐 Localization Policy
 

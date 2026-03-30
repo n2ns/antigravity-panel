@@ -1,94 +1,133 @@
 
 const { exec } = require('child_process');
 const os = require('os');
-const path = require('path');
 
-// PowerShell command to get detailed process info
-const psCommand = `powershell -NoProfile -Command "Get-CimInstance Win32_Process -Filter \\"name like 'language_server%'\\" | Select-Object ProcessId,ParentProcessId,CommandLine,ExecutablePath | ConvertTo-Json"`;
+const platform = os.platform(); // 'linux' | 'darwin' | 'win32'
 
 console.log('🔍 Scanning for Antigravity Language Server processes...');
+console.log(`🖥️  Platform: ${platform}`);
 console.log('---------------------------------------------------------');
 
-exec(psCommand, { maxBuffer: 1024 * 1024 * 10 }, (error, stdout, stderr) => {
-    if (error) {
-        console.error(`❌ Error executing PowerShell: ${error.message}`);
-        return;
+// ─── 平台特定命令 ────────────────────────────────────────────────────────────
+
+function buildCommand() {
+    if (platform === 'win32') {
+        // Windows: PowerShell CIM
+        return `powershell -NoProfile -Command "Get-CimInstance Win32_Process -Filter \\"name like 'language_server%'\\" | Select-Object ProcessId,ParentProcessId,CommandLine,ExecutablePath | ConvertTo-Json"`;
+    } else {
+        // Linux / macOS: ps + grep
+        // 输出格式: PID PPID COMMAND (含完整 args)
+        // timeout 5s 防止在某些嵌套环境下 ps 子进程阻塞
+        return `timeout 5s ps -eo pid,ppid,args | grep -i 'language_server' | grep -v grep`;
     }
-    if (stderr) {
-        console.error(`⚠️ PowerShell stderr: ${stderr}`);
+}
+
+// ─── 解析进程信息 ─────────────────────────────────────────────────────────────
+
+/** 从命令行字符串中提取关键参数值 */
+function extractArgs(cmdLine) {
+    const interestingArgs = [
+        '--app_data_dir',
+        '--extension_server_port',
+        '--csrf_token',
+        '--socket_path',
+        '--workspace_id',
+        '--port',
+    ];
+    const found = {};
+    for (const argKey of interestingArgs) {
+        const regex = new RegExp(`${argKey}[=\\s]+([^\\s]+)`, 'i');
+        const match = cmdLine.match(regex);
+        if (match) found[argKey] = match[1];
+    }
+    return found;
+}
+
+/** Linux/macOS: 将 ps 输出的每行解析为 { pid, ppid, cmd } */
+function parsePsOutput(stdout) {
+    return stdout.trim().split('\n').map(line => {
+        const parts = line.trim().split(/\s+/);
+        const pid = parts[0];
+        const ppid = parts[1];
+        const cmd = parts.slice(2).join(' ');
+        return { pid, ppid, cmd };
+    }).filter(p => p.pid && !isNaN(Number(p.pid)));
+}
+
+/** Windows: JSON 输出解析 */
+function parseWinOutput(stdout) {
+    let procs = JSON.parse(stdout.trim());
+    if (!Array.isArray(procs)) procs = [procs];
+    return procs.map(p => ({
+        pid: String(p.ProcessId),
+        ppid: String(p.ParentProcessId),
+        cmd: p.CommandLine || p.ExecutablePath || '',
+    }));
+}
+
+// ─── 统一输出 ─────────────────────────────────────────────────────────────────
+
+function printProcess(proc, index) {
+    console.log(`[Process #${index + 1}]`);
+    console.log(`  PID:  ${proc.pid}`);
+    console.log(`  PPID: ${proc.ppid}`);
+
+    const args = extractArgs(proc.cmd);
+    if (Object.keys(args).length > 0) {
+        for (const [k, v] of Object.entries(args)) {
+            console.log(`  👉 ${k}: ${v}`);
+        }
+    } else {
+        // 截断显示完整命令行
+        const preview = proc.cmd.length > 200 ? proc.cmd.slice(0, 200) + '…' : proc.cmd;
+        console.log(`  CMD: ${preview}`);
+    }
+    console.log('');
+}
+
+// ─── 主流程 ───────────────────────────────────────────────────────────────────
+
+exec(buildCommand(), { maxBuffer: 1024 * 1024 * 10 }, (error, stdout, stderr) => {
+    if (error && !stdout) {
+        console.error(`❌ Command failed: ${error.message}`);
+        if (platform === 'win32') {
+            console.log('💡 Make sure PowerShell is accessible in PATH.');
+        } else {
+            console.log('💡 Try: ps -eo pid,ppid,args | grep language_server');
+        }
+        return;
     }
 
     try {
         const output = stdout.trim();
         if (!output) {
-            console.log('No language_server processes found.');
+            console.log('⚠️  No language_server processes found.');
+            console.log('   The language server may not be running, or the process name differs.');
             return;
         }
 
-        let processes = JSON.parse(output);
-        // Normalize strict single object to array
-        if (!Array.isArray(processes)) {
-            processes = [processes];
+        const processes = platform === 'win32'
+            ? parseWinOutput(output)
+            : parsePsOutput(output);
+
+        if (processes.length === 0) {
+            console.log('⚠️  Parsed 0 processes. Raw output:');
+            console.log(output.slice(0, 300));
+            return;
         }
 
-        console.log(`Found ${processes.length} process(es):\n`);
-
-        processes.forEach((proc, index) => {
-            console.log(`[Process #${index + 1}]`);
-            console.log(`  PID: ${proc.ProcessId}`);
-            console.log(`  PPID: ${proc.ParentProcessId}`);
-            console.log(`  Executable: ${proc.ExecutablePath}`);
-            console.log(`  CommandLine (partial):`);
-
-            // Format CommandLine for readability (split by space but keep quoted strings together ideally, simplified here)
-            const cmd = proc.CommandLine || '';
-            const args = cmd.split(/\s+/);
-
-            // Log key arguments we care about
-            const interestingArgs = [
-                '--user-data-dir',
-                '--app_data_dir',
-                '--extension_server_port',
-                '--csrf_token',
-                '--socket_path'
-            ];
-
-            let foundInteresting = false;
-            // Native args check
-            interestingArgs.forEach(argKey => {
-                const regex = new RegExp(`${argKey}[=\\s]+([^\\s]+)`, 'i');
-                const match = cmd.match(regex);
-                if (match) {
-                    console.log(`    👉 ${argKey}: ${match[1]}`);
-                    foundInteresting = true;
-                }
-            });
-
-            // Also check for raw path presence
-            if (cmd.includes('antigravity')) {
-                // Find parts of command line that look like paths
-                const paths = cmd.match(/[a-zA-Z]:\\[^ "]+/g);
-                if (paths) {
-                    console.log('    📂 Paths found in CMD:');
-                    paths.forEach(p => {
-                        if (p.includes('antigravity') || p.includes('User')) {
-                            console.log(`      - ${p}`);
-                        }
-                    });
-                }
-            }
-
-            console.log('');
-        });
+        console.log(`✅ Found ${processes.length} language_server process(es):\n`);
+        processes.forEach((proc, i) => printProcess(proc, i));
 
         console.log('---------------------------------------------------------');
-        console.log('💡 Analysis Suggestion:');
-        console.log('   Compare the "PPID" or paths in "CommandLine" against your running IDE instances.');
-        console.log(`   Current Script Process PID: ${process.pid}`);
-        console.log(`   Current Script PPID: ${process.ppid}`);
+        console.log('💡 Tips:');
+        console.log('   - Compare PPID with your IDE extension host PID.');
+        console.log('   - Use --csrf_token value in fetch_real_quota.js.');
+        console.log('   - Use --extension_server_port to identify the active port.');
+        console.log(`   Current script PID: ${process.pid}, PPID: ${process.ppid}`);
 
     } catch (e) {
-        console.error('❌ Error parsing JSON output:', e);
-        console.log('Raw output header:', stdout.substring(0, 100));
+        console.error('❌ Error parsing output:', e.message);
+        console.log('Raw output (first 300 chars):', stdout.slice(0, 300));
     }
 });

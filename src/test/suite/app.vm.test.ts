@@ -113,7 +113,7 @@ suite('AppViewModel Test Suite', () => {
         const snapshot: QuotaSnapshot = {
             timestamp: new Date(),
             models: [{
-                modelId: 'MODEL_PLACEHOLDER_M18',
+                modelId: 'MODEL_PLACEHOLDER_M47',
                 label: 'Gemini 3 Flash',
                 remainingPercentage: 50,
                 isExhausted: false,
@@ -187,8 +187,8 @@ suite('AppViewModel Test Suite', () => {
             timestamp: new Date(),
             models: [
                 {
-                    modelId: 'MODEL_CLAUDE_4_5_SONNET',
-                    label: 'Claude Sonnet 4.5',
+                    modelId: 'MODEL_PLACEHOLDER_M35',
+                    label: 'Claude Sonnet 4.6 (Thinking)',
                     remainingPercentage: 70,
                     isExhausted: false,
                     resetTime: new Date(Date.now() + 5 * 3600000),
