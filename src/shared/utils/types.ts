@@ -51,6 +51,11 @@ export interface FlowCreditsInfo {
   remainingPercentage: number;
 }
 
+export interface UserCredit {
+  creditType: string;
+  creditAmount: string;
+}
+
 /**
  * Combined Token Usage information for display
  */
@@ -65,6 +70,8 @@ export interface TokenUsageInfo {
   totalMonthly: number;
   /** Overall remaining percentage */
   overallRemainingPercentage: number;
+  /** User tier credits (like GOOGLE_ONE_AI) */
+  userCredits?: UserCredit[];
 }
 
 /**

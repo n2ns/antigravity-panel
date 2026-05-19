@@ -129,6 +129,16 @@ export class StatusBarManager implements vscode.Disposable {
             tooltipRows.push(`| 💿 Cache | ${formatBytes(cache.totalSize)} |  | |`);
         }
 
+        const credits = this.viewModel.getState().tokenUsage?.userCredits || [];
+        credits.forEach(credit => {
+            parts.push(`💳 ${credit.creditAmount}`);
+            const label = credit.creditType
+                .split('_')
+                .map(w => w.toLowerCase() === 'ai' ? 'AI' : w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+                .join(' ');
+            tooltipRows.push(`| 💳 ${label} | ${credit.creditAmount} |  | |`);
+        });
+
         if (parts.length === 0) {
             this.item.text = "$(check) TFA"; // Use check icon if nothing to show but bar is enabled, or just TFA
         } else {

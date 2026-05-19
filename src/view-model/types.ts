@@ -5,7 +5,7 @@
  * These types represent the UI-ready data structures.
  */
 
-import type { UsageBucket, BucketItem } from '../model/types/entities';
+import type { UsageBucket, BucketItem, UserCredit } from '../model/types/entities';
 
 // ==================== Quota View State ====================
 
@@ -169,6 +169,8 @@ export interface TokenUsageViewState {
     totalMonthly: number;
     /** Overall remaining percentage */
     overallRemainingPercentage: number;
+    /** User tier credits (like GOOGLE_ONE_AI) */
+    userCredits?: UserCredit[];
     /** Formatted display strings */
     formatted: {
         promptAvailable: string;

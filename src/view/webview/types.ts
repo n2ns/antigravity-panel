@@ -100,6 +100,11 @@ export interface UserInfoData {
   upgradeText?: string;
 }
 
+export interface UserCreditData {
+  creditType: string;
+  creditAmount: string;
+}
+
 /** Token usage data */
 export interface TokenUsageData {
   promptCredits?: {
@@ -117,6 +122,7 @@ export interface TokenUsageData {
   totalAvailable: number;
   totalMonthly: number;
   overallRemainingPercentage: number;
+  userCredits?: UserCreditData[];
   formatted: {
     promptAvailable: string;
     promptMonthly: string;
