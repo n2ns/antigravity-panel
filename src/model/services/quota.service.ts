@@ -168,6 +168,7 @@ export class QuotaService implements IQuotaService {
         const planInfo = userStatus.planStatus?.planInfo;
         const availableCredits = userStatus.planStatus?.availablePromptCredits;
         const availableFlowCredits = userStatus.planStatus?.availableFlowCredits;
+        const userTier = userStatus.userTier;
 
         // Parse Prompt Credits
         let promptCredits: PromptCreditsInfo | undefined;
@@ -216,7 +217,6 @@ export class QuotaService implements IQuotaService {
         }
 
         // Extract user subscription info
-        const userTier = userStatus.userTier;
         const userInfo: UserInfo | undefined = userStatus.name || userTier ? {
             name: userStatus.name,
             email: userStatus.email,
