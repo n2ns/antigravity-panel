@@ -20,11 +20,11 @@ export class CreditsBar extends LitElement {
       return html``;
     }
 
-    const { promptCredits, flowCredits, formatted } = this.tokenUsage;
+    const { promptCredits, flowCredits, formatted, userCredits } = this.tokenUsage;
     const t = (window as unknown as WindowWithVsCode).__TRANSLATIONS__ || {};
 
     // If no data, don't render
-    if (!promptCredits && !flowCredits) {
+    if (!promptCredits && !flowCredits && (!userCredits || userCredits.length === 0)) {
       return html``;
     }
 
@@ -49,6 +49,18 @@ export class CreditsBar extends LitElement {
             </div>
           </div>
         ` : ''}
+        ${userCredits ? userCredits.map(c => {
+          const label = c.creditType.split('_').map(w => w.toLowerCase() === 'ai' ? 'AI' : w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
+          return html`
+            <div class="credit-item" data-tooltip="${label} Credits\nAvailable: ${c.creditAmount}">
+              <span class="credit-label">${label}</span>
+              <span class="credit-value">${c.creditAmount}</span>
+              <div class="credit-progress">
+                <div class="credit-fill" style="width: 100%; background: var(--vscode-charts-blue, #3794ff);"></div>
+              </div>
+            </div>
+          `;
+        }) : ''}
       </div>
     `;
   }

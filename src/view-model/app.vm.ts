@@ -412,6 +412,7 @@ export class AppViewModel implements vscode.Disposable {
                 totalAvailable: tu.totalAvailable,
                 totalMonthly: tu.totalMonthly,
                 overallRemainingPercentage: tu.overallRemainingPercentage,
+                userCredits: tu.userCredits,
                 formatted: {
                     promptAvailable: this.formatCredits(tu.promptCredits?.available),
                     promptMonthly: this.formatCredits(tu.promptCredits?.monthly),

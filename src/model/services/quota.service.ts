@@ -20,6 +20,7 @@ import type {
     ErrorCallback,
     LanguageServerInfo,
     UserInfo,
+    UserCredit,
 } from '../types/entities';
 
 // Re-export types for backward compatibility
@@ -167,6 +168,7 @@ export class QuotaService implements IQuotaService {
         const planInfo = userStatus.planStatus?.planInfo;
         const availableCredits = userStatus.planStatus?.availablePromptCredits;
         const availableFlowCredits = userStatus.planStatus?.availableFlowCredits;
+        const userTier = userStatus.userTier;
 
         // Parse Prompt Credits
         let promptCredits: PromptCreditsInfo | undefined;
@@ -200,7 +202,8 @@ export class QuotaService implements IQuotaService {
 
         // Build combined token usage info
         let tokenUsage: TokenUsageInfo | undefined;
-        if (promptCredits || flowCredits) {
+        const credits = userTier?.availableCredits || [];
+        if (promptCredits || flowCredits || credits.length > 0) {
             const totalAvailable = (promptCredits?.available || 0) + (flowCredits?.available || 0);
             const totalMonthly = (promptCredits?.monthly || 0) + (flowCredits?.monthly || 0);
             tokenUsage = {
@@ -209,11 +212,11 @@ export class QuotaService implements IQuotaService {
                 totalAvailable,
                 totalMonthly,
                 overallRemainingPercentage: totalMonthly > 0 ? (totalAvailable / totalMonthly) * 100 : 0,
+                userCredits: credits,
             };
         }
 
         // Extract user subscription info
-        const userTier = userStatus.userTier;
         const userInfo: UserInfo | undefined = userStatus.name || userTier ? {
             name: userStatus.name,
             email: userStatus.email,
@@ -312,6 +315,7 @@ interface ServerUserStatusResponse {
             description?: string;
             upgradeSubscriptionUri?: string;
             upgradeSubscriptionText?: string;
+            availableCredits?: UserCredit[];
         };
         planStatus?: {
             planInfo: {

@@ -17,6 +17,7 @@ export type {
     TokenUsageInfo,
     QuotaSnapshot,
     UserInfo,
+    UserCredit,
 
     // Process Detection Related
     LanguageServerInfo,
