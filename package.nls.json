@@ -45,6 +45,7 @@
     "config.status.showCache.description": "Display Antigravity IDE cache size in the status bar",
     "config.status.showQuota.description": "Show quota information in the status bar",
     "config.status.warningThreshold.description": "Show warning color when quota falls below this percentage",
+    "config.statusBarStyle.combined": "Show percentage + reset time combined (e.g., 75% 2h 30m)",
     "config.statusBarStyle.percentage": "Show remaining quota as percentage (e.g., 75%)",
     "config.statusBarStyle.remaining": "Show remaining quota amount (e.g., 75/100)",
     "config.statusBarStyle.resetTime": "Show time until quota reset (e.g., 2h 30m)",

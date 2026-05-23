@@ -241,9 +241,10 @@
           },
           "tfa.status.displayFormat": {
             "type": "string",
-            "default": "percentage",
+            "default": "combined",
             "order": 30,
             "enum": [
+              "combined",
               "percentage",
               "resetTime",
               "resetTimestamp",
@@ -251,6 +252,7 @@
               "remaining"
             ],
             "enumDescriptions": [
+              "%config.statusBarStyle.combined%",
               "%config.statusBarStyle.percentage%",
               "%config.statusBarStyle.resetTime%",
               "%config.statusBarStyle.resetTimestamp%",

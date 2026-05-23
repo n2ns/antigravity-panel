@@ -45,6 +45,7 @@
     "config.status.showCache.description": "ステータスバーにAntigravity IDEのキャッシュサイズを表示",
     "config.status.showQuota.description": "ステータスバーに使用量情報を表示",
     "config.status.warningThreshold.description": "使用量がこのパーセンテージを下回ると警告色を表示",
+    "config.statusBarStyle.combined": "???????+??????????????? (?: 75% 2h 30m)",
     "config.statusBarStyle.percentage": "残りの使用量をパーセンテージで表示 (例:75%)",
     "config.statusBarStyle.remaining": "残りの使用量を表示 (例:75/100)",
     "config.statusBarStyle.resetTime": "使用量のリセットまでの時間を表示 (例:2h 30m)",

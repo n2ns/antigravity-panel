@@ -108,48 +108,47 @@ suite('StatusBarManager Test Suite', () => {
         });
 
         statusBarManager.update();
-        assert.ok(mockStatusBarItem.text.includes('Fls 75%'), `Expected "Fls 75%", got "${mockStatusBarItem.text}"`);
+        // Combined format: always shows shortLabel + percentage + resetTime
+        assert.ok(mockStatusBarItem.text.includes('Fls 75% 2h 30m'), `Expected "Fls 75% 2h 30m", got "${mockStatusBarItem.text}"`);
     });
 
-    test('should format correctly for "used"', () => {
+    test('should use combined format regardless of "used" setting', () => {
         mockConfigManager.getConfig = () => ({
             "status.showQuota": true,
             "status.displayFormat": "used"
         });
 
         statusBarManager.update();
-        // Used = 100 - 75 = 25/100
-        assert.ok(mockStatusBarItem.text.includes('Fls 25/100'), `Expected "Fls 25/100", got "${mockStatusBarItem.text}"`);
+        assert.ok(mockStatusBarItem.text.includes('Fls 75% 2h 30m'), `Expected combined format "Fls 75% 2h 30m", got "${mockStatusBarItem.text}"`);
     });
 
-    test('should format correctly for "resetTime"', () => {
+    test('should use combined format regardless of "resetTime" setting', () => {
         mockConfigManager.getConfig = () => ({
             "status.showQuota": true,
             "status.displayFormat": "resetTime"
         });
 
         statusBarManager.update();
-        assert.ok(mockStatusBarItem.text.includes('Fls 2h 30m'), `Expected "Fls 2h 30m", got "${mockStatusBarItem.text}"`);
+        assert.ok(mockStatusBarItem.text.includes('Fls 75% 2h 30m'), `Expected combined format "Fls 75% 2h 30m", got "${mockStatusBarItem.text}"`);
     });
 
-    test('should format correctly for "remaining"', () => {
+    test('should use combined format regardless of "remaining" setting', () => {
         mockConfigManager.getConfig = () => ({
             "status.showQuota": true,
             "status.displayFormat": "remaining"
         });
 
         statusBarManager.update();
-        // Remainig = 75/100
-        assert.ok(mockStatusBarItem.text.includes('Fls 75/100'), `Expected "Fls 75/100", got "${mockStatusBarItem.text}"`);
+        assert.ok(mockStatusBarItem.text.includes('Fls 75% 2h 30m'), `Expected combined format "Fls 75% 2h 30m", got "${mockStatusBarItem.text}"`);
     });
 
-    test('should fallback to percentage for unknown format', () => {
+    test('should use combined format for any displayFormat value', () => {
         mockConfigManager.getConfig = () => ({
             "status.showQuota": true,
             "status.displayFormat": "unknown_format" as any
         });
 
         statusBarManager.update();
-        assert.ok(mockStatusBarItem.text.includes('Fls 75%'), `Expected fallback to "Fls 75%", got "${mockStatusBarItem.text}"`);
+        assert.ok(mockStatusBarItem.text.includes('Fls 75% 2h 30m'), `Expected combined format "Fls 75% 2h 30m", got "${mockStatusBarItem.text}"`);
     });
 });

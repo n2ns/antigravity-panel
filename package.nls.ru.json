@@ -45,6 +45,7 @@
     "config.status.showCache.description": "Показывать размер кеша Antigravity IDE в строке состояния",
     "config.status.showQuota.description": "Показывать информацию о квоте в строке состояния",
     "config.status.warningThreshold.description": "Показывать предупреждающий цвет, когда квота падает ниже этого процента",
+    "config.statusBarStyle.combined": "?????????? ??????? + ????? ?? ?????? ?????? (????????, 75% 2? 30?)",
     "config.statusBarStyle.percentage": "Показывать остаток квоты в процентах (например, 75%)",
     "config.statusBarStyle.remaining": "Показывать оставшуюся квоту (например, 75/100)",
     "config.statusBarStyle.resetTime": "Показывать время до сброса квоты (например, 2ч 30м)",

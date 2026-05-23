@@ -291,7 +291,7 @@ export interface TfaConfig {
   /** Whether to show cache size in status bar */
   "status.showCache": boolean;
   /** Status bar display format */
-  "status.displayFormat": "percentage" | "resetTime" | "resetTimestamp" | "used" | "remaining";
+  "status.displayFormat": "combined" | "percentage" | "resetTime" | "resetTimestamp" | "used" | "remaining";
   /** Status bar warning threshold (%) */
   "status.warningThreshold": number;
   /** Status bar critical threshold (%) */

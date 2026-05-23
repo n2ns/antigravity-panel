@@ -45,6 +45,7 @@
     "config.status.showCache.description": "在狀態列顯示 Antigravity IDE 快取大小",
     "config.status.showQuota.description": "在狀態列顯示配額資訊",
     "config.status.warningThreshold.description": "配額低於此百分比時顯示警告顏色",
+    "config.statusBarStyle.combined": "????????????(??:75% 2h 30m)",
     "config.statusBarStyle.percentage": "顯示剩餘配額百分比（例如：75%）",
     "config.statusBarStyle.remaining": "顯示剩餘配額（例如：75/100）",
     "config.statusBarStyle.resetTime": "顯示配額重設倒數計時（例如：2小時30分）",

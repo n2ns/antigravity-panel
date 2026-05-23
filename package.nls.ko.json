@@ -45,6 +45,7 @@
     "config.status.showCache.description": "상태 표시줄에 Antigravity IDE 캐시 크기 표시",
     "config.status.showQuota.description": "상태 표시줄에 할당량 정보 표시",
     "config.status.warningThreshold.description": "할당량이 이 비율 아래로 떨어지면 경고색 표시",
+    "config.statusBarStyle.combined": "??? + ??? ??? ?? ?? (?: 75% 2h 30m)",
     "config.statusBarStyle.percentage": "남은 할당량을 백분율로 표시 (예: 75%)",
     "config.statusBarStyle.remaining": "남은 할당량 표시 (예: 75/100)",
     "config.statusBarStyle.resetTime": "할당량 초기화까지 남은 시간 표시 (예: 2h 30m)",

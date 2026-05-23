@@ -45,6 +45,7 @@
     "config.status.showCache.description": "Mostra dimensione cache Antigravity IDE nella barra di stato",
     "config.status.showQuota.description": "Mostra informazioni sulla quota nella barra di stato",
     "config.status.warningThreshold.description": "Mostra colore di avviso quando la quota scende sotto questa percentuale",
+    "config.statusBarStyle.combined": "Mostra percentuale + tempo al reset combinati (es: 75% 2h 30m)",
     "config.statusBarStyle.percentage": "Mostra quota rimanente come percentuale (es: 75%)",
     "config.statusBarStyle.remaining": "Mostra quantità di quota rimanente (es: 75/100)",
     "config.statusBarStyle.resetTime": "Mostra tempo al reset della quota (es: 2h 30m)",
