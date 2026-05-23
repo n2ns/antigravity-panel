@@ -45,6 +45,7 @@ export interface SchedulerOptions {
 export class Scheduler {
   private tasks: Map<string, SchedulerTask> = new Map();
   private timers: Map<string, ReturnType<typeof setInterval>> = new Map();
+  private runningTasks: Set<string> = new Set();
   private options: SchedulerOptions;
 
   constructor(options: SchedulerOptions = {}) {
@@ -176,11 +177,16 @@ export class Scheduler {
    * Execute task (internal method)
    */
   private async executeTask(task: SchedulerTask): Promise<void> {
+    // Overlap guard: skip if this task is already running
+    if (this.runningTasks.has(task.name)) return;
+    this.runningTasks.add(task.name);
     try {
       await task.execute();
     } catch (error) {
       const err = error instanceof Error ? error : new Error(String(error));
       this.options.onError?.(task.name, err);
+    } finally {
+      this.runningTasks.delete(task.name);
     }
   }
 
@@ -190,5 +196,6 @@ export class Scheduler {
   dispose(): void {
     this.stopAll();
     this.tasks.clear();
+    this.runningTasks.clear();
   }
 }

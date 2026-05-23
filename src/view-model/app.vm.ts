@@ -23,6 +23,7 @@ import type {
     UsageChartData,
     UsageBucket,
     TokenUsageViewState,
+    UserViewState,
     ConnectionStatus,
 } from './types';
 
@@ -49,6 +50,8 @@ export class AppViewModel implements vscode.Disposable {
     private _disposables: vscode.Disposable[] = [];
     private _notificationCooldowns = new Map<string, number>();
     private readonly NOTIFICATION_COOLDOWN = 30 * 60 * 1000; // 30 minutes
+    /** Previous remaining % per group for request detection */
+    private _prevGroupRemaining = new Map<string, number>();
 
     private readonly _onStateChange = new vscode.EventEmitter<AppState>();
     readonly onStateChange = this._onStateChange.event;
@@ -268,7 +271,7 @@ export class AppViewModel implements vscode.Disposable {
         }
     }
 
-    async updateContextFiles(contextId: string): Promise<void> {
+    private async updateContextFiles(contextId: string): Promise<void> {
         const folder = this._state.tree.contexts.folders.find(f => f.id === contextId);
         if (folder) {
             folder.expanded = this._expandedContexts.has(contextId);
@@ -371,6 +374,21 @@ export class AppViewModel implements vscode.Disposable {
         const activeGroup = newGroups.find(g => g.id === activeGroupId);
         const currentRemaining = activeGroup?.remaining || 0;
 
+        // === Quota reset detection: compare with previous remaining to reset consumption rate ===
+        const RESET_THRESHOLD_PP = 0.1;
+        for (const group of newGroups) {
+            if (!group.hasData) continue;
+            const prev = this._prevGroupRemaining.get(group.id);
+            if (prev !== undefined) {
+                if (group.remaining > prev + RESET_THRESHOLD_PP) {
+                    // Quota increased -> reset detected
+                    // Clear history points for this group so pp/h restarts from zero
+                    this.storageService.clearGroupHistory(group.id);
+                }
+            }
+            this._prevGroupRemaining.set(group.id, group.remaining);
+        }
+
         const quotaRecord: Record<string, number> = {};
         for (const group of newGroups) {
             if (group.hasData) quotaRecord[group.id] = group.remaining;
@@ -378,7 +396,16 @@ export class AppViewModel implements vscode.Disposable {
         await this.storageService.recordQuotaPoint(quotaRecord);
 
         const chart = this.buildChartData(activeGroupId, currentRemaining);
-        const displayItems = this.buildDisplayItems(newGroups);
+
+        // Compute accumulated pp consumed per group from chart buckets
+        const groupConsumption = new Map<string, number>();
+        for (const bucket of chart.buckets) {
+            for (const item of bucket.items) {
+                groupConsumption.set(item.groupId, (groupConsumption.get(item.groupId) || 0) + item.usage);
+            }
+        }
+
+        const displayItems = this.buildDisplayItems(newGroups, groupConsumption);
 
         this._state.quota = {
             groups: newGroups,
@@ -556,8 +583,11 @@ export class AppViewModel implements vscode.Disposable {
         const minModel = groupModels.reduce((min, m) =>
             m.remainingPercentage < min.remainingPercentage ? m : min
         );
-        const ms = minModel.resetTime.getTime() - Date.now();
-        if (ms <= 0) return null;
+        const resetDate = minModel.resetTime instanceof Date
+            ? minModel.resetTime
+            : new Date(minModel.resetTime);
+        const ms = resetDate.getTime() - Date.now();
+        if (isNaN(ms) || ms <= 0) return null;
         return ms / 3_600_000;
     }
 
@@ -685,13 +715,23 @@ export class AppViewModel implements vscode.Disposable {
         };
     }
 
-    private buildDisplayItems(groups: QuotaGroupState[]): QuotaDisplayItem[] {
+    private buildDisplayItems(groups: QuotaGroupState[], groupConsumption?: Map<string, number>): QuotaDisplayItem[] {
         const config = this.configManager.getConfig();
         const hiddenGroupId = config["dashboard.includeSecondaryModels"] ? null : 'gpt';
 
         // Cache group order for sorting
         const strategyGroups = this.strategyManager.getGroups();
         const groupOrder = new Map(strategyGroups.map((g, i) => [g.id, i]));
+
+        /** Format hourly consumption rate for display as subLabel */
+        const historyHours = config["dashboard.historyRange"] / 60;
+        const formatConsumption = (groupId: string): string | undefined => {
+            if (!groupConsumption || historyHours <= 0) return undefined;
+            const pp = groupConsumption.get(groupId);
+            if (pp === undefined || pp <= 0) return undefined;
+            const ratePerHour = pp / historyHours;
+            return `🔥${ratePerHour.toFixed(1)} pp/h`;
+        };
 
         if (config["dashboard.viewMode"] === 'models' && this._lastSnapshot) {
             const models = this._lastSnapshot.models || [];
@@ -719,7 +759,8 @@ export class AppViewModel implements vscode.Disposable {
                     remaining,
                     resetTime: m.timeUntilReset,
                     hasData: true,
-                    themeColor: group.themeColor
+                    themeColor: group.themeColor,
+                    subLabel: formatConsumption(group.id)
                 };
             });
         }
@@ -730,7 +771,8 @@ export class AppViewModel implements vscode.Disposable {
             remaining: g.remaining,
             resetTime: g.resetTime,
             hasData: g.hasData,
-            themeColor: g.themeColor
+            themeColor: g.themeColor,
+            subLabel: formatConsumption(g.id)
         }));
     }
 
@@ -756,6 +798,8 @@ export class AppViewModel implements vscode.Disposable {
             id: ctx.id,
             label: ctx.name || ctx.id,
             size: formatBytes(ctx.size),
+            sizeBytes: ctx.size,
+            lastModified: ctx.lastModified,
             expanded: this._expandedContexts.has(ctx.id),
             loading: false,
             files: []
@@ -767,6 +811,7 @@ export class AppViewModel implements vscode.Disposable {
             id: task.id,
             label: task.label || `Task ${task.id.split('-')[0]}`,
             size: formatBytes(task.size),
+            sizeBytes: task.size,
             lastModified: task.createdAt,
             expanded: this._expandedTasks.has(task.id),
             loading: false,
@@ -931,12 +976,12 @@ export class AppViewModel implements vscode.Disposable {
         };
 
         // Restore user info and token usage for instant startup
-        const cachedUserInfo = this.storageService.getLastUserInfo<typeof this._state.user>();
+        const cachedUserInfo = this.storageService.getLastUserInfo<UserViewState>();
         if (cachedUserInfo) {
             this._state.user = cachedUserInfo;
         }
 
-        const cachedTokenUsage = this.storageService.getLastTokenUsage<typeof this._state.tokenUsage>();
+        const cachedTokenUsage = this.storageService.getLastTokenUsage<TokenUsageViewState>();
         if (cachedTokenUsage) {
             this._state.tokenUsage = cachedTokenUsage;
         }

@@ -96,23 +96,32 @@ export class CacheService implements ICacheService {
     async getCodeContexts(): Promise<CodeContext[]> {
         try {
             const entries = await fs.promises.readdir(this.baseCodeContextsDir, { withFileTypes: true });
-            const contexts: CodeContext[] = [];
+            const contextMap = new Map<string, { size: number; mtime: number }>();
 
             for (const entry of entries) {
-                if (!entry.isDirectory()) continue;
-
-                const contextPath = path.join(this.baseCodeContextsDir, entry.name);
-                const size = await this.getDirectorySize(contextPath);
-
-                contexts.push({
-                    id: entry.name,
-                    name: entry.name,
-                    size,
-                });
+                if (!entry.isFile()) continue;
+                // Group by conversation UUID (strip extensions like .db, .db-shm, .db-wal, .pb)
+                const baseName = entry.name.replace(/\.(db-shm|db-wal|db|pb)$/, '');
+                if (baseName === entry.name) continue; // Skip unknown files
+                const filePath = path.join(this.baseCodeContextsDir, entry.name);
+                try {
+                    const stat = await fs.promises.stat(filePath);
+                    const existing = contextMap.get(baseName);
+                    const mtimeMs = stat.mtimeMs;
+                    contextMap.set(baseName, {
+                        size: (existing?.size || 0) + stat.size,
+                        mtime: Math.max(existing?.mtime || 0, mtimeMs)
+                    });
+                } catch { /* skip unreadable files */ }
             }
 
-            // Sort by name for consistent display
-            return contexts.sort((a, b) => a.name.localeCompare(b.name));
+            const contexts: CodeContext[] = [];
+            for (const [id, data] of contextMap) {
+                contexts.push({ id, name: id, size: data.size, lastModified: data.mtime });
+            }
+
+            // Sort by size descending (largest first)
+            return contexts.sort((a, b) => b.size - a.size);
         } catch {
             return [];
         }
@@ -122,23 +131,37 @@ export class CacheService implements ICacheService {
      * Get files within a brain task
      */
     async getTaskFiles(taskId: string): Promise<FileItem[]> {
+        if (!this.isValidId(taskId)) return [];
         const taskPath = path.join(this.baseBrainDir, taskId);
-        return this.getFilesInDirectory(taskPath);
+        return this.getFilesRecursive(taskPath, taskPath);
     }
 
     /**
      * Get files within a code context
      */
     async getContextFiles(contextId: string): Promise<FileItem[]> {
-        const contextPath = path.join(this.baseCodeContextsDir, contextId);
-        return this.getFilesInDirectory(contextPath);
+        if (!this.isValidId(contextId)) return [];
+        try {
+            const entries = await fs.promises.readdir(this.baseCodeContextsDir, { withFileTypes: true });
+            return entries
+                .filter(e => e.isFile() && e.name.startsWith(contextId))
+                .map(e => ({
+                    name: e.name,
+                    path: path.join(this.baseCodeContextsDir, e.name),
+                }));
+        } catch {
+            return [];
+        }
     }
 
     /**
      * Delete a brain task
      */
     async deleteTask(taskId: string): Promise<void> {
+        if (!this.isValidId(taskId)) return;
         const taskPath = path.join(this.baseBrainDir, taskId);
+        // Guard: resolved path must stay inside baseBrainDir
+        if (!taskPath.startsWith(this.baseBrainDir + path.sep)) return;
         await fs.promises.rm(taskPath, { recursive: true, force: true });
 
         // Also delete corresponding conversation file
@@ -150,15 +173,30 @@ export class CacheService implements ICacheService {
      * Delete a code context
      */
     async deleteContext(contextId: string): Promise<void> {
-        const contextPath = path.join(this.baseCodeContextsDir, contextId);
-        await fs.promises.rm(contextPath, { recursive: true, force: true });
+        if (!this.isValidId(contextId)) return;
+        try {
+            const entries = await fs.promises.readdir(this.baseCodeContextsDir, { withFileTypes: true });
+            const matchingFiles = entries.filter(e => e.isFile() && e.name.startsWith(contextId));
+            for (const file of matchingFiles) {
+                await fs.promises.rm(path.join(this.baseCodeContextsDir, file.name), { force: true });
+            }
+        } catch { /* ignore errors */ }
     }
 
     /**
-     * Delete a single file
+     * Delete a single file safely
      */
     async deleteFile(filePath: string): Promise<void> {
-        await fs.promises.rm(filePath, { force: true });
+        const resolvedPath = path.resolve(filePath);
+        const isUnderBrain = resolvedPath.startsWith(this.baseBrainDir + path.sep);
+        const isUnderContexts = resolvedPath.startsWith(this.baseCodeContextsDir + path.sep);
+        const isUnderConversations = resolvedPath.startsWith(this.baseConversationsDir + path.sep);
+
+        if (!isUnderBrain && !isUnderContexts && !isUnderConversations) {
+            throw new Error('Access denied: file lies outside allowed cache directories.');
+        }
+
+        await fs.promises.rm(resolvedPath, { force: true });
     }
 
     /**
@@ -305,6 +343,43 @@ export class CacheService implements ICacheService {
                     name: e.name,
                     path: path.join(dirPath, e.name),
                 }));
+        } catch {
+            return [];
+        }
+    }
+
+    /**
+     * Validates an ID to prevent path traversal attacks.
+     * Only allows alphanumeric characters, hyphens, underscores, and dots.
+     */
+    private isValidId(id: string): boolean {
+        return /^[a-zA-Z0-9_.-]+$/.test(id) && id.length > 0 && id.length < 128;
+    }
+
+    /**
+     * Recursively get all files in a directory tree.
+     * File names use relative paths from rootDir for clear display.
+     * Skips symbolic links and limits recursion depth to prevent infinite loops.
+     */
+    private async getFilesRecursive(dirPath: string, rootDir: string, maxDepth = 5): Promise<FileItem[]> {
+        if (maxDepth <= 0) return [];
+        try {
+            const entries = await fs.promises.readdir(dirPath, { withFileTypes: true });
+            const results: FileItem[] = [];
+
+            for (const entry of entries) {
+                if (entry.isSymbolicLink()) continue;
+                const fullPath = path.join(dirPath, entry.name);
+                if (entry.isFile()) {
+                    const relativeName = path.relative(rootDir, fullPath);
+                    results.push({ name: relativeName, path: fullPath });
+                } else if (entry.isDirectory()) {
+                    const subFiles = await this.getFilesRecursive(fullPath, rootDir, maxDepth - 1);
+                    results.push(...subFiles);
+                }
+            }
+
+            return results;
         } catch {
             return [];
         }

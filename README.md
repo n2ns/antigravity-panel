@@ -272,6 +272,54 @@ Toolkit for Antigravity does not collect, transmit, or store any user data. All 
 **Experimental Feature Notice:**
 The *Smart Quota Monitoring* feature relies on internal metrics exposed by the local Antigravity environment. This functionality is experimental and provided "as-is" to help users better understand their personal usage. It is not an official Google product and may be subject to changes in future IDE updates.
 
+## 🏗️ Development & Testing
+
+If you want to build the extension from source, run tests, or contribute to the project, follow these instructions:
+
+### Prerequisites
+
+Ensure you have [Node.js](https://nodejs.org/) (v22+ recommended) and `npm` installed.
+
+### Setup
+
+Clone the repository and install the dependencies:
+```bash
+git clone https://github.com/n2ns/antigravity-panel.git
+cd antigravity-panel
+npm install
+```
+
+### Build & Compile
+
+- **Production Build**: Bundles the extension, Webview JS, and Webview CSS into `/dist`:
+  ```bash
+  npm run build
+  ```
+- **Development Watch Mode**: Re-compiles source files automatically on changes:
+  ```bash
+  npm run watch
+  ```
+
+### Running Tests
+
+The test suite includes both pure unit tests and integration tests that simulate Antigravity Server responses:
+
+- **Unit Tests**:
+  ```bash
+  npm test
+  ```
+- **Server Integration Tests**:
+  ```bash
+  npm run test:server
+  ```
+
+### Packaging
+
+To package the extension into a `.vsix` installer file:
+```bash
+npm run package
+```
+
 ## 🤝 Contributing
 
 We welcome contributions! If you find this toolkit helpful, please give us a **Star** 🌟 on GitHub! It's the best way to support our work and help others discover it.

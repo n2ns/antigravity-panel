@@ -126,6 +126,13 @@ export interface IStorageService {
      */
     getMaxUsage(buckets: UsageBucket[]): number;
 
+    /**
+     * Clear history points for a specific group (used on quota reset to restart pp/h)
+     */
+    clearGroupHistory(groupId: string): void;
+
+
+
     // ==================== View State Cache ====================
 
     /**

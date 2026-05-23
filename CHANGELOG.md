@@ -1,7 +1,24 @@
 English | [中文文档](docs/CHANGELOG_zh.md)
 
 # Change Log
- 
+
+## [2.6.0] - 2026-05-23
+
+### Added
+
+- **Instant Startup Connection**: Bypassed startup delay (reduced delay from 30s to 50ms) to display local quota metrics instantly on reload/startup, combined with an expanded background retry cycle (up to 7 retries / 35s window) to gracefully tolerate slow cold boots.
+- **Dedicated Integration Test Runner**: Added a new runner script `src/test/runServerTests.ts` to restore functionality to the `npm run test:server` script, allowing developer isolation.
+
+### Fixed
+
+- **Command Stability Architecture**: Refactored `activate()` in `src/extension.ts` to register all contributed commands synchronously in Phase 1 before service initialization in Phase 2. This completely resolves the recurring `command 'tfa.openSettings' not found` and other command-not-found errors during slow boots or handshake failures.
+- **vsce Packaging Error**: Aligned devDependency `@types/vscode` version to `^1.104.0` in `package.json` to match `engines.vscode` configuration, satisfying vsce packaging requirements.
+- **Italian Localization Audit**: Checked and fully completed Italian NLS files (`package.nls.it.json` and `l10n/bundle.l10n.it.json`). Fixed minor typos in UI translations and corrected refresh rate constraint mismatches.
+
+### Improved
+
+- **Developer Documentation**: Added a comprehensive `## 🏗️ Development & Testing` section to `README.md` outlining developer environment setups, production/watch compilations, unit/integration testing, and `.vsix` packaging.
+
 ## [2.5.13] - 2026-03-30
 
 ### Fixed

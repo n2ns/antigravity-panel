@@ -2,7 +2,7 @@
  * SidebarFooter - Footer component with recovery actions and links (Light DOM)
  */
 
-import { LitElement, html } from 'lit';
+import { LitElement, html, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import type { VsCodeApi, WindowWithVsCode } from '../types.js';
 
@@ -138,7 +138,12 @@ export class SidebarFooter extends LitElement {
             </button>
           </div>
 
-          <div class="sidebar-tagline">For Antigravity. By Antigravity.</div>
+          <div class="sidebar-meta-container">
+            <div class="sidebar-tagline">For Antigravity. By Antigravity.</div>
+            ${(window as unknown as WindowWithVsCode).__VERSION__ ? html`
+              <div class="sidebar-version">v${(window as unknown as WindowWithVsCode).__VERSION__}</div>
+            ` : nothing}
+          </div>
         </div>
       </div>
     `;

@@ -21,9 +21,9 @@ suite('Paths Utils Test Suite', () => {
         assert.strictEqual(result, expected);
     });
 
-    test('getGeminiBaseDir should return ~/.gemini/antigravity', () => {
+    test('getGeminiBaseDir should return ~/.gemini/antigravity-ide', () => {
         const result = getGeminiBaseDir();
-        const expected = path.join(homeDir, '.gemini', 'antigravity');
+        const expected = path.join(homeDir, '.gemini', 'antigravity-ide');
         assert.strictEqual(result, expected);
     });
 
@@ -33,33 +33,33 @@ suite('Paths Utils Test Suite', () => {
         assert.strictEqual(result, expected);
     });
 
-    test('getBrainDir should return ~/.gemini/antigravity/brain', () => {
+    test('getBrainDir should return ~/.gemini/antigravity-ide/brain', () => {
         const result = getBrainDir();
-        const expected = path.join(homeDir, '.gemini', 'antigravity', 'brain');
+        const expected = path.join(homeDir, '.gemini', 'antigravity-ide', 'brain');
         assert.strictEqual(result, expected);
     });
 
-    test('getConversationsDir should return ~/.gemini/antigravity/conversations', () => {
+    test('getConversationsDir should return ~/.gemini/antigravity-ide/conversations', () => {
         const result = getConversationsDir();
-        const expected = path.join(homeDir, '.gemini', 'antigravity', 'conversations');
+        const expected = path.join(homeDir, '.gemini', 'antigravity-ide', 'conversations');
         assert.strictEqual(result, expected);
     });
 
-    test('getMcpConfigPath should return ~/.gemini/antigravity/mcp_config.json', () => {
+    test('getMcpConfigPath should return ~/.gemini/config/mcp_config.json', () => {
         const result = getMcpConfigPath();
-        const expected = path.join(homeDir, '.gemini', 'antigravity', 'mcp_config.json');
+        const expected = path.join(homeDir, '.gemini', 'config', 'mcp_config.json');
         assert.strictEqual(result, expected);
     });
 
-    test('getBrowserAllowlistPath should return ~/.gemini/antigravity/browserAllowlist.txt', () => {
+    test('getBrowserAllowlistPath should return ~/.gemini/config/browserAllowlist.txt', () => {
         const result = getBrowserAllowlistPath();
-        const expected = path.join(homeDir, '.gemini', 'antigravity', 'browserAllowlist.txt');
+        const expected = path.join(homeDir, '.gemini', 'config', 'browserAllowlist.txt');
         assert.strictEqual(result, expected);
     });
 
-    test('getCodeTrackerActiveDir should return ~/.gemini/antigravity/code_tracker/active', () => {
+    test('getCodeTrackerActiveDir should return ~/.gemini/antigravity-ide/conversations', () => {
         const result = getCodeTrackerActiveDir();
-        const expected = path.join(homeDir, '.gemini', 'antigravity', 'code_tracker', 'active');
+        const expected = path.join(homeDir, '.gemini', 'antigravity-ide', 'conversations');
         assert.strictEqual(result, expected);
     });
 

@@ -6,7 +6,7 @@
     "Anthropic API key saved securely": "Anthropic API key saved securely",
     "Auto-Accept": "Auto-Accept",
     "Auto-Accept: OFF": "Auto-Accept: OFF",
-    "Auto-Accept: OFF - Manual approval required.": "Accettazione automatica: OFF - È richiesta l'approvazione manual.",
+    "Auto-Accept: OFF - Manual approval required.": "Accettazione automatica: OFF - È richiesta l'approvazione manuale.",
     "Auto-Accept: ON": "Auto-Accept: ON",
     "Auto-Accept: ON - Agent steps will be accepted automatically.": "Accettazione automatica: ON - I passaggi dell'agente verranno accettati automaticamente.",
     "Auto-clean completed. Before: {0}, After: {1}.": "Pulizia automatica completata. Prima: {0}, Dopo: {1}.",
@@ -68,6 +68,8 @@
     "Used": "Used",
     "User Profile": "User Profile",
     "View": "View",
-    "max": "max",
+    "consumed": "consumato",
+    "Each bar shows quota percentage points consumed per interval. Height = consumption intensity.": "Ogni barra mostra i punti percentuali di quota consumati per intervallo. Altezza = intensità di consumo.",
+    "percentage points": "punti percentuali",
     "✅ Success: Connection established on port {0} (CSRF: {1})": "✅ Successo: Connessione stabilita sulla porta {0} (CSRF: {1})"
 }

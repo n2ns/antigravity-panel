@@ -58,341 +58,37 @@ class VscodeConfigReader implements IConfigReader, vscode.Disposable {
 
 // Service instances (kept for debugging if needed)
 let scheduler: Scheduler;
+let bootTimeoutHandle: ReturnType<typeof setTimeout> | undefined;
+let isDeactivated = false;
 
 export async function activate(context: vscode.ExtensionContext): Promise<void> {
-  // Initialize Logger
+  // === Phase 0: Logger (infallible) ===
   initLogger(context);
   infoLog("Toolkit: Activating (MVVM Refactored)...");
 
-  // 1. Initialize Core & Configuration
-  const configReader = new VscodeConfigReader();
-  const configManager = new ConfigManager(configReader);
-  setDebugMode(configManager.get('system.debugMode', false));
-  context.subscriptions.push(configReader);
+  // Mutable service references — command closures capture these variables
+  // and read their current value at invocation time, not at registration time.
+  // This allows commands to be registered before services are initialized.
+  let configManager: ConfigManager | undefined;
+  let appViewModel: AppViewModel | undefined;
+  let cacheService: CacheService | undefined;
+  let storageService: StorageService | undefined;
 
-  // 2. Initialize Model Services
-  const strategyManager = new QuotaStrategyManager();
-  const storageService = new StorageService(context.globalState);
-  const cacheService = new CacheService();
-  const quotaService = new QuotaService(configManager);
-  const automationService = new AutomationService();
-  context.subscriptions.push(automationService);
-
-  // Register debug quota logging
-  quotaService.onUpdate((snapshot) => {
-    logQuotaSnapshot(snapshot);
-  });
-
-  // 3. Initialize ViewModel (The Brain)
-  const appViewModel = new AppViewModel(
-    quotaService,
-    cacheService,
-    storageService,
-    configManager,
-    strategyManager,
-    automationService
-  );
-  context.subscriptions.push(appViewModel);
-
-  // State for one-time notification
-  let hasShownNotification = false;
-
-  const MAX_BOOT_RETRY = 3;
-  const BOOT_RETRY_DELAY_MS = 5000;
-  let bootRetryCount = 0;
-
-  /**
-   * Boot server connection with external retry mechanism
-   * This provides an additional layer of retry on top of ProcessFinder's internal retries
-   */
-  async function bootServerConnection(): Promise<void> {
-    const processFinder = new ProcessFinder();
-
-    try {
-      // Enhanced diagnostics: Log connection attempt details
-      infoLog(`🔍 Attempting to connect to Antigravity language server (attempt ${bootRetryCount + 1}/${MAX_BOOT_RETRY + 1})...`);
-      const expectedIds = getExpectedWorkspaceIds();
-      if (expectedIds.length > 0) {
-        debugLog(`📁 Expected workspace IDs: ${JSON.stringify(expectedIds)}`);
-      } else {
-        debugLog(`⚠️  No workspace folders open - workspace ID matching disabled`);
-      }
-      debugLog(`🖥️  Platform: ${process.platform}, Arch: ${process.arch}`);
-      debugLog(`🔢 Process PID: ${process.pid}, PPID: ${process.ppid}`);
-
-      const serverInfo = await processFinder.detect();
-      const extVersion = context.extension.packageJSON.version;
-      const ideVersion = vscode.version;
-      const commonMeta = {
-        platform: process.platform,
-        arch: process.arch,
-        version: extVersion,
-        ideVersion,
-        processName: processFinder.getProcessName(),
-        osDetailedVersion: getDetailedOSVersion()
-      };
-
-      if (serverInfo) {
-        quotaService.setServerInfo(serverInfo);
-        appViewModel.setConnectionStatus('connected', null);
-        bootRetryCount = 0; // Reset on success
-
-        // Enhanced diagnostics: Log successful connection
-        infoLog(`✅ Connected to language server on port ${serverInfo.port}`);
-        debugLog(`🔑 CSRF Token: ${serverInfo.csrfToken.substring(0, 8)}...`);
-        debugLog(`📊 Connection stats: ${processFinder.attemptDetails.length} attempts, Protocol: ${processFinder.protocolUsed}`);
-        debugLog(`📡 Ports: ${processFinder.portsFromCmdline} from cmdline, ${processFinder.portsFromNetstat} from netstat`);
-
-        // Update UI and check for parsing errors
-        await appViewModel.refreshQuota();
-        // Final check for parsing errors if no higher-level notification was shown
-        if (!hasShownNotification && quotaService.parsingError) {
-          let message = vscode.l10n.t("Server data parsing error detected, some features limited");
-
-          // If it's an auth failure during quota fetch, show the login message
-          if (quotaService.parsingError.startsWith('AUTH_FAILED')) {
-            message = vscode.l10n.t("Please ensure you are logged into Antigravity IDE (Authentication failed).");
-          }
-
-          await FeedbackManager.showFeedbackNotification(message, {
-            ...commonMeta,
-            reason: "parsing_error",
-            parsingInfo: quotaService.parsingError
-          });
-          hasShownNotification = true;
-        }
-
-        infoLog("Server connection established successfully");
-      } else {
-        // ProcessFinder internal retries failed, try external retry
-        if (bootRetryCount < MAX_BOOT_RETRY) {
-          bootRetryCount++;
-          infoLog(`🔄 Boot retry ${bootRetryCount}/${MAX_BOOT_RETRY} in ${BOOT_RETRY_DELAY_MS / 1000}s...`);
-          appViewModel.setConnectionStatus('detecting', null);
-
-          setTimeout(() => {
-            bootServerConnection();
-          }, BOOT_RETRY_DELAY_MS);
-          return;
-        }
-
-        // All retries exhausted, show failure notification
-        bootRetryCount = 0;
-        appViewModel.setConnectionStatus('failed', processFinder.failureReason);
-
-        // Enhanced diagnostics: Log detailed failure information
-        warnLog(`❌ Connection failed. Reason: ${processFinder.failureReason || 'unknown'}`);
-        warnLog(`📊 Candidates found: ${processFinder.candidateCount}, Workspace mismatches: ${processFinder.skippedForWorkspace}`);
-        warnLog(`🔁 Internal retry attempts: ${processFinder.retryCount}, External retries: ${MAX_BOOT_RETRY}`);
-        if (processFinder.tokenPreview) {
-          debugLog(`🔑 Token preview found: ${processFinder.tokenPreview}...`);
-        }
-
-        if (hasShownNotification) return;
-
-        const reason = processFinder.failureReason || "unknown_failure";
-        const count = processFinder.candidateCount;
-        const attempts = processFinder.attemptDetails;
-
-        const messages: Record<string, string> = {
-          'no_process': vscode.l10n.t("Local server not found"),
-          'ambiguous': vscode.l10n.t("Local server not found, unable to get quota reference"),
-          'no_port': vscode.l10n.t("Server process found but no listening port detected"),
-          'auth_failed': vscode.l10n.t("Handshake with server failed (CSRF check failed)")
-        };
-
-        let message = messages[reason];
-        let parsingInfo: string | undefined;
-
-        // Smart decision: If it's a single server but auth failed, it's likely a login issue
-        if (reason === 'auth_failed' && count === 1) {
-          message = vscode.l10n.t("Please ensure you are logged into Antigravity IDE (Authentication failed).");
-        }
-
-        // Collect useful diagnostic info only
-        let attemptDetailsStr: string | undefined;
-        if (attempts.length > 0) {
-          parsingInfo = attempts
-            .map(a => `PID:${a.pid} Port:${a.port} Status:${a.statusCode || 'Failed'}${a.error ? ` (${a.error})` : ''}`)
-            .join('; ');
-          attemptDetailsStr = JSON.stringify(attempts.slice(0, 3)); // Limit to first 3 attempts
-        }
-
-        if (message) {
-          await FeedbackManager.showFeedbackNotification(message, {
-            ...commonMeta,
-            reason,
-            candidateCount: count,
-            parsingInfo,
-            attemptDetails: attemptDetailsStr,
-            // Enhanced diagnostics v2
-            tokenPreview: processFinder.tokenPreview,
-            portsFromCmdline: processFinder.portsFromCmdline,
-            portsFromNetstat: processFinder.portsFromNetstat,
-            protocolUsed: processFinder.protocolUsed,
-            retryCount: processFinder.retryCount,
-            bootRetryCount: MAX_BOOT_RETRY // Include external retry info
-          });
-          hasShownNotification = true;
-        }
-      }
-    } catch (e) {
-      errorLog("Server detection failed", e);
-
-      // Also retry on exception
-      if (bootRetryCount < MAX_BOOT_RETRY) {
-        bootRetryCount++;
-        infoLog(`Boot retry ${bootRetryCount}/${MAX_BOOT_RETRY} after error in ${BOOT_RETRY_DELAY_MS / 1000}s...`);
-        appViewModel.setConnectionStatus('detecting', null);
-
-        setTimeout(() => {
-          bootServerConnection();
-        }, BOOT_RETRY_DELAY_MS);
-        return;
-      }
-
-      bootRetryCount = 0;
-      appViewModel.setConnectionStatus('failed', null);
-    }
-  }
-
-  // Delay connection attempt to allow Language Server full initialization
-  // Server may take 30+ seconds to initialize (Unleash, auth, etc.)
-  // Connecting too early causes unnecessary retry cycles
-  const INITIAL_CONNECTION_DELAY_MS = 30000;
-  appViewModel.setConnectionStatus('detecting', null);
-  setTimeout(() => {
-    bootServerConnection();
-  }, INITIAL_CONNECTION_DELAY_MS);
-
-  // 4. Initialize View Components (The Face)
-  const sidebarProvider = new SidebarProvider(context.extensionUri, appViewModel);
-  context.subscriptions.push(
-    vscode.window.registerWebviewViewProvider(SidebarProvider.viewType, sidebarProvider),
-    sidebarProvider
-  );
-
-  const statusBar = new StatusBarManager(appViewModel, configManager);
-  context.subscriptions.push(statusBar);
-
-  // 5. Restore State & Initial Render
-  const restored = appViewModel.restoreFromCache();
-  if (restored) {
-    // If cache restoration success, View components will auto-update via ViewModel events
-    infoLog("State restored from cache");
-  } else {
-    statusBar.showLoading();
-  }
-
-  // Note: Initial quota refresh is handled by bootServerConnection() after connection is established
-  // Cache refresh can run independently since it doesn't require server connection
-  appViewModel.refreshCache().catch(e => errorLog("Initial cache refresh failed", e));
-
-  // 6. Register Scheduler & Polling
-  scheduler = new Scheduler({
-    onError: (taskName, error) => errorLog(`Task "${taskName}" failed`, error),
-  });
-
-  const config = configManager.getConfig();
-
-  // Polling: Quota Refresh
-  scheduler.register({
-    name: "refreshQuota",
-    interval: config['dashboard.refreshRate'] * 1000,
-    execute: () => appViewModel.refreshQuota(),
-    immediate: false, // Already did initial refresh
-  });
-
-  // State for notification cooldown
-  let lastAutoCleanNotificationTime = 0;
-
-  // Polling: Cache Check (for warnings and auto-clean)
-  scheduler.register({
-    name: "checkCache",
-    interval: config['cache.scanInterval'] * 1000,
-    execute: async () => {
-      const state = appViewModel.getState();
-      const currentConfig = configManager.getConfig();
-      const cacheMB = state.cache.totalSize / (1024 * 1024);
-      const thresholdMB = currentConfig['cache.warningSize'];
-
-      if (cacheMB > thresholdMB) {
-        // Option 1: Auto-Clean (if enabled)
-        if (currentConfig['cache.autoClean']) {
-          const beforeSize = formatBytes(state.cache.totalSize);
-          const result = await appViewModel.performAutoClean();
-          // performAutoClean already refreshes cache internally
-          if (result && result.deletedCount > 0) {
-            const now = Date.now();
-            // Show notification once per hour
-            if (now - lastAutoCleanNotificationTime > 3600 * 1000) {
-              const afterState = appViewModel.getState();
-              const afterSize = formatBytes(afterState.cache.totalSize);
-              const message = vscode.l10n.t("Auto-clean completed. Before: {0}, After: {1}.", beforeSize, afterSize);
-              const viewAction = vscode.l10n.t("View");
-
-              vscode.window.showInformationMessage(message, viewAction).then(selection => {
-                if (selection === viewAction) {
-                  const brainDirPath = cacheService.getBrainDirPath();
-                  vscode.env.openExternal(vscode.Uri.file(brainDirPath)).then(undefined, err => {
-                    errorLog("Failed to open brain directory", err);
-                  });
-                }
-              });
-              lastAutoCleanNotificationTime = now;
-            }
-          }
-          // Auto-clean handled, don't show manual warning
-          return;
-        }
-
-        // Option 2: Manual Warning (if auto-clean is OFF)
-        const lastWarned = storageService.getLastCacheWarningTime();
-        const now = Date.now();
-        // Warning once per hour
-        if (!lastWarned || now - lastWarned > 3600 * 1000) {
-          const viewAction = vscode.l10n.t("View");
-          const settingsAction = vscode.l10n.t("Settings");
-          vscode.window.showWarningMessage(
-            vscode.l10n.t("Cache size ({0}) exceeds threshold.", state.cache.formattedTotal),
-            viewAction,
-            settingsAction
-          ).then(selection => {
-            if (selection === viewAction) {
-              const brainDirPath = cacheService.getBrainDirPath();
-              vscode.env.openExternal(vscode.Uri.file(brainDirPath)).then(undefined, err => {
-                errorLog("Failed to open brain directory", err);
-              });
-            } else if (selection === settingsAction) {
-              vscode.commands.executeCommand("tfa.openSettings");
-            }
-          });
-          storageService.setLastCacheWarningTime(now);
-        }
-      }
-    },
-    immediate: false
-  });
-
-  scheduler.start("refreshQuota");
-  scheduler.start("checkCache");
-
-  // Config listener to update scheduler
-  configReader.onConfigChange((newConfig) => {
-    scheduler.updateInterval("refreshQuota", newConfig['dashboard.refreshRate'] * 1000);
-    scheduler.updateInterval("checkCache", newConfig['cache.scanInterval'] * 1000);
-    setDebugMode(newConfig['system.debugMode']);
-
-    // Also trigger a refresh on config change to update UI view modes
-    appViewModel.onConfigurationChanged();
-  }, configManager);
-
-  // 7. Register Commands (Delegating to VM/View)
+  // === Phase 1: Register Commands FIRST ===
+  // Guarantees "command not found" never happens, even if Phase 2 throws.
+  // Commands that depend on services use a null-guard and show a user-friendly
+  // "still initializing" message instead of the cryptic VS Code error.
   context.subscriptions.push(
     vscode.commands.registerCommand("tfa.openPanel", () => {
       vscode.commands.executeCommand(`workbench.view.extension.tfa-sidebar`);
     }),
     vscode.commands.registerCommand("tfa.refreshQuota", async () => {
+      if (!appViewModel) {
+        vscode.window.showWarningMessage(
+          vscode.l10n.t("Toolkit is still initializing or failed to start. Try reloading the window.")
+        );
+        return;
+      }
       await appViewModel.refreshQuota();
       vscode.window.showInformationMessage("Toolkit: Data Updated.");
     }),
@@ -414,8 +110,12 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
         vscode.window.showErrorMessage("Failed to reset Antigravity status updater.");
       }
     }),
-    vscode.commands.registerCommand("tfa.cleanCache", () => appViewModel.cleanCache()),
+    vscode.commands.registerCommand("tfa.cleanCache", () => {
+      if (!appViewModel) return;
+      appViewModel.cleanCache();
+    }),
     vscode.commands.registerCommand("tfa.showCacheSize", () => {
+      if (!appViewModel) return;
       const state = appViewModel.getState();
       vscode.window.showInformationMessage(`Cache size: ${state.cache.formattedTotal}`);
     }),
@@ -438,6 +138,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
       await vscode.commands.executeCommand('markdown.showPreview', disclaimerUri);
     }),
     vscode.commands.registerCommand("tfa.toggleAutoAccept", async () => {
+      if (!appViewModel) return;
       await appViewModel.toggleAutoAccept();
       const state = appViewModel.getState();
       if (state.automation.enabled) {
@@ -458,7 +159,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
         const finder = new ProcessFinder();
         const start = Date.now();
 
-        // Use default detect (with retries) but for diagnostics, 
+        // Use default detect (with retries) but for diagnostics,
         // we might want to see the steps
         infoLog("Diagnostic run started...");
         const result = await finder.detect({ verbose: true });
@@ -468,7 +169,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
         const count = finder.candidateCount;
         const attempts = finder.attemptDetails;
 
-        let summary = "";
+        let summary: string;
         if (result) {
           summary = vscode.l10n.t("✅ Success: Connection established on port {0} (CSRF: {1})", result.port, result.csrfToken.substring(0, 8) + '...');
         } else {
@@ -534,10 +235,351 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     })
   );
 
-  infoLog("Toolkit: Activation Complete");
+  // === Phase 2: Initialize Services (fail-safe) ===
+  // Wrapped in try/catch so a transient initialization error (corrupted cache,
+  // config read failure, etc.) never prevents the extension from activating.
+  try {
+    // 1. Core & Configuration
+    const configReader = new VscodeConfigReader();
+    configManager = new ConfigManager(configReader);
+    setDebugMode(configManager.get('system.debugMode', false));
+    context.subscriptions.push(configReader);
+
+    // 2. Model Services
+    const strategyManager = new QuotaStrategyManager();
+    storageService = new StorageService(context.globalState);
+    cacheService = new CacheService();
+    const quotaService = new QuotaService(configManager);
+    const automationService = new AutomationService();
+    context.subscriptions.push(automationService);
+
+    // Register debug quota logging
+    quotaService.onUpdate((snapshot) => {
+      logQuotaSnapshot(snapshot);
+    });
+
+    // 3. ViewModel (The Brain)
+    appViewModel = new AppViewModel(
+      quotaService,
+      cacheService,
+      storageService,
+      configManager,
+      strategyManager,
+      automationService
+    );
+    context.subscriptions.push(appViewModel);
+
+    // State for one-time notification
+    let hasShownNotification = false;
+
+    const MAX_BOOT_RETRY = 7;
+    const BOOT_RETRY_DELAY_MS = 5000;
+    let bootRetryCount = 0;
+
+    /**
+     * Boot server connection with external retry mechanism
+     * This provides an additional layer of retry on top of ProcessFinder's internal retries
+     */
+    async function bootServerConnection(): Promise<void> {
+      if (isDeactivated) return; // Guard: don't run on disposed services
+      const processFinder = new ProcessFinder();
+
+      try {
+        // Enhanced diagnostics: Log connection attempt details
+        infoLog(`🔍 Attempting to connect to Antigravity language server (attempt ${bootRetryCount + 1}/${MAX_BOOT_RETRY + 1})...`);
+        const expectedIds = getExpectedWorkspaceIds();
+        if (expectedIds.length > 0) {
+          debugLog(`📁 Expected workspace IDs: ${JSON.stringify(expectedIds)}`);
+        } else {
+          debugLog(`⚠️  No workspace folders open - workspace ID matching disabled`);
+        }
+        debugLog(`🖥️  Platform: ${process.platform}, Arch: ${process.arch}`);
+        debugLog(`🔢 Process PID: ${process.pid}, PPID: ${process.ppid}`);
+
+        const serverInfo = await processFinder.detect();
+        const extVersion = context.extension.packageJSON.version;
+        const ideVersion = vscode.version;
+        const commonMeta = {
+          platform: process.platform,
+          arch: process.arch,
+          version: extVersion,
+          ideVersion,
+          processName: processFinder.getProcessName(),
+          osDetailedVersion: getDetailedOSVersion()
+        };
+
+        if (serverInfo) {
+          quotaService.setServerInfo(serverInfo);
+          appViewModel!.setConnectionStatus('connected', null);
+          bootRetryCount = 0; // Reset on success
+
+          // Enhanced diagnostics: Log successful connection
+          infoLog(`✅ Connected to language server on port ${serverInfo.port}`);
+          debugLog(`🔑 CSRF Token: ${serverInfo.csrfToken.substring(0, 8)}...`);
+          debugLog(`📊 Connection stats: ${processFinder.attemptDetails.length} attempts, Protocol: ${processFinder.protocolUsed}`);
+          debugLog(`📡 Ports: ${processFinder.portsFromCmdline} from cmdline, ${processFinder.portsFromNetstat} from netstat`);
+
+          // Update UI and check for parsing errors
+          await appViewModel!.refreshQuota();
+          // Final check for parsing errors if no higher-level notification was shown
+          if (!hasShownNotification && quotaService.parsingError) {
+            let message = vscode.l10n.t("Server data parsing error detected, some features limited");
+
+            // If it's an auth failure during quota fetch, show the login message
+            if (quotaService.parsingError.startsWith('AUTH_FAILED')) {
+              message = vscode.l10n.t("Please ensure you are logged into Antigravity IDE (Authentication failed).");
+            }
+
+            await FeedbackManager.showFeedbackNotification(message, {
+              ...commonMeta,
+              reason: "parsing_error",
+              parsingInfo: quotaService.parsingError
+            });
+            hasShownNotification = true;
+          }
+
+          infoLog("Server connection established successfully");
+        } else {
+          // ProcessFinder internal retries failed, try external retry
+          if (bootRetryCount < MAX_BOOT_RETRY) {
+            bootRetryCount++;
+            infoLog(`🔄 Boot retry ${bootRetryCount}/${MAX_BOOT_RETRY} in ${BOOT_RETRY_DELAY_MS / 1000}s...`);
+            appViewModel!.setConnectionStatus('detecting', null);
+
+            bootTimeoutHandle = setTimeout(() => {
+              bootServerConnection();
+            }, BOOT_RETRY_DELAY_MS);
+            return;
+          }
+
+          // All retries exhausted, show failure notification
+          bootRetryCount = 0;
+          appViewModel!.setConnectionStatus('failed', processFinder.failureReason);
+
+          // Enhanced diagnostics: Log detailed failure information
+          warnLog(`❌ Connection failed. Reason: ${processFinder.failureReason || 'unknown'}`);
+          warnLog(`📊 Candidates found: ${processFinder.candidateCount}, Workspace mismatches: ${processFinder.skippedForWorkspace}`);
+          warnLog(`🔁 Internal retry attempts: ${processFinder.retryCount}, External retries: ${MAX_BOOT_RETRY}`);
+          if (processFinder.tokenPreview) {
+            debugLog(`🔑 Token preview found: ${processFinder.tokenPreview}...`);
+          }
+
+          if (hasShownNotification) return;
+
+          const reason = processFinder.failureReason || "unknown_failure";
+          const count = processFinder.candidateCount;
+          const attempts = processFinder.attemptDetails;
+
+          const messages: Record<string, string> = {
+            'no_process': vscode.l10n.t("Local server not found"),
+            'ambiguous': vscode.l10n.t("Local server not found, unable to get quota reference"),
+            'no_port': vscode.l10n.t("Server process found but no listening port detected"),
+            'auth_failed': vscode.l10n.t("Handshake with server failed (CSRF check failed)")
+          };
+
+          let message = messages[reason];
+          let parsingInfo: string | undefined;
+
+          // Smart decision: If it's a single server but auth failed, it's likely a login issue
+          if (reason === 'auth_failed' && count === 1) {
+            message = vscode.l10n.t("Please ensure you are logged into Antigravity IDE (Authentication failed).");
+          }
+
+          // Collect useful diagnostic info only
+          let attemptDetailsStr: string | undefined;
+          if (attempts.length > 0) {
+            parsingInfo = attempts
+              .map(a => `PID:${a.pid} Port:${a.port} Status:${a.statusCode || 'Failed'}${a.error ? ` (${a.error})` : ''}`)
+              .join('; ');
+            attemptDetailsStr = JSON.stringify(attempts.slice(0, 3)); // Limit to first 3 attempts
+          }
+
+          if (message) {
+            await FeedbackManager.showFeedbackNotification(message, {
+              ...commonMeta,
+              reason,
+              candidateCount: count,
+              parsingInfo,
+              attemptDetails: attemptDetailsStr,
+              // Enhanced diagnostics v2
+              tokenPreview: processFinder.tokenPreview,
+              portsFromCmdline: processFinder.portsFromCmdline,
+              portsFromNetstat: processFinder.portsFromNetstat,
+              protocolUsed: processFinder.protocolUsed,
+              retryCount: processFinder.retryCount,
+              bootRetryCount: MAX_BOOT_RETRY // Include external retry info
+            });
+            hasShownNotification = true;
+          }
+        }
+      } catch (e) {
+        errorLog("Server detection failed", e);
+
+        // Also retry on exception
+        if (bootRetryCount < MAX_BOOT_RETRY) {
+          bootRetryCount++;
+          infoLog(`Boot retry ${bootRetryCount}/${MAX_BOOT_RETRY} after error in ${BOOT_RETRY_DELAY_MS / 1000}s...`);
+          appViewModel!.setConnectionStatus('detecting', null);
+
+          bootTimeoutHandle = setTimeout(() => {
+            bootServerConnection();
+          }, BOOT_RETRY_DELAY_MS);
+          return;
+        }
+
+        bootRetryCount = 0;
+        appViewModel!.setConnectionStatus('failed', null);
+      }
+    }
+
+    // Attempt connection immediately, fallback to background retry cycle if server is booting
+    const INITIAL_CONNECTION_DELAY_MS = 50;
+    appViewModel.setConnectionStatus('detecting', null);
+    setTimeout(() => {
+      bootServerConnection();
+    }, INITIAL_CONNECTION_DELAY_MS);
+
+    // 4. View Components (The Face)
+    const sidebarProvider = new SidebarProvider(context.extensionUri, appViewModel);
+    context.subscriptions.push(
+      vscode.window.registerWebviewViewProvider(SidebarProvider.viewType, sidebarProvider),
+      sidebarProvider
+    );
+
+    const statusBar = new StatusBarManager(appViewModel, configManager);
+    context.subscriptions.push(statusBar);
+
+    // 5. Restore State & Initial Render
+    const restored = appViewModel.restoreFromCache();
+    if (restored) {
+      // If cache restoration success, View components will auto-update via ViewModel events
+      infoLog("State restored from cache");
+    } else {
+      statusBar.showLoading();
+    }
+
+    // Note: Initial quota refresh is handled by bootServerConnection() after connection is established
+    // Cache refresh can run independently since it doesn't require server connection
+    appViewModel.refreshCache().catch(e => errorLog("Initial cache refresh failed", e));
+
+    // 6. Scheduler & Polling
+    scheduler = new Scheduler({
+      onError: (taskName, error) => errorLog(`Task "${taskName}" failed`, error),
+    });
+
+    const config = configManager.getConfig();
+
+    // Polling: Quota Refresh
+    scheduler.register({
+      name: "refreshQuota",
+      interval: config['dashboard.refreshRate'] * 1000,
+      execute: () => appViewModel!.refreshQuota(),
+      immediate: false, // Already did initial refresh
+    });
+
+    // State for notification cooldown
+    let lastAutoCleanNotificationTime = 0;
+
+    // Polling: Cache Check (for warnings and auto-clean)
+    scheduler.register({
+      name: "checkCache",
+      interval: config['cache.scanInterval'] * 1000,
+      execute: async () => {
+        const state = appViewModel!.getState();
+        const currentConfig = configManager!.getConfig();
+        const cacheMB = state.cache.totalSize / (1024 * 1024);
+        const thresholdMB = currentConfig['cache.warningSize'];
+
+        if (cacheMB > thresholdMB) {
+          // Option 1: Auto-Clean (if enabled)
+          if (currentConfig['cache.autoClean']) {
+            const beforeSize = formatBytes(state.cache.totalSize);
+            const result = await appViewModel!.performAutoClean();
+            // performAutoClean already refreshes cache internally
+            if (result && result.deletedCount > 0) {
+              const now = Date.now();
+              // Show notification once per hour
+              if (now - lastAutoCleanNotificationTime > 3600 * 1000) {
+                const afterState = appViewModel!.getState();
+                const afterSize = formatBytes(afterState.cache.totalSize);
+                const message = vscode.l10n.t("Auto-clean completed. Before: {0}, After: {1}.", beforeSize, afterSize);
+                const viewAction = vscode.l10n.t("View");
+
+                vscode.window.showInformationMessage(message, viewAction).then(selection => {
+                  if (selection === viewAction) {
+                    const brainDirPath = cacheService!.getBrainDirPath();
+                    vscode.env.openExternal(vscode.Uri.file(brainDirPath)).then(undefined, err => {
+                      errorLog("Failed to open brain directory", err);
+                    });
+                  }
+                });
+                lastAutoCleanNotificationTime = now;
+              }
+            }
+            // Auto-clean handled, don't show manual warning
+            return;
+          }
+
+          // Option 2: Manual Warning (if auto-clean is OFF)
+          const lastWarned = storageService!.getLastCacheWarningTime();
+          const now = Date.now();
+          // Warning once per hour
+          if (!lastWarned || now - lastWarned > 3600 * 1000) {
+            const viewAction = vscode.l10n.t("View");
+            const settingsAction = vscode.l10n.t("Settings");
+            vscode.window.showWarningMessage(
+              vscode.l10n.t("Cache size ({0}) exceeds threshold.", state.cache.formattedTotal),
+              viewAction,
+              settingsAction
+            ).then(selection => {
+              if (selection === viewAction) {
+                const brainDirPath = cacheService!.getBrainDirPath();
+                vscode.env.openExternal(vscode.Uri.file(brainDirPath)).then(undefined, err => {
+                  errorLog("Failed to open brain directory", err);
+                });
+              } else if (selection === settingsAction) {
+                vscode.commands.executeCommand("tfa.openSettings");
+              }
+            });
+            storageService!.setLastCacheWarningTime(now);
+          }
+        }
+      },
+      immediate: false
+    });
+
+    scheduler.start("refreshQuota");
+    scheduler.start("checkCache");
+
+    // Config listener to update scheduler
+    configReader.onConfigChange((newConfig) => {
+      scheduler.updateInterval("refreshQuota", newConfig['dashboard.refreshRate'] * 1000);
+      scheduler.updateInterval("checkCache", newConfig['cache.scanInterval'] * 1000);
+      setDebugMode(newConfig['system.debugMode']);
+
+      // Also trigger a refresh on config change to update UI view modes
+      appViewModel!.onConfigurationChanged();
+    }, configManager);
+
+    infoLog("Toolkit: Activation Complete");
+  } catch (e) {
+    // Phase 2 failed — services are not available, but commands are still registered
+    // and will show a user-friendly "still initializing" message.
+    const errMsg = e instanceof Error ? e.message : String(e);
+    errorLog("Extension service initialization failed", e);
+    warnLog(`⚠️ Toolkit commands are registered but services are unavailable: ${errMsg}`);
+    vscode.window.showErrorMessage(
+      vscode.l10n.t("Toolkit for Antigravity failed to initialize: {0}. Try reloading the window.", errMsg)
+    );
+  }
 }
 
 export function deactivate(): void {
+  isDeactivated = true;
+  if (bootTimeoutHandle) {
+    clearTimeout(bootTimeoutHandle);
+    bootTimeoutHandle = undefined;
+  }
   scheduler?.dispose();
   infoLog("Toolkit: Deactivated");
 }

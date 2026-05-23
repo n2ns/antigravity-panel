@@ -25,17 +25,16 @@ export function getConversationsDir(): string {
 }
 
 export function getMcpConfigPath(): string {
-  return path.join(getGeminiBaseDir(), "mcp_config.json");
+  return path.join(getGeminiRootDir(), "config", "mcp_config.json");
 }
 
 export function getBrowserAllowlistPath(): string {
-  return path.join(getGeminiBaseDir(), "browserAllowlist.txt");
-}
-
-export function getCodeTrackerActiveDir(): string {
-  return path.join(getGeminiBaseDir(), "code_tracker", "active");
+  return path.join(getGeminiRootDir(), "config", "browserAllowlist.txt");
 }
 
 export function getCodeContextsDir(): string {
-  return path.join(getGeminiBaseDir(), "code_tracker", "active");
+  return getConversationsDir();
 }
+
+/** @deprecated Use getCodeContextsDir() instead. Kept for backward compatibility. */
+export const getCodeTrackerActiveDir = getCodeContextsDir;

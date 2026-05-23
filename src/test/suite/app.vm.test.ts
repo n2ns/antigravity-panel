@@ -53,6 +53,7 @@ const defaultMockStorageService: IStorageService = {
     recordQuotaPoint: async () => { },
     calculateUsageBuckets: () => [],
     getMaxUsage: () => 0,
+    clearGroupHistory: () => { },
     setLastViewState: async () => { },
     getLastViewState: () => null,
     setLastSnapshot: async () => { },

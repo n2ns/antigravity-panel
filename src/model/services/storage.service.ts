@@ -126,6 +126,26 @@ export class StorageService implements IStorageService {
         return max || 1;
     }
 
+    /**
+     * Clear history points for a specific group so pp/h restarts from zero.
+     * Called when a quota reset is detected.
+     */
+    clearGroupHistory(groupId: string): void {
+        this.history = this.history.filter(p => {
+            if (p.usage[groupId] === undefined) return true;
+            // Remove this group's data from the point
+            const remaining = { ...p.usage };
+            delete remaining[groupId];
+            if (Object.keys(remaining).length === 0) return false;
+            p.usage = remaining;
+            return true;
+        });
+        // Don't await — fire and forget for performance
+        this.save();
+    }
+
+
+
     // ==================== View State Cache ====================
 
     getLastViewState<T>(): T | null {

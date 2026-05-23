@@ -23,5 +23,5 @@ export const SHARED_QUOTA_POOL_GROUP_IDS = ['claude', 'gpt'] as const;
 export const GEMINI_ROOT_DIR_NAME = ".gemini";
 
 /** Antigravity subdirectory name */
-export const ANTIGRAVITY_DIR_NAME = "antigravity";
+export const ANTIGRAVITY_DIR_NAME = "antigravity-ide";
 

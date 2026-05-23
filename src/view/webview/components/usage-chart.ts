@@ -19,19 +19,40 @@ export class UsageChart extends LitElement {
       return nothing;
     }
 
-    const { buckets, maxUsage, interval, prediction } = this.data;
+    const { buckets, maxUsage, interval, prediction, groupColors } = this.data;
     const t = (window as unknown as WindowWithVsCode).__TRANSLATIONS__;
 
     // Use actual max for scaling so bars never exceed container
     const effectiveMaxUsage = Math.max(maxUsage, 1);
 
+    // Calculate total consumption across all buckets for the header
+    let totalConsumption = 0;
+    for (const bucket of buckets) {
+      for (const item of bucket.items) {
+        totalConsumption += item.usage;
+      }
+    }
+
     const timelineText = `Last ${this.data.displayMinutes} min · ${interval}s/bar`;
+
+    // Build unique group entries for the legend (only groups with actual data)
+    const legendGroups = new Map<string, { label: string; color: string }>();
+    for (const bucket of buckets) {
+      for (const item of bucket.items) {
+        if (!legendGroups.has(item.groupId)) {
+          legendGroups.set(item.groupId, {
+            label: item.groupId,
+            color: (groupColors && groupColors[item.groupId]) || item.color || '#888'
+          });
+        }
+      }
+    }
 
     return html`
       <div class="usage-chart">
         <div class="usage-chart-title">
           <span>${t?.usageHistory || 'Usage History'}</span>
-          <span>${t?.max || 'max'}: ${maxUsage.toFixed(1)}%</span>
+          <span>${t?.totalConsumed || 'consumed'}: ${totalConsumption.toFixed(1)} pp</span>
         </div>
         <div class="usage-chart-bars">
           ${buckets.map(bucket => {
@@ -48,7 +69,9 @@ export class UsageChart extends LitElement {
           gradientStops.push(`${item.color} ${start}px ${end}px`);
 
           currentHeight = end;
-          tooltipParts.push(`${item.groupId}: ${item.usage.toFixed(1)}%`);
+          // Use group label from groupColors map for display; fall back to groupId
+          const label = item.groupId;
+          tooltipParts.push(`${label}: -${item.usage.toFixed(1)} pp`);
         }
       }
 
@@ -71,7 +94,7 @@ export class UsageChart extends LitElement {
           <div class="prediction-info" style="display: flex; gap: 6px;">
             ${prediction && prediction.usageRate > 0 ? html`
               <span data-tooltip="${t?.usageRateTooltip || 'Usage Rate: Average percentage of quota consumed per hour'}">
-                🔥${prediction.usageRate.toFixed(1)}%/h
+                🔥${prediction.usageRate.toFixed(1)} pp/h
               </span>
               <span class="legend-sep">·</span>
               <span data-tooltip="${t?.runwayTooltip || 'Runway: Estimated remaining time before quota is exhausted'}">
@@ -84,7 +107,20 @@ export class UsageChart extends LitElement {
             ` : nothing)}
           </div>
         </div>
+        ${legendGroups.size > 0 ? html`
+          <div class="usage-chart-group-legend"
+               data-tooltip="${t?.chartLegendTooltip || 'Each bar shows quota percentage points consumed per interval. Height = consumption intensity.'}">
+            ${Array.from(legendGroups.entries()).map(([, g]) => html`
+              <span class="legend-item">
+                <span class="legend-dot" style="background: ${g.color}"></span>
+                ${g.label}
+              </span>
+            `)}
+            <span class="legend-unit">pp = ${t?.ppExplanation || 'percentage points'}</span>
+          </div>
+        ` : nothing}
       </div>
     `;
   }
 }
+

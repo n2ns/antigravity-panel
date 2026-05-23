@@ -44,6 +44,8 @@ export interface CodeContext {
     id: string;
     name: string;
     size: number;
+    /** Most recent mtime across all files in the context group (epoch ms) */
+    lastModified?: number;
 }
 
 /** File item for tree views */
@@ -74,6 +76,8 @@ export interface UsageBucket {
     endTime: number;
     items: BucketItem[];
 }
+
+
 
 /** Cached task info for tree cache-first startup */
 export interface CachedTaskInfo {

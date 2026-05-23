@@ -68,6 +68,8 @@
     "Used": "Used",
     "User Profile": "User Profile",
     "View": "View",
-    "max": "max",
-    "✅ Success: Connection established on port {0} (CSRF: {1})": "✅ Sukces: Nawiązano połączenie na porcie {0} (CSRF: {1})"
+    "✅ Success: Connection established on port {0} (CSRF: {1})": "✅ Sukces: Nawiązano połączenie na porcie {0} (CSRF: {1})",
+    "consumed": "zużyto",
+    "Each bar shows quota percentage points consumed per interval. Height = consumption intensity.": "Każdy słupek pokazuje punkty procentowe zużytego limitu na interwał. Wysokość = intensywność zużycia.",
+    "percentage points": "punkty procentowe"
 }
