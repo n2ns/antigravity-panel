@@ -68,7 +68,6 @@ export class ConfigManager {
       // 2. Status Bar Settings
       "status.showQuota": this.reader.get<boolean>("status.showQuota", true),
       "status.showCache": this.reader.get<boolean>("status.showCache", true),
-      "status.displayFormat": this.reader.get<"combined" | "percentage" | "resetTime" | "used" | "remaining">("status.displayFormat", "combined"),
       "status.warningThreshold": this.reader.get<number>("status.warningThreshold", 40),
       "status.criticalThreshold": this.reader.get<number>("status.criticalThreshold", 20),
       "status.scope": this.reader.get<"primary" | "all">("status.scope", "all"),

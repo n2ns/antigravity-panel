@@ -82,7 +82,6 @@ suite('StatusBarManager Test Suite', () => {
             getConfig: () => ({
                 "status.showQuota": true,
                 "status.showCache": false,
-                "status.displayFormat": "percentage",
                 "status.warningThreshold": 30,
                 "status.criticalThreshold": 10
             })
@@ -101,54 +100,9 @@ suite('StatusBarManager Test Suite', () => {
         statusBarManager.dispose();
     });
 
-    test('should format correctly for "percentage"', () => {
-        mockConfigManager.getConfig = () => ({
-            "status.showQuota": true,
-            "status.displayFormat": "percentage"
-        });
-
+    test('should format status bar text in combined format', () => {
         statusBarManager.update();
         // Combined format: always shows shortLabel + percentage + resetTime
         assert.ok(mockStatusBarItem.text.includes('Fls 75% 2h 30m'), `Expected "Fls 75% 2h 30m", got "${mockStatusBarItem.text}"`);
-    });
-
-    test('should use combined format regardless of "used" setting', () => {
-        mockConfigManager.getConfig = () => ({
-            "status.showQuota": true,
-            "status.displayFormat": "used"
-        });
-
-        statusBarManager.update();
-        assert.ok(mockStatusBarItem.text.includes('Fls 75% 2h 30m'), `Expected combined format "Fls 75% 2h 30m", got "${mockStatusBarItem.text}"`);
-    });
-
-    test('should use combined format regardless of "resetTime" setting', () => {
-        mockConfigManager.getConfig = () => ({
-            "status.showQuota": true,
-            "status.displayFormat": "resetTime"
-        });
-
-        statusBarManager.update();
-        assert.ok(mockStatusBarItem.text.includes('Fls 75% 2h 30m'), `Expected combined format "Fls 75% 2h 30m", got "${mockStatusBarItem.text}"`);
-    });
-
-    test('should use combined format regardless of "remaining" setting', () => {
-        mockConfigManager.getConfig = () => ({
-            "status.showQuota": true,
-            "status.displayFormat": "remaining"
-        });
-
-        statusBarManager.update();
-        assert.ok(mockStatusBarItem.text.includes('Fls 75% 2h 30m'), `Expected combined format "Fls 75% 2h 30m", got "${mockStatusBarItem.text}"`);
-    });
-
-    test('should use combined format for any displayFormat value', () => {
-        mockConfigManager.getConfig = () => ({
-            "status.showQuota": true,
-            "status.displayFormat": "unknown_format" as any
-        });
-
-        statusBarManager.update();
-        assert.ok(mockStatusBarItem.text.includes('Fls 75% 2h 30m'), `Expected combined format "Fls 75% 2h 30m", got "${mockStatusBarItem.text}"`);
     });
 });

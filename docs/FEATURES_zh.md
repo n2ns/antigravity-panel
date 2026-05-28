@@ -193,20 +193,22 @@
 
 | 设置项 | 默认值 | 说明 |
 |--------|--------|------|
-| `tfa.statusBarShowQuota` | `true` | 状态栏显示配额 |
-| `tfa.statusBarShowCache` | `true` | 状态栏显示缓存大小 |
-| `tfa.statusBarStyle` | `percentage` | 显示样式：percentage/resetTime/used/remaining |
-| `tfa.statusBarThresholdWarning` | `30` | 警告阈值（%） |
-| `tfa.statusBarThresholdCritical` | `10` | 严重阈值（%） |
-| `tfa.pollingInterval` | `90` | 配额刷新间隔（秒，最小 60） |
-| `tfa.quotaDisplayStyle` | `semi-arc` | 仪表盘样式：semi-arc (半圆弧) 或 classic-donut (圆环) |
-| `tfa.visualizationMode` | `groups` | 显示模式：groups/models |
-| `tfa.showGptQuota` | `false` | 显示 GPT 配额（与 Claude 共享） |
-| `tfa.historyDisplayMinutes` | `60` | 使用图表时间范围（10-120 分钟） |
-| `tfa.showUserInfoCard` | `true` | 显示用户信息卡片和积分条 |
-| `tfa.cacheCheckInterval` | `120` | 缓存检查间隔（秒，最小 30） |
-| `tfa.cacheWarningThreshold` | `500` | 缓存警告阈值（MB） |
-| `tfa.cacheHideEmptyFolders` | `false` | 树形视图隐藏空文件夹 |
-| `tfa.autoCleanCache` | `false` | 自动清理缓存 |
-| `tfa.debugMode` | `false` | 启用调试日志 |
+| `tfa.status.showQuota` | `true` | 状态栏显示配额 |
+| `tfa.status.showCache` | `true` | 状态栏显示缓存大小 |
+| `tfa.status.warningThreshold` | `40` | 警告阈值（%） |
+| `tfa.status.criticalThreshold` | `20` | 严重阈值（%） |
+| `tfa.status.scope` | `all` | 状态栏配额范围：显示"all"所有模型组或仅显示"primary"当前选中的模型 |
+| `tfa.dashboard.refreshRate` | `120` | 配额刷新间隔（秒，最小 30） |
+| `tfa.dashboard.gaugeStyle` | `semi-arc` | 仪表盘样式：semi-arc (半圆弧) 或 classic-donut (圆环) |
+| `tfa.dashboard.viewMode` | `groups` | 显示模式：groups/models |
+| `tfa.dashboard.includeSecondaryModels` | `false` | 显示 GPT 配额（与 Claude 共享配额池） |
+| `tfa.dashboard.historyRange` | `90` | 使用图表时间范围（10-120 分钟） |
+| `tfa.dashboard.showUserInfoCard` | `true` | 侧边栏显示用户信息卡片 |
+| `tfa.dashboard.showCreditsCard` | `true` | 侧边栏显示 AI 额度卡片 |
+| `tfa.cache.scanInterval` | `120` | 缓存检查间隔（秒，最小 30） |
+| `tfa.cache.warningSize` | `500` | 缓存警告阈值（MB） |
+| `tfa.cache.hideEmptyFolders` | `false` | 树形视图隐藏空文件夹 |
+| `tfa.cache.autoClean` | `true` | 自动清理缓存 |
+| `tfa.system.debugMode` | `false` | 启用调试日志 |
+
 

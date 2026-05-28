@@ -290,8 +290,6 @@ export interface TfaConfig {
   "status.showQuota": boolean;
   /** Whether to show cache size in status bar */
   "status.showCache": boolean;
-  /** Status bar display format */
-  "status.displayFormat": "combined" | "percentage" | "resetTime" | "resetTimestamp" | "used" | "remaining";
   /** Status bar warning threshold (%) */
   "status.warningThreshold": number;
   /** Status bar critical threshold (%) */

@@ -191,20 +191,22 @@ English | [中文文档](FEATURES_zh.md)
 
 | Setting | Default | Description |
 |---------|---------|-------------|
-| `tfa.statusBarShowQuota` | `true` | Show quota in status bar |
-| `tfa.statusBarShowCache` | `true` | Show cache size in status bar |
-| `tfa.statusBarStyle` | `percentage` | Display style: percentage/resetTime/used/remaining |
-| `tfa.statusBarThresholdWarning` | `30` | Warning threshold (%) |
-| `tfa.statusBarThresholdCritical` | `10` | Critical threshold (%) |
-| `tfa.pollingInterval` | `90` | Quota refresh interval (seconds, min 60) |
-| `tfa.quotaDisplayStyle` | `semi-arc` | Gauge style: semi-arc or classic-donut |
-| `tfa.visualizationMode` | `groups` | Display mode: groups/models |
-| `tfa.showGptQuota` | `false` | Show GPT quota (shares with Claude) |
-| `tfa.historyDisplayMinutes` | `60` | Usage chart time range (10-120 min) |
-| `tfa.showUserInfoCard` | `true` | Show user info card and credits bar |
-| `tfa.cacheCheckInterval` | `120` | Cache check interval (seconds, min 30) |
-| `tfa.cacheWarningThreshold` | `500` | Cache warning threshold (MB) |
-| `tfa.cacheHideEmptyFolders` | `false` | Hide empty folders in tree views |
-| `tfa.autoCleanCache` | `false` | Auto-clean cache |
-| `tfa.debugMode` | `false` | Enable debug logging |
+| `tfa.status.showQuota` | `true` | Show quota in status bar |
+| `tfa.status.showCache` | `true` | Show cache size in status bar |
+| `tfa.status.warningThreshold` | `40` | Warning threshold (%) |
+| `tfa.status.criticalThreshold` | `20` | Critical threshold (%) |
+| `tfa.status.scope` | `all` | Show quotas for "all" available model groups or only the "primary" active model |
+| `tfa.dashboard.refreshRate` | `120` | Quota refresh interval (seconds, min 30) |
+| `tfa.dashboard.gaugeStyle` | `semi-arc` | Gauge style: semi-arc or classic-donut |
+| `tfa.dashboard.viewMode` | `groups` | Display mode: groups/models |
+| `tfa.dashboard.includeSecondaryModels` | `false` | Show GPT quota (shares pool with Claude) |
+| `tfa.dashboard.historyRange` | `90` | Usage chart time range (10-120 min) |
+| `tfa.dashboard.showUserInfoCard` | `true` | Show user info card in sidebar |
+| `tfa.dashboard.showCreditsCard` | `true` | Show credits card in sidebar |
+| `tfa.cache.scanInterval` | `120` | Cache check interval (seconds, min 30) |
+| `tfa.cache.warningSize` | `500` | Cache warning threshold (MB) |
+| `tfa.cache.hideEmptyFolders` | `false` | Hide empty folders in tree views |
+| `tfa.cache.autoClean` | `true` | Auto-clean cache |
+| `tfa.system.debugMode` | `false` | Enable debug logging |
+
 

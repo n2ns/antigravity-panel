@@ -93,11 +93,6 @@ suite('ConfigManager Test Suite', () => {
       assert.strictEqual(config["status.showQuota"], true);
     });
 
-    test('should use default for statusBarStyle', () => {
-      const config = configManager.getConfig();
-      assert.strictEqual(config["status.displayFormat"], 'combined');
-    });
-
     test('should use default for visualizationMode', () => {
       const config = configManager.getConfig();
       assert.strictEqual(config["dashboard.viewMode"], 'groups');
@@ -124,12 +119,6 @@ suite('ConfigManager Test Suite', () => {
       mockReader.set('status.showQuota', false);
       const config = configManager.getConfig();
       assert.strictEqual(config["status.showQuota"], false);
-    });
-
-    test('should read custom statusBarStyle', () => {
-      mockReader.set('status.displayFormat', 'resetTime');
-      const config = configManager.getConfig();
-      assert.strictEqual(config["status.displayFormat"], 'resetTime');
     });
 
     test('should read custom visualizationMode', () => {
