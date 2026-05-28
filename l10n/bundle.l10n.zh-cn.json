@@ -68,6 +68,8 @@
     "Used": "Used",
     "User Profile": "User Profile",
     "View": "View",
-    "max": "max",
-    "✅ Success: Connection established on port {0} (CSRF: {1})": "✅ 成功：已在端口 {0} 建立连接 (CSRF: {1})"
+    "✅ Success: Connection established on port {0} (CSRF: {1})": "✅ 成功：已在端口 {0} 建立连接 (CSRF: {1})",
+    "consumed": "已消耗",
+    "Each bar shows quota percentage points consumed per interval. Height = consumption intensity.": "每根柱状图显示每个时间间隔内消耗的配额百分点。高度 = 消耗强度。",
+    "percentage points": "百分点"
 }

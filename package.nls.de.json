@@ -45,6 +45,7 @@
     "config.status.showCache.description": "Antigravity IDE Cache-Größe in der Statusleiste anzeigen",
     "config.status.showQuota.description": "Kontingentinformationen in der Statusleiste anzeigen",
     "config.status.warningThreshold.description": "Warnfarbe anzeigen, wenn das Kontingent unter diesen Prozentsatz fällt",
+    "config.statusBarStyle.combined": "Prozentsatz + Reset-Zeit kombiniert anzeigen (z.B. 75% 2h 30m)",
     "config.statusBarStyle.percentage": "Verbleibendes Kontingent als Prozentsatz anzeigen (z.B. 75%)",
     "config.statusBarStyle.remaining": "Verbleibendes Kontingent anzeigen (z.B. 75/100)",
     "config.statusBarStyle.resetTime": "Zeit bis zum Zurücksetzen des Kontingents anzeigen (z.B. 2h 30m)",

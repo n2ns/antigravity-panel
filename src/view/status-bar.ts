@@ -9,7 +9,6 @@ import { AppViewModel } from "../view-model/app.vm";
 import { StatusBarData, StatusBarGroupItem } from "../view-model/types";
 import { ConfigManager } from "../shared/config/config_manager";
 import { formatBytes } from "../shared/utils/format";
-import { TfaConfig } from "../shared/utils/types";
 
 export class StatusBarManager implements vscode.Disposable {
     private item: vscode.StatusBarItem;
@@ -61,7 +60,6 @@ export class StatusBarManager implements vscode.Disposable {
                 cache,
                 config["status.showQuota"],
                 config["status.showCache"],
-                config["status.displayFormat"],
                 config["status.scope"],
                 config["status.warningThreshold"],
                 config["status.criticalThreshold"],
@@ -77,8 +75,7 @@ export class StatusBarManager implements vscode.Disposable {
         cache: { totalSize: number } | null,
         showQuota: boolean,
         showCache: boolean,
-        statusBarStyle: TfaConfig['status.displayFormat'],
-        scope: TfaConfig['status.scope'],
+        scope: 'primary' | 'all',
         warningThreshold: number,
         criticalThreshold: number,
         includeSecondaryModels: boolean
@@ -93,15 +90,15 @@ export class StatusBarManager implements vscode.Disposable {
 
         if (showQuota) {
             if (scope === 'all' && visibleGroups.length > 0) {
-                // Display all visible groups
+                // Display all visible groups with percentage + reset time combined
                 visibleGroups.forEach(group => {
                     const statusEmoji = this.getStatusEmoji(
                         group.percentage,
                         warningThreshold,
                         criticalThreshold
                     );
-                    const displayText = this.formatQuotaDisplay(group, statusBarStyle);
-                    parts.push(`${statusEmoji} ${displayText}`);
+                    const combinedText = this.formatCombinedDisplay(group);
+                    parts.push(`${statusEmoji} ${combinedText}`);
                 });
             } else {
                 // Default: Display primary only (if it's not hidden)
@@ -112,8 +109,8 @@ export class StatusBarManager implements vscode.Disposable {
                         warningThreshold,
                         criticalThreshold
                     );
-                    const displayText = this.formatQuotaDisplay(primary, statusBarStyle);
-                    parts.push(`${statusEmoji} ${displayText}`);
+                    const combinedText = this.formatCombinedDisplay(primary);
+                    parts.push(`${statusEmoji} ${combinedText}`);
                 }
             }
 
@@ -125,7 +122,7 @@ export class StatusBarManager implements vscode.Disposable {
         }
 
         if (showCache && cache) {
-            parts.push(formatBytes(cache.totalSize));
+            parts.push(`💿 ${formatBytes(cache.totalSize)}`);
             tooltipRows.push(`| 💿 Cache | ${formatBytes(cache.totalSize)} |  | |`);
         }
 
@@ -142,7 +139,7 @@ export class StatusBarManager implements vscode.Disposable {
         }
 
         if (parts.length === 0) {
-            this.item.text = "$(check) TFA"; // Use check icon if nothing to show but bar is enabled, or just TFA
+            this.item.text = "$(check) TFA";
         } else {
             this.item.text = parts.join(" | ");
         }
@@ -161,51 +158,12 @@ export class StatusBarManager implements vscode.Disposable {
         this.item.show();
     }
 
-    private formatQuotaDisplay(
-        group: StatusBarGroupItem,
-        style: TfaConfig['status.displayFormat']
-    ): string {
-        switch (style) {
-            case 'resetTime':
-                // Display time until reset, e.g., "Flash 2h 30m" or "Flash Ready"
-                return `${group.shortLabel} ${group.resetTime}`;
-
-            case 'resetTimestamp':
-                // Display absolute reset time
-                if (group.resetDate) {
-                    const date = group.resetDate;
-                    const now = new Date();
-                    const isToday = now.getDate() === date.getDate() &&
-                        now.getMonth() === date.getMonth() &&
-                        now.getFullYear() === date.getFullYear();
-
-                    const timeFormatter = new Intl.DateTimeFormat(undefined, { hour: '2-digit', minute: '2-digit', hour12: false });
-                    const timeStr = timeFormatter.format(date);
-
-                    if (isToday) {
-                        return `${group.shortLabel} ${timeStr}`;
-                    } else {
-                        const dateFormatter = new Intl.DateTimeFormat(undefined, { month: '2-digit', day: '2-digit' });
-                        return `${group.shortLabel} ${dateFormatter.format(date)} ${timeStr}`;
-                    }
-                }
-                // Fallback if Date is missing
-                return `${group.shortLabel} ${group.resetTime}`;
-
-            case 'used':
-                // Display used amount formatted as fraction (e.g., "25/100")
-                // Since API provides percentage, we map 1% to 1 unit of 100
-                return `${group.shortLabel} ${100 - group.percentage}/100`;
-
-            case 'remaining':
-                // Display remaining amount formatted as fraction (e.g., "75/100")
-                return `${group.shortLabel} ${group.percentage}/100`;
-
-            case 'percentage':
-            default:
-                // Default: display remaining percentage
-                return `${group.shortLabel} ${group.percentage}%`;
-        }
+    /**
+     * Combined display: always shows shortLabel + percentage + reset time
+     * Example: "Flash 75% 2h 30m" or "Pro 100% Ready"
+     */
+    private formatCombinedDisplay(group: StatusBarGroupItem): string {
+        return `${group.shortLabel} ${group.percentage}% ${group.resetTime}`;
     }
 
     private getStatusEmoji(

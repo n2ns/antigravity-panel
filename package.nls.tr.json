@@ -45,6 +45,7 @@
     "config.status.showCache.description": "Durum çubuğunda Antigravity IDE önbellek boyutunu göster",
     "config.status.showQuota.description": "Durum çubuğunda kota bilgisini göster",
     "config.status.warningThreshold.description": "Kota bu yüzdenin altına düştüğünde uyarı rengini göster",
+    "config.statusBarStyle.combined": "Y�zde + sifirlanma s�resi birlikte g�ster (�rn. %75 2sa 30dk)",
     "config.statusBarStyle.percentage": "Kalan kotayı yüzde olarak göster (örneğin: %75)",
     "config.statusBarStyle.remaining": "Kalan kota miktarını göster (örneğin: 75/100)",
     "config.statusBarStyle.resetTime": "Kota sıfırlanana kadar kalan süreyi göster (örneğin: 2sa 30dk)",

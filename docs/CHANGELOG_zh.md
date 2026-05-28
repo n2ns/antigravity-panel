@@ -1,7 +1,24 @@
 [English](../CHANGELOG.md) | 中文文档
 
 # 更新日志
- 
+
+## [2.6.0] - 2026-05-23
+
+### 新增
+
+- **瞬时启动连接**：绕过启动延迟（将延迟从 30s 缩短至 50ms），在重载/启动时即时显示本地配额指标，并结合扩展的后台重试周期（最多 7 次重试 / 35s 窗口）以优雅地适应慢冷启动。
+- **专用集成测试运行器**：添加了新的运行器脚本 `src/test/runServerTests.ts`，恢复了 `npm run test:server` 脚本的功能，允许开发人员进行环境隔离测试。
+
+### 修复
+
+- **命令稳定性架构**：重构了 `src/extension.ts` 中的 `activate()`，在 Phase 2 服务初始化之前，于 Phase 1 同步注册所有贡献的命令。这完全解决了在慢启动或握手失败期间反复出现的 `command 'tfa.openSettings' not found` 及其他命令未找到错误。
+- **vsce 打包错误**：将 `package.json` 中的 `devDependencies` 里的 `@types/vscode` 版本调整为 `^1.104.0`，以匹配 `engines.vscode` 配置，满足 vsce 打包要求。
+- **意大利语本地化审计**：检查并完整补齐了意大利语 NLS 文件（`package.nls.it.json` 和 `l10n/bundle.l10n.it.json`）。修复了 UI 翻译中的微小拼写错误并纠正了刷新率约束不匹配问题。
+
+### 改进
+
+- **开发人员文档**：在 `README.md` 中新增了全面的 `## 🏗️ Development & Testing` 章节，概述了开发环境设置、生产/监听编译、单元/集成测试和 `.vsix` 打包流程。
+
 ## [2.5.13] - 2026-03-30
 
 ### 修复

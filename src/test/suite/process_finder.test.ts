@@ -84,7 +84,7 @@ suite("ProcessFinder Test Suite", () => {
   test("should return null when no process found", async () => {
     finder.setMockResult(null);
 
-    const result = await finder.detect({ attempts: 1 });
+    const result = await finder.detect({ attempts: 1, skipAmbientDiscovery: true });
 
     assert.strictEqual(result, null);
     assert.strictEqual(finder.tryDetectCallCount, 1);
@@ -119,7 +119,7 @@ suite("ProcessFinder Test Suite", () => {
     // Always returns null
     finder.setMockResult(null);
 
-    const result = await finder.detect({ attempts: 3, baseDelay: 10 });
+    const result = await finder.detect({ attempts: 3, baseDelay: 10, skipAmbientDiscovery: true });
 
     assert.strictEqual(result, null);
     assert.strictEqual(
@@ -137,7 +137,7 @@ suite("ProcessFinder Test Suite", () => {
       null, // Last attempt returns null
     ]);
 
-    const result = await finder.detect({ attempts: 3, baseDelay: 10 });
+    const result = await finder.detect({ attempts: 3, baseDelay: 10, skipAmbientDiscovery: true });
 
     assert.strictEqual(result, null);
     assert.strictEqual(finder.tryDetectCallCount, 3);

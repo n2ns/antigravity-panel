@@ -43,19 +43,27 @@ sidebar-footer {
 }
 
 /* Sidebar Tagline - Engraved Nameplate Effect */
-.sidebar-tagline {
-    text-align: center;
-    font-size: 0.75rem;
-    font-style: italic;
-    color: var(--vscode-foreground);
-    padding: 4px 16px 12px;
-    opacity: 0.5;
-    width: 100%;
-    box-sizing: border-box;
-    margin-top: 0;
+.sidebar-meta-container {
     background: color-mix(in srgb, var(--vscode-foreground) 5%, transparent);
     border-radius: 4px;
+    margin: 4px 14px 10px 14px;
+    padding: 6px 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+}
+
+.sidebar-tagline,
+.sidebar-version {
+    text-align: center;
+    font-size: 0.72rem;
+    font-style: italic;
+    font-family: inherit;
+    color: var(--vscode-foreground);
+    opacity: 0.5;
     letter-spacing: 0.5px;
+    line-height: 1.2;
 }
 
 /* Credits Bar Styles - Card wrapper */

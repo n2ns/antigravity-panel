@@ -85,16 +85,9 @@ export class AutomationService implements IAutomationService, vscode.Disposable 
 
     /**
      * Injection script with Webview Guard — only runs inside the agent panel
-     */
-    private getClickerScript(): string {
+     */    private getClickerScript(): string {
         return `
             (() => {
-                // Webview Guard: only execute inside the Antigravity agent panel
-                if (!document.querySelector('.react-app-container')) return;
-
-                const TARGET_TOKENS = ['accept all', 'accept', 'confirm', 'run', 'always allow', 'allow once', 'allow'];
-                const EXPANDER_TOKENS = ['requires input', 'expand'];
-
                 const getAllRoots = (root = document) => {
                     let roots = [root];
                     try {
@@ -111,11 +104,37 @@ export class AutomationService implements IAutomationService, vscode.Disposable 
                     return roots;
                 };
 
+                const roots = getAllRoots();
+
+                // Webview Guard: check if any of the roots contains the Antigravity Agent Panel container
+                let isAgentPanel = false;
+                for (const root of roots) {
+                    if (
+                        root.querySelector('.react-app-container') || 
+                        root.querySelector('.agent-panel') || 
+                        root.querySelector('#react-app-container') ||
+                        root.querySelector('.antigravity-agent-panel') ||
+                        root.querySelector('[data-testid="agent-panel"]')
+                    ) {
+                        isAgentPanel = true;
+                        break;
+                    }
+                }
+                if (!isAgentPanel) return;
+
                 const clickElement = (el) => {
                     try {
                         el.click();
                         const rect = el.getBoundingClientRect();
-                        const opts = { view: window, bubbles: true, cancelable: true, clientX: rect.left + rect.width / 2, clientY: rect.top + rect.height / 2, buttons: 1 };
+                        const win = el.ownerDocument?.defaultView || window;
+                        const opts = { 
+                            view: win, 
+                            bubbles: true, 
+                            cancelable: true, 
+                            clientX: rect.left + rect.width / 2, 
+                            clientY: rect.top + rect.height / 2, 
+                            buttons: 1 
+                        };
                         el.dispatchEvent(new MouseEvent('mousedown', opts));
                         el.dispatchEvent(new MouseEvent('mouseup', opts));
                         el.dispatchEvent(new MouseEvent('click', opts));
@@ -125,55 +144,60 @@ export class AutomationService implements IAutomationService, vscode.Disposable 
                     if (p) { try { p.click(); } catch(e) {} }
                 };
 
-                const roots = getAllRoots();
+                const TARGET_TOKENS = ['accept all', 'accept', 'confirm', 'run', 'always allow', 'allow once', 'allow'];
+                const EXPANDER_TOKENS = ['requires input', 'expand'];
 
                 roots.forEach(root => {
-                    const walker = document.createTreeWalker(root, NodeFilter.SHOW_ELEMENT, null, false);
-                    let el;
-                    while (el = walker.nextNode()) {
-                        if (el.tagName === 'SCRIPT' || el.tagName === 'STYLE') continue;
+                    try {
+                        const doc = root.ownerDocument || root;
+                        const walker = doc.createTreeWalker(root, NodeFilter.SHOW_ELEMENT, null, false);
+                        let el;
+                        while (el = walker.nextNode()) {
+                            if (el.tagName === 'SCRIPT' || el.tagName === 'STYLE') continue;
 
-                        const rawText = (el.innerText || el.textContent || '').trim().toLowerCase();
-                        if (!rawText) continue;
+                            const rawText = (el.innerText || el.textContent || '').trim().toLowerCase();
+                            if (!rawText) continue;
 
-                        let isMatch = false;
-                        let isExpander = false;
+                            let isMatch = false;
+                            let isExpander = false;
 
-                        if (TARGET_TOKENS.includes(rawText)) isMatch = true;
-                        if (rawText.includes('always run') && rawText.length < 25) isMatch = true;
-                        if (rawText.startsWith('run alt')) isMatch = true;
+                            if (TARGET_TOKENS.includes(rawText)) isMatch = true;
+                            if (rawText.includes('always run') && rawText.length < 25) isMatch = true;
+                            if (rawText.startsWith('run alt')) isMatch = true;
 
-                        for (const token of EXPANDER_TOKENS) {
-                            if (rawText === token || (token !== 'expand' && rawText.includes(token))) {
-                                isMatch = true;
-                                isExpander = true;
+                            for (const token of EXPANDER_TOKENS) {
+                                if (rawText === token || (token !== 'expand' && rawText.includes(token))) {
+                                    isMatch = true;
+                                    isExpander = true;
+                                }
                             }
+
+                            // Noise filter: skip file names and code blocks
+                            if (rawText.includes('.js') || rawText.includes('.ts') || rawText.includes('.py')) isMatch = false;
+
+                            if (!isMatch) continue;
+                            if (el.dataset.autoAcceptClicked === 'true') continue;
+
+                            // Only click interactive elements (buttons or pointer-cursor elements)
+                            if (!isExpander) {
+                                let safe = false;
+                                if (el.tagName === 'BUTTON' || el.getAttribute('role') === 'button') safe = true;
+                                try {
+                                    const win = el.ownerDocument?.defaultView || window;
+                                    if (win.getComputedStyle(el).cursor === 'pointer') safe = true;
+                                } catch (e) {}
+                                if (!safe) continue;
+                                if (el.closest('pre') || el.closest('code')) continue;
+                            }
+
+                            el.dataset.autoAcceptClicked = 'true';
+                            if (isExpander) {
+                                setTimeout(() => { el.dataset.autoAcceptClicked = 'false'; }, 2000);
+                            }
+
+                            clickElement(el);
                         }
-
-                        // Noise filter: skip file names and code blocks
-                        if (rawText.includes('.js') || rawText.includes('.ts') || rawText.includes('.py')) isMatch = false;
-
-                        if (!isMatch) continue;
-                        if (el.dataset.autoAcceptClicked === 'true') continue;
-
-                        // Only click interactive elements (buttons or pointer-cursor elements)
-                        if (!isExpander) {
-                            let safe = false;
-                            if (el.tagName === 'BUTTON' || el.getAttribute('role') === 'button') safe = true;
-                            try {
-                                if (window.getComputedStyle(el).cursor === 'pointer') safe = true;
-                            } catch (e) {}
-                            if (!safe) continue;
-                            if (el.closest('pre') || el.closest('code')) continue;
-                        }
-
-                        el.dataset.autoAcceptClicked = 'true';
-                        if (isExpander) {
-                            setTimeout(() => { el.dataset.autoAcceptClicked = 'false'; }, 2000);
-                        }
-
-                        clickElement(el);
-                    }
+                    } catch (e) { }
                 });
             })()
         `;

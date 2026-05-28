@@ -45,6 +45,7 @@
     "config.status.showCache.description": "Pokaż rozmiar pamięci podręcznej Antigravity IDE na pasku stanu",
     "config.status.showQuota.description": "Pokaż informacje o limicie na pasku stanu",
     "config.status.warningThreshold.description": "Pokaż kolor ostrzegawczy, gdy limit spadnie poniżej tego procentu",
+    "config.statusBarStyle.combined": "Pokaz procent + czas do resetu lacznie (np. 75% 2h 30m)",
     "config.statusBarStyle.percentage": "Pokaż pozostały limit jako procent (np. 75%)",
     "config.statusBarStyle.remaining": "Pokaż ilość pozostałego limitu (np. 75/100)",
     "config.statusBarStyle.resetTime": "Pokaż czas do resetu limitu (np. 2h 30m)",

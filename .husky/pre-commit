@@ -1,2 +1,6 @@
+#!/usr/bin/env sh
+# Add common Node.js paths on Windows for GUI git clients
+export PATH="/c/Program Files/nodejs:/c/Program Files (x86)/nodejs:/c/Users/Utente/AppData/Roaming/npm:$PATH"
+
 npx lint-staged
 npm test

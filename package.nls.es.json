@@ -45,6 +45,7 @@
     "config.status.showCache.description": "Mostrar tamaño de caché de Antigravity IDE en la barra de estado",
     "config.status.showQuota.description": "Mostrar información de cuota en la barra de estado",
     "config.status.warningThreshold.description": "Mostrar color de advertencia cuando la cuota caiga por debajo de este porcentaje",
+    "config.statusBarStyle.combined": "Mostrar porcentaje + tiempo de reinicio combinados (ej: 75% 2h 30m)",
     "config.statusBarStyle.percentage": "Mostrar cuota restante como porcentaje (ej: 75%)",
     "config.statusBarStyle.remaining": "Mostrar cantidad de cuota restante (ej: 75/100)",
     "config.statusBarStyle.resetTime": "Mostrar tiempo hasta reinicio de cuota (ej: 2h 30m)",

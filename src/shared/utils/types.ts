@@ -169,6 +169,8 @@ export interface DetectOptions {
   baseDelay?: number;
   /** Whether to enable verbose logging */
   verbose?: boolean;
+  /** Whether to skip ambient (signature-based) rescue discovery */
+  skipAmbientDiscovery?: boolean;
 }
 
 /**
@@ -237,6 +239,8 @@ export interface CodeContext {
   id: string;
   name: string;
   size: number;
+  /** Most recent mtime across all files in the context group (epoch ms) */
+  lastModified?: number;
 }
 
 /**
@@ -287,7 +291,7 @@ export interface TfaConfig {
   /** Whether to show cache size in status bar */
   "status.showCache": boolean;
   /** Status bar display format */
-  "status.displayFormat": "percentage" | "resetTime" | "resetTimestamp" | "used" | "remaining";
+  "status.displayFormat": "combined" | "percentage" | "resetTime" | "resetTimestamp" | "used" | "remaining";
   /** Status bar warning threshold (%) */
   "status.warningThreshold": number;
   /** Status bar critical threshold (%) */

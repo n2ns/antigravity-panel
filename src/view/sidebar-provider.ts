@@ -9,6 +9,8 @@
  */
 
 import * as vscode from "vscode";
+import * as fs from "fs";
+import * as path from "path";
 import { AppViewModel } from "../view-model/app.vm";
 import { WebviewMessage } from "../view-model/types";
 import { getMcpConfigPath, getBrowserAllowlistPath, getGlobalRulesPath } from "../shared/utils/paths";
@@ -62,7 +64,7 @@ export class SidebarProvider implements vscode.WebviewViewProvider, vscode.Dispo
         this._postStateUpdate();
     }
 
-    private handleMessage(msg: WebviewMessage): void {
+    private async handleMessage(msg: WebviewMessage): Promise<void> {
         // Route messages to ViewModel or VS Code commands
         switch (msg.type) {
             // ViewModel operations
@@ -103,15 +105,24 @@ export class SidebarProvider implements vscode.WebviewViewProvider, vscode.Dispo
                     });
                 }
                 break;
-            case "openMcp":
-                vscode.commands.executeCommand("vscode.open", vscode.Uri.file(getMcpConfigPath()));
+            case "openMcp": {
+                const mcpPath = getMcpConfigPath();
+                await this.ensureFileExists(mcpPath, '{\n  "mcpServers": {}\n}\n');
+                vscode.commands.executeCommand("vscode.open", vscode.Uri.file(mcpPath));
                 break;
-            case "openBrowserAllowlist":
-                vscode.commands.executeCommand("vscode.open", vscode.Uri.file(getBrowserAllowlistPath()));
+            }
+            case "openBrowserAllowlist": {
+                const allowlistPath = getBrowserAllowlistPath();
+                await this.ensureFileExists(allowlistPath, '# Browser Allowlist\n# Add one URL pattern per line\n');
+                vscode.commands.executeCommand("vscode.open", vscode.Uri.file(allowlistPath));
                 break;
-            case "openRules":
-                vscode.commands.executeCommand("vscode.open", vscode.Uri.file(getGlobalRulesPath()));
+            }
+            case "openRules": {
+                const rulesPath = getGlobalRulesPath();
+                await this.ensureFileExists(rulesPath, '# Gemini Global Rules\n');
+                vscode.commands.executeCommand("vscode.open", vscode.Uri.file(rulesPath));
                 break;
+            }
             case "openUrl":
                 if (msg.path) {
                     vscode.env.openExternal(vscode.Uri.parse(msg.path));
@@ -199,13 +210,34 @@ export class SidebarProvider implements vscode.WebviewViewProvider, vscode.Dispo
                 mcp: vscode.l10n.t('MCP'),
                 allowlist: vscode.l10n.t('Allowlist'),
                 usageHistory: vscode.l10n.t('Usage History'),
-                max: vscode.l10n.t('max'),
+                totalConsumed: vscode.l10n.t('consumed'),
+                chartLegendTooltip: vscode.l10n.t('Each bar shows quota percentage points consumed per interval. Height = consumption intensity.'),
+                ppExplanation: vscode.l10n.t('percentage points'),
                 brain: vscode.l10n.t('Brain'),
                 codeTracker: vscode.l10n.t('Code Tracker'),
                 noTasksFound: vscode.l10n.t('No tasks found'),
                 noCacheFound: vscode.l10n.t('No code context cache')
             })
+            .setVersion(vscode.extensions.getExtension('n2ns.antigravity-panel')?.packageJSON?.version || '')
             .build();
+    }
+
+    /**
+     * Creates a file with default content if it doesn't exist.
+     * Also creates parent directories as needed.
+     */
+    private async ensureFileExists(filePath: string, defaultContent: string): Promise<void> {
+        try {
+            await fs.promises.access(filePath);
+        } catch {
+            try {
+                await fs.promises.mkdir(path.dirname(filePath), { recursive: true });
+                await fs.promises.writeFile(filePath, defaultContent, 'utf-8');
+            } catch (err) {
+                vscode.window.showErrorMessage(`Failed to create configuration file: ${err}`);
+                throw err;
+            }
+        }
     }
 
     dispose(): void {

@@ -68,3 +68,37 @@
     opacity: 0.4;
     margin: 0 2px;
 }
+
+/* Group color legend row */
+.usage-chart-group-legend {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 4px 10px;
+    margin-top: 5px;
+    padding-top: 4px;
+    border-top: 1px solid var(--vscode-widget-border, rgba(255, 255, 255, 0.06));
+    font-size: 0.75rem;
+    color: var(--vscode-descriptionForeground, rgba(255, 255, 255, 0.55));
+}
+
+.usage-chart-group-legend .legend-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+}
+
+.usage-chart-group-legend .legend-dot {
+    display: inline-block;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.usage-chart-group-legend .legend-unit {
+    margin-left: auto;
+    opacity: 0.6;
+    font-style: italic;
+    font-size: 0.7rem;
+}

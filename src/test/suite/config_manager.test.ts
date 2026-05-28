@@ -95,7 +95,7 @@ suite('ConfigManager Test Suite', () => {
 
     test('should use default for statusBarStyle', () => {
       const config = configManager.getConfig();
-      assert.strictEqual(config["status.displayFormat"], 'percentage');
+      assert.strictEqual(config["status.displayFormat"], 'combined');
     });
 
     test('should use default for visualizationMode', () => {

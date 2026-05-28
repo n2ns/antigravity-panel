@@ -53,9 +53,15 @@ export class WebviewHtmlBuilder {
     }
 
     private translations: Record<string, string> = {};
+    private version = '';
 
     setTranslations(translations: Record<string, string>): this {
         this.translations = translations;
+        return this;
+    }
+
+    setVersion(version: string): this {
+        this.version = version;
         return this;
     }
 
@@ -82,6 +88,7 @@ export class WebviewHtmlBuilder {
 <body>
   <script nonce="${nonce}">
     window.__TRANSLATIONS__ = ${JSON.stringify(this.translations)};
+    window.__VERSION__ = ${JSON.stringify(this.version)};
   </script>
   <sidebar-app></sidebar-app>
   <script nonce="${nonce}" type="module" src="${webviewUri}"></script>

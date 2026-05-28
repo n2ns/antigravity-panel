@@ -112,13 +112,15 @@ export class ProcessFinder {
       },
     }).then(async (result) => {
       if (!result) {
-        // Final effort: Try AmbientDiscovery (standalone fallback) after all retries exhausted (Issue #55)
-        warnLog("ProcessFinder: Retries exhausted. Attempting final deep rescue discovery...");
-        const rescue = new AmbientDiscovery();
-        const fallbackResult = await rescue.executeDiscovery();
-        if (fallbackResult) {
-          infoLog("ProcessFinder: AmbientDiscovery successfully identified a background connection.");
-          return fallbackResult;
+        if (!options.skipAmbientDiscovery) {
+          // Final effort: Try AmbientDiscovery (standalone fallback) after all retries exhausted (Issue #55)
+          warnLog("ProcessFinder: Retries exhausted. Attempting final deep rescue discovery...");
+          const rescue = new AmbientDiscovery();
+          const fallbackResult = await rescue.executeDiscovery();
+          if (fallbackResult) {
+            infoLog("ProcessFinder: AmbientDiscovery successfully identified a background connection.");
+            return fallbackResult;
+          }
         }
 
         errorLog(

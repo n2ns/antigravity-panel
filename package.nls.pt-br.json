@@ -45,6 +45,7 @@
     "config.status.showCache.description": "Mostrar tamanho do cache do Antigravity IDE na barra de status",
     "config.status.showQuota.description": "Mostrar informações de cota na barra de status",
     "config.status.warningThreshold.description": "Mostrar cor de aviso quando a cota cair abaixo desta porcentagem",
+    "config.statusBarStyle.combined": "Mostrar porcentagem + tempo de rein�cio combinados (ex: 75% 2h 30m)",
     "config.statusBarStyle.percentage": "Mostrar cota restante como porcentagem (ex: 75%)",
     "config.statusBarStyle.remaining": "Mostrar quantidade de cota restante (ex: 75/100)",
     "config.statusBarStyle.resetTime": "Mostrar tempo até o reinício da cota (ex: 2h 30m)",

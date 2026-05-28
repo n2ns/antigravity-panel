@@ -45,6 +45,7 @@
     "config.status.showCache.description": "在状态栏中显示 Antigravity IDE 缓存目录的大小",
     "config.status.showQuota.description": "在状态栏中显示配额百分比信息",
     "config.status.warningThreshold.description": "配额低于此百分比时显示警告颜色（默认：30%）",
+    "config.statusBarStyle.combined": "????????????(??:75% 2h 30m)",
     "config.statusBarStyle.percentage": "显示剩余配额百分比（例如：75%）",
     "config.statusBarStyle.remaining": "显示剩余配额（例如：75/100）",
     "config.statusBarStyle.resetTime": "显示配额重置倒计时（例如：2小时30分）",

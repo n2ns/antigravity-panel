@@ -17,7 +17,7 @@ import type {
 } from '../types.js';
 
 import './quota-dashboard.js';
-import './usage-chart.js';
+
 
 // Extend Window interface to include __TRANSLATIONS__
 declare global {
@@ -92,6 +92,8 @@ export class SidebarApp extends LitElement {
 
   @state()
   private _uiScale: number = 1.0;
+
+
 
   private _vscode = acquireVsCodeApi();
 
@@ -238,6 +240,7 @@ export class SidebarApp extends LitElement {
       this._uiScale = state.uiScale;
       document.documentElement.style.setProperty('--antigravity-font-scale', this._uiScale.toString());
     }
+
   }
 
   // ==================== Event Handlers (Light DOM simplified) ====================
@@ -297,7 +300,7 @@ export class SidebarApp extends LitElement {
 
   protected render() {
     return html`
-      <div class="scrollable-content" style="flex: 1; overflow-y: auto; overflow-x: hidden; min-height: 0;">
+      <div class="scrollable-content" style="flex: 1; overflow-y: auto; overflow-x: hidden; min-height: 0; scrollbar-gutter: stable;">
         ${this._connectionStatus === 'detecting' ? html`
           <div class="connection-hint info">
             <span class="codicon codicon-loading codicon-modifier-spin"></span>
@@ -330,8 +333,7 @@ export class SidebarApp extends LitElement {
           .quotas=${this._quotas} 
           .gaugeStyle=${this._gaugeStyle}
         ></quota-dashboard>
-        
-        <usage-chart .data=${this._chartData}></usage-chart>
+
         
         ${this._showCreditsCard ? html`
           <credits-bar
@@ -361,9 +363,11 @@ export class SidebarApp extends LitElement {
           ?collapsed=${this._contexts.collapsed}
           ?loading=${this._contexts.loading}
           .folders=${this._contexts.folders}
+          defaultSort="size"
           emptyText="${(window as unknown as WindowWithVsCode).__TRANSLATIONS__?.noCacheFound || 'No code context cache'}"
           @toggle=${this._onToggleContexts}
         ></folder-tree>
+
       </div>
 
       <sidebar-footer 

@@ -50,7 +50,7 @@ export class AmbientDiscovery {
 
     private async locateBySignature(): Promise<ProcessInfo[]> {
         const signature = "csrf_token";
-        let shellCmd = "";
+        let shellCmd: string;
 
         if (process.platform === "win32") {
             const psScript = `

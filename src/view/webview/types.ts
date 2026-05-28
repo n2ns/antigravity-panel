@@ -32,6 +32,8 @@ export interface UsageBucket {
 export interface UsageChartData {
   buckets: UsageBucket[];
   maxUsage: number;
+  /** Color mapping for each group ID (e.g. { 'gemini-flash': '#40C4FF' }) */
+  groupColors?: Record<string, string>;
   displayMinutes: number;
   interval: number;
   /** Prediction data (optional, calculated by ViewModel) */
@@ -40,7 +42,7 @@ export interface UsageChartData {
     groupId: string;
     /** Active group display name */
     groupLabel: string;
-    /** Usage rate (%/hour) */
+    /** Usage rate (pp/hour - percentage points consumed per hour) */
     usageRate: number;
     /** Estimated duration description (e.g. "~38h" or "Stable") */
     runway: string;
@@ -62,6 +64,8 @@ export interface FolderItem {
   id: string;
   label: string;
   size: string;
+  sizeBytes?: number;
+  lastModified?: number;
   files: FileItem[];
   expanded?: boolean;
 }
@@ -173,4 +177,5 @@ export interface VsCodeApi {
 export interface WindowWithVsCode {
   vscodeApi?: VsCodeApi;
   __TRANSLATIONS__?: Record<string, string>;
+  __VERSION__?: string;
 }
