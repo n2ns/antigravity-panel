@@ -341,6 +341,8 @@ Special thanks to our community contributors:
 *   [**@A-vrice**](https://github.com/A-vrice) - Japanese localization.
 *   [**@restinnotes**](https://github.com/restinnotes) - CDP Auto-Accept implementation.
 *   [**@AMDphreak**](https://github.com/AMDphreak) - Sidebar title fix, Gemini Flash/Pro grouping, quota reset window alignment with API cycles, and Claude+GPT shared pool display.
+*   [**@chonkydonkers**](https://github.com/chonkydonkers) - Display user tier available credits in status bar and sidebar.
+*   [**@vincenzofabiano92**](https://github.com/vincenzofabiano92) - Synchronous command registration, connection stability optimization, Italian NLS localization, and server integration test runner (v2.6.0).
 
 ## 🌐 Localization Policy
 

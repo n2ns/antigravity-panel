@@ -339,6 +339,8 @@ npm run package
 *   [**@simbaTmotsi**](https://github.com/simbaTmotsi) - 本地 LLM 提交信息生成器。
 *   [**@A-vrice**](https://github.com/A-vrice) - 日语本地化。
 *   [**@restinnotes**](https://github.com/restinnotes) - CDP Auto-Accept 实现。
+*   [**@chonkydonkers**](https://github.com/chonkydonkers) - 在状态栏和侧边栏中展示用户订阅层级的可用额度。
+*   [**@vincenzofabiano92**](https://github.com/vincenzofabiano92) - 同步命令注册、连接稳定性优化、意大利语本地化补全，并新增服务器集成测试运行器 (v2.6.0)。
 
 ## 🌐 本地化策略 (Localization Policy)
 
