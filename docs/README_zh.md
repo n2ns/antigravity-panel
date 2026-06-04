@@ -2,7 +2,7 @@
 
 # Toolkit for Antigravity
 
-> 轻松监控 AI 配额使用和管理缓存
+> 实时 AI 配额监控和缓存管理工具，专为 **Google Antigravity IDE** 设计 — 追踪 Gemini、Claude 和 GPT 使用情况，可视化消费趋势，并在一个集成侧边栏面板中管理对话缓存。
 
 [![Antigravity IDE](https://img.shields.io/badge/Antigravity-IDE-4285F4?style=flat)](https://antigravity.google)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](../LICENSE)
@@ -74,43 +74,6 @@
 - **代码上下文**: 按项目管理代码分析缓存
 - **智能清理**: 自动关闭相关编辑器标签页
 
-### ⚙️ 快速配置访问
-
-**一键访问重要设置**
-- 编辑全局规则
-- 配置 MCP 设置
-- 管理浏览器白名单
-
-### 🔄 服务恢复工具
-
-**内置故障排除功能**
-- **Restart**: 当 Agent 无响应时，重启后台语言服务（解决分析进度卡住）
-- **Reset**: 清除状态缓存，修复配额显示不更新的问题
-- **Reload**: 刷新 VS Code 窗口，解决界面显示异常或无响应
-
-
-### 🌐 全平台支持
-
-**跨平台兼容**
-- ✅ Windows
-- ✅ macOS
-- ✅ Linux
-
-**多语言界面**
-- English, 简体中文, 繁體中文, 日本語, Français, Deutsch, Español, Português (Brasil), Italiano, 한국어, Русский, Polski, Türkçe
-
-## 📦 安装
-
-### 从扩展市场安装
-
-1. 打开 **Antigravity IDE**
-2. 按 `Ctrl+Shift+X`（Windows/Linux）或 `Cmd+Shift+X`（macOS）打开扩展面板
-3. 搜索 `Toolkit for Antigravity`
-4. 点击 **安装**
-
-**或从网页安装：**
-- [扩展市场](https://marketplace.visualstudio.com/items?itemName=n2ns.antigravity-panel)
-- [Open VSX Registry](https://open-vsx.org/extension/n2ns/antigravity-panel)
 ### 🤖 自动接受 (Hands-free Mode)
 
 **简化你的工作流程**
@@ -160,6 +123,45 @@ pkill -f "Antigravity"
 - **格式**: Conventional commits (约定式) 或 Simple (简单) 风格
 
 > ⚠️ **隐私提示**: 你的暂存 Diff 将被发送到配置的 LLM API 以生成摘要。
+
+### ⚙️ 快速配置访问
+
+**一键访问重要设置**
+- 编辑全局规则
+- 配置 MCP 设置
+- 管理浏览器白名单
+
+### 🔄 服务恢复工具
+
+**内置故障排除功能**
+- **Restart**: 当 Agent 无响应时，重启后台语言服务（解决分析进度卡住）
+- **Reset**: 清除状态缓存，修复配额显示不更新的问题
+- **Reload**: 刷新 VS Code 窗口，解决界面显示异常或无响应
+
+
+### 🌐 全平台支持
+
+**跨平台兼容**
+- ✅ Windows
+- ✅ macOS
+- ✅ Linux
+
+**多语言界面**
+- English, 简体中文, 繁體中文, 日本語, Français, Deutsch, Español, Português (Brasil), Italiano, 한국어, Русский, Polski, Türkçe
+
+## 📦 安装
+
+### 从扩展市场安装
+
+1. 打开 **Antigravity IDE**
+2. 按 `Ctrl+Shift+X`（Windows/Linux）或 `Cmd+Shift+X`（macOS）打开扩展面板
+3. 搜索 `Toolkit for Antigravity`
+4. 点击 **安装**
+
+**或从网页安装：**
+- [扩展市场](https://marketplace.visualstudio.com/items?itemName=n2ns.antigravity-panel)
+- [Open VSX Registry](https://open-vsx.org/extension/n2ns/antigravity-panel)
+
 ### 从 GitHub Releases 手动安装
 
 如果扩展市场无法访问，或需要安装特定版本：

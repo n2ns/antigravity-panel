@@ -71,5 +71,6 @@
     "✅ Success: Connection established on port {0} (CSRF: {1})": "✅ 成功：已在連接埠 {0} 建立連線 (CSRF: {1})",
     "consumed": "已消耗",
     "Each bar shows quota percentage points consumed per interval. Height = consumption intensity.": "每根柱狀圖顯示每個時間間隔內消耗的配額百分點。高度 = 消耗強度。",
-    "percentage points": "百分點"
+    "percentage points": "百分點",
+    "Docs": "文件"
 }

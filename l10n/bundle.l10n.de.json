@@ -71,5 +71,6 @@
     "consumed": "verbraucht",
     "Each bar shows quota percentage points consumed per interval. Height = consumption intensity.": "Jeder Balken zeigt die verbrauchten Prozentpunkte pro Intervall. Höhe = Verbrauchsintensität.",
     "percentage points": "Prozentpunkte",
-    "✅ Success: Connection established on port {0} (CSRF: {1})": "✅ Erfolg: Verbindung auf Port {0} hergestellt (CSRF: {1})"
+    "✅ Success: Connection established on port {0} (CSRF: {1})": "✅ Erfolg: Verbindung auf Port {0} hergestellt (CSRF: {1})",
+    "Docs": "Dokumentation"
 }

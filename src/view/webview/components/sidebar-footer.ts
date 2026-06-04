@@ -9,6 +9,7 @@ import type { VsCodeApi, WindowWithVsCode } from '../types.js';
 /** GitHub repository URLs */
 const GITHUB_ISSUES_URL = 'https://github.com/n2ns/antigravity-panel/issues';
 const GITHUB_HOME_URL = 'https://github.com/n2ns/antigravity-panel';
+const GITHUB_DOCS_URL = 'https://github.com/n2ns/antigravity-panel#readme';
 
 @customElement('sidebar-footer')
 export class SidebarFooter extends LitElement {
@@ -128,6 +129,10 @@ export class SidebarFooter extends LitElement {
         <div class="collapsible-content">
           <!-- External Links (outside card) -->
           <div class="footer-links">
+            <button class="link-btn" @click=${() => this._openUrl(GITHUB_DOCS_URL)}>
+              <i class="codicon codicon-book"></i>
+              <span>${this._t.docs || 'Docs'}</span>
+            </button>
             <button class="link-btn" @click=${() => this._openUrl(GITHUB_ISSUES_URL)}>
               <i class="codicon codicon-bug"></i>
               <span>${this._t.reportIssue || 'Feedback'}</span>

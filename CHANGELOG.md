@@ -2,6 +2,21 @@ English | [中文文档](docs/CHANGELOG_zh.md)
 
 # Change Log
 
+## [2.6.1] - 2026-06-04
+
+### Added
+
+- **Docs Link in Sidebar**: Added a `📖 Docs` button to the sidebar footer that opens the full README documentation on GitHub. Localized in all 13 supported languages.
+
+### Improved
+
+- **Extension Discoverability**: Added `categories` (`Other`, `Visualization`) and `extensionKind` to `package.json` for better marketplace indexing. Added `bugs` and `qna` fields pointing to GitHub Issues and Discussions.
+- **Keywords**: Refined keywords — added `tfa`, `agp`, `AI Usage`, `Usage Monitor`, `Cache Manager`; removed inaccurate `DeepMind` entry.
+- **Gallery Banner**: Added dark `galleryBanner` for better visual identity on the marketplace.
+- **README**: Improved description in `package.nls.json` for richer full-text search coverage. Updated README intro paragraph with key product terms.
+- **Chinese README**: Synced `docs/README_zh.md` intro paragraph with English version; fixed chapter structure (Auto-Accept and Commit Generator sections were misplaced inside the Installation section).
+- **FEATURES docs**: Updated test count from 165 to 243 in both `FEATURES.md` and `FEATURES_zh.md`.
+
 ## [2.6.0] - 2026-05-23
 
 ### Added

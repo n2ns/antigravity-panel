@@ -71,5 +71,6 @@
     "✅ Success: Connection established on port {0} (CSRF: {1})": "✅ Успех: Соединение установлено на порту {0} (CSRF: {1})",
     "consumed": "потреблено",
     "Each bar shows quota percentage points consumed per interval. Height = consumption intensity.": "Каждый столбик показывает потреблённые процентные пункты квоты за интервал. Высота = интенсивность потребления.",
-    "percentage points": "процентные пункты"
+    "percentage points": "процентные пункты",
+    "Docs": "Документация"
 }

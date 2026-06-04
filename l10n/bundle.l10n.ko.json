@@ -71,5 +71,6 @@
     "✅ Success: Connection established on port {0} (CSRF: {1})": "✅ 성공: 포트 {0}에서 연결이 설정되었습니다 (CSRF: {1})",
     "consumed": "소비",
     "Each bar shows quota percentage points consumed per interval. Height = consumption intensity.": "각 막대는 간격당 소비된 할당량 백분율 포인트를 보여줍니다. 높이 = 소비 강도.",
-    "percentage points": "백분율 포인트"
+    "percentage points": "백분율 포인트",
+    "Docs": "문서"
 }

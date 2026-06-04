@@ -178,7 +178,7 @@
 ## 🧪 测试
 
 ### 单元测试覆盖
-- 16 个测试文件，165 个测试用例通过
+- 16+ 个测试文件，243 个测试用例通过
 - 纯 Node.js 环境（无需 VS Code 运行时）
 - 核心模块全覆盖：
   - ConfigManager、CacheManager、QuotaManager

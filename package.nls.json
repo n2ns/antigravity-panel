@@ -57,7 +57,7 @@
     "config.visualizationMode.groups": "Group models by category (Gemini, Claude, GPT, etc.)",
     "config.visualizationMode.models": "Show all individual models separately",
     "extension.category": "Antigravity Toolkit",
-    "extension.description": "The essential toolkit for Google Antigravity IDE users. Monitor quotas, manage caches, and visualize system metrics.",
+    "extension.description": "Quota monitor & cache manager for Google Antigravity IDE. Real-time Gemini / Claude / GPT usage tracking, AI quota dashboard, usage analytics, auto-accept agent mode, and AI commit message generator.",
     "extension.displayName": "Toolkit for Antigravity",
     "views.tfa.sidebar.name": "Antigravity: Toolkit",
     "viewsContainers.tfa-sidebar.title": "Antigravity Toolkit",

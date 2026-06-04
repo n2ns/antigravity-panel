@@ -2,7 +2,7 @@ English | [中文文档](docs/README_zh.md)
 
 # Toolkit for Antigravity
 
-> Monitor your AI quota usage and manage cache with ease
+> Real-time AI quota monitor & cache manager for **Google Antigravity IDE** — track Gemini, Claude, and GPT usage, visualize consumption trends, and manage conversation cache, all in one sidebar panel.
 
 [![Antigravity IDE](https://img.shields.io/badge/Antigravity-IDE-4285F4?style=flat)](https://antigravity.google)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)

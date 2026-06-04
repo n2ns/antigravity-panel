@@ -2,7 +2,7 @@
   "name": "antigravity-panel",
   "displayName": "Toolkit for Antigravity",
   "description": "%extension.description%",
-  "version": "2.6.0",
+  "version": "2.6.1",
   "publisher": "n2ns",
   "license": "Apache-2.0",
   "repository": {
@@ -10,20 +10,37 @@
     "url": "https://github.com/n2ns/antigravity-panel.git"
   },
   "homepage": "https://datafrog.io",
+  "bugs": {
+    "url": "https://github.com/n2ns/antigravity-panel/issues"
+  },
+  "qna": "https://github.com/n2ns/antigravity-panel/discussions",
+  "categories": [
+    "Other",
+    "Visualization"
+  ],
   "keywords": [
     "Antigravity",
-    "Antigravity Panel",
-    "Gemini",
-    "DeepMind",
+    "Antigravity Toolkit",
+    "tfa",
+    "agp",
     "Quota Monitor",
-    "Quota",
-    "AI Agent",
+    "Gemini",
+    "AI Usage",
+    "Usage Monitor",
     "Google AI",
-    "Toolkit",
-    "Panel",
+    "AI Agent",
+    "Cache Manager",
     "Dashboard"
   ],
+  "galleryBanner": {
+    "color": "#1a1a2e",
+    "theme": "dark"
+  },
   "icon": "assets/icon.png",
+  "extensionKind": [
+    "ui",
+    "workspace"
+  ],
   "engines": {
     "vscode": "^1.104.0"
   },

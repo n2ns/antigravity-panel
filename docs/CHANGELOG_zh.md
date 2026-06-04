@@ -2,6 +2,21 @@
 
 # 更新日志
 
+## [2.6.1] - 2026-06-04
+
+### 新增
+
+- **侧边栏文档链接**：在侧边栏底部新增 `📖 文档` 按钮，点击可直接打开 GitHub 上的完整 README 文档，已适配全部 13 种支持语言。
+
+### 改进
+
+- **插件市场可发现性**：在 `package.json` 中新增 `categories`（`Other`、`Visualization`）和 `extensionKind` 字段，提升市场搜索索引效果；新增 `bugs` 和 `qna` 字段，分别指向 GitHub Issues 和 Discussions。
+- **关键词优化**：新增 `tfa`、`agp`、`AI Usage`、`Usage Monitor`、`Cache Manager`；移除不准确的 `DeepMind` 词条。
+- **市场横幅**：新增深色 `galleryBanner`，提升在插件市场的视觉辨识度。
+- **README 优化**：改进 `package.nls.json` 中的描述文本，覆盖更多搜索关键词；更新 README 首段简介。
+- **中文文档修复**：同步 `docs/README_zh.md` 首段简介与英文版；修复章节结构问题（"自动接受"和"提交信息生成器"章节之前错误地嵌入了安装章节内部）。
+- **功能文档更新**：将 `FEATURES.md` 和 `FEATURES_zh.md` 中的测试用例数量从 165 更新为 243。
+
 ## [2.6.0] - 2026-05-23
 
 ### 新增

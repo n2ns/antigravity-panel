@@ -71,5 +71,6 @@
     "✅ Success: Connection established on port {0} (CSRF: {1})": "✅ Succès : Connexion établie sur le port {0} (CSRF : {1})",
     "consumed": "consommé",
     "Each bar shows quota percentage points consumed per interval. Height = consumption intensity.": "Chaque barre montre les points de pourcentage de quota consommés par intervalle. Hauteur = intensité de consommation.",
-    "percentage points": "points de pourcentage"
+    "percentage points": "points de pourcentage",
+    "Docs": "Documentation"
 }

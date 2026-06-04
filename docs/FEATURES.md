@@ -176,7 +176,7 @@ English | [中文文档](FEATURES_zh.md)
 ## 🧪 Testing
 
 ### Unit Test Coverage
-- 165 tests across 16 test files
+- 243 tests across 16+ test files
 - Pure Node.js environment (no VS Code runtime required)
 - Core modules fully tested:
   - ConfigManager, CacheManager, QuotaManager
