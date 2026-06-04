@@ -6,6 +6,9 @@ on:
       - 'v*'  # 触发条件：推送 v* 标签（如 v0.2.1）
   workflow_dispatch:  # 允许手动触发
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   # 构建和测试
   build:
