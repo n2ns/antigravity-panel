@@ -2,6 +2,13 @@
 
 # 更新日志
 
+## [2.6.2] - 2026-06-05
+
+### 新增
+
+- **HttpClient 与 StatusBarManager 测试**：实现了完善的测试套件，用以检测与 Antigravity Language Server 本地进程的真实连接（HttpClient），并在不同配置下验证状态栏及预警阈值的渲染逻辑（StatusBarManager），使测试用例总数提升至 263 项。
+- **贡献指南**：新增了 `CONTRIBUTING.md` 文件，详细定义了项目架构、环境搭建、测试规范及代码规范标准。
+
 ## [2.6.1] - 2026-06-04
 
 ### 新增

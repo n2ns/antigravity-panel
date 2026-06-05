@@ -2,6 +2,13 @@ English | [中文文档](docs/CHANGELOG_zh.md)
 
 # Change Log
 
+## [2.6.2] - 2026-06-05
+
+### Added
+
+- **HttpClient & StatusBarManager Tests**: Implemented comprehensive test suites checking local connectivity to the Antigravity Language Server (HttpClient) and checking state/threshold display rendering under various settings configurations (StatusBarManager), increasing total test count to 263.
+- **Contributing Guide**: Created `CONTRIBUTING.md` defining project architecture, environment setup, testing requirements, and styling code standards.
+
 ## [2.6.1] - 2026-06-04
 
 ### Added
