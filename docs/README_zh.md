@@ -109,12 +109,12 @@ pkill -f "Antigravity"
 
 **配置步骤：**
 1. 从 [Anthropic Console](https://console.anthropic.com/) 获取 API Key（如使用 Claude）
-2. 运行命令 `Antigravity Toolkit: Set Anthropic API Key`
+2. 运行命令 `Antigravity Panel: Set Anthropic API Key`
 3. 输入你的 API Key (安全存储)
 
 **使用方法：**
 1. 使用 `git add` 暂存更改
-2. 运行命令 `Antigravity Toolkit: Generate Commit Message`
+2. 运行命令 `Antigravity Panel: Generate Commit Message (Local & Claude)`
 3. 提交信息将自动填充到源代码管理输入框中
 
 **配置选项：**
@@ -177,7 +177,7 @@ pkill -f "Antigravity"
 
 点击侧边栏的 **Antigravity** 图标，或者：
 - 按 `Ctrl+Shift+P`（Windows/Linux）或 `Cmd+Shift+P`（macOS）
-- 输入 `Antigravity Toolkit: Open Panel`
+- 输入 `Antigravity Panel: Open Panel`
 - 按回车
 
 ### 第二步：监控配额
@@ -201,19 +201,19 @@ pkill -f "Antigravity"
 
 | 命令 | 功能 |
 |------|------|
-| `Antigravity Toolkit: Open Panel` | 打开侧边栏面板 |
-| `Antigravity Toolkit: Refresh Quota` | 手动刷新配额数据 |
-| `Antigravity Toolkit: Show Cache Size` | 显示缓存总大小通知 |
-| `Antigravity Toolkit: Clean Cache` | 删除所有缓存数据（谨慎使用！）|
-| `Antigravity Toolkit: Open Settings` | 打开扩展设置 |
-| `Antigravity Toolkit: Show Disclaimer` | 查看隐私与安全免责声明 |
-| `Antigravity Toolkit: Restart Language Server` | 重启 Antigravity 代理服务 |
-| `Antigravity Toolkit: Reset User Status` | 重置状态更新器 |
-| `Antigravity Toolkit: Run Diagnostics` | 运行连接诊断 |
-| `Antigravity Toolkit: Reload Window` | 重新加载窗口（解决界面卡死） |
-| `Antigravity Toolkit: Toggle Auto-Accept` | 开启/关闭自动接受命令模式 |
-| `Antigravity Toolkit: Generate Commit Message` | 使用本地 LLM 或 Claude 生成提交信息 |
-| `Antigravity Toolkit: Set Anthropic API Key` | 设置 Anthropic API 密钥 |
+| `Antigravity Panel: Open Panel` | 打开侧边栏面板 |
+| `Antigravity Panel: Refresh Quota` | 手动刷新配额数据 |
+| `Antigravity Panel: Show Cache Size` | 显示缓存总大小通知 |
+| `Antigravity Panel: Clean Cache` | 删除所有缓存数据（谨慎使用！）|
+| `Antigravity Panel: Open Settings` | 打开扩展设置 |
+| `Antigravity Panel: About` | 查看隐私与安全免责声明 |
+| `Antigravity Panel: Restart Agent Service` | 重启 Antigravity 代理服务 |
+| `Antigravity Panel: Reset Status` | 重置状态更新器 |
+| `Antigravity Panel: Connectivity Diagnostics` | 运行连接诊断 |
+| `Antigravity Panel: Show Logs` | 打开输出面板日志 |
+| `Antigravity Panel: Toggle Agent Auto-Accept` | 开启/关闭自动接受命令模式 |
+| `Antigravity Panel: Generate Commit Message (Local & Claude)` | 使用本地 LLM 或 Claude 生成提交信息 |
+| `Antigravity Panel: Set Anthropic API Key` | 设置 Anthropic API 密钥 |
 
 ## ⚙️ 配置选项
 
@@ -223,16 +223,15 @@ pkill -f "Antigravity"
 
 | 配置项 | 默认值 | 说明 |
 |--------|--------|------|
-| **轮询间隔** | `90秒` | 刷新配额的频率（最小 60 秒） |
+| **轮询间隔** | `90秒` | 刷新配额的频率（最小 30 秒） |
 | **显示配额** | `✓` | 在状态栏显示配额信息 |
-| **状态栏样式** | `percentage` | 状态栏显示：百分比、时间、已用量或剩余量 |
 | **仪表盘样式** | `semi-arc` | 模型配额呈现样式：`semi-arc`（半圆弧）或 `classic-donut`（经典圆环） |
 | **可视化模式** | `groups` | 仪表盘按 `groups`（分组）或 `models`（单个模型）显示 |
 | **UI 缩放** | `1.0` | 面板元素的全局缩放比例（0.8 到 2.0） |
 | **显示 GPT 配额** | `✗` | 是否在面板中显示 GPT 系列模型的配额 |
 | **历史范围** | `90 分钟` | 用量图表的时间范围（10-120 分钟） |
-| **警告阈值** | `30%` | 配额低于此值时，状态栏变色提醒（警告） |
-| **严重阈值** | `10%` | 配额低于此值时，状态栏变色提醒（严重错误） |
+| **警告阈值** | `40%` | 配额低于此值时，状态栏变色提醒（警告） |
+| **严重阈值** | `20%` | 配额低于此值时，状态栏变色提醒（严重错误） |
 
 ### 💾 缓存设置
 

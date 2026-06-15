@@ -1,5 +1,9 @@
 English | [中文文档](docs/README_zh.md)
 
+<p align="center">
+  <img src="./assets/icon.png" width="128" alt="Antigravity Panel">
+</p>
+
 # Antigravity Panel
 
 > Real-time AI quota monitor & cache manager for **Google Antigravity IDE** — track Gemini, Claude, and GPT usage, visualize consumption trends, and manage conversation cache, all in one sidebar panel.
@@ -47,7 +51,7 @@ English | [中文文档](docs/README_zh.md)
 - Visual quota display grouped by AI model groups (Gemini, Claude, GPT, etc.)
 - Status bar shows remaining quota with emoji indicators (🟢🟡🔴) and cache size
 - Hover tooltip showing all model quotas and reset times
-- Configurable warning (≤30%) and critical (≤10%) thresholds
+- Configurable warning (≤40%) and critical (≤20%) thresholds
 
 ### 📈 Usage Trends & Analytics
 
@@ -110,12 +114,12 @@ A workaround for when the built-in "Generate commit message" feature is unavaila
 
 **Setup:**
 1. Get an API key from [Anthropic Console](https://console.anthropic.com/)
-2. Run `Antigravity Toolkit: Set Anthropic API Key`
+2. Run `Antigravity Panel: Set Anthropic API Key`
 3. Enter your API key (stored securely, never in plaintext)
 
 **Usage:**
 1. Stage your changes with `git add`
-2. Run `Antigravity Toolkit: Generate Commit Message (Claude)`
+2. Run `Antigravity Panel: Generate Commit Message (Local & Claude)`
 3. The commit message auto-populates in the SCM input box
 
 **Configuration:**
@@ -177,7 +181,7 @@ If the marketplace is unavailable or you need a specific version:
 
 Click the **Antigravity** icon in the sidebar, or:
 - Press `Ctrl+Shift+P` (Windows/Linux) or `Cmd+Shift+P` (macOS)
-- Type `Antigravity Toolkit: Open Panel`
+- Type `Antigravity Panel: Open Panel`
 - Press Enter
 
 ### Step 2: Monitor Your Quota
@@ -201,19 +205,19 @@ Open Command Palette (`Ctrl+Shift+P` / `Cmd+Shift+P`) and search for:
 
 | Command | What it does |
 |---------|-------------|
-| `Antigravity Toolkit: Open Panel` | Open the sidebar panel |
-| `Antigravity Toolkit: Refresh Quota` | Manually refresh quota data |
-| `Antigravity Toolkit: Show Cache Size` | Show total cache size notification |
-| `Antigravity Toolkit: Clean Cache` | Delete all cache data (use with caution!) |
-| `Antigravity Toolkit: Open Settings` | Open extension settings |
-| `Antigravity Toolkit: Show Disclaimer` | View privacy and safety disclaimer |
-| `Antigravity Toolkit: Restart Language Server` | Restart Antigravity Agent Service |
-| `Antigravity Toolkit: Reset User Status` | Reset the status updater |
-| `Antigravity Toolkit: Run Diagnostics` | Run connectivity diagnostics |
-| `Antigravity Toolkit: Reload Window` | Refresh the webview to resolve UI glitches |
-| `Antigravity Toolkit: Toggle Auto-Accept` | Enable/Disable automatic command acceptance |
-| `Antigravity Toolkit: Generate Commit Message` | Generate commit message using Local LLM or Claude |
-| `Antigravity Toolkit: Set Anthropic API Key` | Configure Anthropic API Key |
+| `Antigravity Panel: Open Panel` | Open the sidebar panel |
+| `Antigravity Panel: Refresh Quota` | Manually refresh quota data |
+| `Antigravity Panel: Show Cache Size` | Show total cache size notification |
+| `Antigravity Panel: Clean Cache` | Delete all cache data (use with caution!) |
+| `Antigravity Panel: Open Settings` | Open extension settings |
+| `Antigravity Panel: About` | View privacy and safety disclaimer |
+| `Antigravity Panel: Restart Agent Service` | Restart Antigravity Agent Service |
+| `Antigravity Panel: Reset Status` | Reset the status updater |
+| `Antigravity Panel: Connectivity Diagnostics` | Run connectivity diagnostics |
+| `Antigravity Panel: Show Logs` | Open the Output panel log |
+| `Antigravity Panel: Toggle Agent Auto-Accept` | Enable/Disable automatic command acceptance |
+| `Antigravity Panel: Generate Commit Message (Local & Claude)` | Generate commit message using Local LLM or Claude |
+| `Antigravity Panel: Set Anthropic API Key` | Configure Anthropic API Key |
 
 ## ⚙️ Configuration
 
@@ -223,16 +227,15 @@ Open Settings (`Ctrl+,` / `Cmd+,`) in Antigravity IDE and search for `tfa` to cu
 
 | Setting | Default | Description |
 |---------|---------|-------------|
-| **Polling Interval** | `90s` | How often to refresh quota (min: 60s) |
+| **Polling Interval** | `90s` | How often to refresh quota (min: 30s) |
 | **Show Quota** | `✓` | Display quota in status bar |
-| **Status Bar Style** | `percentage` | Display mode: percentage, resetTime, used, or remaining |
 | **Quota Style** | `semi-arc` | Visualization style: `semi-arc` or `classic-donut` |
 | **Visualization Mode** | `groups` | Show dashboard by `groups` or `models` |
 | **UI Scale** | `1.0` | Global scale factor for panel elements (0.8 to 2.0) |
 | **Show GPT Quota** | `✗` | Whether to display GPT family models in the panel |
 | **History Range** | `90 min` | Time range for usage chart (10-120 minutes) |
-| **Warning Threshold** | `30%` | Status bar turns warning color at this level |
-| **Critical Threshold** | `10%` | Status bar turns critical color at this level |
+| **Warning Threshold** | `40%` | Status bar turns warning color at this level |
+| **Critical Threshold** | `20%` | Status bar turns critical color at this level |
 
 ### 💾 Cache Settings
 
