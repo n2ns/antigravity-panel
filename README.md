@@ -1,6 +1,6 @@
 English | [中文文档](docs/README_zh.md)
 
-# Toolkit for Antigravity
+# Antigravity Panel
 
 > Real-time AI quota monitor & cache manager for **Google Antigravity IDE** — track Gemini, Claude, and GPT usage, visualize consumption trends, and manage conversation cache, all in one sidebar panel.
 
@@ -16,7 +16,7 @@ English | [中文文档](docs/README_zh.md)
 > 🚀 **Featured in Google AI Blog:** [Where we're going, we don't need chatbots: introducing the Antigravity IDE](https://dev.to/googleai/where-were-going-we-dont-need-chatbots-introducing-the-antigravity-ide-2c3k)
 
 
-**Toolkit for Antigravity** (formerly *Antigravity Panel*) helps you stay on top of your AI model usage in **Google Antigravity IDE**. Get real-time quota monitoring, usage trends, and cache management—all within an integrated sidebar panel.
+**Antigravity Panel** helps you stay on top of your AI model usage in **Google Antigravity IDE**. Get real-time quota monitoring, usage trends, and cache management—all within an integrated sidebar panel.
 
 ## ✨ Features at a Glance
 
@@ -155,7 +155,7 @@ A workaround for when the built-in "Generate commit message" feature is unavaila
 
 1. Open **Antigravity IDE**
 2. Press `Ctrl+Shift+X` (Windows/Linux) or `Cmd+Shift+X` (macOS) to open Extensions
-3. Search for `Toolkit for Antigravity`
+3. Search for `Antigravity Panel`
 4. Click **Install**
 
 **Or install from web:**
@@ -268,7 +268,7 @@ Open Settings (`Ctrl+,` / `Cmd+,`) in Antigravity IDE and search for `tfa` to cu
 
 **Your data stays yours.**
 
-Toolkit for Antigravity does not collect, transmit, or store any user data. All operations are performed locally on your machine. The extension only communicates with local components—nothing is sent to external servers.
+Antigravity Panel does not collect, transmit, or store any user data. All operations are performed locally on your machine. The extension only communicates with local components—nothing is sent to external servers.
 
 **Experimental Feature Notice:**
 The *Smart Quota Monitoring* feature relies on internal metrics exposed by the local Antigravity environment. This functionality is experimental and provided "as-is" to help users better understand their personal usage. It is not an official Google product and may be subject to changes in future IDE updates.
@@ -323,7 +323,7 @@ npm run package
 
 ## 🤝 Contributing
 
-We welcome contributions! If you find this toolkit helpful, please give us a **Star** 🌟 on GitHub! It's the best way to support our work and help others discover it.
+We welcome contributions! If you find Antigravity Panel helpful, please give us a **Star** 🌟 on GitHub! It's the best way to support our work and help others discover it.
 
 Here's how you can help:
 
@@ -357,15 +357,11 @@ For more details, see [LOCALIZATION_RULES.md](docs/LOCALIZATION_RULES.md).
 
 Licensed under the [Apache License, Version 2.0](LICENSE).
 
+*Formerly published as **Toolkit for Antigravity**.*
+
 
 ---
 
-<div align="center">
-
-**Developed by [datafrog.io](https://datafrog.io)**
-
-
+Built by N2NS Lab, Datafrog's open-source lab for AI applications.
 
 *For Antigravity. By Antigravity.*
-
-</div>

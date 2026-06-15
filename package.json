@@ -1,6 +1,6 @@
 {
   "name": "antigravity-panel",
-  "displayName": "Toolkit for Antigravity",
+  "displayName": "Antigravity Panel",
   "description": "%extension.description%",
   "version": "2.6.2",
   "publisher": "n2ns",
@@ -24,17 +24,17 @@
   ],
   "keywords": [
     "Antigravity",
-    "Antigravity Toolkit",
-    "tfa",
-    "agp",
+    "Antigravity Panel",
+    "Antigravity IDE",
     "Quota Monitor",
     "Gemini",
+    "Claude",
+    "GPT",
     "AI Usage",
     "Usage Monitor",
     "Google AI",
-    "AI Agent",
     "Cache Manager",
-    "Dashboard"
+    "Auto Accept"
   ],
   "galleryBanner": {
     "color": "#1a1a2e",
