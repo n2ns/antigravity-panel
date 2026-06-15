@@ -365,6 +365,15 @@ Licensed under the [Apache License, Version 2.0](LICENSE).
 
 *Formerly published as **Toolkit for Antigravity**.*
 
+## ⭐ Star History
+
+<a href="https://star-history.com/#n2ns/antigravity-panel&Date">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=n2ns/antigravity-panel&type=Date&theme=dark">
+    <img src="https://api.star-history.com/svg?repos=n2ns/antigravity-panel&type=Date" alt="Star History Chart">
+  </picture>
+</a>
+
 ## ❤️ Support
 
 If Antigravity Panel has saved you time, consider supporting continued development:

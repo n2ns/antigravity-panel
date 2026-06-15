@@ -363,6 +363,15 @@ npm run package
 
 本项目采用 [Apache License, Version 2.0](../LICENSE) 开源许可证。
 
+## ⭐ Star 增长曲线
+
+<a href="https://star-history.com/#n2ns/antigravity-panel&Date">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=n2ns/antigravity-panel&type=Date&theme=dark">
+    <img src="https://api.star-history.com/svg?repos=n2ns/antigravity-panel&type=Date" alt="Star History Chart">
+  </picture>
+</a>
+
 ## ❤️ 支持项目
 
 如果 Antigravity Panel 为你节省了时间，欢迎赞助以支持持续开发：
