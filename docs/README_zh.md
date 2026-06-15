@@ -16,6 +16,7 @@
 [![Open VSX 下载量](https://img.shields.io/open-vsx/dt/n2ns/antigravity-panel?style=flat&label=%E4%B8%8B%E8%BD%BD%E9%87%8F&cacheSeconds=10800)](https://open-vsx.org/extension/n2ns/antigravity-panel)
 [![最后更新](https://img.shields.io/github/last-commit/n2ns/antigravity-panel?style=flat&label=%E6%9C%80%E5%90%8E%E6%9B%B4%E6%96%B0&cacheSeconds=10800)](https://github.com/n2ns/antigravity-panel/commits/main)
 [![GitHub Sponsors](https://img.shields.io/github/sponsors/n2ns?label=Sponsor&logo=githubsponsors&color=ea4aaa&style=flat)](https://github.com/sponsors/n2ns)
+[![Ko-fi](https://img.shields.io/badge/Ko--fi-bugstan-FF5E5B?logo=kofi&logoColor=white&style=flat)](https://ko-fi.com/bugstan)
 
 > 🚀 **获 Google AI 官方博客推荐:** [Where we're going, we don't need chatbots: introducing the Antigravity IDE](https://dev.to/googleai/where-were-going-we-dont-need-chatbots-introducing-the-antigravity-ide-2c3k)
 
@@ -175,6 +176,8 @@ pkill -f "Antigravity"
 2. 打开 Antigravity IDE → 扩展面板
 3. 点击 `⋯`（更多操作）→ `从 VSIX 安装...`
 4. 选择下载的 `.vsix` 文件
+
+版本历史和发布说明请参阅[更新日志](CHANGELOG_zh.md)。
 
 ## 🎯 快速开始
 
@@ -360,6 +363,11 @@ npm run package
 
 本项目采用 [Apache License, Version 2.0](../LICENSE) 开源许可证。
 
+## ❤️ 支持项目
+
+如果 Antigravity Panel 为你节省了时间，欢迎赞助以支持持续开发：
+
+<a href="https://ko-fi.com/bugstan"><img src="https://storage.ko-fi.com/cdn/kofi2.png?v=3" width="160" alt="Ko-fi"></a>
 
 ---
 

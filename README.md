@@ -16,6 +16,7 @@ English | [中文文档](docs/README_zh.md)
 [![Open VSX Downloads](https://img.shields.io/open-vsx/dt/n2ns/antigravity-panel?style=flat&label=downloads&cacheSeconds=10800)](https://open-vsx.org/extension/n2ns/antigravity-panel)
 [![Last Commit](https://img.shields.io/github/last-commit/n2ns/antigravity-panel?style=flat&cacheSeconds=10800)](https://github.com/n2ns/antigravity-panel/commits/main)
 [![GitHub Sponsors](https://img.shields.io/github/sponsors/n2ns?label=Sponsor&logo=githubsponsors&color=ea4aaa&style=flat)](https://github.com/sponsors/n2ns)
+[![Ko-fi](https://img.shields.io/badge/Ko--fi-bugstan-FF5E5B?logo=kofi&logoColor=white&style=flat)](https://ko-fi.com/bugstan)
 
 > 🚀 **Featured in Google AI Blog:** [Where we're going, we don't need chatbots: introducing the Antigravity IDE](https://dev.to/googleai/where-were-going-we-dont-need-chatbots-introducing-the-antigravity-ide-2c3k)
 
@@ -174,6 +175,8 @@ If the marketplace is unavailable or you need a specific version:
 2. Open Antigravity IDE → Extensions panel
 3. Click `⋯` (More Actions) → `Install from VSIX...`
 4. Select the downloaded `.vsix` file
+
+For version history and release notes, see the [Changelog](CHANGELOG.md).
 
 ## 🎯 Quick Start
 
@@ -362,6 +365,11 @@ Licensed under the [Apache License, Version 2.0](LICENSE).
 
 *Formerly published as **Toolkit for Antigravity**.*
 
+## ❤️ Support
+
+If Antigravity Panel has saved you time, consider supporting continued development:
+
+<a href="https://ko-fi.com/bugstan"><img src="https://storage.ko-fi.com/cdn/kofi2.png?v=3" width="160" alt="Ko-fi"></a>
 
 ---
 
