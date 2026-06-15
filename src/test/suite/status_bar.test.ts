@@ -131,14 +131,14 @@ suite('StatusBarManager Test Suite', () => {
     test('should show loading state', () => {
         statusBarManager.showLoading();
         assert.strictEqual(mockStatusBarItem.text, '$(sync~spin) TFA');
-        assert.strictEqual(mockStatusBarItem.tooltip, 'Toolkit: Detecting...');
+        assert.strictEqual(mockStatusBarItem.tooltip, 'Antigravity Panel: Detecting...');
         assert.strictEqual(isShown, true);
     });
 
     test('should show error state', () => {
         statusBarManager.showError('Connection failed');
         assert.strictEqual(mockStatusBarItem.text, '$(warning) TFA');
-        assert.strictEqual(mockStatusBarItem.tooltip, 'Toolkit: Connection failed');
+        assert.strictEqual(mockStatusBarItem.tooltip, 'Antigravity Panel: Connection failed');
         assert.strictEqual(isShown, true);
     });
 

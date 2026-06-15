@@ -64,7 +64,7 @@ let isDeactivated = false;
 export async function activate(context: vscode.ExtensionContext): Promise<void> {
   // === Phase 0: Logger (infallible) ===
   initLogger(context);
-  infoLog("Toolkit: Activating (MVVM Refactored)...");
+  infoLog("Antigravity Panel: Activating (MVVM Refactored)...");
 
   // Mutable service references — command closures capture these variables
   // and read their current value at invocation time, not at registration time.
@@ -90,12 +90,12 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
         return;
       }
       await appViewModel.refreshQuota();
-      vscode.window.showInformationMessage("Toolkit: Data Updated.");
+      vscode.window.showInformationMessage("Antigravity Panel: Data Updated.");
     }),
     vscode.commands.registerCommand("tfa.restartLanguageServer", async () => {
       try {
         await vscode.commands.executeCommand("antigravity.restartLanguageServer");
-        vscode.window.showInformationMessage("Toolkit: Agent Service restarted.");
+        vscode.window.showInformationMessage("Antigravity Panel: Agent Service restarted.");
       } catch (e) {
         errorLog("Failed to restart Language Server", e);
         vscode.window.showErrorMessage("Failed to restart Antigravity Agent Service.");
@@ -104,7 +104,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     vscode.commands.registerCommand("tfa.restartUserStatusUpdater", async () => {
       try {
         await vscode.commands.executeCommand("antigravity.restartUserStatusUpdater");
-        vscode.window.showInformationMessage("Toolkit: User status updater reset.");
+        vscode.window.showInformationMessage("Antigravity Panel: User status updater reset.");
       } catch (e) {
         errorLog("Failed to reset Status Updater", e);
         vscode.window.showErrorMessage("Failed to reset Antigravity status updater.");
@@ -127,7 +127,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
       if (logger) {
         logger.show(true); // Focus output panel
       } else {
-        vscode.window.showWarningMessage("Toolkit: Output channel not initialized.");
+        vscode.window.showWarningMessage("Antigravity Panel: Output channel not initialized.");
       }
     }),
     vscode.commands.registerCommand("tfa.showDisclaimer", async () => {
@@ -561,7 +561,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
       appViewModel!.onConfigurationChanged();
     }, configManager);
 
-    infoLog("Toolkit: Activation Complete");
+    infoLog("Antigravity Panel: Activation Complete");
   } catch (e) {
     // Phase 2 failed — services are not available, but commands are still registered
     // and will show a user-friendly "still initializing" message.
@@ -581,5 +581,5 @@ export function deactivate(): void {
     bootTimeoutHandle = undefined;
   }
   scheduler?.dispose();
-  infoLog("Toolkit: Deactivated");
+  infoLog("Antigravity Panel: Deactivated");
 }

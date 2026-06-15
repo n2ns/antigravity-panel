@@ -58,7 +58,7 @@
     "config.visualizationMode.models": "单独显示所有模型",
     "extension.category": "Antigravity Panel",
     "extension.description": "Google Antigravity IDE 用户的必备工具箱。提供本地配额监控、缓存管理和系统指标可视化。",
-    "extension.displayName": "Antigravity 辅助工具箱",
+    "extension.displayName": "Antigravity Panel",
     "views.tfa.sidebar.name": "Antigravity Panel",
     "viewsContainers.tfa-sidebar.title": "Antigravity Panel",
     "quota.notification.warning": "配额不足提醒：{0} 的配额已低于 {1}%（当前剩余 {2}%）。",
