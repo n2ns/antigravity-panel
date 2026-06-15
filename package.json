@@ -4,7 +4,11 @@
   "description": "%extension.description%",
   "version": "2.6.2",
   "publisher": "n2ns",
+  "author": "N2NS Lab",
   "license": "Apache-2.0",
+  "sponsor": {
+    "url": "https://github.com/sponsors/n2ns"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/n2ns/antigravity-panel.git"
