@@ -55,6 +55,7 @@ export class ProcessFinder {
   public portsFromNetstat: number = 0; // Count of ports from netstat
   public retryCount: number = 0; // Number of retry attempts
   public protocolUsed: "https" | "http" | "none" = "none"; // Final protocol used
+  public diagnosticSummary: string = "";
   private powershellTimeoutRetried: boolean = false;
 
   constructor() {
@@ -145,6 +146,7 @@ export class ProcessFinder {
     warnLog("⚠️ Running diagnostics to help troubleshoot...");
     infoLog(`Target process: ${this.processName}`);
     infoLog(`Platform: ${process.platform}, Arch: ${process.arch}`);
+    this.diagnosticSummary = "";
 
     // Output troubleshooting tips
     const tips = this.strategy.getTroubleshootingTips();
@@ -165,10 +167,21 @@ export class ProcessFinder {
         text.replace(/(--csrf_token[=\s]+)([a-f0-9-]+)/gi, "$1***REDACTED***");
 
       if (stdout && stdout.trim()) {
+        this.diagnosticSummary = [
+          "Diagnostic command: success",
+          "Related process output:",
+          sanitize(stdout).substring(0, 1200),
+          stderr && stderr.trim() ? `stderr: ${sanitize(stderr).substring(0, 300)}` : "",
+        ].filter(Boolean).join("\n");
         infoLog(
           `📋 Related processes found:\n${sanitize(stdout).substring(0, 2000)}`,
         );
       } else {
+        this.diagnosticSummary = [
+          "Diagnostic command: success",
+          "Related process output: none",
+          stderr && stderr.trim() ? `stderr: ${sanitize(stderr).substring(0, 300)}` : "",
+        ].filter(Boolean).join("\n");
         warnLog("❌ No related processes found (language_server/antigravity)");
         infoLog(
           "💡 This usually means Antigravity IDE is not running or the process name has changed.",
@@ -180,6 +193,7 @@ export class ProcessFinder {
       }
     } catch (e) {
       const error = e instanceof Error ? e : new Error(String(e));
+      this.diagnosticSummary = `Diagnostic command: failed\nError: ${error.message.substring(0, 500)}`;
       debugLog(`Diagnostic command failed: ${error.message}`);
 
       // Provide manual commands for the user to try

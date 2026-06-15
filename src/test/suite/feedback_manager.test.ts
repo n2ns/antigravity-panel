@@ -43,6 +43,17 @@ suite('FeedbackManager Test Suite', () => {
         assert.ok(!decodedBody.includes('Parsing Details'), 'Should not include parsing details if undefined');
     });
 
+    test('getFeedbackUrl should include process diagnostics when provided', () => {
+        const url = FeedbackManager.getFeedbackUrl({
+            ...mockMeta,
+            diagnosticSummary: 'Diagnostic command: success\nRelated process output: none'
+        });
+        const decodedBody = decodeURIComponent(url.path.split('body=')[1].split('&')[0]);
+
+        assert.ok(decodedBody.includes('**Process Diagnostics**'), 'Missing process diagnostics section');
+        assert.ok(decodedBody.includes('Related process output: none'), 'Missing diagnostic summary');
+    });
+
     test('showFeedbackNotification should show both buttons and handle diagnostic click', async () => {
         // Prepare mock selection
         (vscode.window as any).nextMessageSelection = 'Run Diagnostics';

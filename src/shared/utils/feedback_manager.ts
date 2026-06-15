@@ -20,6 +20,7 @@ export interface DiagnosticMetadata {
     protocolUsed?: string;  // Protocol used (https/http/none)
     retryCount?: number;  // Number of retry attempts
     bootRetryCount?: number; // External boot retry attempts
+    diagnosticSummary?: string; // Last related-process diagnostic output
 }
 
 /**
@@ -52,6 +53,9 @@ export class FeedbackManager {
         }
         if (meta.protocolUsed) diagInfo += `- **Protocol Used**: ${meta.protocolUsed}\n`;
         if (meta.retryCount !== undefined) diagInfo += `- **Retry Count**: ${meta.retryCount}\n`;
+        if (meta.diagnosticSummary) {
+            diagInfo += `\n**Process Diagnostics**:\n\`\`\`\n${meta.diagnosticSummary.substring(0, 1500)}\n\`\`\`\n`;
+        }
         if (meta.serverResponse) diagInfo += `\n**Server Response**:\n\`\`\`\n${meta.serverResponse.substring(0, 500)}\n\`\`\`\n`;
 
         const body = encodeURIComponent(

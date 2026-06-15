@@ -407,7 +407,8 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
               portsFromNetstat: processFinder.portsFromNetstat,
               protocolUsed: processFinder.protocolUsed,
               retryCount: processFinder.retryCount,
-              bootRetryCount: MAX_BOOT_RETRY // Include external retry info
+              bootRetryCount: MAX_BOOT_RETRY, // Include external retry info
+              diagnosticSummary: processFinder.diagnosticSummary
             });
             hasShownNotification = true;
           }
