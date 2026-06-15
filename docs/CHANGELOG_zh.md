@@ -9,6 +9,17 @@
 - **HttpClient 与 StatusBarManager 测试**：实现了完善的测试套件，用以检测与 Antigravity Language Server 本地进程的真实连接（HttpClient），并在不同配置下验证状态栏及预警阈值的渲染逻辑（StatusBarManager），使测试用例总数提升至 263 项。
 - **贡献指南**：新增了 `CONTRIBUTING.md` 文件，详细定义了项目架构、环境搭建、测试规范及代码规范标准。
 
+### 变更
+
+- **改名回 Antigravity Panel**：将显示名称从 "Toolkit for Antigravity"（自 v1.2.0 起使用）恢复为原始名称 **"Antigravity Panel"**，以提升搜索可发现性——扩展 ID `n2ns.antigravity-panel` 及所有已安装用户不受影响。同步更新了 Output Channel 名称、状态栏 tooltip 及全部文档。
+- **关键词更新**：移除内部缩写（`tfa`、`agp`），新增面向用户的搜索词：`Antigravity Panel`、`Antigravity IDE`、`Claude`、`GPT`、`Auto Accept`。
+- **图标重设计**：将活动栏图标替换为新的 A·P 设计（字母间带红色圆点），与 Antigravity Panel 改名保持一致。
+
+### 修复
+
+- **CI 运行时**：将 GitHub Actions 工作流固定为 Node.js 24，以赶在 GitHub 6 月 16 日强制执行截止日期前消除废弃警告。
+- **文档准确性**：修正了文档中所有命令名称以匹配实际 NLS 标题（`About`、`Restart Agent Service`、`Reset Status`、`Connectivity Diagnostics`、`Toggle Agent Auto-Accept`）；修正配置默认值（`warningThreshold` 30%→40%，`criticalThreshold` 10%→20%，轮询最小值 60s→30s）；删除不存在的 `Status Bar Style` 设置行。
+
 ## [2.6.1] - 2026-06-04
 
 ### 新增

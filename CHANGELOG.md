@@ -2,19 +2,23 @@ English | [中文文档](docs/CHANGELOG_zh.md)
 
 # Change Log
 
-## [Unreleased]
-
-### Changed
-
-- **Renamed back to Antigravity Panel**: Reverted display name from "Toolkit for Antigravity" (used since v1.2.0) back to the original **"Antigravity Panel"** for better search discoverability — the extension ID `n2ns.antigravity-panel` and all existing installs are unaffected. Updated Output Channel name, status bar tooltip, and all documentation accordingly.
-- **Keywords**: Replaced internal abbreviations (`tfa`, `agp`) with user-facing search terms; added `Antigravity Panel`, `Antigravity IDE`, `Claude`, `GPT`, `Auto Accept`.
-
 ## [2.6.2] - 2026-06-05
 
 ### Added
 
 - **HttpClient & StatusBarManager Tests**: Implemented comprehensive test suites checking local connectivity to the Antigravity Language Server (HttpClient) and checking state/threshold display rendering under various settings configurations (StatusBarManager), increasing total test count to 263.
 - **Contributing Guide**: Created `CONTRIBUTING.md` defining project architecture, environment setup, testing requirements, and styling code standards.
+
+### Changed
+
+- **Renamed back to Antigravity Panel**: Reverted display name from "Toolkit for Antigravity" (used since v1.2.0) back to the original **"Antigravity Panel"** for better search discoverability — the extension ID `n2ns.antigravity-panel` and all existing installs are unaffected. Updated Output Channel name, status bar tooltip, and all documentation accordingly.
+- **Keywords**: Replaced internal abbreviations (`tfa`, `agp`) with user-facing search terms; added `Antigravity Panel`, `Antigravity IDE`, `Claude`, `GPT`, `Auto Accept`.
+- **Icon Redesign**: Replaced the activity bar icon with a new A·P design (red dot between letters) matching the Antigravity Panel rename.
+
+### Fixed
+
+- **CI Runtime**: Pinned GitHub Actions workflows to Node.js 24 to silence deprecation warnings ahead of GitHub's June 16 enforcement deadline.
+- **README Accuracy**: Corrected command names throughout documentation to match actual NLS titles (`About`, `Restart Agent Service`, `Reset Status`, `Connectivity Diagnostics`, `Toggle Agent Auto-Accept`); fixed configuration defaults (`warningThreshold` 30%→40%, `criticalThreshold` 10%→20%, polling minimum 60s→30s); removed non-existent `Status Bar Style` setting row.
 
 ## [2.6.1] - 2026-06-04
 
