@@ -1,6 +1,6 @@
-# Contributing to Toolkit for Antigravity
+# Contributing to Antigravity Panel
 
-Thank you for your interest in contributing to the **Toolkit for Antigravity**! Contributions from the community help make this toolkit robust, secure, and user-friendly.
+Thank you for your interest in contributing to **Antigravity Panel**! Contributions from the community help make this extension robust, secure, and user-friendly.
 
 This guide outlines our development workflow, project architecture, coding standards, and testing procedures. Please review it before submitting a Pull Request.
 
@@ -128,4 +128,4 @@ The extension supports 13 languages. To maintain technical consistency across al
     *   Provide a clear summary of your changes and reference any related issues (e.g., `Fixes #123`).
     *   Wait for the maintainers to review and merge your PR.
 
-Thank you for helping us build a better Toolkit for Antigravity!
+Thank you for helping us build a better Antigravity Panel!

@@ -569,7 +569,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     errorLog("Extension service initialization failed", e);
     warnLog(`⚠️ Toolkit commands are registered but services are unavailable: ${errMsg}`);
     vscode.window.showErrorMessage(
-      vscode.l10n.t("Toolkit for Antigravity failed to initialize: {0}. Try reloading the window.", errMsg)
+      vscode.l10n.t("Antigravity Panel failed to initialize: {0}. Try reloading the window.", errMsg)
     );
   }
 }

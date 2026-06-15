@@ -153,7 +153,7 @@ export class StatusBarManager implements vscode.Disposable {
             md.appendMarkdown(tooltipRows.join('\n'));
             this.item.tooltip = md;
         } else {
-            this.item.tooltip = "Toolkit for Antigravity";
+            this.item.tooltip = "Antigravity Panel";
         }
         this.item.show();
     }

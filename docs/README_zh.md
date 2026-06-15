@@ -1,6 +1,6 @@
 [English](../README.md) | 中文文档
 
-# Toolkit for Antigravity
+# Antigravity Panel
 
 > 实时 AI 配额监控和缓存管理工具，专为 **Google Antigravity IDE** 设计 — 追踪 Gemini、Claude 和 GPT 使用情况，可视化消费趋势，并在一个集成侧边栏面板中管理对话缓存。
 
@@ -15,7 +15,7 @@
 > 🚀 **获 Google AI 官方博客推荐:** [Where we're going, we don't need chatbots: introducing the Antigravity IDE](https://dev.to/googleai/where-were-going-we-dont-need-chatbots-introducing-the-antigravity-ide-2c3k)
 
 
-**Toolkit for Antigravity**（原名 *Antigravity Panel*）帮助你掌控 **Google Antigravity IDE** 中的 AI 模型使用情况。实时配额监控、用量趋势分析、缓存管理——一切均可在一个集成的侧边栏面板中完成。
+**Antigravity Panel** 帮助你掌控 **Google Antigravity IDE** 中的 AI 模型使用情况。实时配额监控、用量趋势分析、缓存管理——一切均可在一个集成的侧边栏面板中完成。
 
 ## ✨ 功能概览
 
@@ -155,7 +155,7 @@ pkill -f "Antigravity"
 
 1. 打开 **Antigravity IDE**
 2. 按 `Ctrl+Shift+X`（Windows/Linux）或 `Cmd+Shift+X`（macOS）打开扩展面板
-3. 搜索 `Toolkit for Antigravity`
+3. 搜索 `Antigravity Panel`
 4. 点击 **安装**
 
 **或从网页安装：**
@@ -268,7 +268,7 @@ pkill -f "Antigravity"
 
 **你的数据属于你自己。**
 
-Toolkit for Antigravity 不会收集、传输或存储任何用户数据。所有操作都在你的本地计算机上执行。扩展仅与本地组件通信——不会向任何外部服务器发送数据。
+Antigravity Panel 不会收集、传输或存储任何用户数据。所有操作都在你的本地计算机上执行。扩展仅与本地组件通信——不会向任何外部服务器发送数据。
 
 **实验性功能提示：**
 本扩展的“智能配额监控”功能依赖于本地 Antigravity 环境所暴露的内部指标。该功能属于实验性质，仅按“原样”提供，旨在帮助用户更好地了解个人资源使用情况。它不是 Google 的官方产品，并且在未来的 IDE 更新中可能会发生变化。
