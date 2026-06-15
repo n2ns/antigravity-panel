@@ -1,5 +1,9 @@
 [English](../README.md) | 中文文档
 
+<p align="center">
+  <img src="../assets/icon.png" width="128" alt="Antigravity Panel">
+</p>
+
 # Antigravity Panel
 
 > 实时 AI 配额监控和缓存管理工具，专为 **Google Antigravity IDE** 设计 — 追踪 Gemini、Claude 和 GPT 使用情况，可视化消费趋势，并在一个集成侧边栏面板中管理对话缓存。
@@ -11,6 +15,7 @@
 [![GitHub 版本](https://img.shields.io/github/v/release/n2ns/antigravity-panel?style=flat&label=%E7%89%88%E6%9C%AC&cacheSeconds=10800)](https://github.com/n2ns/antigravity-panel/releases)
 [![Open VSX 下载量](https://img.shields.io/open-vsx/dt/n2ns/antigravity-panel?style=flat&label=%E4%B8%8B%E8%BD%BD%E9%87%8F&cacheSeconds=10800)](https://open-vsx.org/extension/n2ns/antigravity-panel)
 [![最后更新](https://img.shields.io/github/last-commit/n2ns/antigravity-panel?style=flat&label=%E6%9C%80%E5%90%8E%E6%9B%B4%E6%96%B0&cacheSeconds=10800)](https://github.com/n2ns/antigravity-panel/commits/main)
+[![GitHub Sponsors](https://img.shields.io/github/sponsors/n2ns?label=Sponsor&logo=githubsponsors&color=ea4aaa&style=flat)](https://github.com/sponsors/n2ns)
 
 > 🚀 **获 Google AI 官方博客推荐:** [Where we're going, we don't need chatbots: introducing the Antigravity IDE](https://dev.to/googleai/where-were-going-we-dont-need-chatbots-introducing-the-antigravity-ide-2c3k)
 
@@ -23,7 +28,7 @@
 - 📊 **用量统计** - 可视化展示使用趋势与历史记录
 - 🧹 **缓存管理** - 快速清理 AI 对话历史与缓存文件
 - 🎨 **原生集成** - 适配 IDE 主题的 UI 组件设计
-- 🌍 **多语言支持** - 支持 13 种语言，包括界面和运行时通知
+- 🌍 **多语言支持** - 支持 14 种语言，包括界面和运行时通知
 - 🛠️ **连接诊断** - 内置连接检查和错误报告工具
 - 🤖 **无人值守模式** - 自动接受 Agent 命令，加速繁重的工作流
 - ✍️ **智能提交** - 使用本地 LLM 或 Claude 自动生成提交信息
@@ -147,7 +152,7 @@ pkill -f "Antigravity"
 - ✅ Linux
 
 **多语言界面**
-- English, 简体中文, 繁體中文, 日本語, Français, Deutsch, Español, Português (Brasil), Italiano, 한국어, Русский, Polski, Türkçe
+- English, 简体中文, 繁體中文, 日本語, Français, Deutsch, Español, Português (Brasil), Italiano, 한국어, Русский, Polski, Türkçe, Tiếng Việt
 
 ## 📦 安装
 

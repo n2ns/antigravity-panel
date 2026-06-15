@@ -110,7 +110,7 @@ We use `eslint` and `typescript` strict mode to maintain code quality.
     *   Always write comprehensive types for views and messages.
 
 ### 🌐 Localization & Translation Policy
-The extension supports 13 languages. To maintain technical consistency across all locales, we enforce the **UI Label Strategy** defined in [LOCALIZATION_RULES.md](file:///home/deploy/projects/antigravity-panel/docs/LOCALIZATION_RULES.md):
+The extension supports 14 languages. To maintain technical consistency across all locales, we enforce the **UI Label Strategy** defined in [LOCALIZATION_RULES.md](file:///home/deploy/projects/antigravity-panel/docs/LOCALIZATION_RULES.md):
 1.  **UI Buttons, Section Headers, and Command Titles** must remain in **English** (e.g., `Rules`, `MCP`, `Auto-Accept`, `Reset Status`). Do not translate these.
 2.  **Tooltips, Descriptions, Explanations, and Warnings** must be fully **localized** in NLS files (e.g. `package.nls.zh-cn.json`, `bundle.l10n.zh-cn.json`).
 

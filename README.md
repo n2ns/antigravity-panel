@@ -28,7 +28,7 @@ English | [中文文档](docs/README_zh.md)
 - 📊 **Usage Analytics** - Interactive charts and history tracking
 - 🧹 **Cache Management** - Manage AI conversation history and files
 - 🎨 **Native Integration** - UI components adapted to IDE themes
-- 🌍 **Localization** - Support for 13 languages including runtime notifications
+- 🌍 **Localization** - Support for 14 languages including runtime notifications
 - 🛠️ **Diagnostics** - Built-in connection check and error reporting
 - 🤖 **Hands-free Mode** - Auto-accept agent commands for heavy workflows
 - ✍️ **AI Commit** - Generate commit messages via Local LLM or Claude
@@ -151,7 +151,7 @@ A workaround for when the built-in "Generate commit message" feature is unavaila
 - ✅ Linux
 
 **Multi-language UI**
-- English, 简体中文, 繁體中文, 日本語, Français, Deutsch, Español, Português (Brasil), Italiano, 한국어, Русский, Polski, Türkçe
+- English, 简体中文, 繁體中文, 日本語, Français, Deutsch, Español, Português (Brasil), Italiano, 한국어, Русский, Polski, Türkçe, Tiếng Việt
 
 ## 📦 Installation
 
@@ -350,7 +350,7 @@ Special thanks to our community contributors:
 
 ## 🌐 Localization Policy
 
-To ensure technical consistency and professional standard across all 13 supported languages:
+To ensure technical consistency and professional standard across all 14 supported languages:
 - **UI Labels & Technical Terms**: Remain in **English** (e.g., `Rules`, `MCP`, `Auto-Accept`, `Reset Status`).
 - **Tooltips & Descriptions**: Fully **localized** to provide detailed explanations in the user's native language.
 
