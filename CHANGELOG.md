@@ -2,6 +2,13 @@ English | [中文文档](docs/CHANGELOG_zh.md)
 
 # Change Log
 
+## [2.6.3] - 2026-06-15
+
+### Changed
+
+- **Renamed back to Antigravity Panel**: Reverted display name from "Toolkit for Antigravity" (used since v1.2.0) back to the original **"Antigravity Panel"** for better search discoverability — the extension ID `n2ns.antigravity-panel` and all existing installs are unaffected. Updated Output Channel name, status bar tooltip, and all documentation accordingly.
+- **Keywords**: Replaced internal abbreviations (`tfa`, `agp`) with user-facing search terms; added `Antigravity Panel`, `Antigravity IDE`, `Claude`, `GPT`, `Auto Accept`.
+
 ## [2.6.2] - 2026-06-05
 
 ### Added
