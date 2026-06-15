@@ -2,7 +2,7 @@ English | [中文文档](docs/CHANGELOG_zh.md)
 
 # Change Log
 
-## [2.6.3] - 2026-06-15
+## [Unreleased]
 
 ### Changed
 
