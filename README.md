@@ -382,6 +382,6 @@ If Antigravity Panel has saved you time, consider supporting continued developme
 
 ---
 
-Built by N2NS Lab, Datafrog's open-source lab for AI applications.
+Built by [N2NS Lab](https://n2ns.com), the open-source lab of [datafrog.io](https://datafrog.io) for practical AI developer tools.
 
 *For Antigravity. By Antigravity.*
