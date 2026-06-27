@@ -2,6 +2,23 @@
 
 # 更新日志
 
+## [2.6.3] - 2026-06-28
+
+### 新增
+
+- **语言服务调试指南**：创建了 [DEBUGGING_zh.md](DEBUGGING_zh.md)，详细说明了本地 Language Server 的连接诊断方法、Extension Host 调试入口、以及 Protobuf 架构/ `omitempty` 序列化特征排查。
+
+### 变更
+
+- **TODO 路线图刷新**：更新 [TODO.md](TODO.md) 与 [TODO_zh.md](TODO_zh.md)，移除已完成的可靠性修复项，并记录项目评审后剩余的 P2/P3/P4 代码质量任务。
+- **README / 贡献指南拆分**：将贡献者工作流细节迁移到 [CONTRIBUTING.md](../CONTRIBUTING.md)，在 README 中保留贡献者名单，并明确开发、调试与真实 Language Server 测试均以 Antigravity IDE 为目标环境。
+- **文档准确性刷新**：更新功能特性、免责声明、本地化规则、知识图谱和 README 文档入口，使阈值、路径、支持语言、隐私行为和测试策略与当前项目状态一致。
+
+### 修复
+
+- **省略的 AI 点数字段 Bug**：为用户配额点数引入了鲁棒的防御性类型校验。当 Language Server 因为余额为 `0` 触发 Go Protobuf 的 `omitempty` 机制而省略 `creditAmount` 字段时，客户端现在会安全地将其默认置为 `'0'`，以避免在状态栏及 Webview 面板中展示为 `undefined`。
+- **运行时可靠性修复**：加固了上下文缓存删除逻辑，避免按前缀误删文件；串行化配额刷新结果应用，防止旧响应覆盖新状态；对 Language Server 返回的异常配额百分比做 clamp；为缓存的 HTTP/HTTPS 连接增加反向协议 fallback；统一捕获 Webview 消息处理错误；并为 CDP Auto-Accept WebSocket 连接增加超时保护。
+
 ## [2.6.2] - 2026-06-05
 
 ### 新增

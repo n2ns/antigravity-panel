@@ -40,7 +40,8 @@ English | [中文文档](docs/README_zh.md)
 
 | | |
 |:---:|:---:|
-| ![Quota Dashboard](assets/preview1.png) | ![Usage Analytics](assets/preview2.png) |\r\n| ![Cache Management](assets/preview3.png) | ![Settings & Config](assets/preview4.png) |
+| ![Quota Dashboard](assets/preview1.png) | ![Usage Analytics](assets/preview2.png) |
+| ![Cache Management](assets/preview3.png) | ![Settings & Config](assets/preview4.png) |
 
 *Real-time quota monitoring, usage trends, and cache management in one place*
 
@@ -107,14 +108,14 @@ pkill -f "Antigravity"
 /Applications/Antigravity.app/Contents/MacOS/Electron --remote-debugging-port=9222 &
 ```
 
-### ✨ Commit Message Generator (Claude)
+### ✨ Commit Message Generator (Local & Claude)
 
-**Generate conventional commit messages using Claude AI**
+**Generate conventional commit messages using a local LLM or Claude**
 
 A workaround for when the built-in "Generate commit message" feature is unavailable.
 
 **Setup:**
-1. Get an API key from [Anthropic Console](https://console.anthropic.com/)
+1. Get an API key from [Anthropic Console](https://console.anthropic.com/) if you use Claude
 2. Run `Antigravity Panel: Set Anthropic API Key`
 3. Enter your API key (stored securely, never in plaintext)
 
@@ -124,18 +125,18 @@ A workaround for when the built-in "Generate commit message" feature is unavaila
 3. The commit message auto-populates in the SCM input box
 
 **Configuration:**
-- **Model**: Choose between Claude Sonnet 4, 3.5 Sonnet, or Opus
+- **Model**: Choose a local Ollama model or a Claude/OpenAI-compatible model
 - **Max Diff Size**: Limit characters sent (default: 80,000)
 - **Format**: Conventional commits or simple style
 
-> ⚠️ **Privacy**: Your staged diff is sent to Anthropic's API to generate the message.
+> ⚠️ **Privacy**: Your staged diff is sent to the configured LLM endpoint. Use a local endpoint if you do not want diffs sent to an external provider.
 
 ### 🔄 Service Recovery Tools
 
 **Built-in troubleshooting**
 - **Restart**: Reboots the background Language Server if the Agent is unresponsive
 - **Reset**: Clears user status cache to fix stuck quota updates
-- **Reload**: Refreshes the VS Code window to resolve UI glitches
+- **Reload**: Refreshes the Antigravity IDE window to resolve UI glitches
 
 ### ⚙️ Quick Configuration Access
 
@@ -235,6 +236,8 @@ Open Settings (`Ctrl+,` / `Cmd+,`) in Antigravity IDE and search for `tfa` to cu
 | **Quota Style** | `semi-arc` | Visualization style: `semi-arc` or `classic-donut` |
 | **Visualization Mode** | `groups` | Show dashboard by `groups` or `models` |
 | **UI Scale** | `1.0` | Global scale factor for panel elements (0.8 to 2.0) |
+| **Show User Info Card** | `✓` | Show subscription/user plan information in the sidebar |
+| **Show Credits Card** | `✓` | Show Prompt/Flow/User Credits in the sidebar |
 | **Show GPT Quota** | `✗` | Whether to display GPT family models in the panel |
 | **History Range** | `90 min` | Time range for usage chart (10-120 minutes) |
 | **Warning Threshold** | `40%` | Status bar turns warning color at this level |
@@ -257,6 +260,8 @@ Open Settings (`Ctrl+,` / `Cmd+,`) in Antigravity IDE and search for `tfa` to cu
 |---------|---------|-------------|
 | **Server Host** | `127.0.0.1` | Address of Antigravity Language Server |
 | **API Path** | `/exa...` | gRPC-Web path for User Status |
+| **Auto-Accept** | `✗` | Enable hands-free acceptance of Agent actions |
+| **Auto-Accept Interval** | `800ms` | Polling interval for Auto-Accept (200-5000ms) |
 | **Debug Mode** | `✗` | Enable verbose logging in Output panel |
 
 
@@ -272,66 +277,20 @@ Open Settings (`Ctrl+,` / `Cmd+,`) in Antigravity IDE and search for `tfa` to cu
 
 ## 🔒 Privacy & Safety Disclaimer
 
-**Your data stays yours.**
+**Your data stays under your control.**
 
-Antigravity Panel does not collect, transmit, or store any user data. All operations are performed locally on your machine. The extension only communicates with local components—nothing is sent to external servers.
+Antigravity Panel does not collect or store analytics data. Quota, cache, diagnostics, and core panel operations communicate with local Antigravity IDE components on your machine. The optional commit message generator sends staged diffs only to the LLM endpoint you configure, which may be local or external.
 
 **Experimental Feature Notice:**
 The *Smart Quota Monitoring* feature relies on internal metrics exposed by the local Antigravity environment. This functionality is experimental and provided "as-is" to help users better understand their personal usage. It is not an official Google product and may be subject to changes in future IDE updates.
 
-## 🏗️ Development & Testing
-
-If you want to build the extension from source, run tests, or contribute to the project, follow these instructions:
-
-### Prerequisites
-
-Ensure you have [Node.js](https://nodejs.org/) (v22+ recommended) and `npm` installed.
-
-### Setup
-
-Clone the repository and install the dependencies:
-```bash
-git clone https://github.com/n2ns/antigravity-panel.git
-cd antigravity-panel
-npm install
-```
-
-### Build & Compile
-
-- **Production Build**: Bundles the extension, Webview JS, and Webview CSS into `/dist`:
-  ```bash
-  npm run build
-  ```
-- **Development Watch Mode**: Re-compiles source files automatically on changes:
-  ```bash
-  npm run watch
-  ```
-
-### Running Tests
-
-The test suite includes both pure unit tests and integration tests that simulate Antigravity Server responses:
-
-- **Unit Tests**:
-  ```bash
-  npm test
-  ```
-- **Server Integration Tests**:
-  ```bash
-  npm run test:server
-  ```
-
-### Packaging
-
-To package the extension into a `.vsix` installer file:
-```bash
-npm run package
-```
-
 ## 🤝 Contributing
 
-We welcome contributions! If you find Antigravity Panel helpful, please give us a **Star** 🌟 on GitHub! It's the best way to support our work and help others discover it.
+We welcome contributions. Development, debugging, and testing must be done in **Antigravity IDE** with the local Antigravity Language Server available. Use Node.js 24+ and npm for local builds.
 
-Here's how you can help:
+See [CONTRIBUTING.md](CONTRIBUTING.md) for setup, Extension Host debugging, test commands, coding standards, localization rules, packaging, and PR workflow.
+
+If you find Antigravity Panel helpful, please give us a **Star** 🌟 on GitHub. It's the best way to support our work and help others discover it.
 
 1. **Report bugs**: [Open an issue](https://github.com/n2ns/antigravity-panel/issues)
 2. **Suggest features**: [Start a discussion](https://github.com/n2ns/antigravity-panel/discussions)
@@ -358,6 +317,12 @@ To ensure technical consistency and professional standard across all 14 supporte
 - **Tooltips & Descriptions**: Fully **localized** to provide detailed explanations in the user's native language.
 
 For more details, see [LOCALIZATION_RULES.md](docs/LOCALIZATION_RULES.md).
+
+## 📚 Project Docs
+
+- [Features](docs/FEATURES.md)
+- [Changelog](CHANGELOG.md)
+- [TODO](docs/TODO.md)
 
 ## 📄 License
 

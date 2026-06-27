@@ -53,7 +53,7 @@ const defaultMockStorageService: IStorageService = {
     recordQuotaPoint: async () => { },
     calculateUsageBuckets: () => [],
     getMaxUsage: () => 0,
-    clearGroupHistory: () => { },
+    clearGroupHistory: async () => { },
     setLastViewState: async () => { },
     getLastViewState: () => null,
     setLastSnapshot: async () => { },
@@ -131,6 +131,46 @@ suite('AppViewModel Test Suite', () => {
         assert.strictEqual(activeGroups.length, 1, 'Should have 1 active group');
         assert.strictEqual(activeGroups[0].id, 'gemini-flash');
         assert.strictEqual(activeGroups[0].remaining, 50);
+    });
+
+    test('refreshQuota should ignore stale slower responses', async () => {
+        let resolveFirst: (value: QuotaSnapshot) => void = () => { };
+        let resolveSecond: (value: QuotaSnapshot) => void = () => { };
+        let calls = 0;
+        const makeSnapshot = (remainingPercentage: number): QuotaSnapshot => ({
+            timestamp: new Date(),
+            models: [{
+                modelId: 'MODEL_PLACEHOLDER_M47',
+                label: 'Gemini 3 Flash',
+                remainingPercentage,
+                isExhausted: false,
+                resetTime: new Date(),
+                timeUntilReset: '1h'
+            }]
+        });
+
+        mockQuota.fetchQuota = async () => {
+            calls++;
+            return new Promise<QuotaSnapshot>((resolve) => {
+                if (calls === 1) {
+                    resolveFirst = resolve;
+                } else {
+                    resolveSecond = resolve;
+                }
+            });
+        };
+
+        const firstRefresh = vm.refreshQuota();
+        const secondRefresh = vm.refreshQuota();
+
+        resolveSecond(makeSnapshot(80));
+        await secondRefresh;
+
+        resolveFirst(makeSnapshot(10));
+        await firstRefresh;
+
+        const geminiFlash = vm.getState().quota.groups.find(g => g.id === 'gemini-flash');
+        assert.strictEqual(geminiFlash?.remaining, 80);
     });
 
     test('refreshCache should update cache state', async () => {

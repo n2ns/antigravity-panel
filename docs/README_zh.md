@@ -40,7 +40,8 @@
 
 | | |
 |:---:|:---:|
-| ![配额仪表盘](../assets/preview1.png) | ![用量分析](../assets/preview2.png) |\r\n| ![缓存管理](../assets/preview3.png) | ![设置与配置](../assets/preview4.png) |
+| ![配额仪表盘](../assets/preview1.png) | ![用量分析](../assets/preview2.png) |
+| ![缓存管理](../assets/preview3.png) | ![设置与配置](../assets/preview4.png) |
 
 *实时配额监控、用量趋势和缓存管理，一目了然*
 
@@ -52,7 +53,7 @@
 - 按模型分组（Gemini、Claude、GPT 等）显示配额
 - 状态栏显示剩余配额，带 Emoji 状态指示器（🟢🟡🔴）和缓存大小
 - 悬停提示显示所有模型配额和重置时间
-- 可配置的警告阈值（≤30%）和危险阈值（≤10%）
+- 可配置的警告阈值（≤40%）和严重阈值（≤20%）
 
 ### 📈 用量趋势分析
 
@@ -114,7 +115,7 @@ pkill -f "Antigravity"
 这是当内置 "Generate commit message" 功能不可用时的一个有力补充。
 
 **配置步骤：**
-1. 从 [Anthropic Console](https://console.anthropic.com/) 获取 API Key（如使用 Claude）
+1. 如使用 Claude，从 [Anthropic Console](https://console.anthropic.com/) 获取 API Key
 2. 运行命令 `Antigravity Panel: Set Anthropic API Key`
 3. 输入你的 API Key (安全存储)
 
@@ -124,11 +125,11 @@ pkill -f "Antigravity"
 3. 提交信息将自动填充到源代码管理输入框中
 
 **配置选项：**
-- **模型**: 选择 Claude Sonnet 4, 3.5 Sonnet, 或 Opus (或本地 Ollama 模型)
+- **模型**: 选择本地 Ollama 模型，或 Claude/OpenAI 兼容模型
 - **最大 Diff 大小**: 限制发送的字符数 (默认: 80,000)
 - **格式**: Conventional commits (约定式) 或 Simple (简单) 风格
 
-> ⚠️ **隐私提示**: 你的暂存 Diff 将被发送到配置的 LLM API 以生成摘要。
+> ⚠️ **隐私提示**: 你的暂存 Diff 会发送到你配置的 LLM 端点。如果不希望 Diff 发送给外部服务，请使用本地端点。
 
 ### ⚙️ 快速配置访问
 
@@ -142,7 +143,7 @@ pkill -f "Antigravity"
 **内置故障排除功能**
 - **Restart**: 当 Agent 无响应时，重启后台语言服务（解决分析进度卡住）
 - **Reset**: 清除状态缓存，修复配额显示不更新的问题
-- **Reload**: 刷新 VS Code 窗口，解决界面显示异常或无响应
+- **Reload**: 刷新 Antigravity IDE 窗口，解决界面显示异常或无响应
 
 
 ### 🌐 全平台支持
@@ -236,6 +237,8 @@ pkill -f "Antigravity"
 | **仪表盘样式** | `semi-arc` | 模型配额呈现样式：`semi-arc`（半圆弧）或 `classic-donut`（经典圆环） |
 | **可视化模式** | `groups` | 仪表盘按 `groups`（分组）或 `models`（单个模型）显示 |
 | **UI 缩放** | `1.0` | 面板元素的全局缩放比例（0.8 到 2.0） |
+| **显示用户信息卡片** | `✓` | 在侧边栏显示订阅和用户计划信息 |
+| **显示 Credits 卡片** | `✓` | 在侧边栏显示 Prompt/Flow/User Credits |
 | **显示 GPT 配额** | `✗` | 是否在面板中显示 GPT 系列模型的配额 |
 | **历史范围** | `90 分钟` | 用量图表的时间范围（10-120 分钟） |
 | **警告阈值** | `40%` | 配额低于此值时，状态栏变色提醒（警告） |
@@ -258,6 +261,8 @@ pkill -f "Antigravity"
 |--------|--------|------|
 | **服务器主机** | `127.0.0.1` | Antigravity 语言服务器的地址 |
 | **API 路径** | `/exa...` | 获取用户状态的 gRPC-Web 路径 |
+| **Auto-Accept** | `✗` | 开启无人值守的 Agent 操作自动接受 |
+| **Auto-Accept 间隔** | `800ms` | Auto-Accept 轮询间隔（200-5000ms） |
 | **调试模式** | `✗` | 开启后在输出面板显示详细的调试日志 |
 
 
@@ -273,64 +278,20 @@ pkill -f "Antigravity"
 
 ## 🔒 隐私与安全免责声明
 
-**你的数据属于你自己。**
+**你的数据由你掌控。**
 
-Antigravity Panel 不会收集、传输或存储任何用户数据。所有操作都在你的本地计算机上执行。扩展仅与本地组件通信——不会向任何外部服务器发送数据。
+Antigravity Panel 不会收集或存储分析数据。配额、缓存、诊断和核心面板功能均与本机 Antigravity IDE 组件通信。可选的提交信息生成器只会把暂存 Diff 发送到你配置的 LLM 端点，该端点可以是本地服务，也可以是外部服务。
 
 **实验性功能提示：**
 本扩展的“智能配额监控”功能依赖于本地 Antigravity 环境所暴露的内部指标。该功能属于实验性质，仅按“原样”提供，旨在帮助用户更好地了解个人资源使用情况。它不是 Google 的官方产品，并且在未来的 IDE 更新中可能会发生变化。
 
-## 🏗️ 开发与测试
-
-如果你想从源码构建扩展、运行测试或为项目做贡献，请遵循以下说明：
-
-### 前提条件
-
-确保你已安装 [Node.js](https://nodejs.org/)（推荐 v22+）和 `npm`。
-
-### 安装与设置
-
-克隆仓库并安装依赖项：
-```bash
-git clone https://github.com/n2ns/antigravity-panel.git
-cd antigravity-panel
-npm install
-```
-
-### 构建与编译
-
-- **生产环境构建**：将扩展、Webview JS 和 Webview CSS 打包到 `/dist` 目录中：
-  ```bash
-  npm run build
-  ```
-- **开发监听模式**：在修改文件时自动重新编译源文件：
-  ```bash
-  npm run watch
-  ```
-
-### 运行测试
-
-测试套件包括纯单元测试以及模拟 Antigravity Server 响应的集成测试：
-
-- **单元测试**：
-  ```bash
-  npm test
-  ```
-- **服务器集成测试**：
-  ```bash
-  npm run test:server
-  ```
-
-### 打包
-
-将扩展打包成 `.vsix` 安装文件：
-```bash
-npm run package
-```
-
 ## 🤝 参与贡献
 
-欢迎贡献！如果你觉得这个工具有所帮助，请在 GitHub 上给我们一个 **Star** 🌟！这是对我们最大的支持和鼓励。
+欢迎贡献。开发、调试和测试必须在 **Antigravity IDE** 中进行，并确保本地 Antigravity Language Server 可用。推荐使用 Node.js 24+ 和 npm 进行本地构建。
+
+开发环境、Extension Host 调试、测试命令、代码规范、本地化规则、打包和 PR 流程请参考 [CONTRIBUTING.md](../CONTRIBUTING.md)。
+
+如果你觉得这个工具有所帮助，请在 GitHub 上给我们一个 **Star** 🌟！这是对我们最大的支持和鼓励。
 
 你可以：
 
@@ -348,6 +309,7 @@ npm run package
 *   [**@simbaTmotsi**](https://github.com/simbaTmotsi) - 本地 LLM 提交信息生成器。
 *   [**@A-vrice**](https://github.com/A-vrice) - 日语本地化。
 *   [**@restinnotes**](https://github.com/restinnotes) - CDP Auto-Accept 实现。
+*   [**@AMDphreak**](https://github.com/AMDphreak) - 侧边栏标题修复、Gemini Flash/Pro 分组、配额重置窗口与 API 周期对齐，以及 Claude+GPT 共享池显示。
 *   [**@chonkydonkers**](https://github.com/chonkydonkers) - 在状态栏和侧边栏中展示用户订阅层级的可用额度。
 *   [**@vincenzofabiano92**](https://github.com/vincenzofabiano92) - 同步命令注册、连接稳定性优化、意大利语本地化补全，并新增服务器集成测试运行器 (v2.6.0)。
 
@@ -359,9 +321,17 @@ npm run package
 
 更多细节请参考 [LOCALIZATION_RULES.md](LOCALIZATION_RULES.md)。
 
+## 📚 项目文档
+
+- [功能特性](FEATURES_zh.md)
+- [更新日志](CHANGELOG_zh.md)
+- [TODO](TODO_zh.md)
+
 ## 📄 许可证
 
 本项目采用 [Apache License, Version 2.0](../LICENSE) 开源许可证。
+
+*曾以 **Toolkit for Antigravity** 名称发布。*
 
 ## ⭐ Star 增长曲线
 

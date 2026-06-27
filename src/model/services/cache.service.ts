@@ -101,8 +101,8 @@ export class CacheService implements ICacheService {
             for (const entry of entries) {
                 if (!entry.isFile()) continue;
                 // Group by conversation UUID (strip extensions like .db, .db-shm, .db-wal, .pb)
-                const baseName = entry.name.replace(/\.(db-shm|db-wal|db|pb)$/, '');
-                if (baseName === entry.name) continue; // Skip unknown files
+                const baseName = this.getCodeContextBaseName(entry.name);
+                if (!baseName) continue; // Skip unknown files
                 const filePath = path.join(this.baseCodeContextsDir, entry.name);
                 try {
                     const stat = await fs.promises.stat(filePath);
@@ -144,7 +144,7 @@ export class CacheService implements ICacheService {
         try {
             const entries = await fs.promises.readdir(this.baseCodeContextsDir, { withFileTypes: true });
             return entries
-                .filter(e => e.isFile() && e.name.startsWith(contextId))
+                .filter(e => e.isFile() && this.getCodeContextBaseName(e.name) === contextId)
                 .map(e => ({
                     name: e.name,
                     path: path.join(this.baseCodeContextsDir, e.name),
@@ -176,7 +176,7 @@ export class CacheService implements ICacheService {
         if (!this.isValidId(contextId)) return;
         try {
             const entries = await fs.promises.readdir(this.baseCodeContextsDir, { withFileTypes: true });
-            const matchingFiles = entries.filter(e => e.isFile() && e.name.startsWith(contextId));
+            const matchingFiles = entries.filter(e => e.isFile() && this.getCodeContextBaseName(e.name) === contextId);
             for (const file of matchingFiles) {
                 await fs.promises.rm(path.join(this.baseCodeContextsDir, file.name), { force: true });
             }
@@ -354,6 +354,11 @@ export class CacheService implements ICacheService {
      */
     private isValidId(id: string): boolean {
         return /^[a-zA-Z0-9_.-]+$/.test(id) && id.length > 0 && id.length < 128;
+    }
+
+    private getCodeContextBaseName(fileName: string): string | null {
+        const baseName = fileName.replace(/\.(db-shm|db-wal|db|pb)$/, '');
+        return baseName === fileName ? null : baseName;
     }
 
     /**

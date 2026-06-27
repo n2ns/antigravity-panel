@@ -140,4 +140,81 @@ suite('QuotaService Test Suite', () => {
         assert.strictEqual(snapshot!.promptCredits, undefined);
         assert.strictEqual(snapshot!.models.length, 0);
     });
+
+    test('should default omitted user credit amount to zero', async () => {
+        service.mockResponse = {
+            userStatus: {
+                userTier: {
+                    availableCredits: [
+                        { creditType: 'GOOGLE_ONE_AI' },
+                        { creditType: '', creditAmount: '' },
+                        { creditType: 'PAID_AI', creditAmount: ' 42 ' },
+                        { creditType: 'BONUS_AI', creditAmount: null }
+                    ]
+                },
+                cascadeModelConfigData: { clientModelConfigs: [] }
+            }
+        };
+
+        const snapshot = await service.fetchQuota();
+
+        assert.ok(snapshot);
+        assert.strictEqual(snapshot!.tokenUsage?.userCredits?.[0].creditAmount, '0');
+        assert.strictEqual(snapshot!.tokenUsage?.userCredits?.[0].creditType, 'GOOGLE_ONE_AI');
+        assert.strictEqual(snapshot!.tokenUsage?.userCredits?.[1].creditAmount, '0');
+        assert.strictEqual(snapshot!.tokenUsage?.userCredits?.[1].creditType, 'UNKNOWN');
+        assert.strictEqual(snapshot!.tokenUsage?.userCredits?.[2].creditAmount, '42');
+        assert.strictEqual(snapshot!.tokenUsage?.userCredits?.[3].creditAmount, '0');
+    });
+
+    test('should clamp invalid and out-of-range quota numbers', async () => {
+        service.mockResponse = {
+            userStatus: {
+                planStatus: {
+                    planInfo: {
+                        monthlyPromptCredits: 100,
+                        monthlyFlowCredits: 100
+                    },
+                    availablePromptCredits: 150,
+                    availableFlowCredits: 'not-a-number'
+                },
+                cascadeModelConfigData: {
+                    clientModelConfigs: [
+                        {
+                            label: 'Too High',
+                            modelOrAlias: { model: 'too-high' },
+                            quotaInfo: {
+                                remainingFraction: 2,
+                                resetTime: new Date(Date.now() + 3600000).toISOString()
+                            }
+                        },
+                        {
+                            label: 'Negative',
+                            modelOrAlias: { model: 'negative' },
+                            quotaInfo: {
+                                remainingFraction: -1,
+                                resetTime: new Date(Date.now() + 3600000).toISOString()
+                            }
+                        },
+                        {
+                            label: 'Invalid',
+                            modelOrAlias: { model: 'invalid' },
+                            quotaInfo: {
+                                remainingFraction: 'NaN',
+                                resetTime: new Date(Date.now() + 3600000).toISOString()
+                            }
+                        }
+                    ]
+                }
+            }
+        };
+
+        const snapshot = await service.fetchQuota();
+
+        assert.ok(snapshot);
+        assert.strictEqual(snapshot!.promptCredits?.remainingPercentage, 100);
+        assert.strictEqual(snapshot!.promptCredits?.usedPercentage, 0);
+        assert.strictEqual(snapshot!.flowCredits, undefined);
+        assert.deepStrictEqual(snapshot!.models.map(m => m.remainingPercentage), [100, 0, 0]);
+    });
 });

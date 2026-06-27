@@ -62,28 +62,35 @@ export async function httpRequest<T>(options: HttpRequestOptions): Promise<HttpR
 
   // If cached is HTTP, use HTTP directly
   if (cachedProtocol === "http") {
-    return doRequest<T>(options, "http");
+    return requestWithProtocolFallback<T>(options, "http", "https", allowFallback);
   }
 
   // Try HTTPS
+  return requestWithProtocolFallback<T>(options, "https", "http", allowFallback);
+}
+
+async function requestWithProtocolFallback<T>(
+  options: HttpRequestOptions,
+  primaryProtocol: Protocol,
+  fallbackProtocol: Protocol,
+  allowFallback: boolean
+): Promise<HttpResponse<T>> {
+  const { hostname, port } = options;
   try {
-    return await doRequest<T>(options, "https");
-  } catch (httpsError) {
-    // HTTPS failed, try HTTP fallback
+    return await doRequest<T>(options, primaryProtocol);
+  } catch (primaryError) {
     if (allowFallback) {
-      debugLog(`HTTPS failed for ${hostname}:${port}, trying HTTP fallback...`);
+      debugLog(`${primaryProtocol.toUpperCase()} failed for ${hostname}:${port}, trying ${fallbackProtocol.toUpperCase()} fallback...`);
       try {
-        const result = await doRequest<T>(options, "http");
-        // HTTP succeeded, cache protocol
-        setCachedProtocol(hostname, port, "http");
-        debugLog(`HTTP fallback succeeded for ${hostname}:${port}`);
+        const result = await doRequest<T>(options, fallbackProtocol);
+        setCachedProtocol(hostname, port, fallbackProtocol);
+        debugLog(`${fallbackProtocol.toUpperCase()} fallback succeeded for ${hostname}:${port}`);
         return result;
       } catch {
-        // HTTP also failed, throw original HTTPS error
-        throw httpsError;
+        throw primaryError;
       }
     }
-    throw httpsError;
+    throw primaryError;
   }
 }
 

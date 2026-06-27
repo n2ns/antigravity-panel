@@ -1,4 +1,5 @@
 import * as assert from 'assert';
+import * as net from 'net';
 import * as sinon from 'sinon';
 import * as vscode from 'vscode';
 import { AutomationService } from '../../model/services/automation.service';
@@ -99,6 +100,31 @@ suite('AutomationService Test Suite', () => {
     test('should use fixed CDP port 9222', () => {
         // @ts-ignore: access private static for testing
         assert.strictEqual(AutomationService['CDP_PORT'], 9222);
+    });
+
+    test('connectToPage should timeout and resolve false for half-open sockets', async function () {
+        this.timeout(3000);
+        const sockets = new Set<net.Socket>();
+        const server = net.createServer((socket) => {
+            sockets.add(socket);
+            socket.on('close', () => sockets.delete(socket));
+            // Keep the socket open without completing a WebSocket handshake.
+        });
+
+        await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve));
+        const address = server.address();
+        assert.ok(address && typeof address !== 'string');
+
+        try {
+            // @ts-ignore: access private method for timeout behavior
+            const result = await service['connectToPage']('half-open', `ws://127.0.0.1:${address.port}`);
+            assert.strictEqual(result, false);
+            // @ts-ignore: access private map to verify failed connections are cleaned up
+            assert.strictEqual(service['connections'].has('half-open'), false);
+        } finally {
+            sockets.forEach(socket => socket.destroy());
+            await new Promise<void>((resolve) => server.close(() => resolve()));
+        }
     });
 
     test('dispose() should clean up connections', () => {

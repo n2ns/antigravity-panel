@@ -1,10 +1,10 @@
 # Disclaimer
 
-**Last Updated:** 2025-12-15
+**Last Updated:** 2026-06-28
 
 ## 1. Non-Affiliation Notice
 
-**Antigravity Panel** is an independent, open-source community project developed by **n2n studio**. 
+**Antigravity Panel** is an independent, open-source community project developed by **N2NS Lab**.
 It is **NOT** an official product of Google, Google DeepMind, or the Antigravity IDE team.
 This project is not endorsed by, directly affiliated with, maintained, authorized, or sponsored by Google LLC.
 All product and company names are trademarks™ or registered® trademarks of their respective holders. Use of them does not imply any affiliation with or endorsement by them.
@@ -18,14 +18,14 @@ The "Smart Quota Monitoring" feature relies on strictly **Read-Only** access to 
 
 ## 3. Privacy Policy
 
-**Your Data Stays Local.**
+**Your Data Stays Under Your Control.**
 
-*   **No Collection:** Antigravity Panel does not collect, transmit, or store any user data, personal information, or code snippets to any external servers.
-*   **Local Operations:** All operations, including cache analysis and quota visualization, are performed strictly locally on your machine.
+*   **No Analytics Collection:** Antigravity Panel does not collect or store analytics data.
+*   **Local Core Operations:** Quota monitoring, cache analysis, diagnostics, and core panel features communicate with local Antigravity IDE components on your machine.
+*   **Optional LLM Endpoint:** The commit message generator sends staged diffs only to the LLM endpoint you configure. That endpoint may be local or external.
 *   **Transparency:** The source code is open-source and available for audit.
 
 ## 4. Limitation of Liability
 
 In no event shall the authors or copyright holders be liable for any claim, damages, or other liability, whether in an action of contract, tort or otherwise, arising from, out of, or in connection with the software or the use or other dealings in the software.
 Use of this software specifically acknowledges that you understand it is a third-party utility and use it at your own risk.
-

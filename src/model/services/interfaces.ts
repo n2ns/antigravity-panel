@@ -129,7 +129,7 @@ export interface IStorageService {
     /**
      * Clear history points for a specific group (used on quota reset to restart pp/h)
      */
-    clearGroupHistory(groupId: string): void;
+    clearGroupHistory(groupId: string): Promise<void>;
 
 
 

@@ -16,7 +16,7 @@ English | [中文文档](FEATURES_zh.md)
 - **Customizable Gauge Styles**: Refactored the visualization engine to support multiple rendering strategies. Users can choose between:
   - **Semi-Arc**: A modern, 210-degree industrial precision instrument style (Default).
   - **Classic Donut**: The historical full-circle gauge style.
-- Automatic refresh with configurable polling interval (minimum 60s)
+- Automatic refresh with configurable polling interval (default 90s, minimum 30s)
 
 ### Active Group Detection
 - Automatically detects which model group is currently in use
@@ -72,7 +72,7 @@ English | [中文文档](FEATURES_zh.md)
 - Independent cache check interval (configurable, default 120s)
 
 ### Hide Empty Folders
-- Option to hide empty folders in tree views (`tfa.cacheHideEmptyFolders`)
+- Option to hide empty folders in tree views (`tfa.cache.hideEmptyFolders`)
 
 ---
 
@@ -83,11 +83,11 @@ English | [中文文档](FEATURES_zh.md)
 - Detailed tooltip on hover showing all active groups with full labels and reset times
 - Multiple display styles: percentage, reset time, used, remaining
 - Color-coded status: normal (green), warning (yellow), critical (red)
-- Configurable thresholds for warning (default 30%) and critical (default 10%)
+- Configurable thresholds for warning (default 40%) and critical (default 20%)
 
 ### Cache Size Display
 - Shows total cache size in status bar
-- Toggleable via `tfa.statusBarShowCache` setting
+- Toggleable via `tfa.status.showCache` setting
 
 ---
 
@@ -95,8 +95,8 @@ English | [中文文档](FEATURES_zh.md)
 
 ### One-click Shortcuts
 - Edit Global Rules (`~/.gemini/GEMINI.md`)
-- Configure MCP settings (`~/.gemini/antigravity/mcp_config.json`)
-- Manage Browser Allowlist (`~/.gemini/antigravity/browserAllowlist.txt`)
+- Configure MCP settings (`~/.gemini/config/mcp_config.json`)
+- Manage Browser Allowlist (`~/.gemini/config/browserAllowlist.txt`)
 - Open extension settings
 
 ---
@@ -116,7 +116,7 @@ English | [中文文档](FEATURES_zh.md)
 - Webview state persistence using `vscode.setState()`/`getState()`
 
 ### MVVM Architecture
-- `QuotaViewModel` as unified data aggregation layer
+- `AppViewModel` as unified state coordination and data aggregation layer
 - Clean separation of concerns between UI and business logic
 - Dependency injection for testability
 
@@ -146,7 +146,7 @@ English | [中文文档](FEATURES_zh.md)
 
 ## 🌐 Internationalization
 
-### Supported Languages (13)
+### Supported Languages (14)
 - English
 - 简体中文 (Simplified Chinese)
 - 繁體中文 (Traditional Chinese)
@@ -160,6 +160,7 @@ English | [中文文档](FEATURES_zh.md)
 - Русский (Russian)
 - Türkçe (Turkish)
 - Polski (Polish)
+- Tiếng Việt (Vietnamese)
 
 ---
 
@@ -175,15 +176,16 @@ English | [中文文档](FEATURES_zh.md)
 
 ## 🧪 Testing
 
-### Unit Test Coverage
-- 243 tests across 16+ test files
-- Pure Node.js environment (no VS Code runtime required)
+### Unit and Local Integration Test Coverage
+- 270+ tests across 29 test files
+- Unit coverage for pure business logic plus local Antigravity Language Server integration tests
+- Full validation is expected to run inside Antigravity IDE with its local Language Server available
 - Core modules fully tested:
-  - ConfigManager, CacheManager, QuotaManager
-  - QuotaViewModel, QuotaStrategyManager
+  - ConfigManager, CacheService, QuotaService, StorageService
+  - AppViewModel, QuotaStrategyManager
   - Scheduler, Retry, HttpClient
   - ProcessFinder, PlatformStrategies
-  - HtmlBuilder, Format utilities
+  - HtmlBuilder, Format utilities, AutomationService
 
 ---
 
@@ -196,7 +198,7 @@ English | [中文文档](FEATURES_zh.md)
 | `tfa.status.warningThreshold` | `40` | Warning threshold (%) |
 | `tfa.status.criticalThreshold` | `20` | Critical threshold (%) |
 | `tfa.status.scope` | `all` | Show quotas for "all" available model groups or only the "primary" active model |
-| `tfa.dashboard.refreshRate` | `120` | Quota refresh interval (seconds, min 30) |
+| `tfa.dashboard.refreshRate` | `90` | Quota refresh interval (seconds, min 30) |
 | `tfa.dashboard.gaugeStyle` | `semi-arc` | Gauge style: semi-arc or classic-donut |
 | `tfa.dashboard.viewMode` | `groups` | Display mode: groups/models |
 | `tfa.dashboard.includeSecondaryModels` | `false` | Show GPT quota (shares pool with Claude) |
@@ -206,7 +208,13 @@ English | [中文文档](FEATURES_zh.md)
 | `tfa.cache.scanInterval` | `120` | Cache check interval (seconds, min 30) |
 | `tfa.cache.warningSize` | `500` | Cache warning threshold (MB) |
 | `tfa.cache.hideEmptyFolders` | `false` | Hide empty folders in tree views |
-| `tfa.cache.autoClean` | `true` | Auto-clean cache |
+| `tfa.cache.autoClean` | `false` | Auto-clean cache |
+| `tfa.cache.autoCleanKeepCount` | `5` | Number of newest tasks to keep during auto-clean |
 | `tfa.system.debugMode` | `false` | Enable debug logging |
-
+| `tfa.system.autoAccept` | `false` | Enable hands-free acceptance of Agent actions |
+| `tfa.system.autoAcceptInterval` | `800` | Auto-Accept polling interval in milliseconds |
+| `tfa.commitMessageClaude.endpoint` | `http://localhost:11434/api/generate` | Commit message LLM endpoint |
+| `tfa.commitMessageClaude.model` | `llama3.2` | Commit message model name |
+| `tfa.commitMessageClaude.maxDiffChars` | `80000` | Max staged diff characters sent to the LLM endpoint |
+| `tfa.commitMessageClaude.format` | `conventional` | Commit message format |
 

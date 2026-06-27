@@ -94,6 +94,18 @@ suite('StorageService Test Suite', () => {
         assert.strictEqual(service.count, 0);
     });
 
+    test('should persist group history clearing before later reads', async () => {
+        await service.recordQuotaPoint({ gemini: 100, claude: 90 });
+        await service.clearGroupHistory('gemini');
+
+        const newService = new StorageService(globalState);
+        const history = newService.getRecentHistory(60);
+
+        assert.strictEqual(history.length, 1);
+        assert.strictEqual(history[0].usage.gemini, undefined);
+        assert.strictEqual(history[0].usage.claude, 90);
+    });
+
     test('should store and retrieve user info', async () => {
         const userInfo = { tier: 'pro', planName: 'Professional', hasBrowser: true };
 

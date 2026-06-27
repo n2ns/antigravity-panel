@@ -15,6 +15,7 @@ import { AppViewModel } from "../view-model/app.vm";
 import { WebviewMessage } from "../view-model/types";
 import { getMcpConfigPath, getBrowserAllowlistPath, getGlobalRulesPath } from "../shared/utils/paths";
 import { WebviewHtmlBuilder } from "./html-builder";
+import { errorLog } from "../shared/utils/logger";
 
 export class SidebarProvider implements vscode.WebviewViewProvider, vscode.Disposable {
     public static readonly viewType = "tfa.sidebar";
@@ -54,9 +55,15 @@ export class SidebarProvider implements vscode.WebviewViewProvider, vscode.Dispo
             localResourceRoots: [this._extensionUri]
         };
 
-        webviewView.webview.onDidReceiveMessage((msg: WebviewMessage) => {
-            this.handleMessage(msg);
-        });
+        this._disposables.push(
+            webviewView.webview.onDidReceiveMessage((msg: WebviewMessage) => {
+                void this.handleMessage(msg).catch((err) => {
+                    const message = err instanceof Error ? err.message : String(err);
+                    errorLog("Failed to handle webview message", err);
+                    vscode.window.showErrorMessage(`Antigravity Panel: ${message}`);
+                });
+            })
+        );
 
         this._updateHtml();
 
@@ -66,25 +73,25 @@ export class SidebarProvider implements vscode.WebviewViewProvider, vscode.Dispo
 
     private async handleMessage(msg: WebviewMessage): Promise<void> {
         // Route messages to ViewModel or VS Code commands
-        switch (msg.type) {
-            // ViewModel operations
-            case "deleteTask":
-                if (msg.taskId) this._viewModel.deleteTask(msg.taskId);
+            switch (msg.type) {
+                // ViewModel operations
+                case "deleteTask":
+                if (msg.taskId) await this._viewModel.deleteTask(msg.taskId);
                 break;
             case "deleteContext":
-                if (msg.contextId) this._viewModel.deleteContext(msg.contextId);
+                if (msg.contextId) await this._viewModel.deleteContext(msg.contextId);
                 break;
             case "deleteFile":
-                if (msg.path) this._viewModel.deleteFile(msg.path);
+                if (msg.path) await this._viewModel.deleteFile(msg.path);
                 break;
             case "toggleTask":
                 if (msg.taskId) {
-                    this._viewModel.toggleTaskExpansion(msg.taskId);
+                    await this._viewModel.toggleTaskExpansion(msg.taskId);
                 }
                 break;
             case "toggleContext":
                 if (msg.contextId) {
-                    this._viewModel.toggleContextExpansion(msg.contextId);
+                    await this._viewModel.toggleContextExpansion(msg.contextId);
                 }
                 break;
             case "toggleTasks":
@@ -97,7 +104,7 @@ export class SidebarProvider implements vscode.WebviewViewProvider, vscode.Dispo
             // VS Code Commands / External
             case "openFile":
                 if (msg.path) {
-                    vscode.commands.executeCommand("vscode.open", vscode.Uri.file(msg.path), {
+                    await vscode.commands.executeCommand("vscode.open", vscode.Uri.file(msg.path), {
                         preview: true,
                         preserveFocus: true
                     }).then(undefined, (err) => {
@@ -108,47 +115,47 @@ export class SidebarProvider implements vscode.WebviewViewProvider, vscode.Dispo
             case "openMcp": {
                 const mcpPath = getMcpConfigPath();
                 await this.ensureFileExists(mcpPath, '{\n  "mcpServers": {}\n}\n');
-                vscode.commands.executeCommand("vscode.open", vscode.Uri.file(mcpPath));
+                await vscode.commands.executeCommand("vscode.open", vscode.Uri.file(mcpPath));
                 break;
             }
             case "openBrowserAllowlist": {
                 const allowlistPath = getBrowserAllowlistPath();
                 await this.ensureFileExists(allowlistPath, '# Browser Allowlist\n# Add one URL pattern per line\n');
-                vscode.commands.executeCommand("vscode.open", vscode.Uri.file(allowlistPath));
+                await vscode.commands.executeCommand("vscode.open", vscode.Uri.file(allowlistPath));
                 break;
             }
             case "openRules": {
                 const rulesPath = getGlobalRulesPath();
                 await this.ensureFileExists(rulesPath, '# Gemini Global Rules\n');
-                vscode.commands.executeCommand("vscode.open", vscode.Uri.file(rulesPath));
+                await vscode.commands.executeCommand("vscode.open", vscode.Uri.file(rulesPath));
                 break;
             }
             case "openUrl":
                 if (msg.path) {
-                    vscode.env.openExternal(vscode.Uri.parse(msg.path));
+                    await vscode.env.openExternal(vscode.Uri.parse(msg.path));
                 }
                 break;
             case "runDiagnostics":
-                vscode.commands.executeCommand("tfa.runDiagnostics");
+                await vscode.commands.executeCommand("tfa.runDiagnostics");
                 break;
             case "showLogs":
-                vscode.commands.executeCommand("tfa.showLogs");
+                await vscode.commands.executeCommand("tfa.showLogs");
                 break;
             case "restartLanguageServer":
-                vscode.commands.executeCommand("tfa.restartLanguageServer");
+                await vscode.commands.executeCommand("tfa.restartLanguageServer");
                 break;
             case "restartUserStatusUpdater":
-                vscode.commands.executeCommand("tfa.restartUserStatusUpdater");
+                await vscode.commands.executeCommand("tfa.restartUserStatusUpdater");
                 break;
             case "webhookReady": // (Likely a typo in original code or something, usually its webviewReady)
             case "webviewReady":
                 this._postStateUpdate();
                 break;
             case "toggleAutoAccept":
-                this._viewModel.toggleAutoAccept();
+                await this._viewModel.toggleAutoAccept();
                 break;
             case "reloadWindow":
-                vscode.commands.executeCommand("workbench.action.reloadWindow");
+                await vscode.commands.executeCommand("workbench.action.reloadWindow");
                 break;
         }
     }

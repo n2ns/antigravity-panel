@@ -2,6 +2,23 @@ English | [中文文档](docs/CHANGELOG_zh.md)
 
 # Change Log
 
+## [2.6.3] - 2026-06-28
+
+### Added
+
+- **Language Server Debugging Guide**: Created [DEBUGGING.md](docs/DEBUGGING.md) detailing various methods for local Language Server connection diagnostics, Extension Host debugging, and Protobuf schema / `omitempty` serialization inspection.
+
+### Changed
+
+- **TODO Roadmap Refresh**: Updated [TODO.md](docs/TODO.md) and [TODO_zh.md](docs/TODO_zh.md) to remove completed reliability work and record the remaining P2/P3/P4 code quality tasks from the project review.
+- **README / Contributing Split**: Moved contributor workflow details into [CONTRIBUTING.md](CONTRIBUTING.md), kept the contributor list visible in the README files, and clarified that development, debugging, and live Language Server testing target Antigravity IDE.
+- **Documentation Accuracy Refresh**: Updated features, disclaimer, localization rules, knowledge graph, and README documentation links to match current thresholds, paths, supported languages, privacy behavior, and test strategy.
+
+### Fixed
+
+- **Omitted Credit Amount Bug**: Implemented robust type validation for user credits. When the Language Server omits the `creditAmount` field (which occurs when the balance is `0` due to Go's `omitempty` behavior), the client now defaults it to `'0'` instead of displaying as `undefined` in the status bar and webview.
+- **Runtime Reliability Fixes**: Hardened cache context deletion to avoid prefix-based file removal, serialized quota refresh application to prevent stale responses from overwriting newer state, clamped invalid quota percentages from the Language Server, added reverse protocol fallback for cached HTTP/HTTPS connections, ensured Webview message errors are caught, and added timeouts for CDP auto-accept WebSocket connections.
+
 ## [2.6.2] - 2026-06-05
 
 ### Added

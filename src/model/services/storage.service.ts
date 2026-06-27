@@ -130,7 +130,7 @@ export class StorageService implements IStorageService {
      * Clear history points for a specific group so pp/h restarts from zero.
      * Called when a quota reset is detected.
      */
-    clearGroupHistory(groupId: string): void {
+    async clearGroupHistory(groupId: string): Promise<void> {
         this.history = this.history.filter(p => {
             if (p.usage[groupId] === undefined) return true;
             // Remove this group's data from the point
@@ -140,8 +140,7 @@ export class StorageService implements IStorageService {
             p.usage = remaining;
             return true;
         });
-        // Don't await — fire and forget for performance
-        this.save();
+        await this.save();
     }
 
 

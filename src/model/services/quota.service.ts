@@ -173,14 +173,15 @@ export class QuotaService implements IQuotaService {
         // Parse Prompt Credits
         let promptCredits: PromptCreditsInfo | undefined;
         if (planInfo && availableCredits !== undefined) {
-            const monthly = Number(planInfo.monthlyPromptCredits);
-            const available = Number(availableCredits);
-            if (monthly > 0) {
+            const monthly = this.toFiniteNumber(planInfo.monthlyPromptCredits);
+            const rawAvailable = this.toFiniteNumber(availableCredits);
+            if (monthly !== undefined && rawAvailable !== undefined && monthly > 0) {
+                const available = Math.max(0, rawAvailable);
                 promptCredits = {
                     available,
                     monthly,
-                    usedPercentage: ((monthly - available) / monthly) * 100,
-                    remainingPercentage: (available / monthly) * 100,
+                    usedPercentage: this.clampPercentage(((monthly - available) / monthly) * 100),
+                    remainingPercentage: this.clampPercentage((available / monthly) * 100),
                 };
             }
         }
@@ -188,21 +189,42 @@ export class QuotaService implements IQuotaService {
         // Parse Flow Credits
         let flowCredits: FlowCreditsInfo | undefined;
         if (planInfo?.monthlyFlowCredits && availableFlowCredits !== undefined) {
-            const monthly = Number(planInfo.monthlyFlowCredits);
-            const available = Number(availableFlowCredits);
-            if (monthly > 0) {
+            const monthly = this.toFiniteNumber(planInfo.monthlyFlowCredits);
+            const rawAvailable = this.toFiniteNumber(availableFlowCredits);
+            if (monthly !== undefined && rawAvailable !== undefined && monthly > 0) {
+                const available = Math.max(0, rawAvailable);
                 flowCredits = {
                     available,
                     monthly,
-                    usedPercentage: ((monthly - available) / monthly) * 100,
-                    remainingPercentage: (available / monthly) * 100,
+                    usedPercentage: this.clampPercentage(((monthly - available) / monthly) * 100),
+                    remainingPercentage: this.clampPercentage((available / monthly) * 100),
                 };
             }
         }
 
         // Build combined token usage info
         let tokenUsage: TokenUsageInfo | undefined;
-        const credits = userTier?.availableCredits || [];
+        const credits: UserCredit[] = (userTier?.availableCredits || []).map((c) => {
+            let amount = '0';
+            if (typeof c.creditAmount === 'number' && Number.isFinite(c.creditAmount)) {
+                amount = String(c.creditAmount);
+            } else if (typeof c.creditAmount === 'string') {
+                const trimmedAmount = c.creditAmount.trim();
+                if (trimmedAmount !== '' && Number.isFinite(Number(trimmedAmount))) {
+                    amount = trimmedAmount;
+                }
+            }
+
+            const creditType = typeof c.creditType === 'string' && c.creditType.trim() !== ''
+                ? c.creditType
+                : 'UNKNOWN';
+
+            return {
+                ...c,
+                creditType,
+                creditAmount: amount,
+            };
+        });
         if (promptCredits || flowCredits || credits.length > 0) {
             const totalAvailable = (promptCredits?.available || 0) + (flowCredits?.available || 0);
             const totalMonthly = (promptCredits?.monthly || 0) + (flowCredits?.monthly || 0);
@@ -211,7 +233,7 @@ export class QuotaService implements IQuotaService {
                 flowCredits,
                 totalAvailable,
                 totalMonthly,
-                overallRemainingPercentage: totalMonthly > 0 ? (totalAvailable / totalMonthly) * 100 : 0,
+                overallRemainingPercentage: totalMonthly > 0 ? this.clampPercentage((totalAvailable / totalMonthly) * 100) : 0,
                 userCredits: credits,
             };
         }
@@ -248,7 +270,7 @@ export class QuotaService implements IQuotaService {
                 }
 
                 const diff = resetTime.getTime() - now.getTime();
-                const remainingFraction = m.quotaInfo!.remainingFraction ?? 0;
+                const remainingFraction = this.clampUnitFraction(m.quotaInfo!.remainingFraction ?? 0);
 
                 return {
                     label: m.label,
@@ -261,6 +283,22 @@ export class QuotaService implements IQuotaService {
             });
 
         return { timestamp: new Date(), promptCredits, flowCredits, tokenUsage, userInfo, models };
+    }
+
+    private toFiniteNumber(value: unknown): number | undefined {
+        const parsed = Number(value);
+        return Number.isFinite(parsed) ? parsed : undefined;
+    }
+
+    private clampPercentage(value: number): number {
+        if (!Number.isFinite(value)) return 0;
+        return Math.min(100, Math.max(0, value));
+    }
+
+    private clampUnitFraction(value: unknown): number {
+        const parsed = this.toFiniteNumber(value);
+        if (parsed === undefined) return 0;
+        return Math.min(1, Math.max(0, parsed));
     }
 
     private formatTime(ms: number): string {
@@ -305,6 +343,12 @@ interface RawModelConfig {
     };
 }
 
+interface RawUserCredit {
+    creditType?: unknown;
+    creditAmount?: unknown;
+    [key: string]: unknown;
+}
+
 interface ServerUserStatusResponse {
     userStatus: {
         name?: string;
@@ -315,7 +359,7 @@ interface ServerUserStatusResponse {
             description?: string;
             upgradeSubscriptionUri?: string;
             upgradeSubscriptionText?: string;
-            availableCredits?: UserCredit[];
+            availableCredits?: RawUserCredit[];
         };
         planStatus?: {
             planInfo: {

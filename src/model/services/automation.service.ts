@@ -29,6 +29,7 @@ export class AutomationService implements IAutomationService, vscode.Disposable 
     private msgId = 1;
     private connections = new Map<string, WebSocket>();
     private static readonly CDP_PORT = 9222;
+    private static readonly CDP_CONNECT_TIMEOUT_MS = 1000;
 
     constructor() {
         this.scheduler = new Scheduler({
@@ -220,13 +221,32 @@ export class AutomationService implements IAutomationService, vscode.Disposable 
     private async connectToPage(id: string, wsUrl: string): Promise<boolean> {
         return new Promise((resolve) => {
             const ws = new WebSocket(wsUrl);
+            let settled = false;
+            const timer = setTimeout(() => {
+                try { ws.terminate(); } catch { /* ignore */ }
+                finish(false);
+            }, AutomationService.CDP_CONNECT_TIMEOUT_MS);
+            const finish = (result: boolean) => {
+                if (settled) return;
+                settled = true;
+                clearTimeout(timer);
+                if (!result) {
+                    this.connections.delete(id);
+                    try { ws.close(); } catch { /* ignore */ }
+                }
+                resolve(result);
+            };
+
             ws.on('open', () => {
                 this.connections.set(id, ws);
                 ws.send(JSON.stringify({ id: this.msgId++, method: 'Runtime.enable' }));
-                resolve(true);
+                finish(true);
             });
-            ws.on('error', () => resolve(false));
-            ws.on('close', () => this.connections.delete(id));
+            ws.on('error', () => finish(false));
+            ws.on('close', () => {
+                this.connections.delete(id);
+                finish(false);
+            });
         });
     }
 

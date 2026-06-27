@@ -35,16 +35,16 @@ graph TD
 
 ### 1. Model (Services)
 Located in `src/model/services/`. These classes perform the actual business logic, file system scans, and HTTP requests:
-*   [QuotaService](file:///home/deploy/projects/antigravity-panel/src/model/services/quota.service.ts): Communicates with the local Antigravity Language Server via HTTP.
-*   [CacheService](file:///home/deploy/projects/antigravity-panel/src/model/services/cache.service.ts): Handles directory sizing and file deletion under the `~/.gemini/antigravity/` workspace folders.
-*   [StorageService](file:///home/deploy/projects/antigravity-panel/src/model/services/storage.service.ts): Stores usage history and user configuration state globally.
-*   [AutomationService](file:///home/deploy/projects/antigravity-panel/src/model/services/automation.service.ts): Drives the Auto-Accept polling/CDP injection fallback engine.
+*   [QuotaService](src/model/services/quota.service.ts): Communicates with the local Antigravity Language Server via HTTP.
+*   [CacheService](src/model/services/cache.service.ts): Handles directory sizing and file deletion under the `~/.gemini/antigravity-ide/` workspace folders.
+*   [StorageService](src/model/services/storage.service.ts): Stores usage history and user configuration state globally.
+*   [AutomationService](src/model/services/automation.service.ts): Drives the Auto-Accept polling/CDP injection fallback engine.
 
 ### 2. ViewModel
-Located in [app.vm.ts](file:///home/deploy/projects/antigravity-panel/src/view-model/app.vm.ts). The `AppViewModel` acts as the single source of truth for the application state (`AppState`). It translates model data into formats optimized for display and broadcasts updates through events (`onStateChange`, `onQuotaChange`, etc.).
+Located in [app.vm.ts](src/view-model/app.vm.ts). The `AppViewModel` acts as the single source of truth for the application state (`AppState`). It translates model data into formats optimized for display and broadcasts updates through events (`onStateChange`, `onQuotaChange`, etc.).
 
 ### 3. View (Presentation)
-*   **IDE Integration:** [SidebarProvider](file:///home/deploy/projects/antigravity-panel/src/view/sidebar-provider.ts) hosts the webview, while [StatusBarManager](file:///home/deploy/projects/antigravity-panel/src/view/status-bar.ts) handles status bar entries.
+*   **IDE Integration:** [SidebarProvider](src/view/sidebar-provider.ts) hosts the webview, while [StatusBarManager](src/view/status-bar.ts) handles status bar entries.
 *   **Lit Components:** The webview frontend in `src/view/webview/components/` is built using the **Lit** library. Communication between the webview (browser environment) and the extension (Node.js environment) occurs via standard Extension API webview messages.
 
 ---
@@ -52,7 +52,9 @@ Located in [app.vm.ts](file:///home/deploy/projects/antigravity-panel/src/view-m
 ## 🛠️ Development & Environment Setup
 
 ### Prerequisites
-*   [Node.js](https://nodejs.org/) (v22 or later is highly recommended).
+*   **Antigravity IDE**. Development, debugging, and testing for this extension must be done in Antigravity IDE, not generic VS Code.
+*   A running local **Antigravity Language Server**. The extension is designed around the local Language Server that Antigravity IDE starts.
+*   [Node.js](https://nodejs.org/) 24 or later.
 *   `npm` (v10+).
 
 ### Quick Start Setup
@@ -82,17 +84,38 @@ Located in [app.vm.ts](file:///home/deploy/projects/antigravity-panel/src/view-m
 
 We enforce strict test coverage requirements. Ensure that your contributions do not break existing tests and that you write new tests for any added features or bug fixes.
 
-*   **Unit Tests:** Verify core business logic in a pure Node.js runtime using mock interfaces.
+*   **Unit and local integration tests:** Verify core business logic, platform parsing, and live Antigravity Language Server behavior from the current Antigravity IDE environment.
     ```bash
     npm test
     ```
-*   **Integration Tests:** Verify live connectivity and data parsing against a mock server environment.
+*   **Server integration tests:** Run the live Language Server integration subset directly.
     ```bash
     npm run test:server
     ```
 
 > [!IMPORTANT]
-> All unit tests are executed automatically prior to commit via a pre-commit hook using `husky` and `lint-staged`.
+> The live Language Server tests are expected to run in Antigravity IDE development environments. If they cannot find a local Antigravity Language Server, the environment is incomplete for full project validation.
+
+> [!IMPORTANT]
+> `husky` and `lint-staged` run lint checks before commits. Run `npm test` and `npm run test:server` manually before opening a Pull Request.
+
+---
+
+## 📦 Build & Packaging
+
+Run a production build before packaging:
+
+```bash
+npm run build
+```
+
+To create a local `.vsix` installer:
+
+```bash
+npm run package
+```
+
+The package script uses the compiled output under `dist/`, so rebuild after source changes.
 
 ---
 
@@ -110,7 +133,7 @@ We use `eslint` and `typescript` strict mode to maintain code quality.
     *   Always write comprehensive types for views and messages.
 
 ### 🌐 Localization & Translation Policy
-The extension supports 14 languages. To maintain technical consistency across all locales, we enforce the **UI Label Strategy** defined in [LOCALIZATION_RULES.md](file:///home/deploy/projects/antigravity-panel/docs/LOCALIZATION_RULES.md):
+The extension supports 14 languages. To maintain technical consistency across all locales, we enforce the **UI Label Strategy** defined in [LOCALIZATION_RULES.md](docs/LOCALIZATION_RULES.md):
 1.  **UI Buttons, Section Headers, and Command Titles** must remain in **English** (e.g., `Rules`, `MCP`, `Auto-Accept`, `Reset Status`). Do not translate these.
 2.  **Tooltips, Descriptions, Explanations, and Warnings** must be fully **localized** in NLS files (e.g. `package.nls.zh-cn.json`, `bundle.l10n.zh-cn.json`).
 

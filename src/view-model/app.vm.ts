@@ -52,6 +52,7 @@ export class AppViewModel implements vscode.Disposable {
     private readonly NOTIFICATION_COOLDOWN = 30 * 60 * 1000; // 30 minutes
     /** Previous remaining % per group for request detection */
     private _prevGroupRemaining = new Map<string, number>();
+    private _quotaRefreshVersion = 0;
 
     private readonly _onStateChange = new vscode.EventEmitter<AppState>();
     readonly onStateChange = this._onStateChange.event;
@@ -138,18 +139,25 @@ export class AppViewModel implements vscode.Disposable {
     }
 
     async refresh(): Promise<void> {
+        const quotaRefreshVersion = ++this._quotaRefreshVersion;
         const [quota, cache] = await Promise.all([
             this.quotaService.fetchQuota(),
             this.cacheService.getCacheInfo()
         ]);
-        if (quota) await this.updateQuotaState(quota);
+        if (quota && quotaRefreshVersion === this._quotaRefreshVersion) {
+            await this.updateQuotaState(quota);
+        }
         if (cache) await this.updateCacheState(cache);
         this._state.lastUpdated = Date.now();
         this._onStateChange.fire(this._state);
     }
 
     async refreshQuota(): Promise<void> {
+        const quotaRefreshVersion = ++this._quotaRefreshVersion;
         const quota = await this.quotaService.fetchQuota();
+        if (quotaRefreshVersion !== this._quotaRefreshVersion) {
+            return;
+        }
         if (quota) {
             await this.updateQuotaState(quota);
             this._state.connectionStatus = 'connected';
@@ -383,7 +391,7 @@ export class AppViewModel implements vscode.Disposable {
                 if (group.remaining > prev + RESET_THRESHOLD_PP) {
                     // Quota increased -> reset detected
                     // Clear history points for this group so pp/h restarts from zero
-                    this.storageService.clearGroupHistory(group.id);
+                    await this.storageService.clearGroupHistory(group.id);
                 }
             }
             this._prevGroupRemaining.set(group.id, group.remaining);

@@ -16,7 +16,7 @@
 - **可视化仪表盘样式**: 重构了可视化引擎以支持多种渲染策略。用户可以在以下样式间切换：
   - **半圆弧 (Semi-Arc)**: 现代化的 210 度工业精密仪表样式（默认）。
   - **经典圆环 (Classic Donut)**: 延续传统的全圆仪表样式。
-- 可配置轮询间隔自动刷新（最小 60 秒）
+- 可配置轮询间隔自动刷新（默认 90 秒，最小 30 秒）
 
 ### 活跃分组检测
 - 自动检测当前使用的模型分组
@@ -72,7 +72,7 @@
 - 独立的缓存检查间隔（可配置，默认 120 秒）
 
 ### 隐藏空文件夹
-- 选项：在树形视图中隐藏空文件夹（`tfa.cacheHideEmptyFolders`）
+- 选项：在树形视图中隐藏空文件夹（`tfa.cache.hideEmptyFolders`）
 
 ---
 
@@ -83,11 +83,11 @@
 - 增强型悬停提示，列出所有活跃分组的详细配额及重置时间
 - 多种显示样式：百分比、重置时间、已用、剩余
 - 颜色状态：正常（绿）、警告（黄）、严重（红）
-- 可配置警告阈值（默认 30%）和严重阈值（默认 10%）
+- 可配置警告阈值（默认 40%）和严重阈值（默认 20%）
 
 ### 缓存大小显示
 - 状态栏显示总缓存大小
-- 可通过 `tfa.statusBarShowCache` 开关
+- 可通过 `tfa.status.showCache` 开关
 
 ---
 
@@ -95,8 +95,8 @@
 
 ### 一键快捷入口
 - 编辑全局规则（`~/.gemini/GEMINI.md`）
-- 配置 MCP 设置（`~/.gemini/antigravity/mcp_config.json`）
-- 管理浏览器白名单（`~/.gemini/antigravity/browserAllowlist.txt`）
+- 配置 MCP 设置（`~/.gemini/config/mcp_config.json`）
+- 管理浏览器白名单（`~/.gemini/config/browserAllowlist.txt`）
 - 打开扩展设置
 
 ---
@@ -118,7 +118,7 @@
 - Webview 状态持久化（`vscode.setState()`/`getState()`）
 
 ### MVVM 架构
-- `QuotaViewModel` 作为统一数据聚合层
+- `AppViewModel` 作为统一状态协调和数据聚合层
 - UI 与业务逻辑清晰分离
 - 依赖注入提升可测试性
 
@@ -148,7 +148,7 @@
 
 ## 🌐 国际化
 
-### 支持语言（13 种）
+### 支持语言（14 种）
 - English（英语）
 - 简体中文
 - 繁體中文
@@ -162,6 +162,7 @@
 - Русский（俄语）
 - Türkçe（土耳其语）
 - Polski（波兰语）
+- Tiếng Việt（越南语）
 
 ---
 
@@ -177,15 +178,16 @@
 
 ## 🧪 测试
 
-### 单元测试覆盖
-- 16+ 个测试文件，243 个测试用例通过
-- 纯 Node.js 环境（无需 VS Code 运行时）
+### 单元测试与本地集成测试覆盖
+- 29 个测试文件，270+ 个测试用例
+- 覆盖纯业务逻辑单元测试，以及本地 Antigravity Language Server 集成测试
+- 完整验证应在 Antigravity IDE 内执行，并确保本地 Language Server 可用
 - 核心模块全覆盖：
-  - ConfigManager、CacheManager、QuotaManager
-  - QuotaViewModel、QuotaStrategyManager
+  - ConfigManager、CacheService、QuotaService、StorageService
+  - AppViewModel、QuotaStrategyManager
   - Scheduler、Retry、HttpClient
   - ProcessFinder、PlatformStrategies
-  - HtmlBuilder、Format 工具函数
+  - HtmlBuilder、Format 工具函数、AutomationService
 
 ---
 
@@ -198,7 +200,7 @@
 | `tfa.status.warningThreshold` | `40` | 警告阈值（%） |
 | `tfa.status.criticalThreshold` | `20` | 严重阈值（%） |
 | `tfa.status.scope` | `all` | 状态栏配额范围：显示"all"所有模型组或仅显示"primary"当前选中的模型 |
-| `tfa.dashboard.refreshRate` | `120` | 配额刷新间隔（秒，最小 30） |
+| `tfa.dashboard.refreshRate` | `90` | 配额刷新间隔（秒，最小 30） |
 | `tfa.dashboard.gaugeStyle` | `semi-arc` | 仪表盘样式：semi-arc (半圆弧) 或 classic-donut (圆环) |
 | `tfa.dashboard.viewMode` | `groups` | 显示模式：groups/models |
 | `tfa.dashboard.includeSecondaryModels` | `false` | 显示 GPT 配额（与 Claude 共享配额池） |
@@ -208,7 +210,13 @@
 | `tfa.cache.scanInterval` | `120` | 缓存检查间隔（秒，最小 30） |
 | `tfa.cache.warningSize` | `500` | 缓存警告阈值（MB） |
 | `tfa.cache.hideEmptyFolders` | `false` | 树形视图隐藏空文件夹 |
-| `tfa.cache.autoClean` | `true` | 自动清理缓存 |
+| `tfa.cache.autoClean` | `false` | 自动清理缓存 |
+| `tfa.cache.autoCleanKeepCount` | `5` | 自动清理时保留的最新任务数量 |
 | `tfa.system.debugMode` | `false` | 启用调试日志 |
-
+| `tfa.system.autoAccept` | `false` | 开启无人值守的 Agent 操作自动接受 |
+| `tfa.system.autoAcceptInterval` | `800` | Auto-Accept 轮询间隔（毫秒） |
+| `tfa.commitMessageClaude.endpoint` | `http://localhost:11434/api/generate` | 提交信息生成使用的 LLM 端点 |
+| `tfa.commitMessageClaude.model` | `llama3.2` | 提交信息生成模型名称 |
+| `tfa.commitMessageClaude.maxDiffChars` | `80000` | 发送到 LLM 端点的暂存 Diff 最大字符数 |
+| `tfa.commitMessageClaude.format` | `conventional` | 提交信息格式 |
 

@@ -86,4 +86,18 @@ suite('CacheService Test Suite', () => {
         assert.ok(result.freedBytes > 0); // Should have freed some bytes
         assert.strictEqual(info.brainCount, 5);
     });
+
+    test('deleteContext should only delete exact context basename matches', async () => {
+        await fs.promises.writeFile(path.join(contextsDir, 'abc.db'), 'abc-db');
+        await fs.promises.writeFile(path.join(contextsDir, 'abc.db-wal'), 'abc-wal');
+        await fs.promises.writeFile(path.join(contextsDir, 'abc2.db'), 'abc2-db');
+        await fs.promises.writeFile(path.join(contextsDir, 'abc-extra.pb'), 'abc-extra');
+
+        await cacheService.deleteContext('abc');
+
+        await assert.rejects(fs.promises.access(path.join(contextsDir, 'abc.db')));
+        await assert.rejects(fs.promises.access(path.join(contextsDir, 'abc.db-wal')));
+        await assert.doesNotReject(fs.promises.access(path.join(contextsDir, 'abc2.db')));
+        await assert.doesNotReject(fs.promises.access(path.join(contextsDir, 'abc-extra.pb')));
+    });
 });
