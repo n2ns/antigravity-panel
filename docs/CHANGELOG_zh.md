@@ -2,7 +2,11 @@
 
 # 更新日志
 
-## [Unreleased]
+## [2.7.0] - 2026-07-20
+
+### 新增
+
+- **自动上报携带 Antigravity 产品版本**: 诊断 issue 报告现在包含真实的 Antigravity 发行版本（"IDE Product Version"，读取自 IDE `product.json` 的 `ideVersion` 字段，如 `2.1.1`），此前仅有的 VS Code 基线版本无法定位产品版本。
 
 ### 变更
 
@@ -10,6 +14,7 @@
 
 ### 修复
 
+- **自动上报 issue 正文中的字面 `%3F`**: VS Code 的外部链接打开链条会重新解析上报 URL（对 query 百分号解码），再经最小重编码 + `encodeURI` 重建，导致 ASCII `?` / `#` 被双重编码、以字面 `%3F` / `%23` 出现在 GitHub 上（裸 `&` 甚至会截断 body 参数）。报告标题与正文现在把这些字符替换为全角同形字符（`？＃＆＋`），可完整穿越整条链路——已用 `vscode-uri` 复现全链路验证。
 - **WSL 感知的配置快捷入口**: 侧边栏的规则 / MCP / 白名单按钮在 WSL 会话中现在打开 Antigravity 实际读取的文件，而不再固定指向本地用户目录。由于扩展现在直接运行在 WSL 内（见上方"变更"），规则与 MCP 配置天然解析到 WSL 侧 `~/.gemini`；浏览器白名单则经磁盘 automount 解析到 Windows 侧用户目录（浏览器运行在 Windows 宿主），支持自定义 `/etc/wsl.conf` automount 根目录和非 C 系统盘。若用户通过 `remote.extensionKind` 覆盖强制扩展运行在 Windows UI 端，规则与 MCP 配置改经发行版的 UNC 共享解析（`\\wsl.localhost`，老版 Windows 10 WSL 回退 `\\wsl$` 共享）。任何探测失败都会安全回退到原有本地路径行为。
 - **Antigravity 2.x 全局规则位置**: 规则按钮现在优先打开 Antigravity 2.x 的全局规则文件 `~/.gemini/config/AGENTS.md`（"Global Customizations Root"），其次是旧版 `~/.gemini/GEMINI.md`，再次是 v1.20.3 的跨工具 `~/.gemini/AGENTS.md`——按顺序打开第一个存在的文件。
 - **含连续特殊字符路径的工作区匹配**: Language Server 会把文件夹路径中连续的特殊字符折叠为单个下划线（已对照真实服务验证：`/home/deploy/_projects/antigravity-panel` 被通告为 `file_home_deploy_projects_antigravity_panel`），而扩展此前按每字符一个下划线生成 ID，导致此类路径的严格工作区 ID 匹配失败。ID 归一化现在完全复刻服务端的折叠行为，恢复严格的 Strong Match，且不再接受任何额外拼写。

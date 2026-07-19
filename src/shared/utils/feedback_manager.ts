@@ -9,6 +9,8 @@ export interface DiagnosticMetadata {
     version: string;
     // New fields for enhanced diagnostics
     ideVersion?: string;
+    /** Antigravity product version (product.json "ideVersion", e.g. "2.1.1") */
+    productVersion?: string;
     processName?: string;
     serverResponse?: string;
     attemptDetails?: string;
@@ -31,16 +33,34 @@ export class FeedbackManager {
     private static readonly GITHUB_ISSUES_URL = "https://github.com/n2ns/antigravity-panel/issues/new";
 
     /**
+     * VS Code's external-open chain re-parses the URL (percent-decoding the
+     * query), then rebuilds it via toString(true) + encodeURI. ASCII "?" and
+     * "#" get double-encoded on that path and reach GitHub as literal
+     * %3F / %23, while a raw "&" would split the body query parameter and a
+     * raw "+" decodes to a space. Full-width lookalikes survive the round
+     * trip intact (non-ASCII is single-encoded by encodeURI), so substitute
+     * them before building the URL.
+     */
+    private static sanitizeForExternalUrl(text: string): string {
+        return text
+            .replace(/\?/g, "？")
+            .replace(/#/g, "＃")
+            .replace(/&/g, "＆")
+            .replace(/\+/g, "＋");
+    }
+
+    /**
      * Constructs a GitHub Issue URL with diagnostic information.
      */
     public static getFeedbackUrl(meta: DiagnosticMetadata): vscode.Uri {
-        const title = encodeURIComponent(`[REPORT-AUTO] ${meta.reason} - ${meta.version}`);
+        const title = encodeURIComponent(this.sanitizeForExternalUrl(`[REPORT-AUTO] ${meta.reason} - ${meta.version}`));
 
         let diagInfo = `**${vscode.l10n.t("Diagnostic System Information (Auto-generated)")}**\n`;
         diagInfo += `- **${vscode.l10n.t("Extension Version")}**: ${meta.version}\n`;
         const osString = meta.osDetailedVersion ? `${meta.platform} (${meta.osDetailedVersion})` : `${meta.platform} (${meta.arch})`;
         diagInfo += `- **${vscode.l10n.t("Operating System")}**: ${osString}\n`;
         if (meta.ideVersion) diagInfo += `- **IDE Version**: ${meta.ideVersion}\n`;
+        if (meta.productVersion) diagInfo += `- **IDE Product Version**: ${meta.productVersion}\n`;
         diagInfo += `- **${vscode.l10n.t("Error Code")}**: ${meta.reason}\n`;
         if (meta.processName) diagInfo += `- **Process Searched**: ${meta.processName}\n`;
         if (meta.candidateCount !== undefined) diagInfo += `- **${vscode.l10n.t("Candidate Process Count")}**: ${meta.candidateCount}\n`;
@@ -58,9 +78,9 @@ export class FeedbackManager {
         }
         if (meta.serverResponse) diagInfo += `\n**Server Response**:\n\`\`\`\n${meta.serverResponse.substring(0, 500)}\n\`\`\`\n`;
 
-        const body = encodeURIComponent(
+        const body = encodeURIComponent(this.sanitizeForExternalUrl(
             `${vscode.l10n.t("**Problem Description**\n(Please briefly describe the situation under which this problem occurred, e.g., did you just upgrade the IDE?)\n\n---")}\n${diagInfo}`
-        );
+        ));
 
         const url = `${this.GITHUB_ISSUES_URL}?title=${title}&body=${body}&labels=bug,auto-report`;
         return vscode.Uri.parse(url);

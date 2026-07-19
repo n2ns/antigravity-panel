@@ -18,7 +18,7 @@ import { SidebarProvider } from "./view/sidebar-provider";
 import { initLogger, setDebugMode, infoLog, errorLog, warnLog, debugLog, getLogger, logQuotaSnapshot } from "./shared/utils/logger";
 import { formatBytes } from "./shared/utils/format";
 import { CommunicationAttempt } from "./shared/utils/types";
-import { getDetailedOSVersion } from "./shared/utils/platform";
+import { getDetailedOSVersion, getIdeProductVersion } from "./shared/utils/platform";
 import { getExpectedWorkspaceIds } from "./shared/utils/workspace_id";
 import { generateCommitMessageCommand, setAnthropicApiKeyCommand } from "./commitMessageClaude";
 
@@ -304,6 +304,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
           arch: process.arch,
           version: extVersion,
           ideVersion,
+          productVersion: getIdeProductVersion(vscode.env.appRoot),
           processName: processFinder.getProcessName(),
           osDetailedVersion: getDetailedOSVersion()
         };

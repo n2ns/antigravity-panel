@@ -54,6 +54,30 @@ suite('FeedbackManager Test Suite', () => {
         assert.ok(decodedBody.includes('Related process output: none'), 'Missing diagnostic summary');
     });
 
+    test('getFeedbackUrl should include IDE product version when provided', () => {
+        const url = FeedbackManager.getFeedbackUrl({ ...mockMeta, ideVersion: '1.107.0', productVersion: '2.1.1' });
+        const decodedBody = decodeURIComponent(url.path.split('body=')[1].split('&')[0]);
+
+        assert.ok(decodedBody.includes('**IDE Version**: 1.107.0'), 'Missing IDE base version');
+        assert.ok(decodedBody.includes('**IDE Product Version**: 2.1.1'), 'Missing IDE product version');
+    });
+
+    test('getFeedbackUrl should substitute URL-hostile ASCII chars with full-width lookalikes', () => {
+        // VS Code's openExternal chain double-encodes ? and #, and a raw & would
+        // split the body query param — they must not survive into the URL body.
+        const url = FeedbackManager.getFeedbackUrl({
+            ...mockMeta,
+            parsingInfo: 'why? a&b #tag 1+1'
+        });
+        const encodedBody = url.path.split('body=')[1].split('&labels=')[0];
+        const decodedBody = decodeURIComponent(encodedBody);
+
+        assert.ok(!encodedBody.includes('%3F') && !encodedBody.includes('%23') && !encodedBody.includes('%26') && !encodedBody.includes('%2B'),
+            'Encoded body must not contain ASCII ?, #, &, + escapes');
+        assert.ok(decodedBody.includes('why？ a＆b ＃tag 1＋1'), 'Hostile chars should become full-width lookalikes');
+        assert.ok(decodedBody.includes('upgrade the IDE？'), 'Template question mark should be full-width');
+    });
+
     test('showFeedbackNotification should show both buttons and handle diagnostic click', async () => {
         // Prepare mock selection
         (vscode.window as any).nextMessageSelection = 'Run Diagnostics';
