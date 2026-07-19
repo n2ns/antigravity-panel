@@ -94,10 +94,12 @@ English | [中文文档](FEATURES_zh.md)
 ## ⚙️ Quick Configuration Access
 
 ### One-click Shortcuts
-- Edit Global Rules (`~/.gemini/GEMINI.md`)
+- Edit Global Rules (opens the first existing of `~/.gemini/config/AGENTS.md`, legacy `~/.gemini/GEMINI.md`, cross-tool `~/.gemini/AGENTS.md`)
 - Configure MCP settings (`~/.gemini/config/mcp_config.json`)
 - Manage Browser Allowlist (`~/.gemini/config/browserAllowlist.txt`)
 - Open extension settings
+
+In WSL remote sessions the shortcuts follow where Antigravity actually reads each file: Rules and MCP config target the WSL-side `~/.gemini`, while the Browser Allowlist targets the Windows-side profile (the browser runs on the Windows host). If the counterpart side cannot be located, the shortcut falls back to the local path.
 
 ---
 

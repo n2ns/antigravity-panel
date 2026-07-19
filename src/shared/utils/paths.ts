@@ -2,7 +2,13 @@
 
 import * as os from "os";
 import * as path from "path";
-import { GEMINI_ROOT_DIR_NAME, ANTIGRAVITY_DIR_NAME } from "./constants";
+import {
+  GEMINI_ROOT_DIR_NAME,
+  ANTIGRAVITY_DIR_NAME,
+  CONFIG_DIR_NAME,
+  MCP_CONFIG_FILE_NAME,
+  BROWSER_ALLOWLIST_FILE_NAME
+} from "./constants";
 
 export function getGeminiRootDir(): string {
   return path.join(os.homedir(), GEMINI_ROOT_DIR_NAME);
@@ -10,10 +16,6 @@ export function getGeminiRootDir(): string {
 
 export function getGeminiBaseDir(): string {
   return path.join(getGeminiRootDir(), ANTIGRAVITY_DIR_NAME);
-}
-
-export function getGlobalRulesPath(): string {
-  return path.join(getGeminiRootDir(), "GEMINI.md");
 }
 
 export function getBrainDir(): string {
@@ -25,16 +27,13 @@ export function getConversationsDir(): string {
 }
 
 export function getMcpConfigPath(): string {
-  return path.join(getGeminiRootDir(), "config", "mcp_config.json");
+  return path.join(getGeminiRootDir(), CONFIG_DIR_NAME, MCP_CONFIG_FILE_NAME);
 }
 
 export function getBrowserAllowlistPath(): string {
-  return path.join(getGeminiRootDir(), "config", "browserAllowlist.txt");
+  return path.join(getGeminiRootDir(), CONFIG_DIR_NAME, BROWSER_ALLOWLIST_FILE_NAME);
 }
 
 export function getCodeContextsDir(): string {
   return getConversationsDir();
 }
-
-/** @deprecated Use getCodeContextsDir() instead. Kept for backward compatibility. */
-export const getCodeTrackerActiveDir = getCodeContextsDir;

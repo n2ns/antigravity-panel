@@ -2,6 +2,18 @@
 
 # 更新日志
 
+## [Unreleased]
+
+### 变更
+
+- **远程窗口中扩展改在工作区侧运行**: `extensionKind` 由 `["ui", "workspace"]` 调整为 `["workspace", "ui"]`。在远程窗口（WSL、SSH、Dev Container）中，扩展宿主现在运行于工作区所在一侧——即 Antigravity agent 后端运行的环境——因此任务/上下文列表、进程探测和配置路径读取的都是 agent 实际所在的环境，而非本地 UI 机器。
+
+### 修复
+
+- **WSL 感知的配置快捷入口**: 侧边栏的规则 / MCP / 白名单按钮在 WSL 会话中现在打开 Antigravity 实际读取的文件，而不再固定指向本地用户目录。由于扩展现在直接运行在 WSL 内（见上方"变更"），规则与 MCP 配置天然解析到 WSL 侧 `~/.gemini`；浏览器白名单则经磁盘 automount 解析到 Windows 侧用户目录（浏览器运行在 Windows 宿主），支持自定义 `/etc/wsl.conf` automount 根目录和非 C 系统盘。若用户通过 `remote.extensionKind` 覆盖强制扩展运行在 Windows UI 端，规则与 MCP 配置改经发行版的 UNC 共享解析（`\\wsl.localhost`，老版 Windows 10 WSL 回退 `\\wsl$` 共享）。任何探测失败都会安全回退到原有本地路径行为。
+- **Antigravity 2.x 全局规则位置**: 规则按钮现在优先打开 Antigravity 2.x 的全局规则文件 `~/.gemini/config/AGENTS.md`（"Global Customizations Root"），其次是旧版 `~/.gemini/GEMINI.md`，再次是 v1.20.3 的跨工具 `~/.gemini/AGENTS.md`——按顺序打开第一个存在的文件。
+- **含连续特殊字符路径的工作区匹配**: Language Server 会把文件夹路径中连续的特殊字符折叠为单个下划线（已对照真实服务验证：`/home/deploy/_projects/antigravity-panel` 被通告为 `file_home_deploy_projects_antigravity_panel`），而扩展此前按每字符一个下划线生成 ID，导致此类路径的严格工作区 ID 匹配失败。ID 归一化现在完全复刻服务端的折叠行为，恢复严格的 Strong Match，且不再接受任何额外拼写。
+
 ## [2.6.3] - 2026-06-28
 
 ### 新增

@@ -2,6 +2,18 @@ English | [中文文档](docs/CHANGELOG_zh.md)
 
 # Change Log
 
+## [Unreleased]
+
+### Changed
+
+- **Extension Runs on the Workspace Side in Remote Windows**: `extensionKind` changed from `["ui", "workspace"]` to `["workspace", "ui"]`. In remote windows (WSL, SSH, Dev Containers) the extension host now runs on the workspace side — where the Antigravity agent backend lives — so the task/context lists, process detection, and config paths all read the environment the agent actually runs in, instead of the local UI machine.
+
+### Fixed
+
+- **WSL-aware Config Shortcuts**: The sidebar Rules / MCP / Allowlist buttons now open the file Antigravity actually reads in WSL sessions instead of always targeting the local home directory. With the extension now running inside WSL (see Changed above), Rules and MCP config naturally resolve to the WSL-side `~/.gemini`, while the Browser Allowlist resolves to the Windows-side profile through the drive automount since the browser runs on the Windows host — honoring custom `/etc/wsl.conf` automount roots and non-C system drives. If the extension is forced onto the Windows UI host via a `remote.extensionKind` override, Rules and MCP config are instead resolved through the distro's UNC share (`\\wsl.localhost`, falling back to the legacy `\\wsl$` share on older Windows 10 WSL). Any probe failure safely falls back to the previous local-path behavior.
+- **Antigravity 2.x Global Rules Location**: The Rules button now prefers the Antigravity 2.x global rules file `~/.gemini/config/AGENTS.md` (the "Global Customizations Root"), then the legacy `~/.gemini/GEMINI.md`, then the v1.20.3 cross-tool `~/.gemini/AGENTS.md` — opening the first one that exists.
+- **Workspace Matching for Paths with Consecutive Special Characters**: The Language Server collapses runs of special characters in a folder path into a single underscore (verified against a live server: `/home/deploy/_projects/antigravity-panel` is announced as `file_home_deploy_projects_antigravity_panel`), while the extension previously generated one underscore per character and therefore failed the strict workspace ID match for such paths. ID normalization now replicates the server's collapsing exactly, restoring the strict Strong Match without accepting any alternative spellings.
+
 ## [2.6.3] - 2026-06-28
 
 ### Added

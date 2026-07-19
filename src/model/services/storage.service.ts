@@ -7,10 +7,7 @@
 
 import * as vscode from 'vscode';
 import type { IStorageService } from './interfaces';
-import type { QuotaHistoryPoint, UsageBucket, CachedTreeState, BucketItem } from '../types/entities';
-
-// Re-export types for backward compatibility
-export type { QuotaHistoryPoint, UsageBucket, CachedTreeState, BucketItem };
+import type { QuotaHistoryPoint, UsageBucket, CachedTreeState } from '../types/entities';
 
 const STORAGE_KEY = 'tfa.quotaHistory_v2';
 const MAX_HISTORY_HOURS = 24 * 7; // 7 days
@@ -288,29 +285,4 @@ export class StorageService implements IStorageService {
         return this.history.length;
     }
 
-    // ==================== Legacy Compatibility ====================
-
-    /** Legacy: Get last active category */
-    getLastActiveCategory(): 'gemini' | 'other' {
-        return this.globalState.get<'gemini' | 'other'>('tfa.activeCategory') || 'gemini';
-    }
-
-    /** Legacy: Set active category */
-    async setActiveCategory(category: 'gemini' | 'other'): Promise<void> {
-        await this.globalState.update('tfa.activeCategory', category);
-    }
-
-    /** Legacy: Record quota history (same as recordQuotaPoint) */
-    async record(usageMap: Record<string, number>): Promise<void> {
-        return this.recordQuotaPoint(usageMap);
-    }
 }
-
-// Backward compatibility: Re-export as QuotaHistoryManager
-export { StorageService as QuotaHistoryManager };
-
-// Re-export cached info types for backward compatibility
-export type {
-    CachedTaskInfo,
-    CachedContextInfo
-} from '../types/entities';

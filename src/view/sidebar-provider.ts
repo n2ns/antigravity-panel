@@ -13,7 +13,7 @@ import * as fs from "fs";
 import * as path from "path";
 import { AppViewModel } from "../view-model/app.vm";
 import { WebviewMessage } from "../view-model/types";
-import { getMcpConfigPath, getBrowserAllowlistPath, getGlobalRulesPath } from "../shared/utils/paths";
+import { resolveConfigTargets, ConfigTargets } from "../shared/utils/config_targets";
 import { WebviewHtmlBuilder } from "./html-builder";
 import { errorLog } from "../shared/utils/logger";
 
@@ -113,19 +113,19 @@ export class SidebarProvider implements vscode.WebviewViewProvider, vscode.Dispo
                 }
                 break;
             case "openMcp": {
-                const mcpPath = getMcpConfigPath();
+                const mcpPath = this._resolveConfigTargets().mcp;
                 await this.ensureFileExists(mcpPath, '{\n  "mcpServers": {}\n}\n');
                 await vscode.commands.executeCommand("vscode.open", vscode.Uri.file(mcpPath));
                 break;
             }
             case "openBrowserAllowlist": {
-                const allowlistPath = getBrowserAllowlistPath();
+                const allowlistPath = this._resolveConfigTargets().allowlist;
                 await this.ensureFileExists(allowlistPath, '# Browser Allowlist\n# Add one URL pattern per line\n');
                 await vscode.commands.executeCommand("vscode.open", vscode.Uri.file(allowlistPath));
                 break;
             }
             case "openRules": {
-                const rulesPath = getGlobalRulesPath();
+                const rulesPath = this._resolveConfigTargets().rules;
                 await this.ensureFileExists(rulesPath, '# Gemini Global Rules\n');
                 await vscode.commands.executeCommand("vscode.open", vscode.Uri.file(rulesPath));
                 break;
@@ -227,6 +227,27 @@ export class SidebarProvider implements vscode.WebviewViewProvider, vscode.Dispo
             })
             .setVersion(vscode.extensions.getExtension('n2ns.antigravity-panel')?.packageJSON?.version || '')
             .build();
+    }
+
+    private _configTargetsCache?: { targets: ConfigTargets; expiresAt: number };
+
+    /**
+     * Resolves the config files to open based on where the extension host runs
+     * (Windows UI host vs. WSL) so WSL sessions open the side the agent reads.
+     * Cached briefly: the probing does synchronous IO that can stall for
+     * seconds on UNC shares when the WSL distro is stopped.
+     */
+    private _resolveConfigTargets(): ConfigTargets {
+        const now = Date.now();
+        if (this._configTargetsCache && now < this._configTargetsCache.expiresAt) {
+            return this._configTargetsCache.targets;
+        }
+        const targets = resolveConfigTargets({
+            remoteName: vscode.env.remoteName,
+            remoteAuthority: vscode.workspace.workspaceFolders?.[0]?.uri.authority,
+        });
+        this._configTargetsCache = { targets, expiresAt: now + 30_000 };
+        return targets;
     }
 
     /**

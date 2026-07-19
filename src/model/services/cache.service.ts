@@ -405,13 +405,4 @@ export class CacheService implements ICacheService {
         return info.totalSize;
     }
 
-    /**
-     * Legacy method for backward compatibility
-     */
-    async clean(): Promise<{ deletedCount: number, freedBytes: number }> {
-        return this.cleanCache(5);
-    }
 }
-
-// Backward compatibility: Re-export as CacheManager
-export { CacheService as CacheManager };

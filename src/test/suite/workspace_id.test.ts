@@ -1,19 +1,7 @@
 import * as assert from "assert";
-import * as sinon from "sinon";
-import * as vscode from "vscode";
 import * as workspaceId from "../../shared/utils/workspace_id";
 
 suite("Workspace ID Utilities Test Suite", () => {
-  let sandbox: sinon.SinonSandbox;
-
-  setup(() => {
-    sandbox = sinon.createSandbox();
-  });
-
-  teardown(() => {
-    sandbox.restore();
-  });
-
   test("normalizeUnixPath should normalize linux paths correctly", () => {
     assert.strictEqual(
       workspaceId.normalizeUnixPath("/home/user/project"),
@@ -110,5 +98,30 @@ suite("Workspace ID Utilities Test Suite", () => {
     } finally {
       Object.defineProperty(process, "platform", { value: originalPlatform });
     }
+  });
+
+  test("normalizeUnixPath should collapse runs of special characters like the server", () => {
+    // Verified live: the server announces /home/deploy/_projects/antigravity-panel
+    // as file_home_deploy_projects_antigravity_panel (single underscores only)
+    assert.strictEqual(
+      workspaceId.normalizeUnixPath("/home/deploy/_projects/antigravity-panel"),
+      "file_home_deploy_projects_antigravity_panel",
+    );
+    assert.strictEqual(
+      workspaceId.normalizeUnixPath("/home/user/my--project"),
+      "file_home_user_my_project",
+    );
+  });
+
+  test("normalizeWindowsPath should collapse runs of special characters like the server", () => {
+    assert.strictEqual(
+      workspaceId.normalizeWindowsPath("C:\\Users\\a\\_projects"),
+      "file_c_3A_Users_a_projects",
+    );
+    // Run at the drive-prefix boundary: rest starts with an underscore
+    assert.strictEqual(
+      workspaceId.normalizeWindowsPath("C:\\_foo"),
+      "file_c_3A_foo",
+    );
   });
 });

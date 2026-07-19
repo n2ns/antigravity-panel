@@ -49,6 +49,7 @@ export function getWorkspaceIdsFromFolders(
  * - Backslash: replaced with _
  * - Directory names: preserve original case
  * - ALL special chars (including . and -): replaced with _
+ * - Runs of consecutive special chars: collapsed into a SINGLE _
  * - Spaces: URL-encoded as %20, then % becomes _ → _20
  *
  * @example
@@ -74,12 +75,15 @@ export function normalizeWindowsPath(path: string): string {
     .map((segment) => encodeURIComponent(segment))
     .join("_");
 
-  // Convert ALL non-alphanumeric to underscore (including %, ., -)
-  // This transforms %20 → _20, dots → _, hyphens → _
-  const normalizedRest = encodedSegments.replace(/[^a-zA-Z0-9]/g, "_");
+  // Convert runs of non-alphanumerics to a single underscore (including %, ., -)
+  // This transforms %20 → _20, dots → _, hyphens → _. The server collapses
+  // consecutive special characters into ONE underscore (verified live on Unix;
+  // see normalizeUnixPath), so runs must not produce multiple underscores.
+  const normalizedRest = encodedSegments.replace(/[^a-zA-Z0-9]+/g, "_");
 
-  // Combine: file_ + driveLetter + _3A_ + rest
-  return `file_${driveLetter}_3A_${normalizedRest}`;
+  // Combine: file_ + driveLetter + _3A_ + rest; collapse a possible run at the
+  // template boundary (rest may start with an underscore, e.g. "C:\_foo")
+  return `file_${driveLetter}_3A_${normalizedRest}`.replace(/_+/g, "_");
 }
 
 /**
@@ -89,11 +93,15 @@ export function normalizeWindowsPath(path: string): string {
  * - Spaces become %20 which is then represented as _20 in the workspace ID
  * - Other special chars are replaced with underscores
  *
+ * Runs of special characters collapse into a SINGLE underscore, matching the
+ * server (verified live: the server announces "/home/deploy/_projects/antigravity-panel"
+ * as "file_home_deploy_projects_antigravity_panel").
+ *
  * @example
  * normalizeUnixPath("/Users/bob/open source/project")
  * // → "file_Users_bob_open_20source_project"
  *
- * normalizeUnixPath("/home/deploy/projects")
+ * normalizeUnixPath("/home/deploy/_projects")
  * // → "file_home_deploy_projects"
  */
 export function normalizeUnixPath(path: string): string {
@@ -112,13 +120,13 @@ export function normalizeUnixPath(path: string): string {
     .join("/");
 
   // Now convert the URL-encoded string to the workspace ID format
-  // Replace all non-alphanumeric characters with underscores
-  // This converts %20 to _20, / to _, etc.
+  // Replace each run of non-alphanumeric characters with ONE underscore
+  // This converts %20 to _20, / to _, "/_" to _, etc.
   // IMPORTANT: Do NOT lowercase - preserve case like the server does
   const normalizedPath = urlEncoded
     .replace(/^[^a-zA-Z0-9]+/, "") // Strip leading non-alphanumeric (preserve case)
     .replace(/[^a-zA-Z0-9]+$/, "") // Strip trailing non-alphanumeric (preserve case)
-    .replace(/[^a-zA-Z0-9]/g, "_"); // Replace everything else with underscore (preserves case)
+    .replace(/[^a-zA-Z0-9]+/g, "_"); // Collapse runs to a single underscore (preserves case)
 
   return `file_${normalizedPath}`;
 }

@@ -4,12 +4,10 @@ import * as path from 'path';
 import {
     getGeminiRootDir,
     getGeminiBaseDir,
-    getGlobalRulesPath,
     getBrainDir,
     getConversationsDir,
     getMcpConfigPath,
-    getBrowserAllowlistPath,
-    getCodeTrackerActiveDir
+    getBrowserAllowlistPath
 } from '../../shared/utils/paths';
 
 suite('Paths Utils Test Suite', () => {
@@ -24,12 +22,6 @@ suite('Paths Utils Test Suite', () => {
     test('getGeminiBaseDir should return ~/.gemini/antigravity-ide', () => {
         const result = getGeminiBaseDir();
         const expected = path.join(homeDir, '.gemini', 'antigravity-ide');
-        assert.strictEqual(result, expected);
-    });
-
-    test('getGlobalRulesPath should return ~/.gemini/GEMINI.md', () => {
-        const result = getGlobalRulesPath();
-        const expected = path.join(homeDir, '.gemini', 'GEMINI.md');
         assert.strictEqual(result, expected);
     });
 
@@ -57,22 +49,14 @@ suite('Paths Utils Test Suite', () => {
         assert.strictEqual(result, expected);
     });
 
-    test('getCodeTrackerActiveDir should return ~/.gemini/antigravity-ide/conversations', () => {
-        const result = getCodeTrackerActiveDir();
-        const expected = path.join(homeDir, '.gemini', 'antigravity-ide', 'conversations');
-        assert.strictEqual(result, expected);
-    });
-
     test('all paths should use platform-specific separators', () => {
         const paths = [
             getGeminiRootDir(),
             getGeminiBaseDir(),
-            getGlobalRulesPath(),
             getBrainDir(),
             getConversationsDir(),
             getMcpConfigPath(),
-            getBrowserAllowlistPath(),
-            getCodeTrackerActiveDir()
+            getBrowserAllowlistPath()
         ];
 
         for (const p of paths) {
@@ -85,12 +69,10 @@ suite('Paths Utils Test Suite', () => {
         const paths = [
             getGeminiRootDir(),
             getGeminiBaseDir(),
-            getGlobalRulesPath(),
             getBrainDir(),
             getConversationsDir(),
             getMcpConfigPath(),
-            getBrowserAllowlistPath(),
-            getCodeTrackerActiveDir()
+            getBrowserAllowlistPath()
         ];
 
         for (const p of paths) {
@@ -103,8 +85,7 @@ suite('Paths Utils Test Suite', () => {
             getGeminiRootDir(),
             getGeminiBaseDir(),
             getBrainDir(),
-            getConversationsDir(),
-            getCodeTrackerActiveDir()
+            getConversationsDir()
         ];
 
         for (const p of dirPaths) {
@@ -113,7 +94,6 @@ suite('Paths Utils Test Suite', () => {
     });
 
     test('file paths should have correct extensions', () => {
-        assert.ok(getGlobalRulesPath().endsWith('.md'), 'Global rules should be .md file');
         assert.ok(getMcpConfigPath().endsWith('.json'), 'MCP config should be .json file');
         assert.ok(getBrowserAllowlistPath().endsWith('.txt'), 'Browser allowlist should be .txt file');
     });
@@ -123,7 +103,6 @@ suite('Paths Utils Test Suite', () => {
         const baseDir = getGeminiBaseDir();
         const brainDir = getBrainDir();
         const conversationsDir = getConversationsDir();
-        const codeTrackerDir = getCodeTrackerActiveDir();
 
         // Base dir should be under root dir
         assert.ok(baseDir.startsWith(rootDir), 'Base dir should be under root dir');
@@ -131,9 +110,6 @@ suite('Paths Utils Test Suite', () => {
         // Brain and conversations should be under base dir
         assert.ok(brainDir.startsWith(baseDir), 'Brain dir should be under base dir');
         assert.ok(conversationsDir.startsWith(baseDir), 'Conversations dir should be under base dir');
-
-        // Code tracker should be under base dir
-        assert.ok(codeTrackerDir.startsWith(baseDir), 'Code tracker dir should be under base dir');
     });
 });
 

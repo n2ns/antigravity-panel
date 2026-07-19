@@ -94,10 +94,12 @@
 ## ⚙️ 快速配置访问
 
 ### 一键快捷入口
-- 编辑全局规则（`~/.gemini/GEMINI.md`）
+- 编辑全局规则（按序打开第一个存在的文件：`~/.gemini/config/AGENTS.md`、旧版 `~/.gemini/GEMINI.md`、跨工具 `~/.gemini/AGENTS.md`）
 - 配置 MCP 设置（`~/.gemini/config/mcp_config.json`）
 - 管理浏览器白名单（`~/.gemini/config/browserAllowlist.txt`）
 - 打开扩展设置
+
+在 WSL 远程会话中，快捷入口会跟随 Antigravity 实际读取的位置：规则与 MCP 配置指向 WSL 侧 `~/.gemini`，浏览器白名单指向 Windows 侧用户目录（浏览器运行在 Windows 宿主）。无法定位对侧时回退到本地路径。
 
 ---
 

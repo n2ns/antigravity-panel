@@ -42,8 +42,8 @@
   },
   "icon": "assets/icon.png",
   "extensionKind": [
-    "ui",
-    "workspace"
+    "workspace",
+    "ui"
   ],
   "engines": {
     "vscode": "^1.104.0"
