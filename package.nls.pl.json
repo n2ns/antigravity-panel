@@ -31,7 +31,7 @@
     "config.dashboard.historyRange.description": "Zakres czasu dla wykresu osi czasu użycia w minutach (domyślnie: 90 minut)",
     "config.dashboard.includeSecondaryModels.description": "Pokaż limit GPT na pasku bocznym (GPT dzieli pulę limitów z Claude)",
     "config.dashboard.refreshRate.description": "Interwał automatycznego odświeżania w sekundach (minimum: 30s, zalecane: 120s)",
-    "config.dashboard.showCreditsCard.description": "Pokaż kartę zużycia kredytów AI (Tokeny, Flow) na pasku bocznym",
+    "config.dashboard.showCreditsCard.description": "Pokaż kredyty Prompt i Flow na pasku bocznym (Google One AI pozostaje widoczne)",
     "config.dashboard.showUserInfoCard.description": "Pokaż kartę profilu użytkownika (Awatar, Poziom, Plan) na pasku bocznym",
     "config.dashboard.uiScale.description": "Proporcjonalne skalowanie tekstu i elementów interfejsu panelu bocznego. (Skala Root EM)",
     "config.dashboard.viewMode.description": "Wybierz między widokiem grupowym a widokiem pojedynczych modeli na pasku bocznym",

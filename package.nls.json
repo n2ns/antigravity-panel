@@ -31,7 +31,7 @@
     "config.dashboard.historyRange.description": "Time range for usage timeline chart in minutes (default: 90 minutes)",
     "config.dashboard.includeSecondaryModels.description": "Show GPT quota in sidebar (GPT shares quota pool with Claude)",
     "config.dashboard.refreshRate.description": "Auto-refresh interval in seconds (minimum: 30s, recommended: 120s)",
-    "config.dashboard.showCreditsCard.description": "Show the AI Credits usage card (Tokens, Flow) in the sidebar",
+    "config.dashboard.showCreditsCard.description": "Show Prompt and Flow credits in the sidebar (Google One AI remains visible)",
     "config.dashboard.showUserInfoCard.description": "Show the user profile card (Avatar, Tier, Plan) in the sidebar",
     "config.dashboard.uiScale.description": "Proportional scaling of the sidebar panel text and UI elements. (Root EM scale)",
     "config.dashboard.viewMode.description": "Choose between grouped or individual model display in sidebar",

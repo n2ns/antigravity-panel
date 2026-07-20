@@ -96,9 +96,9 @@ suite('App Initialization & Cache Integration Test', () => {
         const cachedState: QuotaViewState = {
             groups: [
                 { id: 'gemini', label: 'Gemini', remaining: 75.5, resetTime: '2h', themeColor: '#4285F4', hasData: true },
-                { id: 'claude', label: 'Claude', remaining: 45.2, resetTime: '3h', themeColor: '#D97706', hasData: true }
+                { id: 'non-google', label: 'Claude', remaining: 45.2, resetTime: '3h', themeColor: '#D97706', hasData: true }
             ],
-            activeGroupId: 'claude',
+            activeGroupId: 'non-google',
             chart: { buckets: [], maxUsage: 1, groupColors: {} },
             displayItems: []
         };
@@ -110,9 +110,9 @@ suite('App Initialization & Cache Integration Test', () => {
         assert.ok(success, 'Should report success restoring from cache');
 
         const state = viewModel.getState();
-        assert.strictEqual(state.quota.activeGroupId, 'claude');
+        assert.strictEqual(state.quota.activeGroupId, 'non-google');
 
-        const claude = state.quota.groups.find(g => g.id === 'claude');
+        const claude = state.quota.groups.find(g => g.id === 'non-google');
         assert.strictEqual(claude?.remaining, 45.2);
         assert.strictEqual(claude?.hasData, true);
     });

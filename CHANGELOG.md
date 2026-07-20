@@ -2,6 +2,26 @@ English | [中文文档](docs/CHANGELOG_zh.md)
 
 # Change Log
 
+## [2.7.1] - 2026-07-20
+
+### Fixed
+
+- **Auto-Accept Command IDs on Antigravity 2.x**: The command-API strategy previously hard-coded `antigravity.agent.acceptAgentStep` and `antigravity.terminal.accept`, which are absent from the 2.x command table (the 2.1.1 server bundle registers `antigravity.terminalCommand.accept` / `antigravity.command.accept` / `antigravity.prioritized.agentAcceptAllInFile` instead), so the primary strategy silently no-opped on 2.x. Accept commands are now discovered at runtime via `vscode.commands.getCommands()` against a candidate list covering both 1.x and 2.x IDs (refreshed every 60s), and only registered commands are invoked.
+- **Usage History Chart Restored**: Restored the bar chart import and render node that were inadvertently removed in v2.6.0 while preserving the existing quota-history data path.
+
+### Changed
+
+- **CDP Fallback: Stateless Panel Scans**: Each configured polling pass locates the current Agent Panel, scans accessible iframe and shadow-root content once, and exits without leaving page-side observers, heartbeat leases, timers, or a global action-history registry. A short timestamp remains on clicked DOM nodes to suppress immediate repeats, and interaction remains limited to the located panel.
+- **Stop Semantics**: Auto-Accept runs now carry a generation token. Toggling the feature off or disposing the extension prevents in-flight work from dispatching another accept action and closes tracked CDP connections. An IDE command or CDP evaluation that was already dispatched cannot be recalled.
+- **Readable Usage History for Coarse Quota Updates**: The chart now aggregates the selected history range into at most about 24 time buckets instead of implying per-poll precision. Empty periods render as a baseline, small changes retain useful precision, legends use product-facing group names, and bar tooltips include the interval time and per-group percentage-point change.
+- **Usage Chart Appears on First Data**: A fresh session no longer shows an empty Usage History card. The chart appears automatically after the first positive quota-change sample is available.
+- **Configuration-Driven Quota Pools**: Gemini Flash and Pro now render and record as one Gemini quota pool, matching Antigravity's current shared-quota policy. Model view still preserves individual model names and the existing Flash blue / Pro green colors. Pool membership, labels, and colors live in `quota_strategy.json`, so a future provider split can be handled by configuration instead of rewriting history, chart, notification, or status-bar logic. Legacy duplicated group history is collapsed once per pool when charted.
+- **Static Credit Rows Hidden by Default**: Prompt and Flow values currently remain static in Antigravity's Language Server response, so those two rows now default to hidden. Google One AI subscription credit remains visible and users can restore Prompt/Flow with `tfa.dashboard.showCreditsCard`.
+
+### Added
+
+- **Auto-Accept Destructive-Action Check (CDP click path)**: Before interacting with a run/accept control, the fallback evaluates the nearest action card and leaves destructive-looking filesystem, disk, Git, or database operations for manual review. The check stops at the Agent Panel boundary so unrelated cards do not affect one another. This is best-effort hardening rather than a security boundary: the command-API path cannot inspect pending command text, and hidden or truncated card content may not be available to the check.
+
 ## [2.7.0] - 2026-07-20
 
 ### Added
@@ -101,7 +121,7 @@ English | [中文文档](docs/CHANGELOG_zh.md)
 ### Added
 
 - **CDP Auto-Accept Fallback**: Added Chrome DevTools Protocol (CDP) injection as a fallback strategy for the auto-accept feature when the command API is unavailable due to webview sandboxing. The command API remains the primary channel.
-- **Webview Guard**: CDP scripts now validate the presence of `.react-app-container` before execution, ensuring injection only targets the Antigravity agent panel.
+- **Agent Panel Scope Check**: CDP scripts now require the Antigravity panel container before they can interact with page controls.
 
 ### Fixed
 

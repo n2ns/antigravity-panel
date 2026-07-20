@@ -2,7 +2,7 @@
   "name": "antigravity-panel",
   "displayName": "Antigravity Panel",
   "description": "%extension.description%",
-  "version": "2.7.0",
+  "version": "2.7.1",
   "publisher": "n2ns",
   "author": "N2NS Lab",
   "license": "Apache-2.0",
@@ -204,7 +204,7 @@
           },
           "tfa.dashboard.showCreditsCard": {
             "type": "boolean",
-            "default": true,
+            "default": false,
             "order": 65,
             "description": "%config.dashboard.showCreditsCard.description%"
           },

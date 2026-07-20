@@ -31,7 +31,7 @@
     "config.dashboard.historyRange.description": "用量时间线图表的时间展示范围（分钟）",
     "config.dashboard.includeSecondaryModels.description": "在侧边栏显示 GPT 配额（GPT 与 Claude 共享配额池）",
     "config.dashboard.refreshRate.description": "自动刷新配额的间隔（秒）（最小值：30秒，推荐：120秒）",
-    "config.dashboard.showCreditsCard.description": "在侧边栏显示 AI 积分栏 (Tokens, Flow)",
+    "config.dashboard.showCreditsCard.description": "在侧边栏显示 Prompt 和 Flow 额度（Google One AI 始终显示）",
     "config.dashboard.showUserInfoCard.description": "在侧边栏显示用户信息卡片 (头像、等级、计划)",
     "config.dashboard.uiScale.description": "等比缩放侧边栏面板的文字与 UI 元素尺寸。（根元素 EM 缩放）",
     "config.dashboard.viewMode.description": "选择侧边栏中的模型显示模式（分组或展开）",

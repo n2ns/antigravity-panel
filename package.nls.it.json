@@ -31,7 +31,7 @@
     "config.dashboard.historyRange.description": "Intervallo di tempo per il grafico della cronologia di utilizzo in minuti (predefinito: 90 minuti)",
     "config.dashboard.includeSecondaryModels.description": "Mostra quota GPT nella barra laterale (GPT condivide il pool di quota con Claude)",
     "config.dashboard.refreshRate.description": "Intervallo di aggiornamento automatico in secondi (minimo: 30s, consigliato: 120s)",
-    "config.dashboard.showCreditsCard.description": "Mostra la scheda di utilizzo dei crediti AI (Tokens, Flow) nella barra laterale",
+    "config.dashboard.showCreditsCard.description": "Mostra i crediti Prompt e Flow nella barra laterale (Google One AI resta visibile)",
     "config.dashboard.showUserInfoCard.description": "Mostra la scheda del profilo utente (Avatar, Livello, Piano) nella barra laterale",
     "config.dashboard.uiScale.description": "Ridimensionamento proporzionale del testo e degli elementi dell'interfaccia nel pannello laterale. (Scala EM radice)",
     "config.dashboard.viewMode.description": "Scegli tra la visualizzazione dei modelli raggruppati o individuali nella barra laterale",

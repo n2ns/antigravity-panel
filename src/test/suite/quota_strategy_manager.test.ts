@@ -24,6 +24,34 @@ suite('QuotaStrategyManager Test Suite', () => {
         assert.ok(gptGroup, 'Should have GPT group');
     });
 
+    test('should map model groups to independently configurable quota pools', () => {
+        const pools = manager.getQuotaPools();
+        assert.deepStrictEqual(pools.map(pool => pool.id), ['gemini', 'non-google']);
+        assert.strictEqual(manager.getPoolIdForHistoryKey('gemini-flash'), 'gemini');
+        assert.strictEqual(manager.getPoolIdForHistoryKey('gemini-pro'), 'gemini');
+        assert.strictEqual(manager.getPoolIdForHistoryKey('claude'), 'non-google');
+        assert.strictEqual(manager.getPoolIdForHistoryKey('gpt'), 'non-google');
+    });
+
+    test('should allow shared pools to be split through strategy data only', () => {
+        const groups = manager.getGroups().map(group => ({
+            ...group,
+            quotaPoolId: group.id
+        }));
+        const splitManager = new QuotaStrategyManager({
+            groups,
+            quotaPools: groups.map(group => ({
+                id: group.id,
+                label: group.label,
+                shortLabel: group.shortLabel,
+                themeColor: group.themeColor
+            }))
+        });
+
+        assert.strictEqual(splitManager.getPoolIdForHistoryKey('gemini-flash'), 'gemini-flash');
+        assert.strictEqual(splitManager.getPoolIdForHistoryKey('gemini-pro'), 'gemini-pro');
+    });
+
     test('should find group by exact model ID', () => {
         const group = manager.getGroupForModel('gemini-3-pro-high');
         assert.strictEqual(group.id, 'gemini-pro');

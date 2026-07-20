@@ -31,7 +31,7 @@
     "config.dashboard.historyRange.description": "분 단위 사용량 타임라인 차트의 시간 범위 (기본값: 90분)",
     "config.dashboard.includeSecondaryModels.description": "사이드바에 GPT 할당량 표시 (GPT는 Claude와 할당량 풀 공유)",
     "config.dashboard.refreshRate.description": "자동 새로고침 간격(초) (최소: 60초, 권장: 120초)",
-    "config.dashboard.showCreditsCard.description": "사이드바에 AI 크레딧 사용량 카드(Tokens, Flow) 표시",
+    "config.dashboard.showCreditsCard.description": "사이드바에 Prompt 및 Flow 크레딧 표시 (Google One AI는 항상 표시)",
     "config.dashboard.showUserInfoCard.description": "사이드바에 사용자 프로필 카드(아바타, 등급, 요금제) 표시",
     "config.dashboard.uiScale.description": "사이드바 패널의 텍스트와 UI 요소를 비례적으로 조정합니다. (루트 EM 스케일)",
     "config.dashboard.viewMode.description": "사이드바에서 그룹화된 모델 표시 또는 개별 모델 표시 중 선택",

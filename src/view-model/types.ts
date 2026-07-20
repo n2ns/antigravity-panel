@@ -36,6 +36,7 @@ export interface UsageChartData {
     buckets: UsageBucket[];
     maxUsage: number;
     groupColors: Record<string, string>;
+    groupLabels?: Record<string, string>;
     displayMinutes?: number;
     interval?: number;
     prediction?: {

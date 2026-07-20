@@ -2,7 +2,7 @@ English | [中文文档](TODO_zh.md)
 
 # TODO List
 
-> Last Updated: 2026-06-28
+> Last Updated: 2026-07-20
 
 > ⚠️ **Note**: This document should only contain pending tasks. Completed tasks should be removed and documented in [CHANGELOG.md](../CHANGELOG.md) or [FEATURES.md](./FEATURES.md).
 
@@ -36,12 +36,9 @@ English | [中文文档](TODO_zh.md)
 - [ ] **Webview Runtime Tests**
   - Add jsdom/happy-dom or equivalent tests for `sidebar-app`
   - Cover state hydration, `postMessage` routing, folder actions, and event dispatch
-  - Add a webview bundle smoke test
 
 - [ ] **Auto-Accept CDP Injection Tests**
   - Extract the clicker script into a testable unit
-  - Validate that it only clicks safe controls inside the Antigravity agent panel
-  - Cover guard behavior, text matching, and noise filtering with DOM fixtures
 
 ### Performance
 

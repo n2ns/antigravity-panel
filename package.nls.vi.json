@@ -31,7 +31,7 @@
     "config.dashboard.historyRange.description": "Khoảng thời gian biểu đồ lịch sử sử dụng (phút, mặc định: 90 phút)",
     "config.dashboard.includeSecondaryModels.description": "Hiển thị quota GPT trong sidebar (GPT dùng chung pool quota với Claude)",
     "config.dashboard.refreshRate.description": "Chu kỳ tự động làm mới quota (giây, tối thiểu: 30s, khuyến nghị: 120s)",
-    "config.dashboard.showCreditsCard.description": "Hiển thị thẻ AI Credits (Tokens, Flow) trong sidebar",
+    "config.dashboard.showCreditsCard.description": "Hiển thị tín dụng Prompt và Flow trong thanh bên (Google One AI luôn hiển thị)",
     "config.dashboard.showUserInfoCard.description": "Hiển thị thẻ thông tin người dùng (Avatar, Tier, Plan) trong sidebar",
     "config.dashboard.uiScale.description": "Tỷ lệ thu phóng giao diện sidebar (Root EM scale)",
     "config.dashboard.viewMode.description": "Chọn hiển thị dashboard theo nhóm hay theo model riêng lẻ",

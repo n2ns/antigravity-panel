@@ -19,21 +19,34 @@ export class UsageChart extends LitElement {
       return nothing;
     }
 
-    const { buckets, maxUsage, interval, prediction, groupColors } = this.data;
-    const t = (window as unknown as WindowWithVsCode).__TRANSLATIONS__;
-
-    // Use actual max for scaling so bars never exceed container
-    const effectiveMaxUsage = Math.max(maxUsage, 1);
-
-    // Calculate total consumption across all buckets for the header
-    let totalConsumption = 0;
-    for (const bucket of buckets) {
-      for (const item of bucket.items) {
-        totalConsumption += item.usage;
-      }
+    const { buckets, maxUsage, interval, prediction, groupColors, groupLabels } = this.data;
+    const bucketTotals = buckets.map(bucket => bucket.items.reduce(
+      (sum, item) => sum + (Number.isFinite(item.usage) && item.usage > 0 ? item.usage : 0),
+      0
+    ));
+    const totalConsumption = bucketTotals.reduce((sum, usage) => sum + usage, 0);
+    if (totalConsumption <= 0) {
+      return nothing;
     }
 
-    const timelineText = `Last ${this.data.displayMinutes} min · ${interval}s/bar`;
+    const t = (window as unknown as WindowWithVsCode).__TRANSLATIONS__;
+    const runwayText = prediction?.runway === 'Stable'
+      ? (t?.usageStable || 'Usage stable')
+      : prediction?.runway;
+    // Trust the actual bucket data as a fallback for restored or older cached state.
+    const effectiveMaxUsage = Math.max(Number.isFinite(maxUsage) ? maxUsage : 0, ...bucketTotals, 0.01);
+
+    const formatUsage = (usage: number): string => usage > 0 && usage < 0.1
+      ? usage.toFixed(2)
+      : usage.toFixed(1);
+    const formatInterval = (seconds: number): string => seconds >= 60 && seconds % 60 === 0
+      ? `${seconds / 60}m/bar`
+      : `${seconds}s/bar`;
+
+    const intervalSeconds = Number.isFinite(interval) && interval > 0
+      ? interval
+      : Math.max(1, Math.round((this.data.displayMinutes * 60) / buckets.length));
+    const timelineText = `Last ${this.data.displayMinutes} min · ${formatInterval(intervalSeconds)}`;
 
     // Build unique group entries for the legend (only groups with actual data)
     const legendGroups = new Map<string, { label: string; color: string }>();
@@ -41,7 +54,7 @@ export class UsageChart extends LitElement {
       for (const item of bucket.items) {
         if (!legendGroups.has(item.groupId)) {
           legendGroups.set(item.groupId, {
-            label: item.groupId,
+            label: groupLabels?.[item.groupId] || item.groupId,
             color: (groupColors && groupColors[item.groupId]) || item.color || '#888'
           });
         }
@@ -52,38 +65,46 @@ export class UsageChart extends LitElement {
       <div class="usage-chart">
         <div class="usage-chart-title">
           <span>${t?.usageHistory || 'Usage History'}</span>
-          <span>${t?.totalConsumed || 'consumed'}: ${totalConsumption.toFixed(1)} pp</span>
+          <span class="usage-total">${t?.totalConsumed || 'consumed'}: ${formatUsage(totalConsumption)} pp</span>
         </div>
         <div class="usage-chart-bars">
           ${buckets.map(bucket => {
-      const maxHeight = 30;  // Reserve 6px headroom (36 - 6 = 30)
+      const maxHeight = 34;
       let currentHeight = 0;
       const gradientStops: string[] = [];
       const tooltipParts: string[] = [];
+      const validItems = bucket.items.filter(item => Number.isFinite(item.usage) && item.usage > 0);
 
-      if (bucket.items && bucket.items.length > 0) {
-        for (const item of bucket.items) {
+      if (validItems.length > 0) {
+        for (const item of validItems) {
           const height = (item.usage / effectiveMaxUsage) * maxHeight;
           const start = currentHeight;
           const end = currentHeight + height;
-          gradientStops.push(`${item.color} ${start}px ${end}px`);
+          const color = item.color || groupColors?.[item.groupId] || '#888';
+          gradientStops.push(`${color} ${start}px ${end}px`);
 
           currentHeight = end;
-          // Use group label from groupColors map for display; fall back to groupId
-          const label = item.groupId;
-          tooltipParts.push(`${label}: -${item.usage.toFixed(1)} pp`);
+          const label = groupLabels?.[item.groupId] || item.groupId;
+          tooltipParts.push(`${label}: -${formatUsage(item.usage)} pp`);
         }
       }
 
-      const totalHeight = Math.min(Math.max(3, currentHeight), maxHeight);
+      const hasUsage = currentHeight > 0;
+      const totalHeight = hasUsage ? Math.min(Math.max(3, currentHeight), maxHeight) : 1;
       const background = gradientStops.length > 0
         ? `linear-gradient(to top, ${gradientStops.join(', ')})`
-        : 'rgba(255, 255, 255, 0.15)';
+        : 'var(--vscode-widget-border, rgba(255, 255, 255, 0.15))';
 
-      const tooltip = tooltipParts.length > 0 ? tooltipParts.join('\n') : 'No usage data';
+      const bucketTime = new Date(bucket.endTime).toLocaleTimeString([], {
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+      const tooltip = tooltipParts.length > 0
+        ? `${bucketTime}\n${tooltipParts.join('\n')}`
+        : `${bucketTime}\n${t?.noReportedQuotaChange || 'No reported quota change'}`;
 
       return html`
-              <div class="usage-bar" 
+              <div class="usage-bar ${hasUsage ? '' : 'empty'}"
                    style="height: ${totalHeight}px; background: ${background}" 
                    data-tooltip="${tooltip}">
               </div>`;
@@ -98,11 +119,11 @@ export class UsageChart extends LitElement {
               </span>
               <span class="legend-sep">·</span>
               <span data-tooltip="${t?.runwayTooltip || 'Runway: Estimated remaining time before quota is exhausted'}">
-                ⏱️${prediction.runway}
+                ⏱️${runwayText}
               </span>
             ` : (prediction ? html`
               <span data-tooltip="${t?.stableStatusTooltip || 'Quota usage status: Stable'}">
-                ⏱️Stable
+                ⏱️${runwayText}
               </span>
             ` : nothing)}
           </div>
@@ -123,4 +144,3 @@ export class UsageChart extends LitElement {
     `;
   }
 }
-

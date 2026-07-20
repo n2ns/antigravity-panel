@@ -16,16 +16,39 @@ interface CdpPage {
 }
 
 /**
- * AutomationService: Dual-strategy auto-accept
- * 1. Primary: VS Code command API (fast, lightweight)
- * 2. Fallback: CDP injection for sandboxed webviews
+ * AutomationService: command-first Auto-Accept with a panel fallback
+ * 1. Use registered IDE commands when the action is exposed through the API
+ * 2. Reach panel-only controls through a scoped CDP path
+ *
+ * The command API strategy discovers which accept commands exist at runtime
+ * (IDs changed between IDE 1.x and 2.x), so only registered commands are called.
+ * Each CDP pass performs one bounded scan of the current Agent Panel and exits.
  */
 export class AutomationService implements IAutomationService, vscode.Disposable {
     private scheduler: Scheduler;
     private readonly taskName = 'autoAccept';
     private _enabled = false;
+    private runGeneration = 0;
 
-    // CDP State
+    // Command discovery state
+    private availableCommands: string[] | null = null;
+    private commandsCheckedAt = 0;
+    private static readonly COMMAND_REFRESH_MS = 60_000;
+
+    // Agent-scoped command candidates. 2.x IDs first; 1.x IDs remain for older installs.
+    // Generic IDE approval commands stay out of scope because they are not limited
+    // to Agent actions.
+    private static readonly ACCEPT_COMMAND_CANDIDATES = [
+        'antigravity.terminalCommand.accept',
+        'antigravity.command.accept',
+        'antigravity.prioritized.agentAcceptAllInFile',
+        'antigravity.agent.acceptAllAgentSteps',
+        'antigravity.agent.acceptAgentStep',
+        'antigravity.terminal.accept',
+    ];
+
+    // Extension-host CDP connection state. The injected page script keeps no
+    // observer, timer, or global registry of its own.
     private msgId = 1;
     private connections = new Map<string, WebSocket>();
     private static readonly CDP_PORT = 9222;
@@ -43,50 +66,99 @@ export class AutomationService implements IAutomationService, vscode.Disposable 
             interval: 800,
             execute: async () => {
                 if (!this._enabled) return;
-                await this.performCommandAccept();
-                await this.performCdpAutoAccept();
+                const generation = this.runGeneration;
+                await this.performCommandAccept(generation);
+                if (!this.isRunActive(generation)) return;
+                await this.performCdpAutoAccept(generation);
             },
             immediate: false
         });
     }
 
-    /**
-     * Primary strategy: call Antigravity's native accept commands
-     */
-    private async performCommandAccept() {
-        try {
-            await vscode.commands.executeCommand('antigravity.agent.acceptAgentStep');
-        } catch { /* no pending step */ }
+    private isRunActive(generation: number): boolean {
+        return this._enabled && generation === this.runGeneration;
+    }
 
+    /**
+     * Resolve which accept commands are actually registered in this IDE build.
+     * Re-checked periodically because commands may register after activation.
+     */
+    private async resolveAcceptCommands(generation: number): Promise<string[]> {
+        const now = Date.now();
+        if (this.availableCommands !== null && now - this.commandsCheckedAt < AutomationService.COMMAND_REFRESH_MS) {
+            return this.availableCommands;
+        }
         try {
-            await vscode.commands.executeCommand('antigravity.terminal.accept');
-        } catch { /* no pending command */ }
+            const all = new Set(await vscode.commands.getCommands(true));
+            const found = AutomationService.ACCEPT_COMMAND_CANDIDATES.filter(id => all.has(id));
+            if (!this.isRunActive(generation)) return [];
+            if (found.join(',') !== (this.availableCommands ?? []).join(',')) {
+                infoLog(`Automation: accept commands available: [${found.join(', ') || 'none'}]`);
+            }
+            this.availableCommands = found;
+        } catch {
+            if (!this.isRunActive(generation)) return [];
+            this.availableCommands = this.availableCommands ?? [];
+        }
+        this.commandsCheckedAt = now; // also on failure, so a broken getCommands isn't re-polled every tick
+        return this.availableCommands;
+    }
+
+    /**
+     * Primary strategy: call the IDE's registered accept commands
+     */
+    private async performCommandAccept(generation: number) {
+        const commandIds = await this.resolveAcceptCommands(generation);
+        for (const id of commandIds) {
+            if (!this.isRunActive(generation)) return;
+            try {
+                await vscode.commands.executeCommand(id);
+            } catch { /* no pending item for this command */ }
+        }
     }
 
     /**
      * Fallback strategy: CDP injection for sandboxed agent panel
      */
-    private async performCdpAutoAccept() {
+    private async performCdpAutoAccept(generation: number) {
         const pages = await this.getPages(AutomationService.CDP_PORT);
+        if (!this.isRunActive(generation)) return;
         for (const page of pages) {
+            if (!this.isRunActive(generation)) return;
             if (page.type !== 'page' && page.type !== 'webview') continue;
             if ((page.title || '').includes('Extension Host')) continue;
 
             const id = `${AutomationService.CDP_PORT}:${page.id}`;
             if (!this.connections.has(id) && page.webSocketDebuggerUrl) {
-                await this.connectToPage(id, page.webSocketDebuggerUrl);
+                const connected = await this.connectToPage(id, page.webSocketDebuggerUrl);
+                if (!connected) continue;
+                if (!this.isRunActive(generation) || connected.readyState !== WebSocket.OPEN as number) {
+                    try { connected.close(); } catch { /* ignore */ }
+                    return;
+                }
+
+                // A connection created by another active run always keeps ownership.
+                // A late connection must never overwrite it.
+                const existing = this.connections.get(id);
+                if (existing) {
+                    try { connected.close(); } catch { /* ignore */ }
+                } else {
+                    this.connections.set(id, connected);
+                }
             }
 
             const ws = this.connections.get(id);
-            if (ws && ws.readyState === WebSocket.OPEN as number) {
+            if (this.isRunActive(generation) && ws && ws.readyState === WebSocket.OPEN as number) {
                 await this.evaluate(ws, this.getClickerScript());
             }
         }
     }
 
     /**
-     * Injection script with Webview Guard — only runs inside the agent panel
-     */    private getClickerScript(): string {
+     * Build one panel-scoped scan with no page-side observer, timer, or global
+     * action registry. A short DOM-node timestamp suppresses immediate repeats.
+     */
+    private getClickerScript(): string {
         return `
             (() => {
                 const getAllRoots = (root = document) => {
@@ -105,36 +177,81 @@ export class AutomationService implements IAutomationService, vscode.Disposable 
                     return roots;
                 };
 
-                const roots = getAllRoots();
-
-                // Webview Guard: check if any of the roots contains the Antigravity Agent Panel container
-                let isAgentPanel = false;
-                for (const root of roots) {
-                    if (
-                        root.querySelector('.react-app-container') || 
-                        root.querySelector('.agent-panel') || 
-                        root.querySelector('#react-app-container') ||
-                        root.querySelector('.antigravity-agent-panel') ||
-                        root.querySelector('[data-testid="agent-panel"]')
-                    ) {
-                        isAgentPanel = true;
-                        break;
+                // Re-locate the Agent Panel on every scheduled pass.
+                const PANEL_SELECTOR = [
+                    '.react-app-container', '.agent-panel', '#react-app-container',
+                    '.antigravity-agent-panel', '[data-testid="agent-panel"]'
+                ].join(',');
+                const getAgentRoots = () => {
+                    const containers = new Set();
+                    for (const root of getAllRoots()) {
+                        try {
+                            if (root.matches && root.matches(PANEL_SELECTOR)) containers.add(root);
+                            for (const el of root.querySelectorAll(PANEL_SELECTOR)) containers.add(el);
+                        } catch (e) { }
                     }
-                }
-                if (!isAgentPanel) return;
+
+                    const roots = new Map();
+                    for (const container of containers) {
+                        for (const root of getAllRoots(container)) {
+                            if (!roots.has(root)) roots.set(root, container);
+                        }
+                    }
+                    return Array.from(roots, ([root, panel]) => ({ root, panel }));
+                };
+
+                const agentRoots = getAgentRoots();
+                if (agentRoots.length === 0) return;
+
+                const CLICK_TTL_MS = 5000;
+                const EXPANDER_TTL_MS = 2000;
+
+                const getContainerTexts = (el, panel) => {
+                    const texts = [];
+                    let node = el;
+                    for (let i = 0; i < 4 && node.parentElement; i++) {
+                        node = node.parentElement;
+                        if (node === panel) break;
+                        const text = ((node.innerText || '')).replace(/\\s+/g, ' ').trim().toLowerCase().slice(0, 3000);
+                        if (text && texts[texts.length - 1] !== text) texts.push(text);
+                    }
+                    return texts;
+                };
+
+                const getActionContext = (el, rawText, panel) => {
+                    const texts = getContainerTexts(el, panel);
+                    return texts.find(text => text !== rawText && text.length > rawText.length + 1)
+                        || texts[texts.length - 1]
+                        || rawText;
+                };
+
+                // Leave destructive-looking action cards for manual review.
+                const DANGER_PATTERNS = [
+                    /\\brm\\s+-[a-z]*[rf][a-z]*\\s+(\\/|~|\\$HOME)/i,
+                    /--no-preserve-root/,
+                    /\\bmkfs(\\.|\\s)/i,
+                    /\\bdd\\s+if=/i,
+                    /\\bgit\\s+push\\b[^\\n]*(--force(?!-with-lease)|\\s-f\\b)/i,
+                    /\\bdrop\\s+(table|database)\\b/i,
+                    /\\bformat\\s+[a-z]:/i,
+                    /:\\(\\)\\s*\\{\\s*:\\|:\\s*&\\s*\\};\\s*:/
+                ];
+
+                const containerIsDangerous = (el, rawText, panel) =>
+                    DANGER_PATTERNS.some(re => re.test(getActionContext(el, rawText, panel)));
 
                 const clickElement = (el) => {
                     try {
                         el.click();
                         const rect = el.getBoundingClientRect();
                         const win = el.ownerDocument?.defaultView || window;
-                        const opts = { 
-                            view: win, 
-                            bubbles: true, 
-                            cancelable: true, 
-                            clientX: rect.left + rect.width / 2, 
-                            clientY: rect.top + rect.height / 2, 
-                            buttons: 1 
+                        const opts = {
+                            view: win,
+                            bubbles: true,
+                            cancelable: true,
+                            clientX: rect.left + rect.width / 2,
+                            clientY: rect.top + rect.height / 2,
+                            buttons: 1
                         };
                         el.dispatchEvent(new MouseEvent('mousedown', opts));
                         el.dispatchEvent(new MouseEvent('mouseup', opts));
@@ -145,10 +262,14 @@ export class AutomationService implements IAutomationService, vscode.Disposable 
                     if (p) { try { p.click(); } catch(e) {} }
                 };
 
-                const TARGET_TOKENS = ['accept all', 'accept', 'confirm', 'run', 'always allow', 'allow once', 'allow'];
+                const TARGET_TOKENS = [
+                    'accept all', 'accept', 'confirm', 'run',
+                    'always allow', 'allow once', 'allow',
+                    'allow this conversation', 'always allow this conversation'
+                ];
                 const EXPANDER_TOKENS = ['requires input', 'expand'];
 
-                roots.forEach(root => {
+                agentRoots.forEach(({ root, panel }) => {
                     try {
                         const doc = root.ownerDocument || root;
                         const walker = doc.createTreeWalker(root, NodeFilter.SHOW_ELEMENT, null, false);
@@ -159,12 +280,10 @@ export class AutomationService implements IAutomationService, vscode.Disposable 
                             const rawText = (el.innerText || el.textContent || '').trim().toLowerCase();
                             if (!rawText) continue;
 
-                            let isMatch = false;
+                            let isMatch = TARGET_TOKENS.includes(rawText)
+                                || (rawText.includes('always run') && rawText.length < 25)
+                                || rawText.startsWith('run alt');
                             let isExpander = false;
-
-                            if (TARGET_TOKENS.includes(rawText)) isMatch = true;
-                            if (rawText.includes('always run') && rawText.length < 25) isMatch = true;
-                            if (rawText.startsWith('run alt')) isMatch = true;
 
                             for (const token of EXPANDER_TOKENS) {
                                 if (rawText === token || (token !== 'expand' && rawText.includes(token))) {
@@ -173,29 +292,26 @@ export class AutomationService implements IAutomationService, vscode.Disposable 
                                 }
                             }
 
-                            // Noise filter: skip file names and code blocks
-                            if (rawText.includes('.js') || rawText.includes('.ts') || rawText.includes('.py')) isMatch = false;
-
+                            if (rawText.includes('.js') || rawText.includes('.ts') || rawText.includes('.py')) {
+                                isMatch = false;
+                            }
                             if (!isMatch) continue;
-                            if (el.dataset.autoAcceptClicked === 'true') continue;
 
-                            // Only click interactive elements (buttons or pointer-cursor elements)
+                            const now = Date.now();
+                            const last = Number(el.dataset.aaTs || 0);
+                            if (now - last < (isExpander ? EXPANDER_TTL_MS : CLICK_TTL_MS)) continue;
+
                             if (!isExpander) {
-                                let safe = false;
-                                if (el.tagName === 'BUTTON' || el.getAttribute('role') === 'button') safe = true;
+                                let interactive = el.tagName === 'BUTTON' || el.getAttribute('role') === 'button';
                                 try {
                                     const win = el.ownerDocument?.defaultView || window;
-                                    if (win.getComputedStyle(el).cursor === 'pointer') safe = true;
-                                } catch (e) {}
-                                if (!safe) continue;
-                                if (el.closest('pre') || el.closest('code')) continue;
+                                    if (win.getComputedStyle(el).cursor === 'pointer') interactive = true;
+                                } catch (e) { }
+                                if (!interactive || el.closest('pre') || el.closest('code')) continue;
+                                if (containerIsDangerous(el, rawText, panel)) continue;
                             }
 
-                            el.dataset.autoAcceptClicked = 'true';
-                            if (isExpander) {
-                                setTimeout(() => { el.dataset.autoAcceptClicked = 'false'; }, 2000);
-                            }
-
+                            el.dataset.aaTs = String(now);
                             clickElement(el);
                         }
                     } catch (e) { }
@@ -218,34 +334,32 @@ export class AutomationService implements IAutomationService, vscode.Disposable 
         });
     }
 
-    private async connectToPage(id: string, wsUrl: string): Promise<boolean> {
+    private async connectToPage(id: string, wsUrl: string): Promise<WebSocket | null> {
         return new Promise((resolve) => {
             const ws = new WebSocket(wsUrl);
             let settled = false;
             const timer = setTimeout(() => {
                 try { ws.terminate(); } catch { /* ignore */ }
-                finish(false);
+                finish(null);
             }, AutomationService.CDP_CONNECT_TIMEOUT_MS);
-            const finish = (result: boolean) => {
+            const finish = (result: WebSocket | null) => {
                 if (settled) return;
                 settled = true;
                 clearTimeout(timer);
                 if (!result) {
-                    this.connections.delete(id);
                     try { ws.close(); } catch { /* ignore */ }
                 }
                 resolve(result);
             };
 
             ws.on('open', () => {
-                this.connections.set(id, ws);
                 ws.send(JSON.stringify({ id: this.msgId++, method: 'Runtime.enable' }));
-                finish(true);
+                finish(ws);
             });
-            ws.on('error', () => finish(false));
+            ws.on('error', () => finish(null));
             ws.on('close', () => {
-                this.connections.delete(id);
-                finish(false);
+                if (this.connections.get(id) === ws) this.connections.delete(id);
+                finish(null);
             });
         });
     }
@@ -264,6 +378,8 @@ export class AutomationService implements IAutomationService, vscode.Disposable 
     start(): void {
         if (this._enabled) return;
         this._enabled = true;
+        this.runGeneration++;
+        this.availableCommands = null; // rediscover commands on each start
         this.scheduler.start(this.taskName);
         infoLog("Automation: Auto-accept enabled (command API + CDP fallback)");
     }
@@ -271,7 +387,9 @@ export class AutomationService implements IAutomationService, vscode.Disposable 
     stop(): void {
         if (!this._enabled) return;
         this._enabled = false;
+        this.runGeneration++;
         this.scheduler.stop(this.taskName);
+        this.closeConnections();
         infoLog("Automation: Auto-accept disabled");
     }
 
@@ -293,7 +411,13 @@ export class AutomationService implements IAutomationService, vscode.Disposable 
     }
 
     dispose(): void {
+        this._enabled = false;
+        this.runGeneration++;
         this.scheduler.dispose();
+        this.closeConnections();
+    }
+
+    private closeConnections(): void {
         this.connections.forEach(ws => {
             try { ws.close(); } catch { /* ignore */ }
         });

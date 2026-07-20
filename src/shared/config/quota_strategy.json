@@ -1,7 +1,22 @@
 {
+    "quotaPools": [
+        {
+            "id": "gemini",
+            "label": "Gemini",
+            "shortLabel": "Gemini",
+            "themeColor": "#40C4FF"
+        },
+        {
+            "id": "non-google",
+            "label": "Claude",
+            "shortLabel": "Claude",
+            "themeColor": "#FFAB40"
+        }
+    ],
     "groups": [
         {
             "id": "gemini-flash",
+            "quotaPoolId": "gemini",
             "label": "Gemini Flash",
             "shortLabel": "Flash",
             "themeColor": "#40C4FF",
@@ -19,6 +34,7 @@
         },
         {
             "id": "gemini-pro",
+            "quotaPoolId": "gemini",
             "label": "Gemini Pro",
             "shortLabel": "Pro",
             "themeColor": "#69F0AE",
@@ -40,6 +56,7 @@
         },
         {
             "id": "claude",
+            "quotaPoolId": "non-google",
             "label": "Claude",
             "shortLabel": "Claude",
             "themeColor": "#FFAB40",
@@ -61,6 +78,7 @@
         },
         {
             "id": "gpt",
+            "quotaPoolId": "non-google",
             "label": "GPT",
             "shortLabel": "GPT",
             "themeColor": "#FF5252",

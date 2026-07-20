@@ -2,7 +2,7 @@
 
 # 待办事项清单
 
-> 最后更新: 2026-06-28
+> 最后更新: 2026-07-20
 
 > ⚠️ **注意**: 本文档仅包含待办任务。已完成的任务应移除，并记录到 [CHANGELOG.md](../CHANGELOG.md) 或 [FEATURES.md](./FEATURES.md)。
 
@@ -36,12 +36,9 @@
 - [ ] **Webview 运行时测试**
   - 使用 jsdom/happy-dom 或等价方案测试 `sidebar-app`
   - 覆盖状态恢复、`postMessage` 路由、文件夹操作和事件派发
-  - 增加 Webview bundle smoke test
 
 - [ ] **Auto-Accept CDP 注入测试**
   - 将 clicker script 抽成可测试单元
-  - 验证它只会点击 Antigravity Agent 面板内的安全控件
-  - 用 DOM fixture 覆盖 guard、文本匹配和噪声过滤逻辑
 
 ### 性能优化
 

@@ -82,13 +82,15 @@ const defaultMockStorageService: IStorageService = {
 suite('AppViewModel Test Suite', () => {
     let vm: AppViewModel;
     let configManager: ConfigManager;
+    let configReader: MockConfigReader;
     let strategyManager: QuotaStrategyManager;
     let mockQuota: IQuotaService;
     let mockCache: ICacheService;
     let mockStorage: IStorageService;
 
     setup(() => {
-        configManager = new ConfigManager(new MockConfigReader());
+        configReader = new MockConfigReader();
+        configManager = new ConfigManager(configReader);
         strategyManager = new QuotaStrategyManager();
 
         // Clone mocks to allow per-test modification of methods
@@ -110,7 +112,8 @@ suite('AppViewModel Test Suite', () => {
     });
 
     test('refreshQuota should update state from service', async () => {
-        // Use Gemini Flash (not Claude/GPT shared pool) so exactly one group has quota data.
+        let recordedUsage: Record<string, number> | undefined;
+        mockStorage.recordQuotaPoint = async usage => { recordedUsage = usage; };
         const snapshot: QuotaSnapshot = {
             timestamp: new Date(),
             models: [{
@@ -129,8 +132,105 @@ suite('AppViewModel Test Suite', () => {
         const state = vm.getState();
         const activeGroups = state.quota.groups.filter(g => g.hasData);
         assert.strictEqual(activeGroups.length, 1, 'Should have 1 active group');
-        assert.strictEqual(activeGroups[0].id, 'gemini-flash');
+        assert.strictEqual(activeGroups[0].id, 'gemini');
         assert.strictEqual(activeGroups[0].remaining, 50);
+        assert.deepStrictEqual(recordedUsage, { gemini: 50 }, 'History should be recorded once per quota pool');
+    });
+
+    test('Gemini Flash and Pro should aggregate into one configurable quota pool', async () => {
+        let recordedUsage: Record<string, number> | undefined;
+        mockStorage.recordQuotaPoint = async usage => { recordedUsage = usage; };
+        mockQuota.fetchQuota = async () => ({
+            timestamp: new Date(),
+            models: [
+                {
+                    modelId: 'MODEL_PLACEHOLDER_M37',
+                    label: 'Gemini 3.1 Pro (High)',
+                    remainingPercentage: 55,
+                    isExhausted: false,
+                    resetTime: new Date(Date.now() + 2 * 3600000),
+                    timeUntilReset: '2h'
+                },
+                {
+                    modelId: 'MODEL_PLACEHOLDER_M47',
+                    label: 'Gemini 3 Flash',
+                    remainingPercentage: 80,
+                    isExhausted: false,
+                    resetTime: new Date(Date.now() + 5 * 3600000),
+                    timeUntilReset: '5h'
+                }
+            ]
+        });
+
+        await vm.refreshQuota();
+
+        const geminiPool = vm.getState().quota.groups.find(group => group.id === 'gemini');
+        assert.ok(geminiPool?.hasData);
+        assert.strictEqual(geminiPool.remaining, 55);
+        assert.strictEqual(geminiPool.resetTime, '2h');
+        assert.deepStrictEqual(recordedUsage, { gemini: 55 });
+        assert.strictEqual(vm.getState().quota.displayItems.filter(item => item.hasData).length, 1);
+        assert.deepStrictEqual(vm.getStatusBarData().allGroups.map(group => group.id), ['gemini']);
+    });
+
+    test('models view should retain Flash and Pro identities while sharing pool consumption', async () => {
+        configReader.set('dashboard.viewMode', 'models');
+        mockStorage.calculateUsageBuckets = () => [{
+            startTime: Date.now() - 60_000,
+            endTime: Date.now(),
+            items: [{ groupId: 'gemini', usage: 3 }]
+        }];
+        mockQuota.fetchQuota = async () => ({
+            timestamp: new Date(),
+            models: [
+                { modelId: 'MODEL_PLACEHOLDER_M47', label: 'Gemini 3 Flash', remainingPercentage: 75, isExhausted: false, resetTime: new Date(), timeUntilReset: '1h' },
+                { modelId: 'MODEL_PLACEHOLDER_M37', label: 'Gemini 3.1 Pro (High)', remainingPercentage: 75, isExhausted: false, resetTime: new Date(), timeUntilReset: '1h' }
+            ]
+        });
+
+        await vm.refreshQuota();
+
+        const items = vm.getState().quota.displayItems;
+        assert.deepStrictEqual(items.map(item => item.label), ['Gemini 3 Flash', 'Gemini 3.1 Pro (High)']);
+        assert.deepStrictEqual(items.map(item => item.themeColor), ['#40C4FF', '#69F0AE']);
+        assert.ok(items.every(item => item.subLabel === '🔥2.0 pp/h'));
+    });
+
+    test('chart should aggregate polling samples into a readable number of buckets', async () => {
+        let requestedDisplayMinutes = 0;
+        let requestedBucketMinutes = 0;
+        mockStorage.calculateUsageBuckets = (displayMinutes, bucketMinutes) => {
+            requestedDisplayMinutes = displayMinutes;
+            requestedBucketMinutes = bucketMinutes;
+            return [{
+                startTime: Date.now() - bucketMinutes * 60 * 1000,
+                endTime: Date.now(),
+                items: [
+                    { groupId: 'gemini-flash', usage: 0.5 },
+                    { groupId: 'gemini-pro', usage: 0.25 }
+                ]
+            }];
+        };
+        mockQuota.fetchQuota = async () => ({
+            timestamp: new Date(),
+            models: [{
+                modelId: 'MODEL_PLACEHOLDER_M47',
+                label: 'Gemini 3 Flash',
+                remainingPercentage: 50,
+                isExhausted: false,
+                resetTime: new Date(Date.now() + 60 * 60 * 1000),
+                timeUntilReset: '1h'
+            }]
+        });
+
+        await vm.refreshQuota();
+
+        const chart = vm.getState().quota.chart;
+        assert.strictEqual(requestedDisplayMinutes, 90);
+        assert.strictEqual(requestedBucketMinutes, 4, '90 minutes should use at most about 24 bars');
+        assert.strictEqual(chart.interval, 240);
+        assert.strictEqual(chart.groupLabels?.gemini, 'Gemini');
+        assert.deepStrictEqual(chart.buckets[0].items, [{ groupId: 'gemini', usage: 0.5, color: '#40C4FF' }]);
     });
 
     test('refreshQuota should ignore stale slower responses', async () => {
@@ -169,8 +269,8 @@ suite('AppViewModel Test Suite', () => {
         resolveFirst(makeSnapshot(10));
         await firstRefresh;
 
-        const geminiFlash = vm.getState().quota.groups.find(g => g.id === 'gemini-flash');
-        assert.strictEqual(geminiFlash?.remaining, 80);
+        const gemini = vm.getState().quota.groups.find(g => g.id === 'gemini');
+        assert.strictEqual(gemini?.remaining, 80);
     });
 
     test('refreshCache should update cache state', async () => {
@@ -222,19 +322,11 @@ suite('AppViewModel Test Suite', () => {
         }
     });
 
-    test('Claude and GPT shared pool: both groups mirror min remaining and reset from combined models', async () => {
+    test('Claude and GPT shared pool: one pool uses min remaining and matching reset', async () => {
         const gptReset = new Date(Date.now() + 48 * 3600000);
         mockQuota.fetchQuota = async () => ({
             timestamp: new Date(),
             models: [
-                {
-                    modelId: 'MODEL_PLACEHOLDER_M35',
-                    label: 'Claude Sonnet 4.6 (Thinking)',
-                    remainingPercentage: 70,
-                    isExhausted: false,
-                    resetTime: new Date(Date.now() + 5 * 3600000),
-                    timeUntilReset: '5h'
-                },
                 {
                     modelId: 'MODEL_OPENAI_GPT_OSS_120B_MEDIUM',
                     label: 'GPT-OSS 120B (Medium)',
@@ -242,17 +334,22 @@ suite('AppViewModel Test Suite', () => {
                     isExhausted: false,
                     resetTime: gptReset,
                     timeUntilReset: '2d'
+                },
+                {
+                    modelId: 'MODEL_PLACEHOLDER_M35',
+                    label: 'Claude Sonnet 4.6 (Thinking)',
+                    remainingPercentage: 70,
+                    isExhausted: false,
+                    resetTime: new Date(Date.now() + 5 * 3600000),
+                    timeUntilReset: '5h'
                 }
             ]
         });
         await vm.refreshQuota();
         const state = vm.getState();
-        const claudeG = state.quota.groups.find(g => g.id === 'claude');
-        const gptG = state.quota.groups.find(g => g.id === 'gpt');
-        assert.ok(claudeG?.hasData && gptG?.hasData, 'both pool groups should have data');
-        assert.strictEqual(claudeG!.remaining, 45, 'Claude row should use pool minimum');
-        assert.strictEqual(gptG!.remaining, 45);
-        assert.strictEqual(claudeG!.resetTime, gptG!.resetTime);
+        const claudeG = state.quota.groups.find(g => g.id === 'non-google');
+        assert.ok(claudeG?.hasData, 'shared pool should have data');
+        assert.strictEqual(claudeG!.remaining, 45, 'Claude pool should use pool minimum');
         assert.strictEqual(claudeG!.resetTime, '2d');
     });
 
@@ -379,6 +476,11 @@ suite('AppViewModel Test Suite', () => {
         assert.strictEqual(data.uiScale, 1.0);
         assert.strictEqual(data.gaugeStyle, 'semi-arc');
         assert.strictEqual(data.showUserInfoCard, true);
-        assert.strictEqual(data.showCreditsCard, true);
+        assert.strictEqual(data.showCreditsCard, false);
+    });
+
+    test('getSidebarData should allow the credits card to be explicitly enabled', () => {
+        configReader.set('dashboard.showCreditsCard', true);
+        assert.strictEqual(vm.getSidebarData().showCreditsCard, true);
     });
 });

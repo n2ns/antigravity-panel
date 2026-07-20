@@ -9,7 +9,7 @@ import type { TfaConfig } from '../shared/utils/types';
 import type { QuotaStrategyManager } from '../model/strategy';
 import type { ConfigManager } from '../shared/config/config_manager';
 import { formatBytes } from '../shared/utils/format';
-import { QUOTA_RESET_HOURS_FALLBACK, SHARED_QUOTA_POOL_GROUP_IDS } from '../shared/utils/constants';
+import { QUOTA_RESET_HOURS_FALLBACK } from '../shared/utils/constants';
 import type {
     AppState,
     QuotaViewState,
@@ -41,8 +41,6 @@ export type {
 };
 
 const ACTIVE_GROUP_THRESHOLD = 0.1;
-
-const SHARED_POOL_ID_SET = new Set<string>(SHARED_QUOTA_POOL_GROUP_IDS);
 
 export class AppViewModel implements vscode.Disposable {
     private _state: AppState;
@@ -94,27 +92,27 @@ export class AppViewModel implements vscode.Disposable {
     }
 
     private createEmptyState(): AppState {
-        const groups = this.strategyManager.getGroups();
+        const pools = this.strategyManager.getQuotaPools();
         return {
             quota: {
-                groups: groups.map(g => ({
-                    id: g.id,
-                    label: g.label,
+                groups: pools.map(pool => ({
+                    id: pool.id,
+                    label: pool.label,
                     remaining: 0,
                     resetTime: 'N/A',
-                    themeColor: g.themeColor,
+                    themeColor: pool.themeColor,
                     hasData: false
                 })),
-                activeGroupId: groups[0]?.id || 'gemini-pro',
+                activeGroupId: pools[0]?.id || 'gemini',
                 chart: { buckets: [], maxUsage: 1, groupColors: {} },
-                displayItems: groups.map(g => ({
-                    id: g.id,
-                    label: g.label,
+                displayItems: pools.map(pool => ({
+                    id: pool.id,
+                    label: pool.label,
                     type: 'group' as const,
                     remaining: 0,
                     resetTime: 'N/A',
                     hasData: false,
-                    themeColor: g.themeColor
+                    themeColor: pool.themeColor
                 }))
             },
             cache: {
@@ -534,33 +532,33 @@ export class AppViewModel implements vscode.Disposable {
         return value.toString();
     }
 
-    /** Claude + GPT share one pool; aggregate using all models in that pool, not per-row in isolation. */
-    private getModelsForGroupFromSnapshot(snapshot: QuotaSnapshot, groupId: string): ModelQuotaInfo[] {
+    /** Resolve all model rows that consume from one configured backend quota pool. */
+    private getModelsForPoolFromSnapshot(snapshot: QuotaSnapshot, poolId: string): ModelQuotaInfo[] {
         const models = snapshot.models || [];
-        if (SHARED_POOL_ID_SET.has(groupId)) {
-            return models.filter(m => SHARED_POOL_ID_SET.has(this.strategyManager.getGroupForModel(m.modelId, m.label).id));
-        }
-        return models.filter(m => this.strategyManager.getGroupForModel(m.modelId, m.label).id === groupId);
+        return models.filter(model => {
+            const group = this.strategyManager.getGroupForModel(model.modelId, model.label);
+            return group.quotaPoolId === poolId;
+        });
     }
 
     private aggregateGroups(snapshot: QuotaSnapshot): QuotaGroupState[] {
-        const groups = this.strategyManager.getGroups();
+        const pools = this.strategyManager.getQuotaPools();
 
-        return groups.map(group => {
-            const groupModels = this.getModelsForGroupFromSnapshot(snapshot, group.id);
+        return pools.map(pool => {
+            const poolModels = this.getModelsForPoolFromSnapshot(snapshot, pool.id);
 
-            if (groupModels.length === 0) {
+            if (poolModels.length === 0) {
                 return {
-                    id: group.id,
-                    label: group.label,
+                    id: pool.id,
+                    label: pool.label,
                     remaining: 0,
                     resetTime: 'N/A',
-                    themeColor: group.themeColor,
+                    themeColor: pool.themeColor,
                     hasData: false
                 };
             }
 
-            const minModel = groupModels.reduce((min, m) =>
+            const minModel = poolModels.reduce((min, m) =>
                 m.remainingPercentage < min.remainingPercentage ? m : min
             );
 
@@ -569,11 +567,11 @@ export class AppViewModel implements vscode.Disposable {
             const remaining = isReady ? 100 : minModel.remainingPercentage;
 
             return {
-                id: group.id,
-                label: group.label,
+                id: pool.id,
+                label: pool.label,
                 remaining,
                 resetTime: minModel.timeUntilReset,
-                themeColor: group.themeColor,
+                themeColor: pool.themeColor,
                 hasData: true
             };
         });
@@ -581,14 +579,14 @@ export class AppViewModel implements vscode.Disposable {
 
     /**
      * Hours until the next quota reset for the active group, from API `resetTime` on the
-     * lowest-remaining model (same rule as aggregateGroups, including Claude+GPT shared pool).
+     * lowest-remaining model (same rule as aggregateGroups for every configured pool).
      * Used for prediction instead of a fixed window.
      */
     private getHoursUntilResetForGroup(groupId: string): number | null {
         if (!this._lastSnapshot?.models?.length) return null;
-        const groupModels = this.getModelsForGroupFromSnapshot(this._lastSnapshot, groupId);
-        if (groupModels.length === 0) return null;
-        const minModel = groupModels.reduce((min, m) =>
+        const poolModels = this.getModelsForPoolFromSnapshot(this._lastSnapshot, groupId);
+        if (poolModels.length === 0) return null;
+        const minModel = poolModels.reduce((min, m) =>
             m.remainingPercentage < min.remainingPercentage ? m : min
         );
         const resetDate = minModel.resetTime instanceof Date
@@ -600,15 +598,9 @@ export class AppViewModel implements vscode.Disposable {
     }
 
     private detectActiveGroup(prevState: QuotaViewState, newGroups: QuotaGroupState[]): string {
-        const config = this.configManager.getConfig();
-        const hiddenGroupId = config["dashboard.includeSecondaryModels"] ? null : 'gpt';
-
         let maxDrop = 0;
         let activeId = prevState.activeGroupId;
         for (const group of newGroups) {
-            // Skip hidden groups (e.g., GPT when secondary models disabled)
-            if (hiddenGroupId && group.id === hiddenGroupId) continue;
-
             if (!group.hasData) continue;
             const prev = prevState.groups.find(g => g.id === group.id);
             if (prev && prev.hasData) {
@@ -624,26 +616,44 @@ export class AppViewModel implements vscode.Disposable {
 
     private buildChartData(activeGroupId: string, currentRemaining: number): UsageChartData {
         const config = this.configManager.getConfig();
-        const hiddenGroupId = config["dashboard.includeSecondaryModels"] ? null : 'gpt';
+        const displayMinutes = config["dashboard.historyRange"];
+        const pollingMinutes = config["dashboard.refreshRate"] / 60;
+        // The language server may report quota changes less frequently than we poll it.
+        // Keep the sidebar chart readable and avoid implying per-poll precision.
+        const maxChartBuckets = 24;
+        const bucketMinutes = Math.max(pollingMinutes, Math.ceil(displayMinutes / maxChartBuckets));
 
-        const buckets = this.storageService.calculateUsageBuckets(
-            config["dashboard.historyRange"],
-            config["dashboard.refreshRate"] / 60
+        const rawBuckets = this.storageService.calculateUsageBuckets(
+            displayMinutes,
+            bucketMinutes
         );
 
         const groupColors: Record<string, string> = {};
-        this.strategyManager.getGroups().forEach(g => { groupColors[g.id] = g.themeColor; });
+        const groupLabels: Record<string, string> = {};
+        this.strategyManager.getQuotaPools().forEach(pool => {
+            groupColors[pool.id] = pool.themeColor;
+            groupLabels[pool.id] = pool.label;
+        });
+        const currentPoolIds = new Set(Object.keys(groupColors));
 
-        // Filter out hidden groups and apply colors
-        const filteredBuckets = buckets.map(b => ({
-            ...b,
-            items: b.items
-                .filter(item => !hiddenGroupId || item.groupId !== hiddenGroupId)
-                .map(item => ({
-                    ...item,
-                    color: groupColors[item.groupId] || '#888'
+        // Older releases recorded model groups independently. Collapse aliases into their
+        // configured pool and keep the largest mirrored delta so one shared drop is counted once.
+        const filteredBuckets = rawBuckets.map(bucket => {
+            const usageByPool = new Map<string, number>();
+            for (const item of bucket.items) {
+                const poolId = this.strategyManager.getPoolIdForHistoryKey(item.groupId);
+                if (!currentPoolIds.has(poolId)) continue;
+                usageByPool.set(poolId, Math.max(usageByPool.get(poolId) || 0, item.usage));
+            }
+            return {
+                ...bucket,
+                items: Array.from(usageByPool, ([groupId, usage]) => ({
+                    groupId,
+                    usage,
+                    color: groupColors[groupId] || '#888'
                 }))
-        }));
+            };
+        });
 
         const prediction = this.calculatePrediction(filteredBuckets, activeGroupId, currentRemaining, config);
 
@@ -651,8 +661,9 @@ export class AppViewModel implements vscode.Disposable {
             buckets: filteredBuckets,
             maxUsage: this.getFilteredMaxUsage(filteredBuckets),
             groupColors,
-            displayMinutes: config["dashboard.historyRange"],
-            interval: config["dashboard.refreshRate"],
+            groupLabels,
+            displayMinutes,
+            interval: Math.round(bucketMinutes * 60),
             prediction
         };
     }
@@ -713,7 +724,7 @@ export class AppViewModel implements vscode.Disposable {
                 runway = this.formatRunwayDuration(hoursUntilEmpty);
             }
         }
-        const activeGroup = this.strategyManager.getGroups().find(g => g.id === activeGroupId);
+        const activeGroup = this.strategyManager.getQuotaPools().find(pool => pool.id === activeGroupId);
         return {
             groupId: activeGroupId,
             groupLabel: activeGroup?.label || activeGroupId,
@@ -725,7 +736,6 @@ export class AppViewModel implements vscode.Disposable {
 
     private buildDisplayItems(groups: QuotaGroupState[], groupConsumption?: Map<string, number>): QuotaDisplayItem[] {
         const config = this.configManager.getConfig();
-        const hiddenGroupId = config["dashboard.includeSecondaryModels"] ? null : 'gpt';
 
         // Cache group order for sorting
         const strategyGroups = this.strategyManager.getGroups();
@@ -743,6 +753,7 @@ export class AppViewModel implements vscode.Disposable {
 
         if (config["dashboard.viewMode"] === 'models' && this._lastSnapshot) {
             const models = this._lastSnapshot.models || [];
+            const hiddenGroupId = config["dashboard.includeSecondaryModels"] ? null : 'gpt';
             const filteredModels = hiddenGroupId ? models.filter(m => this.strategyManager.getGroupForModel(m.modelId, m.label).id !== hiddenGroupId) : models;
 
             // Sort models based on group order defined in strategy
@@ -768,11 +779,11 @@ export class AppViewModel implements vscode.Disposable {
                     resetTime: m.timeUntilReset,
                     hasData: true,
                     themeColor: group.themeColor,
-                    subLabel: formatConsumption(group.id)
+                    subLabel: formatConsumption(group.quotaPoolId)
                 };
             });
         }
-        return groups.filter(g => g.id !== hiddenGroupId).map(g => ({
+        return groups.map(g => ({
             id: g.id,
             label: g.label,
             type: 'group' as const,
@@ -830,18 +841,18 @@ export class AppViewModel implements vscode.Disposable {
     getState(): AppState { return this._state; }
 
     getStatusBarData(): StatusBarData {
-        const groupsConfig = this.strategyManager.getGroups();
+        const poolsConfig = this.strategyManager.getQuotaPools();
         const allGroups: StatusBarGroupItem[] = this._state.quota.groups
             .filter(g => g.hasData)
             .map(g => {
-                const config = groupsConfig.find(cfg => cfg.id === g.id);
+                const config = poolsConfig.find(cfg => cfg.id === g.id);
                 // Find the original model info to get absolute date
                 let resetDate: Date | undefined;
                 if (this._lastSnapshot && this._lastSnapshot.models) {
-                    const groupModels = this.getModelsForGroupFromSnapshot(this._lastSnapshot, g.id);
-                    if (groupModels.length > 0) {
+                    const poolModels = this.getModelsForPoolFromSnapshot(this._lastSnapshot, g.id);
+                    if (poolModels.length > 0) {
                         // Use the earliest reset time (min model) similar to aggregateGroups logic
-                        const minModel = groupModels.reduce((min, m) =>
+                        const minModel = poolModels.reduce((min, m) =>
                             m.remainingPercentage < min.remainingPercentage ? m : min
                         );
                         resetDate = minModel.resetTime;
@@ -903,20 +914,7 @@ export class AppViewModel implements vscode.Disposable {
      * Get chart data (for compatibility)
      */
     getChartData(): UsageChartData {
-        const config = this.configManager.getConfig();
-        const hiddenGroupId = config["dashboard.includeSecondaryModels"] ? null : 'gpt';
-
-        if (!hiddenGroupId) {
-            return this._state.quota.chart;
-        }
-
-        return {
-            ...this._state.quota.chart,
-            buckets: this._state.quota.chart.buckets.map(bucket => ({
-                ...bucket,
-                items: bucket.items.filter(item => item.groupId !== hiddenGroupId)
-            }))
-        };
+        return this._state.quota.chart;
     }
 
     // ==================== Cache Restoration ====================
@@ -931,19 +929,33 @@ export class AppViewModel implements vscode.Disposable {
 
         if (cachedQuota && cachedQuota.groups) {
             this._lastSnapshot = cachedSnapshot || null;
+            const currentPoolIds = new Set(this.strategyManager.getQuotaPools().map(pool => pool.id));
+            const cacheAlreadyUsesPools = cachedQuota.groups.every(group => currentPoolIds.has(group.id));
+            const restoredGroups = cachedSnapshot?.models
+                ? this.aggregateGroups(cachedSnapshot)
+                : cacheAlreadyUsesPools ? cachedQuota.groups : [];
 
-            // Find active group's current remaining percentage
-            const activeGroup = cachedQuota.groups.find(g => g.id === cachedQuota.activeGroupId);
-            const currentRemaining = activeGroup?.remaining || 0;
+            if (restoredGroups.length > 0) {
+                const restoredActiveId = this.strategyManager.getPoolIdForHistoryKey(cachedQuota.activeGroupId);
+                const activeGroupId = restoredGroups.some(group => group.id === restoredActiveId)
+                    ? restoredActiveId
+                    : restoredGroups.find(group => group.hasData)?.id ?? restoredGroups[0]?.id ?? 'gemini';
 
-            // Rebuild chart from history
-            const chart = this.buildChartData(cachedQuota.activeGroupId, currentRemaining);
+                // Find active group's current remaining percentage
+                const activeGroup = restoredGroups.find(group => group.id === activeGroupId);
+                const currentRemaining = activeGroup?.remaining || 0;
 
-            this._state.quota = {
-                ...cachedQuota,
-                chart,
-                displayItems: this.buildDisplayItems(cachedQuota.groups)
-            };
+                // Rebuild chart from history
+                const chart = this.buildChartData(activeGroupId, currentRemaining);
+
+                this._state.quota = {
+                    ...cachedQuota,
+                    groups: restoredGroups,
+                    activeGroupId,
+                    chart,
+                    displayItems: this.buildDisplayItems(restoredGroups)
+                };
+            }
         }
 
         if (cachedTree) {

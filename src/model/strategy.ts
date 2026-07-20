@@ -14,6 +14,7 @@ export interface ModelDefinition {
 
 export interface GroupDefinition {
   id: string;
+  quotaPoolId: string;
   label: string;
   themeColor: string;
   prefixes?: string[]; // Configured prefixes for fuzzy matching
@@ -21,15 +22,38 @@ export interface GroupDefinition {
   models: ModelDefinition[];
 }
 
+export interface QuotaPoolDefinition {
+  id: string;
+  label: string;
+  shortLabel: string;
+  themeColor: string;
+}
+
+export interface QuotaStrategyDefinition {
+  quotaPools: QuotaPoolDefinition[];
+  groups: GroupDefinition[];
+}
+
 export class QuotaStrategyManager {
   private groups: GroupDefinition[];
+  private quotaPools: QuotaPoolDefinition[];
 
-  constructor() {
-    this.groups = strategyData.groups;
+  constructor(strategy: QuotaStrategyDefinition = strategyData) {
+    this.groups = strategy.groups;
+    this.quotaPools = strategy.quotaPools;
   }
 
   getGroups(): GroupDefinition[] {
     return this.groups;
+  }
+
+  getQuotaPools(): QuotaPoolDefinition[] {
+    return this.quotaPools;
+  }
+
+  getPoolIdForHistoryKey(key: string): string {
+    if (this.quotaPools.some(pool => pool.id === key)) return key;
+    return this.groups.find(group => group.id === key)?.quotaPoolId ?? key;
   }
 
   /**

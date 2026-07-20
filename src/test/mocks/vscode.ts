@@ -99,6 +99,10 @@ export const commands = {
     (commands as any).lastExecutedArgs = rest;
     return Promise.resolve();
   },
+  getCommands: (_filterInternal?: boolean): Thenable<string[]> => {
+    return Promise.resolve((commands as any).registeredCommands ?? []);
+  },
+  registeredCommands: [] as string[],
   lastExecutedCommand: undefined as string | undefined,
   lastExecutedArgs: [] as any[]
 };

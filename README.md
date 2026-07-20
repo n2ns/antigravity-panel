@@ -50,7 +50,7 @@ English | [中文文档](docs/README_zh.md)
 ### 📊 Smart Quota Monitoring
 
 **See your AI usage at a glance**
-- Visual quota display grouped by AI model groups (Gemini, Claude, GPT, etc.)
+- Visual quota display grouped by provider-defined quota pools; model view keeps individual model identities
 - Status bar shows remaining quota with emoji indicators (🟢🟡🔴) and cache size
 - Hover tooltip showing all model quotas and reset times
 - Configurable warning (≤40%) and critical (≤20%) thresholds
@@ -58,10 +58,10 @@ English | [中文文档](docs/README_zh.md)
 ### 📈 Usage Trends & Analytics
 
 **Understand your consumption patterns**
-- Interactive bar charts showing usage over time (10-120 minutes)
+- Interactive bar charts showing reported quota changes over time (10-120 minutes), adaptively grouped into at most about 24 readable intervals; the card stays hidden until the first positive change is recorded
 - 24-hour history tracking with persistent storage
-- Color-coded visualization by AI model group
-- 🔥 **Usage Rate**: Real-time consumption speed (%/hour)
+- Color-coded visualization by quota pool, with interval and per-pool details on hover
+- 🔥 **Usage Rate**: Average consumption speed in percentage points per hour (pp/h)
 - ⏱️ **Runway Prediction**: Estimated time until quota exhaustion
 
 ### 💳 Token Credits Tracking
@@ -69,7 +69,7 @@ English | [中文文档](docs/README_zh.md)
 **Monitor your AI usage credits**
 - Prompt Credits: Used for conversation input and result generation (reasoning)
 - Flow Credits: Used for search, modification, and command execution (operations)
-- User info card visibility can be toggled in settings
+- Static Prompt/Flow rows are hidden by default; Google One AI subscription credit remains visible and the rows can be restored with `tfa.dashboard.showCreditsCard`
 
 ### 🗂️ Cache Management
 
@@ -85,7 +85,10 @@ English | [中文文档](docs/README_zh.md)
 
 **Streamline your workflow**
 - Automatically accepts Agent-suggested terminal commands and file edits
-- Dual strategy: command API (primary) + CDP injection (fallback for sandboxed webviews)
+- Uses registered IDE commands first, with a panel-scoped CDP fallback for controls that are unavailable through the extension API
+- Runtime command discovery: accept commands are matched against what the running IDE actually registers (IDs differ between Antigravity 1.x and 2.x), so the command strategy keeps working across IDE upgrades
+- Checks on the configured interval; each CDP pass locates and scans the current Agent Panel once without leaving page-side observers or timers, while a short DOM-node timestamp prevents immediate repeat clicks
+- CDP interactions leave destructive-looking action cards for manual review. **Limitation:** the command-API path cannot inspect pending command text and is therefore not covered by this check. Auto-Accept remains a trust-the-agent feature; keep it off for untrusted or prompt-injection-prone tasks
 - Toggle on/off via the sidebar "Rocket" switch
 
 > [!IMPORTANT]
@@ -190,7 +193,7 @@ Click the **Antigravity** icon in the sidebar, or:
 
 ### Step 2: Monitor Your Quota
 
-- **Pie charts** show quota by model family
+- **Pie charts** show each shared quota pool once; model view keeps individual models
 - **Hover** over charts to see detailed limits
 - **Status bar** displays active model quota and cache size
 - **Usage chart** shows consumption trends
@@ -237,7 +240,7 @@ Open Settings (`Ctrl+,` / `Cmd+,`) in Antigravity IDE and search for `tfa` to cu
 | **Visualization Mode** | `groups` | Show dashboard by `groups` or `models` |
 | **UI Scale** | `1.0` | Global scale factor for panel elements (0.8 to 2.0) |
 | **Show User Info Card** | `✓` | Show subscription/user plan information in the sidebar |
-| **Show Credits Card** | `✓` | Show Prompt/Flow/User Credits in the sidebar |
+| **Show Prompt/Flow Credits** | `✗` | Show the static Prompt/Flow rows; Google One AI remains visible |
 | **Show GPT Quota** | `✗` | Whether to display GPT family models in the panel |
 | **History Range** | `90 min` | Time range for usage chart (10-120 minutes) |
 | **Warning Threshold** | `40%` | Status bar turns warning color at this level |

@@ -31,7 +31,7 @@
     "config.dashboard.historyRange.description": "使用量時間線圖表的時間範圍（分鐘）（預設：90分鐘）",
     "config.dashboard.includeSecondaryModels.description": "在側邊欄顯示 GPT 配額（GPT 與 Claude 共享配額池）",
     "config.dashboard.refreshRate.description": "自動重新整理間隔（秒）（最小：30秒，建議：120秒）",
-    "config.dashboard.showCreditsCard.description": "在側邊欄顯示 AI 點數使用情況卡片 (Tokens, Flow)",
+    "config.dashboard.showCreditsCard.description": "在側邊欄顯示 Prompt 和 Flow 額度（Google One AI 始終顯示）",
     "config.dashboard.showUserInfoCard.description": "在側邊欄顯示使用者設定檔卡片 (頭像、等級、方案)",
     "config.dashboard.uiScale.description": "等比縮放側邊欄面板的文字與 UI 元素尺寸。（根元素 EM 縮放）",
     "config.dashboard.viewMode.description": "選擇側邊欄中的分組或個別模型顯示模式",

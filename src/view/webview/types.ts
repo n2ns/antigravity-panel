@@ -34,6 +34,8 @@ export interface UsageChartData {
   maxUsage: number;
   /** Color mapping for each group ID (e.g. { 'gemini-flash': '#40C4FF' }) */
   groupColors?: Record<string, string>;
+  /** Display label mapping for each group ID */
+  groupLabels?: Record<string, string>;
   displayMinutes: number;
   interval: number;
   /** Prediction data (optional, calculated by ViewModel) */

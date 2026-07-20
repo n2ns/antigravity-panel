@@ -31,7 +31,7 @@
     "config.dashboard.historyRange.description": "使用量タイムラインチャートの時間範囲（分）（デフォルト: 90分）",
     "config.dashboard.includeSecondaryModels.description": "サイドバーにGPT使用量を表示（GPTはClaudeと使用量プールを共有）",
     "config.dashboard.refreshRate.description": "自動更新間隔（秒）（最小: 30秒、推奨: 120秒）",
-    "config.dashboard.showCreditsCard.description": "サイドバーに AI クレジット使用状況カード (Tokens, Flow) を表示する",
+    "config.dashboard.showCreditsCard.description": "サイドバーに Prompt と Flow クレジットを表示します（Google One AI は常に表示）",
     "config.dashboard.showUserInfoCard.description": "サイドバーにユーザープロファイルカード（アバター、ティア、プラン）を表示する",
     "config.dashboard.uiScale.description": "サイドバーパネルのテキストとUI要素を比例的にスケーリングします。（ルートEMスケール）",
     "config.dashboard.viewMode.description": "サイドバーでのグループ表示または個別モデル表示を選択します",

@@ -280,7 +280,7 @@ export interface TfaConfig {
   "dashboard.refreshRate": number;
   /** Whether to show GPT quota (GPT shares quota with Claude) */
   "dashboard.includeSecondaryModels": boolean;
-  /** Whether to show AI Credits card */
+  /** Whether to show the optional Prompt/Flow credit rows */
   "dashboard.showCreditsCard": boolean;
   /** UI Scale factor (0.8 - 2.0), default 1.0 */
   "dashboard.uiScale": number;

@@ -17,7 +17,7 @@ import type {
 } from '../types.js';
 
 import './quota-dashboard.js';
-
+import './usage-chart.js';
 
 // Extend Window interface to include __TRANSLATIONS__
 declare global {
@@ -76,7 +76,7 @@ export class SidebarApp extends LitElement {
   private _showUserInfoCard: boolean = true;
 
   @state()
-  private _showCreditsCard: boolean = true;
+  private _showCreditsCard: boolean = false;
 
   @state()
   private _cache: WebviewStateUpdate['cache'] | null = null;
@@ -334,12 +334,12 @@ export class SidebarApp extends LitElement {
           .gaugeStyle=${this._gaugeStyle}
         ></quota-dashboard>
 
-        
-        ${this._showCreditsCard ? html`
-          <credits-bar
-            .tokenUsage=${this._tokenUsage}
-          ></credits-bar>
-        ` : nothing}
+        <usage-chart .data=${this._chartData}></usage-chart>
+
+        <credits-bar
+          .tokenUsage=${this._tokenUsage}
+          .showPromptFlowCredits=${this._showCreditsCard}
+        ></credits-bar>
         
         ${this._showUserInfoCard ? html`
           <user-info-card

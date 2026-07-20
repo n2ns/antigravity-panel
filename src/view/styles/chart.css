@@ -15,32 +15,49 @@
 }
 
 .usage-chart-title {
-    font-size:  0.85rem;
+    font-size: 0.85rem;
     color: var(--vscode-foreground);
     margin-bottom: 6px;
     display: flex;
     justify-content: space-between;
+    align-items: baseline;
+    gap: 8px;
+}
+
+.usage-total {
+    color: var(--vscode-descriptionForeground);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
 }
 
 .usage-chart-bars {
     display: flex;
+    justify-content: center;
     align-items: flex-end;
-    gap: 1px;
-    height: 40px;
+    gap: 2px;
+    height: 38px;
     overflow: hidden;
+    padding-top: 2px;
+    border-bottom: 1px solid var(--vscode-widget-border, rgba(255, 255, 255, 0.12));
 }
 
 .usage-bar {
     flex: 1;
-    min-width: 3px;
-    border-radius: 2px;
-    transition: all 0.3s ease;
+    min-width: 2px;
+    max-width: 14px;
+    border-radius: 2px 2px 0 0;
+    transition: height 0.3s ease, opacity 0.2s ease;
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.usage-bar.empty {
+    opacity: 0.45;
+    box-shadow: none;
 }
 
 .usage-legend {
     color: var(--vscode-foreground);
-    font-size:  0.8rem;
+    font-size: 0.8rem;
     margin-top: 4px;
     display: flex;
     justify-content: space-between;

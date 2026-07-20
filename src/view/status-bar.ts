@@ -129,12 +129,12 @@ export class StatusBarManager implements vscode.Disposable {
         if (showQuota) {
             const credits = this.viewModel.getState().tokenUsage?.userCredits || [];
             credits.forEach(credit => {
-                parts.push(`💳 ${credit.creditAmount}`);
+                parts.push(`$(credit-card) ${credit.creditAmount}`);
                 const label = credit.creditType
                     .split('_')
                     .map(w => w.toLowerCase() === 'ai' ? 'AI' : w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
                     .join(' ');
-                tooltipRows.push(`| 💳 ${label} | ${credit.creditAmount} |  | |`);
+                tooltipRows.push(`| $(credit-card) ${label} | ${credit.creditAmount} |  | |`);
             });
         }
 
@@ -147,6 +147,7 @@ export class StatusBarManager implements vscode.Disposable {
         // Use MarkdownString with table for perfect alignment (no header)
         if (tooltipRows.length > 0) {
             const md = new vscode.MarkdownString();
+            md.supportThemeIcons = true;
             // Hidden header row (required for markdown table) + spacer column
             md.appendMarkdown('|  |  |  |  |\n');
             md.appendMarkdown('|:--|--:|:--:|:--|\n');

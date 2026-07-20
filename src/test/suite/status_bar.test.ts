@@ -79,6 +79,7 @@ suite('StatusBarManager Test Suite', () => {
             value: string = '';
             isTrusted = true;
             supportHtml = true;
+            supportThemeIcons = false;
             constructor(value?: string) {
                 this.value = value || '';
             }
@@ -204,6 +205,8 @@ suite('StatusBarManager Test Suite', () => {
             "dashboard.includeSecondaryModels": false
         });
         statusBarManager.update();
-        assert.ok(mockStatusBarItem.text.includes('💳 998'));
+        assert.ok(mockStatusBarItem.text.includes('$(credit-card) 998'));
+        assert.ok(mockStatusBarItem.tooltip.value.includes('$(credit-card) Google One AI'));
+        assert.strictEqual(mockStatusBarItem.tooltip.supportThemeIcons, true);
     });
 });

@@ -9,40 +9,42 @@
 ## 📊 配额监控
 
 ### 实时配额显示
-- 按模型系列分组显示配额（Gemini、Claude、GPT 等）
-- 饼图显示各分组剩余配额百分比
+- 按服务商定义的配额池显示配额（Gemini、Claude 等）
+- 饼图显示各配额池剩余百分比
 - 配额不足时颜色警告（警告/严重阈值）
-- 独立追踪并显示 **Gemini 3 Flash**、Pro 与 Ultra 分组
+- 通过配置管理配额池归属，在共享配额与未来再次拆分之间切换时无需修改统计链路
+- 模型视图在共享同一配额池时仍保留 **Gemini Flash** 与 **Gemini Pro** 各自的名称和颜色
 - **可视化仪表盘样式**: 重构了可视化引擎以支持多种渲染策略。用户可以在以下样式间切换：
   - **半圆弧 (Semi-Arc)**: 现代化的 210 度工业精密仪表样式（默认）。
   - **经典圆环 (Classic Donut)**: 延续传统的全圆仪表样式。
 - 可配置轮询间隔自动刷新（默认 90 秒，最小 30 秒）
 
-### 活跃分组检测
-- 自动检测当前使用的模型分组
+### 活跃配额池检测
+- 自动检测当前使用的配额池
 - 基于配额消耗变化检测（>0.1% 阈值）
 - 跨会话持久化活跃分组状态
 
 ### 使用历史与分析
-- 交互式柱状图显示使用趋势
+- 交互式柱状图显示服务器上报的配额变化；记录到第一笔正向变化前保持隐藏
 - 可配置显示范围（10-120 分钟）
 - 24 小时历史记录持久存储
-- 按模型系列颜色区分
+- 按配额池颜色区分
 
 ### 消耗预测
-- 🔥 **消耗速率**: 基于近期活动的实时消耗速度（%/小时）
+- 🔥 **消耗速率**: 基于近期活动计算每小时平均消耗的配额百分点（pp/h）
 - ⏱️ **耗尽时间**: 预计配额耗尽时间（~Xh、~Xd 或 >7d）
 - 无消耗时显示 "Stable"
 
 ### Prompt Credits 显示
 - 显示可用/每月 prompt credits
 - 剩余百分比计算
+- Prompt/Flow 行默认隐藏，可通过 `tfa.dashboard.showCreditsCard` 开启
 
 ### Token 积分追踪
 - **Prompt 积分**: 用于对话输入和结果生成（推理）
 - **Flow 积分**: 用于搜索、修改和命令执行（操作）
 - 带颜色状态的可视化进度条
-- 侧边栏独立的 "Tokens" 区块
+- 隐藏 Prompt/Flow 行时仍默认显示 Google One AI 订阅额度
 
 ### 用户信息卡片
 - 显示用户订阅等级和套餐名称
@@ -208,7 +210,7 @@
 | `tfa.dashboard.includeSecondaryModels` | `false` | 显示 GPT 配额（与 Claude 共享配额池） |
 | `tfa.dashboard.historyRange` | `90` | 使用图表时间范围（10-120 分钟） |
 | `tfa.dashboard.showUserInfoCard` | `true` | 侧边栏显示用户信息卡片 |
-| `tfa.dashboard.showCreditsCard` | `true` | 侧边栏显示 AI 额度卡片 |
+| `tfa.dashboard.showCreditsCard` | `false` | 显示静态的 Prompt/Flow 行；Google One AI 始终显示 |
 | `tfa.cache.scanInterval` | `120` | 缓存检查间隔（秒，最小 30） |
 | `tfa.cache.warningSize` | `500` | 缓存警告阈值（MB） |
 | `tfa.cache.hideEmptyFolders` | `false` | 树形视图隐藏空文件夹 |
@@ -221,4 +223,3 @@
 | `tfa.commitMessageClaude.model` | `llama3.2` | 提交信息生成模型名称 |
 | `tfa.commitMessageClaude.maxDiffChars` | `80000` | 发送到 LLM 端点的暂存 Diff 最大字符数 |
 | `tfa.commitMessageClaude.format` | `conventional` | 提交信息格式 |
-

@@ -31,7 +31,7 @@
     "config.dashboard.historyRange.description": "Zeitbereich für das Nutzungsverlaufsdiagramm in Minuten (Standard: 90 Minuten)",
     "config.dashboard.includeSecondaryModels.description": "GPT-Kontingent in der Seitenleiste anzeigen (GPT teilt Kontingentpool mit Claude)",
     "config.dashboard.refreshRate.description": "Automatisches Aktualisierungsintervall in Sekunden (Minimum: 30s, empfohlen: 120s)",
-    "config.dashboard.showCreditsCard.description": "Zeigt die Karte für die AI-Credit-Nutzung (Tokens, Flow) in der Seitenleiste an",
+    "config.dashboard.showCreditsCard.description": "Prompt- und Flow-Guthaben in der Seitenleiste anzeigen (Google One AI bleibt sichtbar)",
     "config.dashboard.showUserInfoCard.description": "Benutzerprofilkarte (Avatar, Tier, Plan) in der Seitenleiste anzeigen",
     "config.dashboard.uiScale.description": "Proportionale Skalierung von Text und UI-Elementen im Seitenleisten-Panel. (Root-EM-Skalierung)",
     "config.dashboard.viewMode.description": "Zwischen gruppierter oder individueller Modellanzeige in der Seitenleiste wählen",

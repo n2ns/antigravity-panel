@@ -31,7 +31,7 @@
     "config.dashboard.historyRange.description": "Dakika cinsinden kullanım zaman çizelgesi grafiğinin zaman aralığı (varsayılan: 90 dakika)",
     "config.dashboard.includeSecondaryModels.description": "Kenar çubuğunda GPT kotasını göster (GPT, kotayı Claude ile paylaşır)",
     "config.dashboard.refreshRate.description": "Saniye cinsinden otomatik yenileme aralığı (minimum: 30s, önerilen: 120s)",
-    "config.dashboard.showCreditsCard.description": "Kenar çubuğunda AI Kredisi kullanım kartını (Tokens, Flow) göster",
+    "config.dashboard.showCreditsCard.description": "Kenar çubuğunda Prompt ve Flow kredilerini göster (Google One AI görünür kalır)",
     "config.dashboard.showUserInfoCard.description": "Yan panelde kullanıcı profili kartını (Avatar, Aşama, Plan) göster",
     "config.dashboard.uiScale.description": "Kenar çubuğu paneli metninin ve kullanıcı arayüzü öğelerinin orantılı ölçeklendirilmesi. (Kök EM ölçeği)",
     "config.dashboard.viewMode.description": "Yan paneldeki kümelenmiş veya tekil model gösterim modlarından birini seçin",

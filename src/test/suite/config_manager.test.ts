@@ -6,6 +6,8 @@
  */
 
 import * as assert from 'assert';
+import * as fs from 'fs';
+import * as path from 'path';
 import { ConfigManager, IConfigReader, MIN_POLLING_INTERVAL, MIN_CACHE_CHECK_INTERVAL } from '../../shared/config/config_manager';
 
 /**
@@ -88,6 +90,17 @@ suite('ConfigManager Test Suite', () => {
   });
 
   suite('Default Config Values', () => {
+    test('manifest and runtime should both hide Prompt/Flow credits by default', () => {
+      const manifest = JSON.parse(fs.readFileSync(path.resolve(process.cwd(), 'package.json'), 'utf8'));
+      const dashboardSection = manifest.contributes.configuration.find(
+        (section: { properties?: Record<string, { default?: unknown }> }) =>
+          section.properties?.['tfa.dashboard.showCreditsCard']
+      );
+      const manifestDefault = dashboardSection?.properties['tfa.dashboard.showCreditsCard'].default;
+      assert.strictEqual(manifestDefault, false);
+      assert.strictEqual(configManager.getConfig()["dashboard.showCreditsCard"], false);
+    });
+
     test('should use default for statusBarShowQuota', () => {
       const config = configManager.getConfig();
       assert.strictEqual(config["status.showQuota"], true);
@@ -184,4 +197,3 @@ suite('ConfigManager Test Suite', () => {
     });
   });
 });
-

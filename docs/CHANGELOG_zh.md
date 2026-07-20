@@ -2,6 +2,26 @@
 
 # 更新日志
 
+## [2.7.1] - 2026-07-20
+
+### 修复
+
+- **Antigravity 2.x 下 Auto-Accept 命令 ID 失效**：命令 API 策略此前硬编码 `antigravity.agent.acceptAgentStep` 与 `antigravity.terminal.accept`，但 2.x 命令表中不存在这两个 ID（2.1.1 服务端 bundle 注册的是 `antigravity.terminalCommand.accept` / `antigravity.command.accept` / `antigravity.prioritized.agentAcceptAllInFile`），导致主策略在 2.x 上静默失效。现改为通过 `vscode.commands.getCommands()` 在运行时对候选列表（覆盖 1.x 与 2.x 两代 ID）做交集发现（每 60 秒刷新），只调用实际注册的命令。
+- **恢复用量历史柱状图**：恢复 v2.6.0 中被误删的柱状图导入与渲染节点，并继续沿用现有配额历史数据链路。
+
+### 变更
+
+- **CDP 回退：无状态面板扫描**：每个配置轮询周期都会重新定位当前 Agent Panel，对可访问 iframe 与 shadow root 内容执行一次扫描后立即退出，不在页面中保留观察器、heartbeat 租约、定时器或全局操作历史注册表。已点击的 DOM 节点会短期保留时间戳以避免立即重复点击，交互范围仍严格限制在已定位的面板内。
+- **停止语义**：每轮 Auto-Accept 现在携带运行代数。关闭功能或卸载扩展会阻止尚未派发的后续接受操作，并关闭已跟踪的 CDP 连接；已经派发给 IDE 命令或 CDP 的操作无法撤回。
+- **适配粗粒度配额更新的用量历史**：图表现在把选定时间范围聚合为最多约 24 个时间桶，不再暗示每次轮询都有精细变化。无变化时段只显示基线，小幅变化保留有效精度，图例使用面向用户的模型组名称，柱状悬停提示包含时间与各组的配额百分点变化。
+- **首笔数据后显示柱状图**：全新启动且尚无用量变化时不再显示空白的 Usage History 卡片；出现第一笔正向配额变化后会自动显示。
+- **配置驱动的配额池**：Gemini Flash 与 Pro 现在按同一个 Gemini 配额池展示和记录，与 Antigravity 当前的共享配额策略保持一致。模型视图仍保留各型号名称以及原有的 Flash 蓝色 / Pro 绿色。配额池归属、标签和颜色统一由 `quota_strategy.json` 配置，未来服务商再次拆分时无需重写历史、图表、通知或状态栏逻辑。旧版本重复记录的模型组历史在绘图时会按配额池合并一次。
+- **静态 Credits 行默认隐藏**：Antigravity Language Server 当前返回的 Prompt 与 Flow 数值长期不变，因此默认隐藏这两行。Google One AI 订阅额度仍会显示，用户可通过 `tfa.dashboard.showCreditsCard` 恢复 Prompt/Flow。
+
+### 新增
+
+- **Auto-Accept 破坏性操作检查（仅 CDP 点击路径）**：CDP 回退在操作 run/accept 类控件前，会判断最近的操作卡片，并将疑似破坏文件系统、磁盘、Git 或数据库的操作留给用户手动检查。判断范围在 Agent Panel 边界停止，不会让无关卡片彼此影响。此机制属于尽力而为的加固而非安全边界：命令 API 路径无法读取待执行命令文本，折叠或截断的卡片内容也可能无法参与判断。
+
 ## [2.7.0] - 2026-07-20
 
 ### 新增
@@ -101,7 +121,7 @@
 ### 新增
 
 - **CDP Auto-Accept 回退方案**: 当命令 API 因 Webview 沙箱化不可用时，新增 Chrome DevTools Protocol (CDP) 注入作为自动接受功能的回退策略。命令 API 仍为主通道。
-- **Webview Guard**: CDP 脚本在执行前会验证 `.react-app-container` 是否存在，确保仅在 Antigravity Agent 面板中执行注入。
+- **Agent Panel 范围检查**：CDP 脚本只有在确认 Antigravity 面板容器存在后，才会与页面控件交互。
 
 ### 修复
 

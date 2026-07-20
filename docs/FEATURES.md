@@ -9,40 +9,42 @@ English | [中文文档](FEATURES_zh.md)
 ## 📊 Quota Monitoring
 
 ### Real-time Quota Display
-- Visual quota display grouped by model families (Gemini, Claude, GPT, etc.)
-- Pie charts showing remaining quota percentage per group
+- Visual quota display grouped by provider-defined quota pools (Gemini, Claude, etc.)
+- Pie charts showing remaining quota percentage per pool
 - Color-coded warnings when quota runs low (warning/critical thresholds)
-- Separate tracking and display for **Gemini 3 Flash**, Pro, and Ultra groups
+- Configuration-driven pool membership keeps shared quotas accurate and allows future provider splits without changing the statistics pipeline
+- Model view preserves separate **Gemini Flash** and **Gemini Pro** identities and colors even while they share one pool
 - **Customizable Gauge Styles**: Refactored the visualization engine to support multiple rendering strategies. Users can choose between:
   - **Semi-Arc**: A modern, 210-degree industrial precision instrument style (Default).
   - **Classic Donut**: The historical full-circle gauge style.
 - Automatic refresh with configurable polling interval (default 90s, minimum 30s)
 
-### Active Group Detection
-- Automatically detects which model group is currently in use
+### Active Pool Detection
+- Automatically detects which quota pool is currently in use
 - Detection based on quota consumption changes (>0.1% threshold)
 - Persists active group state across sessions
 
 ### Usage History & Analytics
-- Interactive bar charts showing usage over time
+- Interactive bar charts showing reported quota changes over time; hidden until the first positive change is recorded
 - Configurable display range (10-120 minutes)
 - 24-hour history tracking with persistent storage
-- Color-coded visualization by model family
+- Color-coded visualization by quota pool
 
 ### Usage Prediction
-- 🔥 **Usage Rate**: Real-time consumption speed (%/hour) based on recent activity
+- 🔥 **Usage Rate**: Average consumption speed in percentage points per hour (pp/h) based on recent activity
 - ⏱️ **Runway**: Estimated time until quota exhaustion (~Xh, ~Xd, or >7d)
 - Displays "Stable" when no consumption detected
 
 ### Prompt Credits Display
 - Shows available/monthly prompt credits
 - Remaining percentage calculation
+- Prompt/Flow rows are hidden by default; enable them with `tfa.dashboard.showCreditsCard`
 
 ### Token Credits Tracking
 - **Prompt Credits**: Used for conversation input and result generation (reasoning)
 - **Flow Credits**: Used for search, modification, and command execution (operations)
 - Visual progress bars with color-coded status
-- Dedicated "Tokens" section in sidebar
+- Google One AI subscription credit remains visible when Prompt/Flow rows are hidden
 
 ### User Info Card
 - Display user subscription tier and plan name
@@ -206,7 +208,7 @@ In WSL remote sessions the shortcuts follow where Antigravity actually reads eac
 | `tfa.dashboard.includeSecondaryModels` | `false` | Show GPT quota (shares pool with Claude) |
 | `tfa.dashboard.historyRange` | `90` | Usage chart time range (10-120 min) |
 | `tfa.dashboard.showUserInfoCard` | `true` | Show user info card in sidebar |
-| `tfa.dashboard.showCreditsCard` | `true` | Show credits card in sidebar |
+| `tfa.dashboard.showCreditsCard` | `false` | Show static Prompt/Flow rows; Google One AI remains visible |
 | `tfa.cache.scanInterval` | `120` | Cache check interval (seconds, min 30) |
 | `tfa.cache.warningSize` | `500` | Cache warning threshold (MB) |
 | `tfa.cache.hideEmptyFolders` | `false` | Hide empty folders in tree views |
@@ -219,4 +221,3 @@ In WSL remote sessions the shortcuts follow where Antigravity actually reads eac
 | `tfa.commitMessageClaude.model` | `llama3.2` | Commit message model name |
 | `tfa.commitMessageClaude.maxDiffChars` | `80000` | Max staged diff characters sent to the LLM endpoint |
 | `tfa.commitMessageClaude.format` | `conventional` | Commit message format |
-

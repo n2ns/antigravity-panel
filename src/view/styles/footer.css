@@ -95,17 +95,28 @@ sidebar-footer {
     gap: 4px;
 }
 
+.credits-bar .credit-header {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    width: 100%;
+    min-height: 1rem;
+    line-height: 1.25;
+}
+
 .credits-bar .credit-label {
     color: var(--vscode-foreground);
     font-weight: 500;
     font-size: 0.8rem;
+    line-height: inherit;
 }
 
 .credits-bar .credit-value {
     color: var(--vscode-foreground);
     font-weight: 600;
     font-family: var(--vscode-editor-font-family, monospace);
-    font-size: 0.9rem;
+    font-size: 0.8rem;
+    line-height: inherit;
 }
 
 .credits-bar .credit-progress {

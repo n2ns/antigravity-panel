@@ -31,7 +31,7 @@
     "config.dashboard.historyRange.description": "Временной диапазон графика использования в минутах (по умолчанию: 90 минут)",
     "config.dashboard.includeSecondaryModels.description": "Показывать квоту GPT на боковой панели (GPT делит пул квоты с Claude)",
     "config.dashboard.refreshRate.description": "Интервал автоматического обновления в секундах (минимум: 30с, рекомендуется: 120с)",
-    "config.dashboard.showCreditsCard.description": "Показывать карточку использования кредитов ИИ (Tokens, Flow) в боковой панели",
+    "config.dashboard.showCreditsCard.description": "Показывать кредиты Prompt и Flow на боковой панели (Google One AI остаётся видимым)",
     "config.dashboard.showUserInfoCard.description": "Показать карту профиля пользователя (аватар, уровень, тариф) на боковой панели",
     "config.dashboard.uiScale.description": "Пропорциональное масштабирование текста и элементов интерфейса боковой панели. (Масштаб Root EM)",
     "config.dashboard.viewMode.description": "Выберите между сгруппированным или индивидуальным отображением моделей на боковой панели",
