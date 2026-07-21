@@ -117,6 +117,10 @@ npm run package
 
 The package script uses the compiled output under `dist/`, so rebuild after source changes.
 
+### Release Publishing
+
+Release tags trigger `.github/workflows/publish.yml`. CI runs linting and tests, builds the extension, and creates one `vsix-package` artifact. The publishing jobs submit that same VSIX to the Visual Studio Marketplace and the verified `n2ns` namespace on Open VSX, while the release job attaches it to GitHub Releases. Keep publishing jobs artifact-based so all three channels receive the same tested bytes.
+
 ---
 
 ## 🎨 Code Style & Standards

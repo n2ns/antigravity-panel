@@ -2,6 +2,14 @@
 
 # 更新日志
 
+## [未发布]
+
+### 变更
+
+- **统一发布产物**：发布工作流现在只构建、测试和打包一次扩展，然后将完全相同的 VSIX 产物发布到 Visual Studio Marketplace、Open VSX 和 GitHub Releases，不再由各发布任务分别重新构建。
+- **发布工具链清理**：将 `ovsx` 纳入开发依赖，将 Sinon 类型声明与 Sinon 22 对齐，移除未使用的 `canvas` 依赖和过时的图标生成脚本，并刷新依赖锁文件。
+- **Open VSX 验证说明**：明确记录 `n2ns` 已是通过验证的 Open VSX namespace；`n2ns.antigravity-panel` 无需再次申请发布者验证。
+
 ## [2.7.1] - 2026-07-20
 
 ### 修复

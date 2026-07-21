@@ -66,8 +66,14 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      # 复用 build 阶段已测试的产物，确保三处发布的是同一份字节
+      - name: Download VSIX artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: vsix-package
+
       - name: Publish to Marketplace
-        run: npx @vscode/vsce publish -p ${{ secrets.VSCE_PAT }}
+        run: npx @vscode/vsce publish --packagePath *.vsix
         env:
           VSCE_PAT: ${{ secrets.VSCE_PAT }}
 
@@ -91,8 +97,14 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      # 复用 build 阶段已测试的产物，确保三处发布的是同一份字节
+      - name: Download VSIX artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: vsix-package
+
       - name: Publish to Open VSX
-        run: npx ovsx publish -p ${{ secrets.OVSX_PAT }}
+        run: npx ovsx publish *.vsix
         env:
           OVSX_PAT: ${{ secrets.OVSX_PAT }}
 

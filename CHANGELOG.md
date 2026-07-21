@@ -2,6 +2,14 @@ English | [中文文档](docs/CHANGELOG_zh.md)
 
 # Change Log
 
+## [Unreleased]
+
+### Changed
+
+- **Single Release Artifact**: The release workflow now builds, tests, and packages the extension once, then publishes that exact VSIX artifact to the Visual Studio Marketplace, Open VSX, and GitHub Releases instead of rebuilding independently in each publishing job.
+- **Publishing Toolchain Cleanup**: Added `ovsx` as a tracked development dependency, aligned Sinon types with Sinon 22, removed the unused `canvas` dependency and obsolete icon-generation script, and refreshed the dependency lockfile.
+- **Open VSX Verification Documentation**: Documented that `n2ns` is already a verified Open VSX namespace; no additional publisher-verification request is required for `n2ns.antigravity-panel`.
+
 ## [2.7.1] - 2026-07-20
 
 ### Fixed
