@@ -88,6 +88,10 @@ We enforce automated test checks. Ensure that your contributions do not break ex
     ```bash
     npm run typecheck
     ```
+*   **Localization consistency:** Validate manifest/runtime keys, placeholders, and protected English UI labels across every locale.
+    ```bash
+    npm run check:l10n
+    ```
 *   **Unit tests:** Verify core business logic and platform parsing without requiring a live Antigravity Language Server.
     ```bash
     npm test
@@ -101,7 +105,7 @@ We enforce automated test checks. Ensure that your contributions do not break ex
 > The live Language Server tests are expected to run in Antigravity IDE development environments. If they cannot find a local Antigravity Language Server, the environment is incomplete for full project validation.
 
 > [!IMPORTANT]
-> `husky` and `lint-staged` run lint checks before commits. Run `npm run typecheck`, `npm test`, and `npm run test:server` manually before opening a Pull Request.
+> `husky` and `lint-staged` run lint checks before commits. Run `npm run typecheck`, `npm run check:l10n`, `npm test`, and `npm run test:server` manually before opening a Pull Request.
 
 ---
 
@@ -113,17 +117,17 @@ To verify the production build directly:
 npm run build
 ```
 
-To create a local `.vsix` installer (the packaging command runs the production build automatically):
+To create a local `.vsix` installer (`vscode:prepublish` runs the production build automatically):
 
 ```bash
 npm run package
 ```
 
-The package script uses the compiled output under `dist/`, so rebuild after source changes.
+The package script rebuilds `dist/` before creating the VSIX.
 
 ### Release Publishing
 
-Release tags trigger `.github/workflows/publish.yml`. CI runs linting and tests, builds the extension, and creates one `vsix-package` artifact. The publishing jobs submit that same VSIX to the Visual Studio Marketplace and the verified `n2ns` namespace on Open VSX, while the release job attaches it to GitHub Releases. Keep publishing jobs artifact-based so all three channels receive the same tested bytes.
+Release tags trigger `.github/workflows/publish.yml`. The build job runs linting, production typechecking, unit tests, live Language Server tests, and packaging once to create one `vsix-package` artifact. The publishing jobs submit that same VSIX to the Visual Studio Marketplace and the verified `n2ns` namespace on Open VSX, while the release job attaches it to GitHub Releases. Keep publishing jobs artifact-based so all three channels receive the same tested bytes.
 
 ---
 
@@ -141,7 +145,7 @@ We use `eslint` and `typescript` strict mode to maintain code quality.
     *   Always write comprehensive types for views and messages.
 
 ### 🌐 Localization & Translation Policy
-The extension supports 14 languages. To maintain technical consistency across all locales, we enforce the **UI Label Strategy** defined in [LOCALIZATION_RULES.md](docs/LOCALIZATION_RULES.md):
+The extension supports 15 languages. To maintain technical consistency across all locales, we enforce the **UI Label Strategy** defined in [LOCALIZATION_RULES.md](docs/LOCALIZATION_RULES.md):
 1.  **UI Buttons, Section Headers, and Command Titles** must remain in **English** (e.g., `Rules`, `MCP`, `Auto-Accept`, `Reset Status`). Do not translate these.
 2.  **Tooltips, Descriptions, Explanations, and Warnings** must be fully **localized** in NLS files (e.g. `package.nls.zh-cn.json`, `bundle.l10n.zh-cn.json`).
 
@@ -153,6 +157,7 @@ The extension supports 14 languages. To maintain technical consistency across al
 2.  **Make Code Changes:** Keep your commits clean and focused. Use descriptive conventional commits titles (e.g., `feat: ...`, `fix: ...`).
 3.  **Run Quality Checks:**
     *   Format and lint: `npm run lint`
+    *   Validate production types and localization: `npm run typecheck` and `npm run check:l10n`
     *   Ensure all tests pass: `npm test` and `npm run test:server`
 4.  **Create a Pull Request:**
     *   Push your branch and open a PR against the `main` branch.

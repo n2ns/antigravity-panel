@@ -8,39 +8,37 @@ English | [中文文档](docs/TODO_zh.md)
 
 ---
 
-## 🟢 Low Priority (P3)
+## 🟡 Medium Priority (P2)
 
 ### Test Coverage
 
-- [ ] **Real Coverage Reporting**
-  - Add `c8`, `nyc`, or equivalent coverage tooling
-  - Generate an lcov report for Codecov
-  - Add minimum thresholds for critical service, view-model, and platform parsing modules
-
-- [ ] **Extension Activation Tests**
+- [ ] **Extension Activation Lifecycle Tests**
   - Add tests for command registration from `activate()`
   - Cover initialization failure fallback behavior
-  - Verify `deactivate()` clears timers and scheduler resources
+  - Verify `deactivate()` clears boot timers, schedulers, and automation resources
 
 - [ ] **Webview Runtime Tests**
   - Add jsdom/happy-dom or equivalent tests for `sidebar-app`
   - Cover state hydration, `postMessage` routing, folder actions, and event dispatch
 
-- [ ] **Auto-Accept CDP Injection Tests**
-  - Extract the clicker script into a testable unit
+### Configuration Correctness
 
-### Performance
+- [ ] **Unify Configuration Schema**
+  - Keep `package.json` contributes, defaults, `TfaConfig`, and validation rules aligned
+  - Include currently separate settings such as `dashboard.showUserInfoCard` and commit-message configuration
+  - Avoid direct configuration reads outside `ConfigManager` unless there is a documented reason
+  - Add a contract test that compares manifest keys/defaults with the runtime schema
 
-- [ ] **Polling Optimization**
-  - Pause polling when extension is not visible
-  - Reduce network calls
+---
 
-### Dependency Maintenance
+## 🟢 Low Priority (P3)
 
-- [ ] **Mocha `diff` Advisory**
-  - Track the low-severity `mocha@11.7.6` → `diff@7.0.0` development-only advisory
-  - Upgrade when Mocha supports a patched `diff` release
-  - Avoid an incompatible forced override solely to silence `npm audit`
+### Test Coverage
+
+- [ ] **CI Coverage Guardrails**
+  - Add `c8`, `nyc`, or equivalent coverage tooling to the existing unit-test runner
+  - Publish a coverage summary in CI without requiring a third-party upload service
+  - Add focused minimum thresholds for critical service, view-model, and platform parsing modules
 
 ---
 
@@ -58,20 +56,7 @@ English | [中文文档](docs/TODO_zh.md)
   - Keep platform process types under `shared/platform`
   - Keep configuration types under `shared/config`
 
-- [ ] **Unify Configuration Schema**
-  - Keep `package.json` contributes, defaults, `TfaConfig`, and validation rules aligned
-  - Avoid direct configuration reads outside `ConfigManager` unless there is a documented reason
-
 - [ ] **Strongly Type the Webview Protocol**
   - Add a shared `webview-protocol.ts`
   - Use discriminated unions for messages and payloads
   - Avoid separate frontend/backend types with the same name but different semantics
-
----
-
-## 📋 Documentation
-
-- [ ] **Enhance JSDoc Comments**
-  - Add JSDoc for all public APIs
-  - Include parameter descriptions and return types
-  - Add usage examples

@@ -156,7 +156,7 @@ A workaround for when the built-in "Generate commit message" feature is unavaila
 - ✅ Linux
 
 **Multi-language UI**
-- English, 简体中文, 繁體中文, 日本語, Français, Deutsch, Español, Português (Brasil), Italiano, 한국어, Русский, Polski, Türkçe, Tiếng Việt
+- English, 简体中文, 繁體中文, 日本語, Français, Deutsch, Español, Português (Brasil), Bahasa Indonesia, Italiano, 한국어, Русский, Polski, Türkçe, Tiếng Việt
 
 ## 📦 Installation
 

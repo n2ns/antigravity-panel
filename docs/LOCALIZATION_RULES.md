@@ -4,7 +4,7 @@ This document outlines the specific localization strategy for Antigravity Panel 
 
 ## Summary of Rules
 
-As of version 2.6.3, the following rules apply to all 15 supported languages:
+As of version 2.7.2, the following rules apply to all 15 supported languages:
 
 ### 1. Technical Terms and UI Labels (English ONLY)
 All primary UI labels, technical terms, and command titles on the panel must remain in **English**. Do not translate these strings even if a localized version exists in the source files.
@@ -31,6 +31,7 @@ When adding new UI elements:
 1. Add the technical label in English to `bundle.l10n.json`.
 2. Add a corresponding `*Tooltip` or `*Description` key for localization.
 3. Ensure the English label is mirrored exactly in all `bundle.l10n.*.json` files.
+4. Run `npm run check:l10n` to validate manifest/runtime key sets, placeholders, and protected English labels before committing.
 
 ---
 *Note: This strategy ensures that power users can quickly identify technical terms used in documentation and community discussions while still receiving helpful local-language explanations for every feature.*

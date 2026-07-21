@@ -8,39 +8,37 @@
 
 ---
 
-## 🟢 低优先级 (P3)
+## 🟡 中优先级 (P2)
 
 ### 测试覆盖
 
-- [ ] **真实覆盖率报告**
-  - 引入 `c8`、`nyc` 或等价覆盖率工具
-  - 生成 lcov 报告用于 Codecov
-  - 为核心 service、view-model、platform 解析模块设置最低覆盖率阈值
-
-- [ ] **扩展激活测试**
+- [ ] **扩展激活生命周期测试**
   - 为 `activate()` 的命令注册增加测试
   - 覆盖初始化失败时的降级行为
-  - 验证 `deactivate()` 会清理定时器和 scheduler 资源
+  - 验证 `deactivate()` 会清理启动定时器、scheduler 和自动化资源
 
 - [ ] **Webview 运行时测试**
   - 使用 jsdom/happy-dom 或等价方案测试 `sidebar-app`
   - 覆盖状态恢复、`postMessage` 路由、文件夹操作和事件派发
 
-- [ ] **Auto-Accept CDP 注入测试**
-  - 将 clicker script 抽成可测试单元
+### 配置正确性
 
-### 性能优化
+- [ ] **统一配置 Schema**
+  - 保持 `package.json` contributes、默认值、`TfaConfig` 和校验规则一致
+  - 纳入当前独立存在的 `dashboard.showUserInfoCard` 和提交信息配置等设置
+  - 除非有明确文档说明，否则避免绕过 `ConfigManager` 直接读取配置
+  - 增加契约测试，对比 manifest 配置键及默认值与运行时 schema
 
-- [ ] **轮询优化**
-  - 扩展不可见时暂停轮询
-  - 减少网络调用
+---
 
-### 依赖维护
+## 🟢 低优先级 (P3)
 
-- [ ] **Mocha `diff` 安全公告**
-  - 跟踪仅影响开发环境的低危 `mocha@11.7.6` → `diff@7.0.0` 依赖链公告
-  - 在 Mocha 支持已修复的 `diff` 版本后升级
-  - 不为消除 `npm audit` 提示而强制使用不兼容的 override
+### 测试覆盖
+
+- [ ] **CI 覆盖率门禁**
+  - 为现有单元测试运行器引入 `c8`、`nyc` 或等价覆盖率工具
+  - 在 CI 中输出覆盖率摘要，不强制依赖第三方上传服务
+  - 为核心 service、view-model、platform 解析模块设置有针对性的最低覆盖率阈值
 
 ---
 
@@ -58,20 +56,7 @@
   - 将平台进程类型放在 `shared/platform`
   - 将配置类型放在 `shared/config`
 
-- [ ] **统一配置 Schema**
-  - 保持 `package.json` contributes、默认值、`TfaConfig` 和校验规则一致
-  - 除非有明确文档说明，否则避免绕过 `ConfigManager` 直接读取配置
-
 - [ ] **强类型 Webview 协议**
   - 新增共享的 `webview-protocol.ts`
   - 使用 discriminated union 定义消息和 payload
   - 避免前后端出现同名但语义不同的类型
-
----
-
-## 📋 文档
-
-- [ ] **完善 JSDoc 注释**
-  - 为所有公共 API 添加 JSDoc
-  - 包含参数说明和返回值类型
-  - 添加使用示例

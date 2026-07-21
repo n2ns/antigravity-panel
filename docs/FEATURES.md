@@ -85,6 +85,7 @@ English | [中文文档](FEATURES_zh.md)
 - Multiple display styles: percentage, reset time, used, remaining
 - Color-coded status: normal (green), warning (yellow), critical (red)
 - Configurable thresholds for warning (default 40%) and critical (default 20%)
+- Shows a warning state instead of stale quota data when the Language Server connection fails; cache-only display remains independent
 
 ### Cache Size Display
 - Shows total cache size in status bar
@@ -138,7 +139,7 @@ In WSL remote sessions the shortcuts follow where Antigravity actually reads eac
 ### Task Scheduler
 - Register multiple independent polling tasks
 - Dynamic interval updates
-- Start/stop individual tasks or all at once
+- Start/stop named tasks and stop all running tasks during disposal
 
 ### Process Detection
 - Cross-platform Antigravity Language Server detection
@@ -165,6 +166,7 @@ In WSL remote sessions the shortcuts follow where Antigravity actually reads eac
 - Polski (Polish)
 - Tiếng Việt (Vietnamese)
 - Bahasa Indonesia (Indonesian)
+- CI validates locale keys, placeholders, and protected English UI labels with `npm run check:l10n`
 
 ---
 
@@ -181,8 +183,8 @@ In WSL remote sessions the shortcuts follow where Antigravity actually reads eac
 ## 🧪 Testing
 
 ### Unit and Local Integration Test Coverage
-- 270+ tests across 29 test files
-- Unit coverage for pure business logic plus local Antigravity Language Server integration tests
+- 311 unit tests across 29 pure-Node test files
+- 2 dedicated integration tests against the local Antigravity Language Server
 - Full validation is expected to run inside Antigravity IDE with its local Language Server available
 - Core modules fully tested:
   - ConfigManager, CacheService, QuotaService, StorageService

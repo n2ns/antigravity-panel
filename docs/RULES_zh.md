@@ -49,13 +49,18 @@
 - 样式必须放在外部 CSS 文件（如 `dist/webview.css`）
 
 ## 国际化（如有）
-- 新增 UI 字符串：添加 key 到所有 `package.nls.*.json` 文件
-- 新增 key 必须同时添加到所有语言文件
+- Manifest 字符串：保持所有 `package.nls.*.json` 文件一致
+- 运行时字符串：保持所有 `l10n/bundle.l10n.*.json` 文件一致
+- 新增 key 和占位符必须同时添加到所有语言文件
+- 受保护的技术 UI 标签必须保持英文
 
 ## 提交前检查
 - `npm run lint` - ESLint 必须通过
+- `npm run typecheck` - 生产 TypeScript 检查必须通过
+- `npm run check:l10n` - 本地化契约检查必须通过
 - `npm run build` - 编译必须成功
 - `npm test` - 单元测试必须通过
+- `npm run test:server` - Antigravity 环境可用时，真实 Language Server 测试必须通过
 - `git status` - 审查暂存/未跟踪文件
 
 ## Git

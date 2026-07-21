@@ -85,6 +85,7 @@
 - 多种显示样式：百分比、重置时间、已用、剩余
 - 颜色状态：正常（绿）、警告（黄）、严重（红）
 - 可配置警告阈值（默认 40%）和严重阈值（默认 20%）
+- Language Server 连接失败时显示警告状态，不再展示过期配额；仅显示缓存的模式保持独立
 
 ### 缓存大小显示
 - 状态栏显示总缓存大小
@@ -140,7 +141,7 @@
 ### 任务调度器
 - 注册多个独立轮询任务
 - 动态更新间隔
-- 单独或批量启动/停止任务
+- 启动/停止指定任务，并在释放时停止全部运行中的任务
 
 ### 进程检测
 - 跨平台 Antigravity Language Server 检测
@@ -167,6 +168,7 @@
 - Polski（波兰语）
 - Tiếng Việt（越南语）
 - Bahasa Indonesia（印尼语）
+- CI 通过 `npm run check:l10n` 校验语言键、占位符和受保护的英文 UI 标签
 
 ---
 
@@ -183,8 +185,8 @@
 ## 🧪 测试
 
 ### 单元测试与本地集成测试覆盖
-- 29 个测试文件，270+ 个测试用例
-- 覆盖纯业务逻辑单元测试，以及本地 Antigravity Language Server 集成测试
+- 29 个纯 Node 测试文件，共 311 个单元测试
+- 2 个连接本地 Antigravity Language Server 的专用集成测试
 - 完整验证应在 Antigravity IDE 内执行，并确保本地 Language Server 可用
 - 核心模块全覆盖：
   - ConfigManager、CacheService、QuotaService、StorageService

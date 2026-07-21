@@ -4,6 +4,8 @@ English | [中文文档](docs/CHANGELOG_zh.md)
 
 ## [Unreleased]
 
+## [2.7.2] - 2026-07-22
+
 ### Fixed
 
 - **Gemini 3.6 Flash Misclassified as Claude**: The IDE 2.1.1 server reports Gemini 3.6 Flash as `MODEL_PLACEHOLDER_M264/M265/M266`, which the loose substring ID match routed to Claude Opus (`MODEL_PLACEHOLDER_M26`). This dragged the Claude pool gauge down whenever Gemini quota was consumed and rewrote those rows' display names to "Claude Opus 4.6 (Thinking)". Configured model IDs now match exactly, and modelName-in-label matching requires token boundaries, so numeric-suffixed server IDs can no longer match their prefixes.
@@ -14,7 +16,8 @@ English | [中文文档](docs/CHANGELOG_zh.md)
 - **CI Type Safety and Node 24 Actions**: Added a dedicated production TypeScript typecheck gate to CI and release builds, upgraded all JavaScript-based workflow actions to their Node 24-native major versions, and removed the temporary runtime-forcing environment flag.
 - **Dead Code and Test Cleanup**: Removed unreachable Webview styles/components, unused barrel files, compatibility exports, and orphaned cache, view-model, scheduler, logger, formatting, and commit-message helpers. Production diff truncation now uses the same helper covered by tests, Tooltip Manager resources are explicitly disposed, tests that only exercised unreachable APIs were removed, unit tests remain separate from the dedicated Language Server integration runner, and the placeholder cache-deletion test was replaced with a real behavior assertion.
 - **CI and Packaging Cleanup**: Removed the empty Codecov upload job, eliminated duplicate pre-package builds, dropped redundant TypeScript ESLint declarations and the `package:sync` alias, and kept unit and server integration suites as separate CI gates.
-- **Localization Alignment**: Removed unused manifest and runtime localization entries, added every active notification and diagnostic message across all 15 supported languages, and wired the existing `Docs` label into the Webview translation payload.
+- **Localization Alignment**: Added Indonesian and aligned every active notification and diagnostic message across all 15 supported languages. CI now checks manifest/runtime key sets, placeholders, and protected English UI labels, and the existing `Docs` label is wired into the Webview translation payload.
+- **Documentation and Roadmap Sync**: Moved the English TODO to the repository root, reduced the bilingual roadmap to seven source-verified tasks, and synchronized contributor, feature, localization, quota-model, knowledge-graph, and Webview typography documentation with the current runtime and CI behavior.
 - **Single Release Artifact**: The release workflow now builds, tests, and packages the extension once, then publishes that exact VSIX artifact to the Visual Studio Marketplace, Open VSX, and GitHub Releases instead of rebuilding independently in each publishing job.
 - **Publishing Toolchain Cleanup**: Added `ovsx` as a tracked development dependency, aligned Sinon types with Sinon 22, removed the unused `canvas` dependency and obsolete icon-generation script, and refreshed the dependency lockfile.
 - **Open VSX Verification Documentation**: Documented that `n2ns` is already a verified Open VSX namespace; no additional publisher-verification request is required for `n2ns.antigravity-panel`.

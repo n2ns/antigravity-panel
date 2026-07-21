@@ -9,7 +9,7 @@
 - **Type**: `PROJECT`
 - **Observations**:
   - An Antigravity IDE extension for quota monitoring, cache management, Auto-Accept automation, and system visualization.
-  - Current version is 2.6.3.
+  - Current source version is 2.7.2.
   - Includes 'Auto-Accept' (Hands-free Mode) feature for automatically approving agent steps and terminal commands.
 
 ### Brain Directory
@@ -35,6 +35,7 @@
   - All hover tooltips, settings descriptions, and system notifications must be fully localized in all 15 supported languages to provide clear functional explanations.
   - All user-facing technical UI labels and command titles (e.g., 'Restart Service', 'Rules', 'MCP', 'Auto-Accept') must remain in English across all supported locales to maintain technical consistency.
   - The project supports 15 languages: English, Simplified Chinese, Traditional Chinese, Japanese, Korean, German, Spanish, French, Indonesian, Italian, Polish, Brazilian Portuguese, Russian, Turkish, and Vietnamese.
+  - `npm run check:l10n` enforces matching locale keys, placeholders, and protected English UI labels in CI.
   - This strategy is documented in 'LOCALIZATION_RULES.md'.
 
 ### Projects Directory (Code Contexts)
