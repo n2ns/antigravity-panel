@@ -325,7 +325,7 @@ For more details, see [LOCALIZATION_RULES.md](docs/LOCALIZATION_RULES.md).
 
 - [Features](docs/FEATURES.md)
 - [Changelog](CHANGELOG.md)
-- [TODO](docs/TODO.md)
+- [TODO](TODO.md)
 
 ## 📄 License
 

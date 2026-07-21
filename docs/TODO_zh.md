@@ -1,4 +1,4 @@
-[English](TODO.md) | 中文文档
+[English](../TODO.md) | 中文文档
 
 # 待办事项清单
 

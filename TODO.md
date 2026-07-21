@@ -1,10 +1,10 @@
-English | [中文文档](TODO_zh.md)
+English | [中文文档](docs/TODO_zh.md)
 
 # TODO List
 
 > Last Updated: 2026-07-22
 
-> ⚠️ **Note**: This document should only contain pending tasks. Completed tasks should be removed and documented in [CHANGELOG.md](../CHANGELOG.md) or [FEATURES.md](./FEATURES.md).
+> ⚠️ **Note**: This document should only contain pending tasks. Completed tasks should be removed and documented in [CHANGELOG.md](CHANGELOG.md) or [FEATURES.md](docs/FEATURES.md).
 
 ---
 

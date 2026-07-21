@@ -59,7 +59,7 @@
 
 ### 变更
 
-- **TODO 路线图刷新**：更新 [TODO.md](TODO.md) 与 [TODO_zh.md](TODO_zh.md)，移除已完成的可靠性修复项，并记录项目评审后剩余的 P2/P3/P4 代码质量任务。
+- **TODO 路线图刷新**：更新 [TODO.md](../TODO.md) 与 [TODO_zh.md](TODO_zh.md)，移除已完成的可靠性修复项，并记录项目评审后剩余的 P2/P3/P4 代码质量任务。
 - **README / 贡献指南拆分**：将贡献者工作流细节迁移到 [CONTRIBUTING.md](../CONTRIBUTING.md)，在 README 中保留贡献者名单，并明确开发、调试与真实 Language Server 测试均以 Antigravity IDE 为目标环境。
 - **文档准确性刷新**：更新功能特性、免责声明、本地化规则、知识图谱和 README 文档入口，使阈值、路径、支持语言、隐私行为和测试策略与当前项目状态一致。
 

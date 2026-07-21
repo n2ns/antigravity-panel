@@ -59,7 +59,7 @@ English | [中文文档](docs/CHANGELOG_zh.md)
 
 ### Changed
 
-- **TODO Roadmap Refresh**: Updated [TODO.md](docs/TODO.md) and [TODO_zh.md](docs/TODO_zh.md) to remove completed reliability work and record the remaining P2/P3/P4 code quality tasks from the project review.
+- **TODO Roadmap Refresh**: Updated [TODO.md](TODO.md) and [TODO_zh.md](docs/TODO_zh.md) to remove completed reliability work and record the remaining P2/P3/P4 code quality tasks from the project review.
 - **README / Contributing Split**: Moved contributor workflow details into [CONTRIBUTING.md](CONTRIBUTING.md), kept the contributor list visible in the README files, and clarified that development, debugging, and live Language Server testing target Antigravity IDE.
 - **Documentation Accuracy Refresh**: Updated features, disclaimer, localization rules, knowledge graph, and README documentation links to match current thresholds, paths, supported languages, privacy behavior, and test strategy.
 
