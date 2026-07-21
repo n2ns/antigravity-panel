@@ -6,9 +6,6 @@ on:
       - 'v*'  # 触发条件：推送 v* 标签（如 v0.2.1）
   workflow_dispatch:  # 允许手动触发
 
-env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-
 jobs:
   # 构建和测试
   build:
@@ -16,10 +13,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: '24'
           cache: 'npm'
@@ -29,6 +26,9 @@ jobs:
 
       - name: Run linter
         run: npm run lint
+
+      - name: Run production typecheck
+        run: npm run typecheck
 
       - name: Run unit tests
         run: npm test
@@ -40,7 +40,7 @@ jobs:
         run: npx @vscode/vsce package
 
       - name: Upload VSIX artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: vsix-package
           path: '*.vsix'
@@ -55,10 +55,10 @@ jobs:
     continue-on-error: true
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: '24'
           cache: 'npm'
@@ -68,7 +68,7 @@ jobs:
 
       # 复用 build 阶段已测试的产物，确保三处发布的是同一份字节
       - name: Download VSIX artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: vsix-package
 
@@ -86,10 +86,10 @@ jobs:
     continue-on-error: true
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: '24'
           cache: 'npm'
@@ -99,7 +99,7 @@ jobs:
 
       # 复用 build 阶段已测试的产物，确保三处发布的是同一份字节
       - name: Download VSIX artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: vsix-package
 
@@ -119,10 +119,10 @@ jobs:
       contents: write
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Download VSIX artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: vsix-package
 
@@ -131,7 +131,7 @@ jobs:
         run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
 
       - name: Create Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v3
         with:
           files: '*.vsix'
           generate_release_notes: true

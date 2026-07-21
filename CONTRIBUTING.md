@@ -84,6 +84,10 @@ Located in [app.vm.ts](src/view-model/app.vm.ts). The `AppViewModel` acts as the
 
 We enforce automated test checks. Ensure that your contributions do not break existing tests and that you write new tests for any added features or bug fixes.
 
+*   **Production typecheck:** Validate extension and Webview TypeScript without emitting build artifacts.
+    ```bash
+    npm run typecheck
+    ```
 *   **Unit tests:** Verify core business logic and platform parsing without requiring a live Antigravity Language Server.
     ```bash
     npm test
@@ -97,7 +101,7 @@ We enforce automated test checks. Ensure that your contributions do not break ex
 > The live Language Server tests are expected to run in Antigravity IDE development environments. If they cannot find a local Antigravity Language Server, the environment is incomplete for full project validation.
 
 > [!IMPORTANT]
-> `husky` and `lint-staged` run lint checks before commits. Run `npm test` and `npm run test:server` manually before opening a Pull Request.
+> `husky` and `lint-staged` run lint checks before commits. Run `npm run typecheck`, `npm test`, and `npm run test:server` manually before opening a Pull Request.
 
 ---
 

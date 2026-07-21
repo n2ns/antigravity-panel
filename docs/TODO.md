@@ -2,20 +2,9 @@ English | [中文文档](TODO_zh.md)
 
 # TODO List
 
-> Last Updated: 2026-07-20
+> Last Updated: 2026-07-22
 
 > ⚠️ **Note**: This document should only contain pending tasks. Completed tasks should be removed and documented in [CHANGELOG.md](../CHANGELOG.md) or [FEATURES.md](./FEATURES.md).
-
----
-
-## 🟡 Medium Priority (P2)
-
-### Quality Gates
-
-- [ ] **Production TypeScript Typecheck in CI**
-  - Add a `typecheck` script that runs `tsc -p tsconfig.json --noEmit`
-  - Run it in CI before build/package
-  - Keep `tsconfig.test.json` for test compilation, but do not rely on it as the only typecheck gate
 
 ---
 
@@ -45,6 +34,28 @@ English | [中文文档](TODO_zh.md)
 - [ ] **Polling Optimization**
   - Pause polling when extension is not visible
   - Reduce network calls
+
+### Dependency Maintenance
+
+- [ ] **Mocha `diff` Advisory**
+  - Track the low-severity `mocha@11.7.6` → `diff@7.0.0` development-only advisory
+  - Upgrade when Mocha supports a patched `diff` release
+  - Avoid an incompatible forced override solely to silence `npm audit`
+
+### Dead Code Follow-up
+
+- [ ] **Remove Confirmed Unused Implementations**
+  - Remove `CacheService.getFilesInDirectory` and `formatResetTime`
+  - Remove the unused `callAnthropicApi` compatibility wrapper and `deleteApiKey`
+- [ ] **Reduce Redundant Export Surface**
+  - Stop exporting implementation-only helpers from `commitMessageClaude.ts`, internal configuration constants, `BackoffStrategy`, and `gaugeRenderers`
+  - Remove unused compatibility re-exports from `quota.service.ts`, `app.vm.ts`, and transitional type barrels after verifying their import sites
+  - Replace the test-only `parseClaudeResponse` alias with the canonical `parseLLMResponse` name
+- [ ] **Resolve Tooltip Manager Ownership**
+  - `_tooltipManager` is assigned but never read, while construction installs global listeners and a DOM node
+  - Add explicit disposal/lifecycle handling before simplifying the write-only field
+
+> Debugging helpers, local Server scripts, and their supporting code are intentionally excluded from dead-code cleanup and must be preserved.
 
 ---
 

@@ -6,6 +6,7 @@ English | [中文文档](docs/CHANGELOG_zh.md)
 
 ### Changed
 
+- **CI Type Safety and Node 24 Actions**: Added a dedicated production TypeScript typecheck gate to CI and release builds, upgraded all JavaScript-based workflow actions to their Node 24-native major versions, and removed the temporary runtime-forcing environment flag.
 - **Dead Code and Test Cleanup**: Removed unreachable Webview styles/components, unused barrel files and type aliases, split unit tests from the dedicated Language Server integration runner, and replaced a placeholder cache-deletion test with a real behavior assertion.
 - **CI and Packaging Cleanup**: Removed the empty Codecov upload job, eliminated duplicate pre-package builds, dropped redundant TypeScript ESLint declarations and the `package:sync` alias, and kept unit and server integration suites as separate CI gates.
 - **Localization Alignment**: Removed unused manifest and runtime localization entries, added every active notification and diagnostic message to all 14 runtime bundles, and wired the existing `Docs` label into the Webview translation payload.

@@ -6,6 +6,7 @@
 
 ### 变更
 
+- **CI 类型安全与 Node 24 Actions**：为 CI 和发布构建增加独立的生产 TypeScript 类型检查门禁，将所有 JavaScript Workflow Action 升级到原生支持 Node 24 的主版本，并移除临时的运行时强制环境变量。
 - **死代码与测试清理**：移除不可达的 Webview 样式与组件、未使用的 barrel 文件和类型别名；将单元测试与专用 Language Server 集成测试运行器分离，并把占位的缓存删除测试改为真实行为断言。
 - **CI 与打包清理**：移除空转的 Codecov 上传任务和打包前的重复构建，删除重复的 TypeScript ESLint 依赖声明及 `package:sync` 别名，并将单元测试与 Server 集成测试保留为独立 CI 门禁。
 - **本地化对齐**：删除未使用的 manifest 和运行时本地化条目，将所有正在使用的通知与诊断消息补齐到 14 份运行时语言包，并把现有 `Docs` 标签正确注入 Webview 翻译数据。

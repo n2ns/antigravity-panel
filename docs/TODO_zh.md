@@ -2,20 +2,9 @@
 
 # 待办事项清单
 
-> 最后更新: 2026-07-20
+> 最后更新: 2026-07-22
 
 > ⚠️ **注意**: 本文档仅包含待办任务。已完成的任务应移除，并记录到 [CHANGELOG.md](../CHANGELOG.md) 或 [FEATURES.md](./FEATURES.md)。
-
----
-
-## 🟡 中优先级 (P2)
-
-### 质量门禁
-
-- [ ] **在 CI 中加入生产代码 TypeScript 检查**
-  - 新增 `typecheck` 脚本，执行 `tsc -p tsconfig.json --noEmit`
-  - 在 CI 的 build/package 前运行
-  - 保留 `tsconfig.test.json` 用于测试编译，但不能把它作为唯一类型检查门禁
 
 ---
 
@@ -45,6 +34,28 @@
 - [ ] **轮询优化**
   - 扩展不可见时暂停轮询
   - 减少网络调用
+
+### 依赖维护
+
+- [ ] **Mocha `diff` 安全公告**
+  - 跟踪仅影响开发环境的低危 `mocha@11.7.6` → `diff@7.0.0` 依赖链公告
+  - 在 Mocha 支持已修复的 `diff` 版本后升级
+  - 不为消除 `npm audit` 提示而强制使用不兼容的 override
+
+### 死代码后续清理
+
+- [ ] **移除已确认的未使用实现**
+  - 删除 `CacheService.getFilesInDirectory` 和 `formatResetTime`
+  - 删除未使用的 `callAnthropicApi` 兼容包装与 `deleteApiKey`
+- [ ] **缩减多余导出面**
+  - 停止从 `commitMessageClaude.ts`、内部配置常量、`BackoffStrategy` 和 `gaugeRenderers` 导出仅供模块内部使用的实现
+  - 核对导入点后，删除 `quota.service.ts`、`app.vm.ts` 和过渡类型 barrel 中未使用的兼容性重导出
+  - 将仅供测试使用的 `parseClaudeResponse` 别名替换为规范名称 `parseLLMResponse`
+- [ ] **明确 Tooltip Manager 所有权**
+  - `_tooltipManager` 仅被赋值而从未读取，但构造过程会安装全局监听器并创建 DOM 节点
+  - 先增加明确的释放与生命周期处理，再简化这个只写字段
+
+> 调试辅助函数、本地 Server 脚本及其支持代码明确排除在死代码清理范围之外，必须保留。
 
 ---
 
