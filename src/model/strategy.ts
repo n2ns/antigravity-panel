@@ -6,6 +6,24 @@
 
 import strategyData from '../shared/config/quota_strategy.json';
 
+/**
+ * True when `needle` occurs in `haystack` with no alphanumeric character on
+ * either side. Prevents numeric-suffixed IDs from matching their prefixes
+ * (e.g. "…_m26" inside "…_m264").
+ */
+function containsToken(haystack: string, needle: string): boolean {
+  if (needle.length === 0) return false;
+  let from = 0;
+  for (;;) {
+    const at = haystack.indexOf(needle, from);
+    if (at === -1) return false;
+    const before = at > 0 ? haystack[at - 1] : '';
+    const after = at + needle.length < haystack.length ? haystack[at + needle.length] : '';
+    if (!/[a-z0-9]/i.test(before || ' ') && !/[a-z0-9]/i.test(after || ' ')) return true;
+    from = at + 1;
+  }
+}
+
 export interface ModelDefinition {
   id: string;
   modelName: string;
@@ -157,10 +175,13 @@ export class QuotaStrategyManager {
     for (const group of this.groups) {
       const model = group.models.find(m => {
         const mName = m.modelName.toLowerCase();
-        // Check 1: Label contains config name
-        if (mName === lowerLabel || lowerLabel.includes(mName)) return true;
-        // Check 2: Config name looks like the ID (User config Tolerance)
-        if (modelId && (lowerId === mName || lowerId.includes(mName))) return true;
+        // Check 1: Label contains config name as a whole token
+        if (mName === lowerLabel || containsToken(lowerLabel, mName)) return true;
+        // Check 2: Config name is the server ID (User config Tolerance).
+        // Must be exact: server IDs share numeric prefixes, so substring
+        // matching routes MODEL_PLACEHOLDER_M264 (Gemini 3.6 Flash) to
+        // MODEL_PLACEHOLDER_M26 (Claude Opus).
+        if (lowerId && lowerId === mName) return true;
         return false;
       });
       if (model) return model;

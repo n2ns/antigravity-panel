@@ -7,7 +7,6 @@
 import { exec } from "child_process";
 import { promisify } from "util";
 import {
-  PlatformStrategy,
   WindowsStrategy,
   UnixStrategy,
 } from "./platform_strategies";
@@ -24,12 +23,10 @@ import {
   DetectOptions,
   CommunicationAttempt,
   ProcessInfo,
+  PlatformStrategy,
 } from "../utils/types";
 
 const execAsync = promisify(exec);
-
-// Re-export types for backward compatibility
-export type { LanguageServerInfo, DetectOptions };
 
 export class ProcessFinder {
   private strategy: PlatformStrategy;

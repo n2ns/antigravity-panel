@@ -5,7 +5,7 @@
  * These types represent the UI-ready data structures.
  */
 
-import type { UsageBucket, BucketItem, UserCredit } from '../model/types/entities';
+import type { UsageBucket, UserCredit } from '../model/types/entities';
 
 // ==================== Quota View State ====================
 
@@ -222,9 +222,6 @@ export interface AppState {
     };
     lastUpdated: number;
 }
-
-// Re-export for convenience
-export type { UsageBucket, BucketItem };
 
 /** Webview Message Protocol */
 export interface WebviewMessage {

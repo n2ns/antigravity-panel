@@ -4,7 +4,7 @@
  * Tests core logic for diff truncation, prompt building, and response parsing
  */
 import * as assert from 'assert';
-import { truncateDiff, buildClaudePrompt, parseClaudeResponse } from '../../commitMessageClaude';
+import { truncateDiff, buildClaudePrompt, parseLLMResponse } from '../../commitMessageClaude';
 
 suite('Commit Message Claude Test Suite', () => {
 
@@ -90,7 +90,7 @@ suite('Commit Message Claude Test Suite', () => {
         });
     });
 
-    suite('parseClaudeResponse', () => {
+    suite('parseLLMResponse', () => {
         test('should parse valid text response', () => {
             const response = {
                 content: [
@@ -98,7 +98,7 @@ suite('Commit Message Claude Test Suite', () => {
                 ]
             };
 
-            const result = parseClaudeResponse(response);
+            const result = parseLLMResponse(response);
 
             assert.strictEqual(result.success, true);
             assert.strictEqual(result.message, 'feat: add new feature\n\n- Added login\n- Added logout');
@@ -109,7 +109,7 @@ suite('Commit Message Claude Test Suite', () => {
                 error: { message: 'Invalid API key' }
             };
 
-            const result = parseClaudeResponse(response);
+            const result = parseLLMResponse(response);
 
             assert.strictEqual(result.success, false);
             assert.strictEqual(result.error, 'Invalid API key');
@@ -120,7 +120,7 @@ suite('Commit Message Claude Test Suite', () => {
                 content: []
             };
 
-            const result = parseClaudeResponse(response);
+            const result = parseLLMResponse(response);
 
             assert.strictEqual(result.success, false);
             assert.ok(result.error?.includes('Unable to parse'));
@@ -129,7 +129,7 @@ suite('Commit Message Claude Test Suite', () => {
         test('should handle missing content', () => {
             const response = {};
 
-            const result = parseClaudeResponse(response);
+            const result = parseLLMResponse(response);
 
             assert.strictEqual(result.success, false);
         });
@@ -141,7 +141,7 @@ suite('Commit Message Claude Test Suite', () => {
                 ]
             };
 
-            const result = parseClaudeResponse(response);
+            const result = parseLLMResponse(response);
 
             assert.strictEqual(result.success, false);
             assert.ok(result.error?.includes('Unable to parse'));
@@ -154,7 +154,7 @@ suite('Commit Message Claude Test Suite', () => {
                 ]
             };
 
-            const result = parseClaudeResponse(response);
+            const result = parseLLMResponse(response);
 
             assert.strictEqual(result.success, true);
             assert.strictEqual(result.message, 'fix: trim spaces');
@@ -168,7 +168,7 @@ suite('Commit Message Claude Test Suite', () => {
                 ]
             };
 
-            const result = parseClaudeResponse(response);
+            const result = parseLLMResponse(response);
 
             assert.strictEqual(result.success, true);
             assert.strictEqual(result.message, 'feat: the actual response');

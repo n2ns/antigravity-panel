@@ -23,9 +23,6 @@ import type {
     UserCredit,
 } from '../types/entities';
 
-// Re-export types for backward compatibility
-export type { ModelQuotaInfo, PromptCreditsInfo, QuotaSnapshot };
-
 /** HTTP request timeout for Language Server API calls */
 const HTTP_TIMEOUT_MS = 12000;
 

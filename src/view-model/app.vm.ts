@@ -4,7 +4,7 @@
 
 import * as vscode from 'vscode';
 import type { IQuotaService, ICacheService, IStorageService, IAutomationService } from '../model/services/interfaces';
-import type { QuotaSnapshot, BrainTask, CacheInfo, CodeContext, FileItem, ModelQuotaInfo } from '../model/types/entities';
+import type { QuotaSnapshot, BrainTask, CacheInfo, CodeContext, FileItem, ModelQuotaInfo, UsageBucket } from '../model/types/entities';
 import type { TfaConfig } from '../shared/utils/types';
 import type { QuotaStrategyManager } from '../model/strategy';
 import type { ConfigManager } from '../shared/config/config_manager';
@@ -21,24 +21,10 @@ import type {
     StatusBarGroupItem,
     SidebarData,
     UsageChartData,
-    UsageBucket,
     TokenUsageViewState,
     UserViewState,
     ConnectionStatus,
 } from './types';
-
-export type {
-    AppState,
-    QuotaViewState,
-    QuotaGroupState,
-    QuotaDisplayItem,
-    CacheViewState,
-    TreeViewState,
-    StatusBarData,
-    StatusBarGroupItem,
-    SidebarData,
-    TokenUsageViewState,
-};
 
 const ACTIVE_GROUP_THRESHOLD = 0.1;
 
@@ -134,20 +120,6 @@ export class AppViewModel implements vscode.Disposable {
             connectionStatus: 'detecting',
             lastUpdated: 0
         };
-    }
-
-    async refresh(): Promise<void> {
-        const quotaRefreshVersion = ++this._quotaRefreshVersion;
-        const [quota, cache] = await Promise.all([
-            this.quotaService.fetchQuota(),
-            this.cacheService.getCacheInfo()
-        ]);
-        if (quota && quotaRefreshVersion === this._quotaRefreshVersion) {
-            await this.updateQuotaState(quota);
-        }
-        if (cache) await this.updateCacheState(cache);
-        this._state.lastUpdated = Date.now();
-        this._onStateChange.fire(this._state);
     }
 
     async refreshQuota(): Promise<void> {
@@ -541,13 +513,25 @@ export class AppViewModel implements vscode.Disposable {
         });
     }
 
+    /**
+     * Lowest-remaining model row of a pool — the row that defines the pool's
+     * displayed quota and reset time everywhere (groups, status bar, prediction).
+     */
+    private getMinModelForPool(snapshot: QuotaSnapshot, poolId: string): ModelQuotaInfo | null {
+        const poolModels = this.getModelsForPoolFromSnapshot(snapshot, poolId);
+        if (poolModels.length === 0) return null;
+        return poolModels.reduce((min, m) =>
+            m.remainingPercentage < min.remainingPercentage ? m : min
+        );
+    }
+
     private aggregateGroups(snapshot: QuotaSnapshot): QuotaGroupState[] {
         const pools = this.strategyManager.getQuotaPools();
 
         return pools.map(pool => {
-            const poolModels = this.getModelsForPoolFromSnapshot(snapshot, pool.id);
+            const minModel = this.getMinModelForPool(snapshot, pool.id);
 
-            if (poolModels.length === 0) {
+            if (!minModel) {
                 return {
                     id: pool.id,
                     label: pool.label,
@@ -557,10 +541,6 @@ export class AppViewModel implements vscode.Disposable {
                     hasData: false
                 };
             }
-
-            const minModel = poolModels.reduce((min, m) =>
-                m.remainingPercentage < min.remainingPercentage ? m : min
-            );
 
             // UI Sync: If it's "Ready", force show 100% even if server hasn't updated the fraction yet
             const isReady = minModel.timeUntilReset === 'Ready';
@@ -584,11 +564,8 @@ export class AppViewModel implements vscode.Disposable {
      */
     private getHoursUntilResetForGroup(groupId: string): number | null {
         if (!this._lastSnapshot?.models?.length) return null;
-        const poolModels = this.getModelsForPoolFromSnapshot(this._lastSnapshot, groupId);
-        if (poolModels.length === 0) return null;
-        const minModel = poolModels.reduce((min, m) =>
-            m.remainingPercentage < min.remainingPercentage ? m : min
-        );
+        const minModel = this.getMinModelForPool(this._lastSnapshot, groupId);
+        if (!minModel) return null;
         const resetDate = minModel.resetTime instanceof Date
             ? minModel.resetTime
             : new Date(minModel.resetTime);
@@ -849,14 +826,7 @@ export class AppViewModel implements vscode.Disposable {
                 // Find the original model info to get absolute date
                 let resetDate: Date | undefined;
                 if (this._lastSnapshot && this._lastSnapshot.models) {
-                    const poolModels = this.getModelsForPoolFromSnapshot(this._lastSnapshot, g.id);
-                    if (poolModels.length > 0) {
-                        // Use the earliest reset time (min model) similar to aggregateGroups logic
-                        const minModel = poolModels.reduce((min, m) =>
-                            m.remainingPercentage < min.remainingPercentage ? m : min
-                        );
-                        resetDate = minModel.resetTime;
-                    }
+                    resetDate = this.getMinModelForPool(this._lastSnapshot, g.id)?.resetTime;
                 }
 
                 return {
@@ -901,20 +871,6 @@ export class AppViewModel implements vscode.Disposable {
             showCreditsCard: config["dashboard.showCreditsCard"],
             uiScale: config["dashboard.uiScale"]
         };
-    }
-
-    /**
-     * Get quota display items (for compatibility)
-     */
-    getSidebarQuotas(): QuotaDisplayItem[] {
-        return this._state.quota.displayItems;
-    }
-
-    /**
-     * Get chart data (for compatibility)
-     */
-    getChartData(): UsageChartData {
-        return this._state.quota.chart;
     }
 
     // ==================== Cache Restoration ====================

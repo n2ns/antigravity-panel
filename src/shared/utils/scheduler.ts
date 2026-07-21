@@ -38,9 +38,8 @@ export interface SchedulerOptions {
  *   execute: () => cacheManager.scan(),
  * });
  *
- * scheduler.startAll();
- * // or
  * scheduler.start('quota');
+ * scheduler.start('cache');
  */
 export class Scheduler {
   private tasks: Map<string, SchedulerTask> = new Map();
@@ -60,14 +59,6 @@ export class Scheduler {
       this.stop(task.name);
     }
     this.tasks.set(task.name, task);
-  }
-
-  /**
-   * Unregister a scheduled task
-   */
-  unregister(name: string): void {
-    this.stop(name);
-    this.tasks.delete(name);
   }
 
   /**
@@ -106,15 +97,6 @@ export class Scheduler {
   }
 
   /**
-   * Start all registered tasks
-   */
-  startAll(): void {
-    for (const name of this.tasks.keys()) {
-      this.start(name);
-    }
-  }
-
-  /**
    * Stop all tasks
    */
   stopAll(): void {
@@ -146,31 +128,6 @@ export class Scheduler {
    */
   isRunning(name: string): boolean {
     return this.timers.has(name);
-  }
-
-  /**
-   * Get all registered task names
-   */
-  getRegisteredTasks(): string[] {
-    return Array.from(this.tasks.keys());
-  }
-
-  /**
-   * Get all running task names
-   */
-  getRunningTasks(): string[] {
-    return Array.from(this.timers.keys());
-  }
-
-  /**
-   * Manually trigger task execution once
-   */
-  async trigger(name: string): Promise<boolean> {
-    const task = this.tasks.get(name);
-    if (!task) return false;
-
-    await this.executeTask(task);
-    return true;
   }
 
   /**

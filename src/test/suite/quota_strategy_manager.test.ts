@@ -186,6 +186,41 @@ suite('QuotaStrategyManager Test Suite', () => {
         assert.strictEqual(def.displayName, 'Claude Sonnet 4.6 (Thinking)');
     });
 
+    test('should not route numeric-suffixed IDs to a prefix-sharing model (M264 vs M26)', () => {
+        // IDE 2.1.1 introduced Gemini 3.6 Flash as MODEL_PLACEHOLDER_M264/M265/M266,
+        // which share the prefix of Claude Opus's MODEL_PLACEHOLDER_M26.
+        const rows: Array<[string, string]> = [
+            ['MODEL_PLACEHOLDER_M264', 'Gemini 3.6 Flash (High)'],
+            ['MODEL_PLACEHOLDER_M265', 'Gemini 3.6 Flash (Medium)'],
+            ['MODEL_PLACEHOLDER_M266', 'Gemini 3.6 Flash (Low)'],
+        ];
+        for (const [id, label] of rows) {
+            const group = manager.getGroupForModel(id, label);
+            assert.strictEqual(group.quotaPoolId, 'gemini', `${label} must stay in the gemini pool`);
+            assert.strictEqual(
+                manager.getModelDisplayName(id, label),
+                undefined,
+                `${label} must not borrow a Claude display name`
+            );
+        }
+
+        // The real Opus row still resolves through the exact ID match
+        const opus = manager.getGroupForModel('MODEL_PLACEHOLDER_M26', 'Claude Opus 4.6 (Thinking)');
+        assert.strictEqual(opus.id, 'claude');
+        assert.strictEqual(
+            manager.getModelDisplayName('MODEL_PLACEHOLDER_M26', 'Claude Opus 4.6 (Thinking)'),
+            'Claude Opus 4.6 (Thinking)'
+        );
+    });
+
+    test('should match modelName inside labels only on token boundaries', () => {
+        const def = manager.getModelDefinition('unknown-id', 'xMODEL_PLACEHOLDER_M35x');
+        assert.strictEqual(def, undefined, 'Embedded (non-token) occurrences must not match');
+
+        const def2 = manager.getModelDefinition('unknown-id', 'label with MODEL_PLACEHOLDER_M35 inside');
+        assert.strictEqual(def2?.id, 'claude-4-6-sonnet-thinking', 'Token-bounded occurrences still match');
+    });
+
     test('should handle empty or null labels gracefully', () => {
         const group1 = manager.getGroupForModel('gemini-test', '');
         assert.strictEqual(group1.id, 'gemini-pro');

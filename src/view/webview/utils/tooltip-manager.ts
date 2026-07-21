@@ -8,6 +8,8 @@ export class TooltipManager {
     private _tooltipEl: HTMLElement;
     private _activeTarget: HTMLElement | null = null;
     private _hideTimeout: number | undefined;
+    private readonly _mouseOverHandler = this._handleMouseOver.bind(this);
+    private readonly _mouseOutHandler = this._handleMouseOut.bind(this);
 
     constructor() {
         this._tooltipEl = this._createTooltipElement();
@@ -28,8 +30,21 @@ export class TooltipManager {
     }
 
     private _attachListeners(): void {
-        document.body.addEventListener('mouseover', this._handleMouseOver.bind(this));
-        document.body.addEventListener('mouseout', this._handleMouseOut.bind(this));
+        document.body.addEventListener('mouseover', this._mouseOverHandler);
+        document.body.addEventListener('mouseout', this._mouseOutHandler);
+    }
+
+    dispose(): void {
+        document.body.removeEventListener('mouseover', this._mouseOverHandler);
+        document.body.removeEventListener('mouseout', this._mouseOutHandler);
+
+        if (this._hideTimeout !== undefined) {
+            window.clearTimeout(this._hideTimeout);
+            this._hideTimeout = undefined;
+        }
+
+        this._activeTarget = null;
+        this._tooltipEl.remove();
     }
 
     private _handleMouseOver(e: MouseEvent): void {
@@ -44,8 +59,8 @@ export class TooltipManager {
         const content = tooltipSource.getAttribute('data-tooltip');
         if (!content) return;
 
-        if (this._hideTimeout) {
-            clearTimeout(this._hideTimeout);
+        if (this._hideTimeout !== undefined) {
+            window.clearTimeout(this._hideTimeout);
             this._hideTimeout = undefined;
         }
 

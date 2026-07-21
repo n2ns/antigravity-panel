@@ -12,27 +12,6 @@ suite('Scheduler Test Suite', () => {
         scheduler.dispose();
     });
 
-    test('should register task', () => {
-        const task = {
-            name: 'test-task',
-            interval: 100,
-            execute: () => { }
-        };
-        scheduler.register(task);
-        assert.deepStrictEqual(scheduler.getRegisteredTasks(), ['test-task']);
-    });
-
-    test('should unregister task', () => {
-        const task = {
-            name: 'test-task',
-            interval: 100,
-            execute: () => { }
-        };
-        scheduler.register(task);
-        scheduler.unregister('test-task');
-        assert.deepStrictEqual(scheduler.getRegisteredTasks(), []);
-    });
-
     test('should execute task immediately if configured', (done) => {
         const task = {
             name: 'immediate-task',

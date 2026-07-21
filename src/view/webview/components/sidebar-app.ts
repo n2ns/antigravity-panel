@@ -170,6 +170,9 @@ export class SidebarApp extends LitElement {
       this._resizeObserver.disconnect();
       this._resizeObserver = null;
     }
+
+    this._tooltipManager?.dispose();
+    this._tooltipManager = null;
   }
 
   private _handleMessage = (event: MessageEvent): void => {

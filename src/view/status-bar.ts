@@ -50,24 +50,27 @@ export class StatusBarManager implements vscode.Disposable {
     update(): void {
         const config = this.configManager.getConfig();
         const appState = this.viewModel.getState();
-        const statusData = this.viewModel.getStatusBarData();
-        const cache = appState.cache;
 
-        // Show if either quota or cache is enabled
-        if (config["status.showQuota"] || config["status.showCache"]) {
-            this.render(
-                statusData,
-                cache,
-                config["status.showQuota"],
-                config["status.showCache"],
-                config["status.scope"],
-                config["status.warningThreshold"],
-                config["status.criticalThreshold"],
-                config["dashboard.includeSecondaryModels"]
-            );
-        } else {
+        if (!config["status.showQuota"] && !config["status.showCache"]) {
             this.item.hide();
+            return;
         }
+
+        if (config["status.showQuota"] && appState.connectionStatus === 'failed') {
+            this.showError('Connection failed');
+            return;
+        }
+
+        this.render(
+            this.viewModel.getStatusBarData(),
+            appState.cache,
+            config["status.showQuota"],
+            config["status.showCache"],
+            config["status.scope"],
+            config["status.warningThreshold"],
+            config["status.criticalThreshold"],
+            config["dashboard.includeSecondaryModels"]
+        );
     }
 
     private render(

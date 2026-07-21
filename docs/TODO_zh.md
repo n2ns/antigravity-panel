@@ -42,21 +42,6 @@
   - 在 Mocha 支持已修复的 `diff` 版本后升级
   - 不为消除 `npm audit` 提示而强制使用不兼容的 override
 
-### 死代码后续清理
-
-- [ ] **移除已确认的未使用实现**
-  - 删除 `CacheService.getFilesInDirectory` 和 `formatResetTime`
-  - 删除未使用的 `callAnthropicApi` 兼容包装与 `deleteApiKey`
-- [ ] **缩减多余导出面**
-  - 停止从 `commitMessageClaude.ts`、内部配置常量、`BackoffStrategy` 和 `gaugeRenderers` 导出仅供模块内部使用的实现
-  - 核对导入点后，删除 `quota.service.ts`、`app.vm.ts` 和过渡类型 barrel 中未使用的兼容性重导出
-  - 将仅供测试使用的 `parseClaudeResponse` 别名替换为规范名称 `parseLLMResponse`
-- [ ] **明确 Tooltip Manager 所有权**
-  - `_tooltipManager` 仅被赋值而从未读取，但构造过程会安装全局监听器并创建 DOM 节点
-  - 先增加明确的释放与生命周期处理，再简化这个只写字段
-
-> 调试辅助函数、本地 Server 脚本及其支持代码明确排除在死代码清理范围之外，必须保留。
-
 ---
 
 ## 🔵 架构优化 (P4)

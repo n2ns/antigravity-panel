@@ -47,9 +47,8 @@ English | [中文文档](FEATURES_zh.md)
 - Google One AI subscription credit remains visible when Prompt/Flow rows are hidden
 
 ### User Info Card
-- Display user subscription tier and plan name
+- Display the user email and subscription tier currently reported by Antigravity
 - Toggle visibility via `tfa.dashboard.showUserInfoCard` setting
-- Shows browser and knowledge base feature status
 
 ---
 
@@ -150,7 +149,7 @@ In WSL remote sessions the shortcuts follow where Antigravity actually reads eac
 
 ## 🌐 Internationalization
 
-### Supported Languages (14)
+### Supported Languages (15)
 - English
 - 简体中文 (Simplified Chinese)
 - 繁體中文 (Traditional Chinese)
@@ -165,6 +164,7 @@ In WSL remote sessions the shortcuts follow where Antigravity actually reads eac
 - Türkçe (Turkish)
 - Polski (Polish)
 - Tiếng Việt (Vietnamese)
+- Bahasa Indonesia (Indonesian)
 
 ---
 

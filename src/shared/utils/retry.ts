@@ -3,7 +3,7 @@
  * Supports multiple backoff strategies, decoupled from business logic
  */
 
-export type BackoffStrategy = "fixed" | "linear" | "exponential";
+type BackoffStrategy = "fixed" | "linear" | "exponential";
 
 export interface RetryConfig<T> {
   /** Maximum number of attempts (including first) */
@@ -132,15 +132,4 @@ export async function retry<T>(
   }
 
   return lastResult;
-}
-
-/**
- * Create a pre-configured retry function
- *
- * @example
- * const retryWithBackoff = createRetry({ attempts: 3, baseDelay: 1000, backoff: "exponential" });
- * const result = await retryWithBackoff(() => fetchData());
- */
-export function createRetry<T>(config: RetryConfig<T>) {
-  return (fn: () => Promise<T | null>) => retry(fn, config);
 }

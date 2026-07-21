@@ -7,10 +7,7 @@
  * - VscodeConfigReader: VS Code implementation (in extension.ts)
  */
 
-import { TfaConfig } from "../utils/types";
-
-// Re-export types for backward compatibility
-export type { TfaConfig };
+import type { TfaConfig } from "../utils/types";
 
 /** Minimum polling interval in seconds */
 export const MIN_POLLING_INTERVAL = 30;
@@ -19,13 +16,13 @@ export const MIN_POLLING_INTERVAL = 30;
 export const MIN_CACHE_CHECK_INTERVAL = 30;
 
 /** Minimum auto-accept interval in milliseconds */
-export const MIN_AUTO_ACCEPT_INTERVAL = 200;
+const MIN_AUTO_ACCEPT_INTERVAL = 200;
 
 /** Default quota API path */
-export const DEFAULT_QUOTA_API_PATH = "/exa.language_server_pb.LanguageServerService/GetUserStatus";
+const DEFAULT_QUOTA_API_PATH = "/exa.language_server_pb.LanguageServerService/GetUserStatus";
 
 /** Default server hostname */
-export const DEFAULT_SERVER_HOST = "127.0.0.1";
+const DEFAULT_SERVER_HOST = "127.0.0.1";
 
 /**
  * Configuration reader interface - abstracts config source

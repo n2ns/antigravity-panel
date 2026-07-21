@@ -47,9 +47,8 @@
 - 隐藏 Prompt/Flow 行时仍默认显示 Google One AI 订阅额度
 
 ### 用户信息卡片
-- 显示用户订阅等级和套餐名称
+- 显示 Antigravity 当前返回的用户邮箱和订阅等级
 - 可通过 `tfa.dashboard.showUserInfoCard` 设置开关
-- 显示浏览器和知识库功能状态
 
 ---
 
@@ -152,7 +151,7 @@
 
 ## 🌐 国际化
 
-### 支持语言（14 种）
+### 支持语言（15 种）
 - English（英语）
 - 简体中文
 - 繁體中文
@@ -167,6 +166,7 @@
 - Türkçe（土耳其语）
 - Polski（波兰语）
 - Tiếng Việt（越南语）
+- Bahasa Indonesia（印尼语）
 
 ---
 

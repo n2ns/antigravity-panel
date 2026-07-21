@@ -33,6 +33,7 @@ suite('TooltipManager Test Suite', () => {
             style = createMockStyle();
             className = '';
             textContent = '';
+            removed = false;
 
             closest(selector: string) {
                 return selector === '[data-tooltip]' ? this : null;
@@ -45,6 +46,10 @@ suite('TooltipManager Test Suite', () => {
             getBoundingClientRect() {
                 return { top: 200, bottom: 230, left: 100, right: 150, width: 50, height: 30 };
             }
+
+            remove() {
+                this.removed = true;
+            }
         }
 
         mockElement = new MockElement();
@@ -53,6 +58,11 @@ suite('TooltipManager Test Suite', () => {
         mockBody = {
             appendChild: (el: any) => createdElements.push(el),
             addEventListener: (event: string, cb: Function) => eventListeners.set(event, cb),
+            removeEventListener: (event: string, cb: Function) => {
+                if (eventListeners.get(event) === cb) {
+                    eventListeners.delete(event);
+                }
+            },
             clientWidth: 800 // Fallback width
         };
 
@@ -135,5 +145,19 @@ suite('TooltipManager Test Suite', () => {
 
         assert.strictEqual(tooltipEl.style.visibility, 'hidden');
         assert.strictEqual(tooltipEl.style.opacity, '0');
+    });
+
+    test('should remove listeners and tooltip element on dispose', () => {
+        const manager = new TooltipManager();
+        const tooltipEl = createdElements[0];
+
+        assert.ok(eventListeners.has('mouseover'));
+        assert.ok(eventListeners.has('mouseout'));
+
+        manager.dispose();
+
+        assert.strictEqual(eventListeners.has('mouseover'), false);
+        assert.strictEqual(eventListeners.has('mouseout'), false);
+        assert.strictEqual(tooltipEl.removed, true);
     });
 });

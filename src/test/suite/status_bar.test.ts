@@ -99,7 +99,8 @@ suite('StatusBarManager Test Suite', () => {
             onCacheChange: () => ({ dispose: () => { } }),
             getState: () => ({
                 cache: mockCacheState,
-                tokenUsage: mockTokenUsageState
+                tokenUsage: mockTokenUsageState,
+                connectionStatus: 'connected'
             }),
             getStatusBarData: () => mockStatusBarData
         };
@@ -138,6 +139,20 @@ suite('StatusBarManager Test Suite', () => {
 
     test('should show error state', () => {
         statusBarManager.showError('Connection failed');
+        assert.strictEqual(mockStatusBarItem.text, '$(warning) TFA');
+        assert.strictEqual(mockStatusBarItem.tooltip, 'Antigravity Panel: Connection failed');
+        assert.strictEqual(isShown, true);
+    });
+
+    test('should show error state when quota connection fails', () => {
+        mockViewModel.getState = () => ({
+            cache: mockCacheState,
+            tokenUsage: mockTokenUsageState,
+            connectionStatus: 'failed'
+        });
+
+        statusBarManager.update();
+
         assert.strictEqual(mockStatusBarItem.text, '$(warning) TFA');
         assert.strictEqual(mockStatusBarItem.tooltip, 'Antigravity Panel: Connection failed');
         assert.strictEqual(isShown, true);

@@ -2,11 +2,8 @@
  * PlatformStrategies: Cross-platform process detection strategies
  */
 
-import { ProcessInfo, PlatformStrategy } from "../utils/types";
+import type { ProcessInfo, PlatformStrategy } from "../utils/types";
 import { getPortListCommand } from "./detection_utils";
-
-// Re-export types for backward compatibility
-export type { ProcessInfo, PlatformStrategy };
 
 /** Windows process item from PowerShell/WMI output */
 interface WinProcessItem {

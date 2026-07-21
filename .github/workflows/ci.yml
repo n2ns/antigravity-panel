@@ -35,6 +35,9 @@ jobs:
       - name: Run production typecheck
         run: npm run typecheck
 
+      - name: Run localization consistency check
+        run: npm run check:l10n
+
       - name: Run unit tests
         run: npm test
 

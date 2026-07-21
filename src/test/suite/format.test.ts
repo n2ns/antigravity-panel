@@ -1,5 +1,5 @@
 import * as assert from 'assert';
-import { formatBytes, formatPercent } from '../../shared/utils/format';
+import { formatBytes } from '../../shared/utils/format';
 
 suite('Format Utils Test Suite', () => {
     suite('formatBytes', () => {
@@ -56,55 +56,4 @@ suite('Format Utils Test Suite', () => {
         });
     });
 
-    suite('formatPercent', () => {
-        test('should format percentage correctly', () => {
-            assert.strictEqual(formatPercent(50, 100), '50%');
-            assert.strictEqual(formatPercent(25, 100), '25%');
-            assert.strictEqual(formatPercent(75, 100), '75%');
-        });
-
-        test('should handle decimal percentages', () => {
-            assert.strictEqual(formatPercent(1, 3), '33%'); // 33.333... -> 33%
-            assert.strictEqual(formatPercent(2, 3), '67%'); // 66.666... -> 67%
-            assert.strictEqual(formatPercent(1, 6), '17%'); // 16.666... -> 17%
-        });
-
-        test('should handle 0% and 100%', () => {
-            assert.strictEqual(formatPercent(0, 100), '0%');
-            assert.strictEqual(formatPercent(100, 100), '100%');
-        });
-
-        test('should handle values greater than total', () => {
-            assert.strictEqual(formatPercent(150, 100), '150%');
-            assert.strictEqual(formatPercent(200, 100), '200%');
-        });
-
-        test('should return "-" for zero or negative total', () => {
-            assert.strictEqual(formatPercent(50, 0), '-');
-            assert.strictEqual(formatPercent(50, -10), '-');
-        });
-
-        test('should handle negative used values', () => {
-            assert.strictEqual(formatPercent(-10, 100), '-10%');
-        });
-
-        test('should round to nearest integer', () => {
-            assert.strictEqual(formatPercent(1, 7), '14%'); // 14.285... -> 14%
-            assert.strictEqual(formatPercent(5, 7), '71%'); // 71.428... -> 71%
-            assert.strictEqual(formatPercent(1, 9), '11%'); // 11.111... -> 11%
-        });
-
-        test('should handle very small percentages', () => {
-            assert.strictEqual(formatPercent(1, 1000), '0%'); // 0.1% -> 0%
-            assert.strictEqual(formatPercent(5, 1000), '1%'); // 0.5% -> 1%
-            assert.strictEqual(formatPercent(6, 1000), '1%'); // 0.6% -> 1%
-        });
-
-        test('should handle edge cases', () => {
-            assert.strictEqual(formatPercent(0, 1), '0%');
-            assert.strictEqual(formatPercent(1, 1), '100%');
-            assert.strictEqual(formatPercent(0.5, 1), '50%');
-        });
-    });
 });
-

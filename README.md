@@ -29,7 +29,7 @@ English | [中文文档](docs/README_zh.md)
 - 📊 **Usage Analytics** - Interactive charts and history tracking
 - 🧹 **Cache Management** - Manage AI conversation history and files
 - 🎨 **Native Integration** - UI components adapted to IDE themes
-- 🌍 **Localization** - Support for 14 languages including runtime notifications
+- 🌍 **Localization** - Support for 15 languages including runtime notifications
 - 🛠️ **Diagnostics** - Built-in connection check and error reporting
 - 🤖 **Hands-free Mode** - Auto-accept agent commands for heavy workflows
 - ✍️ **AI Commit** - Generate commit messages via Local LLM or Claude
@@ -51,7 +51,7 @@ English | [中文文档](docs/README_zh.md)
 
 **See your AI usage at a glance**
 - Visual quota display grouped by provider-defined quota pools; model view keeps individual model identities
-- Status bar shows remaining quota with emoji indicators (🟢🟡🔴) and cache size
+- Status bar shows remaining quota with emoji indicators (🟢🟡🔴), cache size, and a warning state when the quota connection fails
 - Hover tooltip showing all model quotas and reset times
 - Configurable warning (≤40%) and critical (≤20%) thresholds
 
@@ -239,7 +239,7 @@ Open Settings (`Ctrl+,` / `Cmd+,`) in Antigravity IDE and search for `tfa` to cu
 | **Quota Style** | `semi-arc` | Visualization style: `semi-arc` or `classic-donut` |
 | **Visualization Mode** | `groups` | Show dashboard by `groups` or `models` |
 | **UI Scale** | `1.0` | Global scale factor for panel elements (0.8 to 2.0) |
-| **Show User Info Card** | `✓` | Show subscription/user plan information in the sidebar |
+| **Show User Info Card** | `✓` | Show the user email and subscription tier in the sidebar |
 | **Show Prompt/Flow Credits** | `✗` | Show the static Prompt/Flow rows; Google One AI remains visible |
 | **Show GPT Quota** | `✗` | Whether to display GPT family models in the panel |
 | **History Range** | `90 min` | Time range for usage chart (10-120 minutes) |
@@ -315,7 +315,7 @@ Special thanks to our community contributors:
 
 ## 🌐 Localization Policy
 
-To ensure technical consistency and professional standard across all 14 supported languages:
+To ensure technical consistency and professional standard across all 15 supported languages:
 - **UI Labels & Technical Terms**: Remain in **English** (e.g., `Rules`, `MCP`, `Auto-Accept`, `Reset Status`).
 - **Tooltips & Descriptions**: Fully **localized** to provide detailed explanations in the user's native language.
 

@@ -11,9 +11,6 @@ import { getBrainDir, getConversationsDir, getCodeContextsDir } from '../../shar
 import type { ICacheService } from './interfaces';
 import type { BrainTask, CacheInfo, CodeContext, FileItem } from '../types/entities';
 
-// Re-export types for backward compatibility
-export type { BrainTask, CacheInfo };
-
 /**
  * CacheService implementation
  */
@@ -332,23 +329,6 @@ export class CacheService implements ICacheService {
     }
 
     /**
-     * Get list of files in a directory
-     */
-    private async getFilesInDirectory(dirPath: string): Promise<FileItem[]> {
-        try {
-            const entries = await fs.promises.readdir(dirPath, { withFileTypes: true });
-            return entries
-                .filter(e => e.isFile())
-                .map(e => ({
-                    name: e.name,
-                    path: path.join(dirPath, e.name),
-                }));
-        } catch {
-            return [];
-        }
-    }
-
-    /**
      * Validates an ID to prevent path traversal attacks.
      * Only allows alphanumeric characters, hyphens, underscores, and dots.
      */
@@ -395,14 +375,6 @@ export class CacheService implements ICacheService {
      */
     getBrainDirPath(): string {
         return this.baseBrainDir;
-    }
-
-    /**
-     * Get total cache size in bytes (simplified interface)
-     */
-    async getCurrentSize(): Promise<number> {
-        const info = await this.getCacheInfo();
-        return info.totalSize;
     }
 
 }

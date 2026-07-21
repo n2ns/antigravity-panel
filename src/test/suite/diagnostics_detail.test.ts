@@ -1,6 +1,6 @@
 import * as assert from 'assert';
 import { ProcessFinder } from '../../shared/platform/process_finder';
-import { PlatformStrategy } from '../../shared/platform/platform_strategies';
+import type { PlatformStrategy } from '../../shared/utils/types';
 
 /**
  * Mock strategy that returns JSON-parsed input to allow easy control in tests

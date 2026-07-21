@@ -1,5 +1,5 @@
 import * as assert from 'assert';
-import { retry, createRetry } from '../../shared/utils/retry';
+import { retry } from '../../shared/utils/retry';
 
 suite('Retry Utils Test Suite', () => {
     test('should succeed on first attempt', async () => {
@@ -166,23 +166,6 @@ suite('Retry Utils Test Suite', () => {
         assert.strictEqual(retryLog.length, 2);
         assert.strictEqual(retryLog[0].attempt, 1);
         assert.strictEqual(retryLog[1].attempt, 2);
-    });
-
-    test('should work with createRetry factory', async () => {
-        let attempts = 0;
-        const retryWithBackoff = createRetry({
-            attempts: 3,
-            baseDelay: 10,
-            backoff: 'exponential'
-        });
-
-        const result = await retryWithBackoff(async () => {
-            attempts++;
-            return attempts < 2 ? null : 'success';
-        });
-
-        assert.strictEqual(result, 'success');
-        assert.strictEqual(attempts, 2);
     });
 
     test('should stop retrying when shouldRetry returns false on error', async () => {

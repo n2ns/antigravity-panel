@@ -416,6 +416,7 @@
     "vscode:prepublish": "npm run build",
     "lint": "eslint src --ext .ts",
     "typecheck": "tsc -p tsconfig.json --noEmit",
+    "check:l10n": "node ./scripts/check_l10n.js",
     "test": "tsc -p tsconfig.test.json && node ./out/test/runUnitTests.js",
     "test:server": "tsc -p tsconfig.test.json && node ./out/test/runServerTests.js",
     "package": "vsce package",

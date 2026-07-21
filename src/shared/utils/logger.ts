@@ -34,13 +34,6 @@ export function setDebugMode(enabled: boolean): void {
 }
 
 /**
- * 获取当前调试模式状态
- */
-export function isDebugEnabled(): boolean {
-  return isDebugMode;
-}
-
-/**
  * 输出调试日志（仅在 debugMode 开启时输出）
  */
 export function debugLog(message: string, data?: unknown): void {
@@ -97,13 +90,6 @@ export function errorLog(message: string, error?: unknown): void {
       outputChannel.appendLine(`  ${String(error)}`);
     }
   }
-}
-
-/**
- * 显示 Output Channel
- */
-export function showOutput(): void {
-  outputChannel?.show(true);
 }
 
 // ==================== Quota Debug Logging ====================
@@ -193,4 +179,3 @@ export function logQuotaParseError(error: string, rawData?: unknown): void {
     outputChannel.appendLine(`${'─'.repeat(55)}`);
   }
 }
-

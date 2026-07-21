@@ -20,7 +20,7 @@ const API_KEY_SECRET_KEY = 'tfa.llmApiKey';
 /**
  * Result of git diff extraction
  */
-export interface DiffResult {
+interface DiffResult {
     diff: string;
     stat: string;
     truncated: boolean;
@@ -43,7 +43,7 @@ interface LLMResponse {
 /**
  * Get the workspace root folder
  */
-export function getWorkspaceRoot(): string | undefined {
+function getWorkspaceRoot(): string | undefined {
     const folders = vscode.workspace.workspaceFolders;
     if (!folders || folders.length === 0) {
         return undefined;
@@ -58,7 +58,7 @@ function isErrnoException(error: unknown): error is NodeJS.ErrnoException {
 /**
  * Check if git is available and workspace is a git repo
  */
-export async function verifyGitRepo(workspaceRoot: string): Promise<{ valid: boolean; error?: string }> {
+async function verifyGitRepo(workspaceRoot: string): Promise<{ valid: boolean; error?: string }> {
     try {
         await execFileAsync('git', ['rev-parse', '--show-toplevel'], { cwd: workspaceRoot });
         return { valid: true };
@@ -73,7 +73,7 @@ export async function verifyGitRepo(workspaceRoot: string): Promise<{ valid: boo
 /**
  * Get staged diff from git
  */
-export async function getStagedDiff(workspaceRoot: string, maxChars: number): Promise<DiffResult> {
+async function getStagedDiff(workspaceRoot: string, maxChars: number): Promise<DiffResult> {
     // Get the full diff
     const { stdout: diff } = await execFileAsync(
         'git',
@@ -88,27 +88,18 @@ export async function getStagedDiff(workspaceRoot: string, maxChars: number): Pr
         { cwd: workspaceRoot }
     );
 
-    // Truncate if needed
-    if (diff.length > maxChars) {
-        const truncatedDiff = diff.substring(0, maxChars);
-        return {
-            diff: truncatedDiff + '\n\n[diff truncated due to size]',
-            stat: stat.trim(),
-            truncated: true
-        };
-    }
-
+    const truncatedDiff = truncateDiff(diff, maxChars);
     return {
-        diff: diff,
+        diff: truncatedDiff.result,
         stat: stat.trim(),
-        truncated: false
+        truncated: truncatedDiff.truncated
     };
 }
 
 /**
  * Get recent commit messages for style reference
  */
-export async function getRecentCommitMessages(workspaceRoot: string): Promise<string[]> {
+async function getRecentCommitMessages(workspaceRoot: string): Promise<string[]> {
     try {
         const { stdout } = await execFileAsync(
             'git',
@@ -125,7 +116,7 @@ export async function getRecentCommitMessages(workspaceRoot: string): Promise<st
 /**
  * Get repository name from remote or folder
  */
-export async function getRepoName(workspaceRoot: string): Promise<string> {
+async function getRepoName(workspaceRoot: string): Promise<string> {
     try {
         const { stdout } = await execFileAsync(
             'git',
@@ -237,13 +228,10 @@ export function parseLLMResponse(response: LLMResponse): { success: boolean; mes
     return { success: false, error: 'Unable to parse LLM response' };
 }
 
-// Legacy alias for test compatibility
-export const parseClaudeResponse = parseLLMResponse;
-
 /**
  * Call LLM API (supports configurable endpoint)
  */
-export async function callLLMApi(
+async function callLLMApi(
     prompt: string,
     model: string,
     apiKey: string | undefined,
@@ -326,17 +314,10 @@ export async function callLLMApi(
     }
 }
 
-// Legacy alias for test compatibility
-export const callAnthropicApi = async (
-    prompt: string,
-    model: string,
-    apiKey: string
-) => callLLMApi(prompt, model, apiKey, 'https://api.anthropic.com/v1/messages');
-
 /**
  * Apply commit message to SCM input box
  */
-export async function applyCommitMessageToScm(message: string): Promise<{ success: boolean; fallbackUsed: boolean }> {
+async function applyCommitMessageToScm(message: string): Promise<{ success: boolean; fallbackUsed: boolean }> {
     try {
         // Try to get the Git extension's SCM input
         const gitExtension = vscode.extensions.getExtension('vscode.git');
@@ -365,22 +346,15 @@ export async function applyCommitMessageToScm(message: string): Promise<{ succes
 /**
  * Get stored API key from SecretStorage
  */
-export async function getApiKey(context: vscode.ExtensionContext): Promise<string | undefined> {
+async function getApiKey(context: vscode.ExtensionContext): Promise<string | undefined> {
     return context.secrets.get(API_KEY_SECRET_KEY);
 }
 
 /**
  * Store API key in SecretStorage
  */
-export async function setApiKey(context: vscode.ExtensionContext, apiKey: string): Promise<void> {
+async function setApiKey(context: vscode.ExtensionContext, apiKey: string): Promise<void> {
     await context.secrets.store(API_KEY_SECRET_KEY, apiKey);
-}
-
-/**
- * Delete stored API key
- */
-export async function deleteApiKey(context: vscode.ExtensionContext): Promise<void> {
-    await context.secrets.delete(API_KEY_SECRET_KEY);
 }
 
 /**

@@ -42,21 +42,6 @@ English | [中文文档](docs/TODO_zh.md)
   - Upgrade when Mocha supports a patched `diff` release
   - Avoid an incompatible forced override solely to silence `npm audit`
 
-### Dead Code Follow-up
-
-- [ ] **Remove Confirmed Unused Implementations**
-  - Remove `CacheService.getFilesInDirectory` and `formatResetTime`
-  - Remove the unused `callAnthropicApi` compatibility wrapper and `deleteApiKey`
-- [ ] **Reduce Redundant Export Surface**
-  - Stop exporting implementation-only helpers from `commitMessageClaude.ts`, internal configuration constants, `BackoffStrategy`, and `gaugeRenderers`
-  - Remove unused compatibility re-exports from `quota.service.ts`, `app.vm.ts`, and transitional type barrels after verifying their import sites
-  - Replace the test-only `parseClaudeResponse` alias with the canonical `parseLLMResponse` name
-- [ ] **Resolve Tooltip Manager Ownership**
-  - `_tooltipManager` is assigned but never read, while construction installs global listeners and a DOM node
-  - Add explicit disposal/lifecycle handling before simplifying the write-only field
-
-> Debugging helpers, local Server scripts, and their supporting code are intentionally excluded from dead-code cleanup and must be preserved.
-
 ---
 
 ## 🔵 Architecture (P4)
