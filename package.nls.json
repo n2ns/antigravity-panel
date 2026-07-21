@@ -1,7 +1,4 @@
 {
-    "Auto-Accept: OFF": "Auto-Accept: OFF",
-    "Auto-Accept: ON": "Auto-Accept: ON",
-    "Hands-free Mode: Automatically accept agent suggested edits and terminal commands": "Hands-free Mode: Automatically accept agent suggested edits and terminal commands",
     "command.cleanCache.title": "Clean Cache",
     "command.generateCommitMessageClaude.title": "Generate Commit Message (Local & Claude)",
     "command.openPanel.title": "Open Panel",
@@ -14,7 +11,6 @@
     "command.showCacheSize.title": "Show Cache Size",
     "command.showDisclaimer.title": "About",
     "command.showLogs.title": "Show Logs",
-    "command.toggleAutoAccept": "Toggle Auto-Accept",
     "command.toggleAutoAccept.title": "Toggle Agent Auto-Accept",
     "config.cache.autoClean.description": "⚠️ Automatically clean oldest tasks from Brain when cache size exceeds warning threshold (Note: This will delete physical files)",
     "config.cache.autoCleanKeepCount.description": "Number of newest tasks to keep during automatic cleaning (default: 5)",
@@ -58,9 +54,6 @@
     "config.visualizationMode.models": "Show all individual models separately",
     "extension.category": "Antigravity Panel",
     "extension.description": "Quota monitor & cache manager for Google Antigravity IDE. Real-time Gemini / Claude / GPT usage tracking, AI quota dashboard, usage analytics, auto-accept agent mode, and AI commit message generator.",
-    "extension.displayName": "Antigravity Panel",
     "views.tfa.sidebar.name": "Antigravity Panel",
-    "viewsContainers.tfa-sidebar.title": "Antigravity Panel",
-    "quota.notification.warning": "Low Quota Warning: {0} quota is below {1}% ({2}% remaining).",
-    "quota.notification.critical": "CRITICAL Quota: {0} quota is below {1}% ({2}% remaining). Use with caution!"
+    "viewsContainers.tfa-sidebar.title": "Antigravity Panel"
 }

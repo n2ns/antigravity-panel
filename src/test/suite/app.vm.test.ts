@@ -4,7 +4,7 @@ import { AppViewModel } from '../../view-model/app.vm';
 import { QuotaStrategyManager } from '../../model/strategy';
 import { ConfigManager, IConfigReader } from '../../shared/config/config_manager';
 import type { IQuotaService, ICacheService, IStorageService, IAutomationService } from '../../model/services/interfaces';
-import type { QuotaSnapshot, CacheInfo } from '../../model/types/entities';
+import type { QuotaSnapshot } from '../../model/types/entities';
 
 // Mock Automation Service
 const defaultMockAutomationService: IAutomationService = {
@@ -361,19 +361,15 @@ suite('AppViewModel Test Suite', () => {
         const originalRefresh = vm.refreshCache.bind(vm);
         vm.refreshCache = async () => { refreshed = true; await originalRefresh(); };
 
-        // Mock vscode.window.showWarningMessage
-        // We can't easily mock vscode namespace in this setup without a proper mocking library for imports.
-        // However, if we assume the test runs in an environment where vscode is mocked (VS Code extension test runner),
-        // we might be able to intercept. 
-        // Since we are replacing the file, let's assume valid vscode usage or skip simple user interactions if mocking is hard.
-        // Or we can just test the VM logic if we abstract the confirmation dialog.
+        (vscode.window as any).nextMessageSelection = 'Delete';
+        try {
+            await vm.deleteTask('task-to-delete');
+        } finally {
+            (vscode.window as any).nextMessageSelection = undefined;
+        }
 
-        // For this test suite, we'll skip detailed UI interaction tests requiring vscode mocks 
-        // unless we inject a 'DialogService' (which we didn't refactor to yet).
-        // SKIPPING ACTUAL CALL to deleteTask due to UI dependency.
-
-        // Instead, verify exposed method exists
-        assert.ok(vm.deleteTask);
+        assert.strictEqual(deletedId, 'task-to-delete');
+        assert.strictEqual(refreshed, true);
     });
     test('toggleTasksSection should invert tasks expanded state', () => {
         const initialState = vm.getState().tree.tasks.expanded;

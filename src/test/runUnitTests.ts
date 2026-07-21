@@ -33,8 +33,11 @@ async function run(): Promise<void> {
     const testsRoot = __dirname;
 
     try {
-        // Run all test files (including subdirectories)
-        const files = await glob('suite/**/*.test.js', { cwd: testsRoot });
+        // Server integration tests have a dedicated runner.
+        const files = await glob('suite/**/*.test.js', {
+            cwd: testsRoot,
+            ignore: ['suite/integration/**/*.test.js']
+        });
 
         if (files.length === 0) {
             console.log('No test files found');

@@ -1,7 +1,4 @@
 {
-    "Auto-Accept: OFF": "Auto-Accept: OFF",
-    "Auto-Accept: ON": "Auto-Accept: ON",
-    "Hands-free Mode: Automatically accept agent suggested edits and terminal commands": "핸즈프리 모드: 에이전트가 제안한 편집 및 터미널 명령 자동 수락",
     "command.cleanCache.title": "Clean Cache",
     "command.generateCommitMessageClaude.title": "Generate Commit Message (Local & Claude)",
     "command.openPanel.title": "Open Panel",
@@ -14,7 +11,6 @@
     "command.showCacheSize.title": "Show Cache Size",
     "command.showDisclaimer.title": "About",
     "command.showLogs.title": "로그 보기",
-    "command.toggleAutoAccept": "Toggle Auto-Accept",
     "command.toggleAutoAccept.title": "Toggle Agent Auto-Accept",
     "config.cache.autoClean.description": "⚠️ 캐시 크기가 경고 임계값을 초과하면 Brain에서 가장 오래된 작업을 자동 삭제 (주의: 물리적 파일이 삭제됩니다)",
     "config.cache.autoCleanKeepCount.description": "자동 정리 시 유지할 최신 작업 수 (기본값: 5)",
@@ -58,9 +54,6 @@
     "config.visualizationMode.models": "모든 모델을 개별적으로 표시",
     "extension.category": "Antigravity Panel",
     "extension.description": "로컬 할당량 시각화, 캐시 관리 및 워크플로우 향상 기능을 갖춘 Google Antigravity IDE용 보조 유틸리티",
-    "extension.displayName": "Antigravity Panel",
     "views.tfa.sidebar.name": "Antigravity Panel",
-    "viewsContainers.tfa-sidebar.title": "Antigravity Panel",
-    "quota.notification.warning": "할당량 부족 경고: {0} 할당량이 {1}% 미만입니다({2}% 남음).",
-    "quota.notification.critical": "심각한 할당량 부족: {0} 할당량이 {1}% 미만입니다({2}% 남음). 주의해서 사용하세요!"
+    "viewsContainers.tfa-sidebar.title": "Antigravity Panel"
 }

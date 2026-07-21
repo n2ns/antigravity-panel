@@ -36,13 +36,6 @@ export interface IConfigReader {
 }
 
 /**
- * Disposable interface for resource cleanup
- */
-export interface IDisposable {
-  dispose(): void;
-}
-
-/**
  * ConfigManager: Pure configuration logic without VS Code dependency
  */
 export class ConfigManager {

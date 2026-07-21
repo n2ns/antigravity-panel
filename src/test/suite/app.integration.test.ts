@@ -4,7 +4,7 @@ import { StorageService } from '../../model/services/storage.service';
 import { ConfigManager } from '../../shared/config/config_manager';
 import { QuotaStrategyManager } from '../../model/strategy';
 import type { IQuotaService, ICacheService, IAutomationService } from '../../model/services/interfaces';
-import type { QuotaViewState, TreeViewState } from '../../view-model/types';
+import type { QuotaViewState } from '../../view-model/types';
 import type { CachedTreeState } from '../../model/types/entities';
 
 // Mock Automation Service

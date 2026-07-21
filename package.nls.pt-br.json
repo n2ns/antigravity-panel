@@ -1,7 +1,4 @@
 {
-    "Auto-Accept: OFF": "Auto-Accept: OFF",
-    "Auto-Accept: ON": "Auto-Accept: ON",
-    "Hands-free Mode: Automatically accept agent suggested edits and terminal commands": "Modo Mãos-livres: Aceitar automaticamente edições sugeridas pelo agente e comandos de terminal",
     "command.cleanCache.title": "Clean Cache",
     "command.generateCommitMessageClaude.title": "Generate Commit Message (Local & Claude)",
     "command.openPanel.title": "Open Panel",
@@ -14,7 +11,6 @@
     "command.showCacheSize.title": "Show Cache Size",
     "command.showDisclaimer.title": "About",
     "command.showLogs.title": "Mostrar logs",
-    "command.toggleAutoAccept": "Toggle Auto-Accept",
     "command.toggleAutoAccept.title": "Toggle Agent Auto-Accept",
     "config.cache.autoClean.description": "⚠️ Limpar automaticamente as tarefas mais antigas do Brain quando o cache exceder o limite (Nota: Isso excluirá arquivos físicos)",
     "config.cache.autoCleanKeepCount.description": "Número de tarefas mais recentes a manter durante a limpeza automática (padrão: 5)",
@@ -58,9 +54,6 @@
     "config.visualizationMode.models": "Mostrar todos os modelos individualmente",
     "extension.category": "Antigravity Panel",
     "extension.description": "Um utilitário complementar para o Google Antigravity IDE com visualização de cota local, gerenciamento de cache e ferramentas de fluxo de trabalho",
-    "extension.displayName": "Antigravity Panel",
     "views.tfa.sidebar.name": "Antigravity Panel",
-    "viewsContainers.tfa-sidebar.title": "Antigravity Panel",
-    "quota.notification.warning": "Aviso de cota baixa: a cota de {0} está abaixo de {1}% ({2}% restante).",
-    "quota.notification.critical": "Cota CRÍTICA: a cota de {0} está abaixo de {1}% ({2}% restante). Use com cautela!"
+    "viewsContainers.tfa-sidebar.title": "Antigravity Panel"
 }

@@ -18,14 +18,6 @@ import type {
     ErrorCallback,
 } from '../types/entities';
 
-// ==================== Configuration Reader ====================
-
-/** Configuration reader interface (already exists, re-exported for consistency) */
-export interface IConfigReader {
-    get<T>(key: string, defaultValue: T): T;
-    update<T>(key: string, value: T): Promise<void>;
-}
-
 // ==================== Quota Service ====================
 
 /** Quota service interface - fetches quota data from Language Server */

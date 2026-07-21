@@ -20,8 +20,6 @@ export interface RetryConfig<T> {
   onRetry?: (attempt: number, delay: number) => void;
 }
 
-export type RetryOptions<T = unknown> = RetryConfig<T>;
-
 /**
  * Calculate delay time for next retry
  */

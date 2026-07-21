@@ -1,7 +1,4 @@
 {
-    "Auto-Accept: OFF": "Auto-Accept: OFF",
-    "Auto-Accept: ON": "Auto-Accept: ON",
-    "Hands-free Mode: Automatically accept agent suggested edits and terminal commands": "Mode mains libres : accepter automatiquement les modifications suggérées par l'agent et les commandes du terminal",
     "command.cleanCache.title": "Clean Cache",
     "command.generateCommitMessageClaude.title": "Generate Commit Message (Local & Claude)",
     "command.openPanel.title": "Open Panel",
@@ -14,7 +11,6 @@
     "command.showCacheSize.title": "Show Cache Size",
     "command.showDisclaimer.title": "About",
     "command.showLogs.title": "Afficher les journaux",
-    "command.toggleAutoAccept": "Toggle Auto-Accept",
     "command.toggleAutoAccept.title": "Toggle Agent Auto-Accept",
     "config.cache.autoClean.description": "⚠️ Nettoyer automatiquement les anciennes tâches de Brain lorsque le cache dépasse le seuil (Attention : cela supprimera des fichiers physiques)",
     "config.cache.autoCleanKeepCount.description": "Nombre de tâches les plus récentes à conserver lors du nettoyage automatique (par défaut : 5)",
@@ -58,9 +54,6 @@
     "config.visualizationMode.models": "Afficher tous les modèles individuellement",
     "extension.category": "Antigravity Panel",
     "extension.description": "Un utilitaire compagnon pour Google Antigravity IDE avec visualisation des quotas locaux, gestion du cache et outils d'amélioration du flux de travail",
-    "extension.displayName": "Antigravity Panel",
     "views.tfa.sidebar.name": "Antigravity Panel",
-    "viewsContainers.tfa-sidebar.title": "Antigravity Panel",
-    "quota.notification.warning": "Avertissement de quota faible : le quota {0} est inférieur à {1}% ({2}% restant).",
-    "quota.notification.critical": "Quota CRITIQUE : le quota {0} est inférieur à {1}% ({2}% restant). À utiliser avec prudence !"
+    "viewsContainers.tfa-sidebar.title": "Antigravity Panel"
 }

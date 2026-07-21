@@ -6,6 +6,9 @@ English | [中文文档](docs/CHANGELOG_zh.md)
 
 ### Changed
 
+- **Dead Code and Test Cleanup**: Removed unreachable Webview styles/components, unused barrel files and type aliases, split unit tests from the dedicated Language Server integration runner, and replaced a placeholder cache-deletion test with a real behavior assertion.
+- **CI and Packaging Cleanup**: Removed the empty Codecov upload job, eliminated duplicate pre-package builds, dropped redundant TypeScript ESLint declarations and the `package:sync` alias, and kept unit and server integration suites as separate CI gates.
+- **Localization Alignment**: Removed unused manifest and runtime localization entries, added every active notification and diagnostic message to all 14 runtime bundles, and wired the existing `Docs` label into the Webview translation payload.
 - **Single Release Artifact**: The release workflow now builds, tests, and packages the extension once, then publishes that exact VSIX artifact to the Visual Studio Marketplace, Open VSX, and GitHub Releases instead of rebuilding independently in each publishing job.
 - **Publishing Toolchain Cleanup**: Added `ovsx` as a tracked development dependency, aligned Sinon types with Sinon 22, removed the unused `canvas` dependency and obsolete icon-generation script, and refreshed the dependency lockfile.
 - **Open VSX Verification Documentation**: Documented that `n2ns` is already a verified Open VSX namespace; no additional publisher-verification request is required for `n2ns.antigravity-panel`.

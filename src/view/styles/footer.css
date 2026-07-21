@@ -32,16 +32,6 @@ sidebar-footer {
     min-height: 0;
 }
 
-.sidebar-footer {
-    padding: 4px 8px 8px 8px;
-    /* Tighter top padding */
-    background: var(--vscode-sideBar-background);
-    border-top: 1px solid var(--vscode-widget-border);
-    display: flex;
-    flex-flow: row wrap;
-    gap: 6px;
-}
-
 /* Sidebar Tagline - Engraved Nameplate Effect */
 .sidebar-meta-container {
     background: color-mix(in srgb, var(--vscode-foreground) 5%, transparent);
@@ -224,71 +214,4 @@ sidebar-footer {
     display: inline-flex;
     align-items: center;
     line-height: normal;
-}
-
-.user-info-card .user-row {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 0.85rem;
-}
-
-.user-info-card .user-label {
-    color: var(--vscode-foreground);
-    min-width: 40px;
-}
-
-.user-info-card .user-value {
-    color: var(--vscode-foreground);
-    font-weight: 500;
-}
-
-.user-info-card .token-section {
-    margin-top: 6px;
-    padding-top: 8px;
-    border-top: 1px solid var(--vscode-widget-border);
-}
-
-.user-info-card .token-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 0.8rem;
-}
-
-.user-info-card .token-label {
-    color: var(--vscode-foreground);
-}
-
-.user-info-card .token-value {
-    color: var(--vscode-foreground);
-    font-weight: 500;
-    font-family: var(--vscode-editor-font-family, monospace);
-}
-
-.user-info-card .progress-bar {
-    height: 6px;
-    background: var(--vscode-progressBar-background, rgba(255, 255, 255, 0.1));
-    border-radius: 3px;
-    margin: 6px 0;
-    overflow: hidden;
-}
-
-.user-info-card .progress-fill {
-    height: 100%;
-    border-radius: 3px;
-    transition: width 0.5s ease, background 0.3s ease;
-}
-
-.user-info-card .usage-info {
-    font-size: 0.8rem;
-    opacity: 0.8;
-}
-
-.user-info-card .usage-label {
-    color: var(--vscode-foreground);
-}
-
-.user-info-card .usage-value {
-    font-weight: 600;
 }

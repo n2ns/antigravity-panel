@@ -419,7 +419,6 @@
     "test:server": "tsc -p tsconfig.test.json && node ./out/test/runServerTests.js",
     "package": "vsce package",
     "postpackage": "node ./scripts/sync-build.js",
-    "package:sync": "npm run package",
     "prepare": "husky"
   },
   "overrides": {
@@ -432,8 +431,6 @@
     "@types/sinon": "^22.0.0",
     "@types/vscode": "^1.104.0",
     "@types/ws": "^8.18.1",
-    "@typescript-eslint/eslint-plugin": "^8.59.4",
-    "@typescript-eslint/parser": "^8.59.4",
     "@vscode/vsce": "^3.9.1",
     "esbuild": "^0.28.0",
     "eslint": "^10.4.0",

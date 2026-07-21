@@ -1,7 +1,4 @@
 {
-    "Auto-Accept: OFF": "Auto-Accept: OFF",
-    "Auto-Accept: ON": "Auto-Accept: ON",
-    "Hands-free Mode: Automatically accept agent suggested edits and terminal commands": "Chế độ tự động: Tự động chấp nhận các chỉnh sửa file và lệnh terminal do agent đề xuất",
     "command.cleanCache.title": "Dọn dẹp Cache",
     "command.generateCommitMessageClaude.title": "Tạo Commit Message (Local & Claude)",
     "command.openPanel.title": "Mở Panel",
@@ -14,7 +11,6 @@
     "command.showCacheSize.title": "Xem Kích thước Cache",
     "command.showDisclaimer.title": "Giới thiệu",
     "command.showLogs.title": "Xem Nhật ký",
-    "command.toggleAutoAccept": "Toggle Auto-Accept",
     "command.toggleAutoAccept.title": "Bật/Tắt Auto-Accept",
     "config.cache.autoClean.description": "⚠️ Tự động dọn dẹp: Xóa các tác vụ cũ nhất trong Brain khi cache vượt ngưỡng cảnh báo (Lưu ý: Thao tác này sẽ xóa file vật lý)",
     "config.cache.autoCleanKeepCount.description": "Số tác vụ mới nhất giữ lại khi tự động dọn dẹp (mặc định: 5)",
@@ -58,9 +54,6 @@
     "config.visualizationMode.models": "Hiển thị tất cả model riêng lẻ",
     "extension.category": "Antigravity Panel",
     "extension.description": "Công cụ giám sát quota và quản lý cache cho Google Antigravity IDE. Theo dõi thời gian thực Gemini / Claude / GPT, dashboard quota AI, phân tích lịch sử sử dụng, chế độ auto-accept và tạo commit message bằng AI.",
-    "extension.displayName": "Antigravity Panel",
     "views.tfa.sidebar.name": "Antigravity Panel",
-    "viewsContainers.tfa-sidebar.title": "Antigravity Panel",
-    "quota.notification.warning": "Cảnh báo quota thấp: Quota {0} đã xuống dưới {1}% (còn lại {2}%).",
-    "quota.notification.critical": "NGUY CẤP - Quota {0} đã xuống dưới {1}% (còn lại {2}%). Sử dụng thận trọng!"
+    "viewsContainers.tfa-sidebar.title": "Antigravity Panel"
 }

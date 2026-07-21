@@ -1,7 +1,4 @@
 {
-    "Auto-Accept: OFF": "Auto-Accept: OFF",
-    "Auto-Accept: ON": "Auto-Accept: ON",
-    "Hands-free Mode: Automatically accept agent suggested edits and terminal commands": "Режим 'свободные руки': автоматически принимать предложенные агентом правки и команды терминала",
     "command.cleanCache.title": "Clean Cache",
     "command.generateCommitMessageClaude.title": "Generate Commit Message (Local & Claude)",
     "command.openPanel.title": "Open Panel",
@@ -14,7 +11,6 @@
     "command.showCacheSize.title": "Show Cache Size",
     "command.showDisclaimer.title": "About",
     "command.showLogs.title": "Показать журналы",
-    "command.toggleAutoAccept": "Toggle Auto-Accept",
     "command.toggleAutoAccept.title": "Toggle Agent Auto-Accept",
     "config.cache.autoClean.description": "⚠️ Автоматически удалять старые задачи из Brain при превышении порога кеша (Внимание: физические файлы будут удалены)",
     "config.cache.autoCleanKeepCount.description": "Количество новейших задач для сохранения при автоматической очистке (по умолчанию: 5)",
@@ -58,9 +54,6 @@
     "config.visualizationMode.models": "Показывать все модели отдельно",
     "extension.category": "Antigravity Panel",
     "extension.description": "Вспомогательная утилита для Google Antigravity IDE с локальной визуализацией квот, управлением кешем и инструментами рабочего процесса",
-    "extension.displayName": "Antigravity Panel",
     "views.tfa.sidebar.name": "Antigravity Panel",
-    "viewsContainers.tfa-sidebar.title": "Antigravity Panel",
-    "quota.notification.warning": "Предупреждение о низком лимите: лимит {0} ниже {1}% (осталось {2}%).",
-    "quota.notification.critical": "КРИТИЧЕСКИЙ лимит: лимит {0} ниже {1}% (осталось {2}%)."
+    "viewsContainers.tfa-sidebar.title": "Antigravity Panel"
 }

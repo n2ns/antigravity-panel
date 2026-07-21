@@ -35,38 +35,11 @@ jobs:
       - name: Run linter
         run: npm run lint
 
-      - name: Run tests
+      - name: Run unit tests
         run: npm test
 
-      - name: Build extension
-        run: npm run build
+      - name: Run server integration tests
+        run: npm run test:server
 
       - name: Package extension (smoke test)
         run: npx @vscode/vsce package
-
-  coverage:
-    name: Code Coverage
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '24'
-          cache: 'npm'
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Run tests with coverage
-        run: npm test
-
-      - name: Upload coverage reports
-        uses: codecov/codecov-action@v4
-        continue-on-error: true
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          fail_ci_if_error: false
-

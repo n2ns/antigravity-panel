@@ -1,7 +1,4 @@
 {
-    "Auto-Accept: OFF": "Auto-Accept: OFF",
-    "Auto-Accept: ON": "Auto-Accept: ON",
-    "Hands-free Mode: Automatically accept agent suggested edits and terminal commands": "無人值守模式：自動接受代理建議的檔案修改和終端機指令",
     "command.cleanCache.title": "清理快取",
     "command.generateCommitMessageClaude.title": "生成提交信息 (本地 & Claude)",
     "command.openPanel.title": "打開面板",
@@ -14,7 +11,6 @@
     "command.showCacheSize.title": "顯示快取大小",
     "command.showDisclaimer.title": "關於",
     "command.showLogs.title": "顯示日誌",
-    "command.toggleAutoAccept": "Toggle Auto-Accept",
     "command.toggleAutoAccept.title": "切換自動接受",
     "config.cache.autoClean.description": "⚠️ 當快取超過警告閾值時，自動從 Brain 清理最舊的任務（注意：這會刪除實體檔案）",
     "config.cache.autoCleanKeepCount.description": "自動清理時保留的最新任務數量（預設：5）",
@@ -58,9 +54,6 @@
     "config.visualizationMode.models": "單獨顯示所有模型",
     "extension.category": "Antigravity Panel",
     "extension.description": "專為 Google Antigravity IDE 設計的本機配額視覺化、快取管理與工作流程增強輔助工具",
-    "extension.displayName": "Antigravity Panel",
     "views.tfa.sidebar.name": "Antigravity Panel",
-    "viewsContainers.tfa-sidebar.title": "Antigravity Panel",
-    "quota.notification.warning": "配額不足提醒：{0} 的配額已低於 {1}%（目前剩餘 {2}%）。",
-    "quota.notification.critical": "配額嚴重不足提醒：{0} 的配額已低於 {1}%（目前剩餘 {2}%）。請謹慎使用！"
+    "viewsContainers.tfa-sidebar.title": "Antigravity Panel"
 }

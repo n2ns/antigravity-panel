@@ -82,9 +82,9 @@ Located in [app.vm.ts](src/view-model/app.vm.ts). The `AppViewModel` acts as the
 
 ## 🧪 Testing Requirements
 
-We enforce strict test coverage requirements. Ensure that your contributions do not break existing tests and that you write new tests for any added features or bug fixes.
+We enforce automated test checks. Ensure that your contributions do not break existing tests and that you write new tests for any added features or bug fixes.
 
-*   **Unit and local integration tests:** Verify core business logic, platform parsing, and live Antigravity Language Server behavior from the current Antigravity IDE environment.
+*   **Unit tests:** Verify core business logic and platform parsing without requiring a live Antigravity Language Server.
     ```bash
     npm test
     ```
@@ -103,13 +103,13 @@ We enforce strict test coverage requirements. Ensure that your contributions do 
 
 ## 📦 Build & Packaging
 
-Run a production build before packaging:
+To verify the production build directly:
 
 ```bash
 npm run build
 ```
 
-To create a local `.vsix` installer:
+To create a local `.vsix` installer (the packaging command runs the production build automatically):
 
 ```bash
 npm run package

@@ -1,7 +1,4 @@
 {
-    "Auto-Accept: OFF": "Auto-Accept: OFF",
-    "Auto-Accept: ON": "Auto-Accept: ON",
-    "Hands-free Mode: Automatically accept agent suggested edits and terminal commands": "Tryb głośnomówiący: Automatycznie akceptuj sugerowane przez agenta edycje i polecenia terminala",
     "command.cleanCache.title": "Clean Cache",
     "command.generateCommitMessageClaude.title": "Generate Commit Message (Local & Claude)",
     "command.openPanel.title": "Open Panel",
@@ -14,7 +11,6 @@
     "command.showCacheSize.title": "Show Cache Size",
     "command.showDisclaimer.title": "About",
     "command.showLogs.title": "Pokaż logi",
-    "command.toggleAutoAccept": "Toggle Auto-Accept",
     "command.toggleAutoAccept.title": "Toggle Agent Auto-Accept",
     "config.cache.autoClean.description": "⚠️ Automatycznie usuwaj najstarsze zadania z katalogu Brain, gdy rozmiar pamięci podręcznej przekroczy próg ostrzegawczy (Uwaga: spowoduje to usunięcie fizycznych plików)",
     "config.cache.autoCleanKeepCount.description": "Liczba najnowszych zadań do zachowania podczas automatycznego czyszczenia (domyślnie: 5)",
@@ -58,9 +54,6 @@
     "config.visualizationMode.models": "Pokaż wszystkie poszczególne modele oddzielnie",
     "extension.category": "Antigravity Panel",
     "extension.description": "Niezbędny przybornik dla użytkowników Google Antigravity IDE. Monitoruj limity, zarządzaj pamięcią podręczną i wizualizuj metryki systemowe.",
-    "extension.displayName": "Antigravity Panel",
     "views.tfa.sidebar.name": "Antigravity Panel",
-    "viewsContainers.tfa-sidebar.title": "Antigravity Panel",
-    "quota.notification.warning": "Ostrzeżenie o niskim limicie: limit {0} wynosi poniżej {1}% (pozostało {2}%).",
-    "quota.notification.critical": "KRYTYCZNY limit: limit {0} wynosi poniżej {1}% (pozostało {2}%). Używaj ostrożnie!"
+    "viewsContainers.tfa-sidebar.title": "Antigravity Panel"
 }

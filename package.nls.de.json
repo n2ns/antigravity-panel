@@ -1,7 +1,4 @@
 {
-    "Auto-Accept: OFF": "Auto-Accept: OFF",
-    "Auto-Accept: ON": "Auto-Accept: ON",
-    "Hands-free Mode: Automatically accept agent suggested edits and terminal commands": "Freisprechmodus: Von Agenten vorgeschlagene Änderungen und Terminalbefehle automatisch akzeptieren",
     "command.cleanCache.title": "Clean Cache",
     "command.generateCommitMessageClaude.title": "Generate Commit Message (Local & Claude)",
     "command.openPanel.title": "Open Panel",
@@ -14,7 +11,6 @@
     "command.showCacheSize.title": "Show Cache Size",
     "command.showDisclaimer.title": "About",
     "command.showLogs.title": "Protokolle anzeigen",
-    "command.toggleAutoAccept": "Toggle Auto-Accept",
     "command.toggleAutoAccept.title": "Toggle Agent Auto-Accept",
     "config.cache.autoClean.description": "⚠️ Älteste Aufgaben aus Brain automatisch löschen, wenn Cache-Größe Warnschwelle überschreitet (Hinweis: Physische Dateien werden gelöscht)",
     "config.cache.autoCleanKeepCount.description": "Anzahl der neuesten Aufgaben, die bei automatischer Bereinigung behalten werden (Standard: 5)",
@@ -58,9 +54,6 @@
     "config.visualizationMode.models": "Alle Modelle einzeln anzeigen",
     "extension.category": "Antigravity Panel",
     "extension.description": "Ein Begleitprogramm für Google Antigravity IDE mit lokaler Kontingentvisualisierung, Cache-Verwaltung und Tools zur Workflow-Verbesserung",
-    "extension.displayName": "Antigravity Panel",
     "views.tfa.sidebar.name": "Antigravity Panel",
-    "viewsContainers.tfa-sidebar.title": "Antigravity Panel",
-    "quota.notification.warning": "Warnung bei niedrigem Kontingent: {0}-Kontingent liegt unter {1}% ({2}% verbleibend).",
-    "quota.notification.critical": "KRITISCHES Kontingent: {0}-Kontingent liegt unter {1}% ({2}% verbleibend). Mit Vorsicht verwenden!"
+    "viewsContainers.tfa-sidebar.title": "Antigravity Panel"
 }

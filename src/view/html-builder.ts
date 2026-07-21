@@ -48,7 +48,6 @@ export class WebviewHtmlBuilder {
      */
     setHead(cspSource: string, codiconsUri: string, stylesUri: string, webviewUri: string): this {
         this.config = { cspSource, codiconsUri, stylesUri, webviewUri };
-        this.config = { cspSource, codiconsUri, stylesUri, webviewUri };
         return this;
     }
 

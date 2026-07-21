@@ -139,12 +139,6 @@ export interface LanguageServerInfo {
 }
 
 /**
- * Supported communication protocols
- */
-export type Protocol = "https" | "http";
-
-
-/**
  * Detailed information about a single communication attempt (for diagnostics)
  */
 export interface CommunicationAttempt {

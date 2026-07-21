@@ -80,7 +80,7 @@ Many numeric fields (like `creditAmount` / `credit_amount`) in the server's Prot
 
 To ensure changes to the parsing and debugging code do not break existing functionality:
 
-* **Run all tests:**
+* **Run unit tests:**
   ```bash
   npm test
   ```

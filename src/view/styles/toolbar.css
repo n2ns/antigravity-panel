@@ -4,57 +4,6 @@
  * Buttons, action cards, toggle switches, recovery actions
  */
 
-/* Toolbar Styles - Card wrapper */
-.toolbar {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-    padding: 8px;
-    margin: 8px 6px;
-    background: var(--vscode-sideBar-background);
-    border: 1px solid var(--vscode-widget-border, rgba(255, 255, 255, 0.1));
-    border-radius: 6px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
-}
-
-.toolbar-btn {
-    flex: 1 1 70px;
-    /* Base width for auto-wrapping instead of squeezing */
-    min-width: 0;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 4px;
-    padding: 6px 4px;
-    font-size: 0.9rem;
-    background: var(--vscode-input-background);
-    color: var(--vscode-foreground);
-    border: 1px solid var(--vscode-button-border, transparent);
-    border-radius: 3px;
-    cursor: pointer;
-    font-family: inherit;
-    white-space: nowrap;
-    /* Disable text wrapping inside button, force entire button to wrap */
-}
-
-.toolbar-btn .codicon-globe {
-    font-size: 1.1em;
-    /* Fix large globe icon */
-}
-
-.toolbar-btn:hover {
-    background: var(--vscode-button-secondaryHoverBackground);
-}
-
-.toolbar-btn.primary {
-    background: var(--vscode-button-background);
-    color: var(--vscode-button-foreground);
-}
-
-.toolbar-btn.primary:hover {
-    background: var(--vscode-button-hoverBackground);
-}
-
 /* ==================== Action Card Layout ==================== */
 
 /* Main Action Card */
@@ -283,71 +232,5 @@
 }
 
 .link-btn .codicon {
-    font-size: 1.1em;
-}
-
-
-/* Recovery Actions */
-.recovery-actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    padding: 12px 12px 4px 12px;
-    /* Tighter bottom padding */
-    background: var(--vscode-sideBar-background);
-    /* Borderremoved as it is now on the container */
-}
-
-.recovery-btn {
-    flex: 1 1 130px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    padding: 6px 4px;
-    background: var(--vscode-input-background);
-    color: var(--vscode-foreground);
-    border: 1px solid var(--vscode-button-border, transparent);
-    border-radius: 4px;
-    cursor: pointer;
-    font-family: inherit;
-    font-size: 0.9rem;
-    font-weight: 500;
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    white-space: nowrap;
-}
-
-.recovery-btn:hover {
-    background: var(--vscode-button-secondaryHoverBackground);
-    transform: translateY(-1px);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-}
-
-.recovery-btn:active {
-    transform: translateY(0);
-}
-
-.recovery-btn.primary {
-    background: var(--vscode-button-background);
-    color: var(--vscode-button-foreground);
-}
-
-.recovery-btn.primary:hover {
-    background: var(--vscode-button-hoverBackground);
-}
-
-.recovery-btn.primary.active {
-    background: var(--vscode-charts-green, #388e3c);
-    color: var(--vscode-button-foreground);
-    border-color: rgba(0, 0, 0, 0.1);
-    box-shadow: 0 0 8px rgba(56, 142, 60, 0.3);
-}
-
-.recovery-btn.primary.active:hover {
-    background: var(--vscode-charts-green, #43a047);
-    filter: brightness(1.1);
-}
-
-.recovery-btn .codicon {
     font-size: 1.1em;
 }

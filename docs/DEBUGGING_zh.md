@@ -80,7 +80,7 @@ strings ~/.antigravity-ide-server/bin/*/extensions/antigravity/bin/language_serv
 
 为确保解析和调试相关代码改动不会破坏现有功能：
 
-* **运行全部测试：**
+* **运行单元测试：**
   ```bash
   npm test
   ```

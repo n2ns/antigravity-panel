@@ -14,9 +14,6 @@ export class FileItemComponent extends LitElement {
   @property({ type: String })
   path = '';
 
-  @property({ type: Boolean, reflect: true })
-  selected = false;
-
   // Light DOM mode
   createRenderRoot() { return this; }
 
@@ -45,10 +42,8 @@ export class FileItemComponent extends LitElement {
   }
 
   protected render() {
-    const selectedClass = this.selected ? 'selected' : '';
-
     return html`
-      <div class="file ${selectedClass}" @click=${this._onClick}>
+      <div class="file" @click=${this._onClick}>
         <i class="${this._getIconClass()}"></i>
         <span class="file-name">${this.name}</span>
         <div class="file-actions">

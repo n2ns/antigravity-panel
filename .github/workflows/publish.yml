@@ -30,11 +30,11 @@ jobs:
       - name: Run linter
         run: npm run lint
 
-      - name: Run tests
+      - name: Run unit tests
         run: npm test
 
-      - name: Build extension
-        run: npm run build
+      - name: Run server integration tests
+        run: npm run test:server
 
       - name: Package extension
         run: npx @vscode/vsce package
@@ -139,4 +139,3 @@ jobs:
           prerelease: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-

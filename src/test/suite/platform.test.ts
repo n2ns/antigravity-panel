@@ -1,5 +1,4 @@
 import * as assert from 'assert';
-import * as os from 'os';
 import { getDetailedOSVersion, getIdeProductVersion } from '../../shared/utils/platform';
 
 suite('Platform Utils Test Suite', () => {

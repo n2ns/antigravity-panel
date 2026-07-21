@@ -138,16 +138,12 @@ export class SidebarProvider implements vscode.WebviewViewProvider, vscode.Dispo
             case "runDiagnostics":
                 await vscode.commands.executeCommand("tfa.runDiagnostics");
                 break;
-            case "showLogs":
-                await vscode.commands.executeCommand("tfa.showLogs");
-                break;
             case "restartLanguageServer":
                 await vscode.commands.executeCommand("tfa.restartLanguageServer");
                 break;
             case "restartUserStatusUpdater":
                 await vscode.commands.executeCommand("tfa.restartUserStatusUpdater");
                 break;
-            case "webhookReady": // (Likely a typo in original code or something, usually its webviewReady)
             case "webviewReady":
                 this._postStateUpdate();
                 break;
@@ -189,31 +185,23 @@ export class SidebarProvider implements vscode.WebviewViewProvider, vscode.Dispo
                 reportIssue: vscode.l10n.t('Feedback'),
                 giveStar: vscode.l10n.t('Star'),
                 restartService: vscode.l10n.t('Restart Service'),
-                resetStatus: vscode.l10n.t('Reset Status'),
-                userProfile: vscode.l10n.t('User Profile'),
-                tier: vscode.l10n.t('Tier'),
-                plan: vscode.l10n.t('Plan'),
                 promptCredits: vscode.l10n.t('Prompt'),
                 flowCredits: vscode.l10n.t('Flow'),
-                used: vscode.l10n.t('Used'),
                 // Tooltips
                 restartServiceTooltip: vscode.l10n.t('Restart the background Agent language server (use when code analysis is stuck)'),
                 resetStatusTooltip: vscode.l10n.t('Reset user subscription and quota refresh status (use when quota display is not updating)'),
-                feedbackTooltip: vscode.l10n.t('Report an issue or suggestion: Jump to the GitHub Issues page'),
-                starTooltip: vscode.l10n.t('If you like this extension, please star it on GitHub to support us. It is our greatest motivation for continuous improvement!'),
                 usageRateTooltip: vscode.l10n.t('Usage Rate: Average percentage of quota consumed per hour'),
                 runwayTooltip: vscode.l10n.t('Runway: Estimated remaining time before quota is exhausted'),
                 usageStable: vscode.l10n.t('Usage stable'),
                 stableStatusTooltip: vscode.l10n.t('Quota usage status: Stable'),
                 promptTooltip: vscode.l10n.t('Reasoning Credits: Consumed by conversation input and result generation (thinking).'),
                 flowTooltip: vscode.l10n.t('Execution Credits: Consumed by steps during search, modification, and command execution (operation).'),
-                autoAcceptOn: vscode.l10n.t('Auto-Accept: ON'),
-                autoAcceptOff: vscode.l10n.t('Auto-Accept: OFF'),
                 autoAcceptTooltip: vscode.l10n.t('Hands-free Mode: Automatically accept agent suggested edits and terminal commands'),
                 autoAcceptLabel: vscode.l10n.t('Auto-Accept'),
                 reloadWindow: vscode.l10n.t('Reload Window'),
                 reloadWindowTooltip: vscode.l10n.t('Reload the entire window (use when Agent panel is blank or unresponsive)'),
                 // Added for completeness
+                docs: vscode.l10n.t('Docs'),
                 rules: vscode.l10n.t('Rules'),
                 mcp: vscode.l10n.t('MCP'),
                 allowlist: vscode.l10n.t('Allowlist'),

@@ -226,15 +226,6 @@ quota-pie {
     font-style: italic;
 }
 
-.gauge-req-count {
-    font-size: 0.6rem;
-    font-family: var(--vscode-editor-font-family, monospace);
-    color: var(--vscode-charts-yellow, #e2c541);
-    opacity: 0.85;
-    margin-top: 2px;
-    letter-spacing: 0.3px;
-}
-
 /* Dashboard Container Styles */
 .pies-container {
     display: grid;

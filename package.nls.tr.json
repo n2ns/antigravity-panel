@@ -1,7 +1,4 @@
 {
-    "Auto-Accept: OFF": "Auto-Accept: OFF",
-    "Auto-Accept: ON": "Auto-Accept: ON",
-    "Hands-free Mode: Automatically accept agent suggested edits and terminal commands": "Eller Serbest Modu: Temsilci tarafından önerilen düzenlemeleri ve terminal komutlarını otomatik olarak kabul et",
     "command.cleanCache.title": "Clean Cache",
     "command.generateCommitMessageClaude.title": "Generate Commit Message (Local & Claude)",
     "command.openPanel.title": "Open Panel",
@@ -14,7 +11,6 @@
     "command.showCacheSize.title": "Show Cache Size",
     "command.showDisclaimer.title": "About",
     "command.showLogs.title": "Günlükleri Göster",
-    "command.toggleAutoAccept": "Toggle Auto-Accept",
     "command.toggleAutoAccept.title": "Toggle Agent Auto-Accept",
     "config.cache.autoClean.description": "⚠️ Önbellek boyutu uyarı eşiğini aştığında Brain dizinindeki en eski görevleri otomatik olarak temizle (Not: Bu, fiziksel dosyaları silecektir)",
     "config.cache.autoCleanKeepCount.description": "Otomatik temizleme sırasında tutulacak en yeni görev sayısı (varsayılan: 5)",
@@ -58,9 +54,6 @@
     "config.visualizationMode.models": "Tüm bireysel modelleri ayrı ayrı göster",
     "extension.category": "Antigravity Panel",
     "extension.description": "Google Antigravity IDE kullanıcıları için temel araç kutusu. Kotaları izleyin, önbellekleri yönetin ve sistem metriklerini görselleştirin.",
-    "extension.displayName": "Antigravity Panel",
     "views.tfa.sidebar.name": "Antigravity Panel",
-    "viewsContainers.tfa-sidebar.title": "Antigravity Panel",
-    "quota.notification.warning": "Düşük Kota Uyarısı: {0} kotası %{1}'in altında (kalan %{2}).",
-    "quota.notification.critical": "KRİTİK Kota: {0} kotası %{1}'in altında (kalan %{2}). Dikkatli kullanın!"
+    "viewsContainers.tfa-sidebar.title": "Antigravity Panel"
 }

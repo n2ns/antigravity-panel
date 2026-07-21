@@ -1,7 +1,4 @@
 {
-    "Auto-Accept: OFF": "Auto-Accept: OFF",
-    "Auto-Accept: ON": "Auto-Accept: ON",
-    "Hands-free Mode: Automatically accept agent suggested edits and terminal commands": "Modalità mani libere: accetta automaticamente le modifiche e i comandi del terminale suggeriti dall'agente",
     "command.cleanCache.title": "Clean Cache",
     "command.generateCommitMessageClaude.title": "Generate Commit Message (Local & Claude)",
     "command.openPanel.title": "Open Panel",
@@ -14,7 +11,6 @@
     "command.showCacheSize.title": "Show Cache Size",
     "command.showDisclaimer.title": "About",
     "command.showLogs.title": "Mostra registri",
-    "command.toggleAutoAccept": "Toggle Auto-Accept",
     "command.toggleAutoAccept.title": "Toggle Agent Auto-Accept",
     "config.cache.autoClean.description": "⚠️ Pulisci automaticamente le attività più vecchie da Brain quando la cache supera la soglia (Nota: Questo eliminerà file fisici)",
     "config.cache.autoCleanKeepCount.description": "Numero di attività più recenti da mantenere durante la pulizia automatica (predefinito: 5)",
@@ -58,9 +54,6 @@
     "config.visualizationMode.models": "Mostra tutti i modelli singolarmente",
     "extension.category": "Antigravity Panel",
     "extension.description": "Il toolkit essenziale per gli utenti di Google Antigravity IDE. Monitora le quote, gestisci le cache e visualizza le metriche di sistema.",
-    "extension.displayName": "Antigravity Panel",
     "views.tfa.sidebar.name": "Antigravity Panel",
-    "viewsContainers.tfa-sidebar.title": "Antigravity Panel",
-    "quota.notification.warning": "Avviso quota insufficiente: la quota di {0} è inferiore al {1}% ({2}% rimanente).",
-    "quota.notification.critical": "Quota CRITICA: la quota di {0} è inferiore al {1}% ({2}% rimanente). Usare con cautela!"
+    "viewsContainers.tfa-sidebar.title": "Antigravity Panel"
 }

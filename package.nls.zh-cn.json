@@ -1,7 +1,4 @@
 {
-    "Auto-Accept: OFF": "Auto-Accept: OFF",
-    "Auto-Accept: ON": "Auto-Accept: ON",
-    "Hands-free Mode: Automatically accept agent suggested edits and terminal commands": "无人值守模式：自动接受智能体建议的文件修改和终端命令",
     "command.cleanCache.title": "清理缓存",
     "command.generateCommitMessageClaude.title": "生成提交信息 (本地 & Claude)",
     "command.openPanel.title": "打开面板",
@@ -14,7 +11,6 @@
     "command.showCacheSize.title": "显示缓存大小",
     "command.showDisclaimer.title": "关于",
     "command.showLogs.title": "显示日志",
-    "command.toggleAutoAccept": "Toggle Auto-Accept",
     "command.toggleAutoAccept.title": "切换自动接受",
     "config.cache.autoClean.description": "⚠️ 自动清理：当缓存超过警告阈值时，自动从 Brain 目录清理最旧的任务（注意：这会物理删除本地文件）",
     "config.cache.autoCleanKeepCount.description": "自动清理时保留的最新任务数量（默认：5）",
@@ -58,9 +54,6 @@
     "config.visualizationMode.models": "单独显示所有模型",
     "extension.category": "Antigravity Panel",
     "extension.description": "Google Antigravity IDE 用户的必备工具箱。提供本地配额监控、缓存管理和系统指标可视化。",
-    "extension.displayName": "Antigravity Panel",
     "views.tfa.sidebar.name": "Antigravity Panel",
-    "viewsContainers.tfa-sidebar.title": "Antigravity Panel",
-    "quota.notification.warning": "配额不足提醒：{0} 的配额已低于 {1}%（当前剩余 {2}%）。",
-    "quota.notification.critical": "配额严重不足提醒：{0} 的配额已低于 {1}%（当前剩余 {2}%）。请谨慎使用！"
+    "viewsContainers.tfa-sidebar.title": "Antigravity Panel"
 }
