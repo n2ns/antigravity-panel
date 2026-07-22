@@ -53,6 +53,7 @@
     "Please ensure you are logged into Antigravity IDE (Authentication failed).": "Убедитесь, что вы вошли в Antigravity IDE (Ошибка аутентификации).",
     "Process found but no listening port detected.": "Процесс найден, но порт прослушивания не обнаружен.",
     "Prompt": "Prompt",
+    "Quota reset: {0} is back to {1}%.": "Квота сброшена: {0} восстановлена до {1}%.",
     "Quota usage status: Stable": "Статус использования квоты: Стабильно",
     "Reasoning Credits: Consumed by conversation input and result generation (thinking).": "Кредиты на рассуждения: Расходуются на ввод диалога и генерацию результата (размышления).",
     "Reload the entire window (use when Agent panel is blank or unresponsive)": "Перезагрузить все окно (используйте, если панель Agent пуста или не отвечает)",
@@ -74,5 +75,13 @@
     "Usage History": "Usage History",
     "Usage Rate: Average percentage of quota consumed per hour": "Скорость использования: Средний процент потребления квоты в час",
     "Usage stable": "Использование стабильно",
-    "View": "View"
+    "View": "View",
+    "Abnormal quota drain: {0} dropped {1}pp while the IDE was closed (now {2}%).": "Аномальный расход квоты: {0} снизилась на {1}pp, пока IDE была закрыта (сейчас {2}%).",
+    "Abnormal quota drain: {0} dropped {1}pp with no editor activity (now {2}%).": "Аномальный расход квоты: {0} снизилась на {1}pp без активности в редакторе (сейчас {2}%).",
+    "Last 7 days": "Последние 7 дней",
+    "Local 7-day estimate: percentage points of the short-term quota pool consumed. Not the official weekly limit.": "Локальная оценка за 7 дней: израсходованные процентные пункты краткосрочного пула квоты. Это не официальный недельный лимит.",
+    "No previous-week data": "Нет данных за предыдущую неделю",
+    "No sampling data (IDE was closed)": "Нет данных выборки (IDE была закрыта)",
+    "Previous 7 days": "Предыдущие 7 дней",
+    "Weekly Usage": "Использование за неделю"
 }

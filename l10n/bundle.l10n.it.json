@@ -53,6 +53,7 @@
     "Please ensure you are logged into Antigravity IDE (Authentication failed).": "Assicurati di aver effettuato l'accesso ad Antigravity IDE (Autenticazione fallita).",
     "Process found but no listening port detected.": "Processo trovato ma nessuna porta di ascolto rilevata.",
     "Prompt": "Prompt",
+    "Quota reset: {0} is back to {1}%.": "Quota ripristinata: {0} è tornata al {1}%.",
     "Quota usage status: Stable": "Stato utilizzo quota: Stabile",
     "Reasoning Credits: Consumed by conversation input and result generation (thinking).": "Crediti di Ragionamento: Consumati dall'input di conversazione e dai risultati (pensiero).",
     "Reload the entire window (use when Agent panel is blank or unresponsive)": "Ricarica l'intera finestra (usa quando il pannello Agent è vuoto o non risponde)",
@@ -74,5 +75,13 @@
     "Usage History": "Usage History",
     "Usage Rate: Average percentage of quota consumed per hour": "Tasso di utilizzo: Media della quota consumata all'ora",
     "Usage stable": "Utilizzo stabile",
-    "View": "View"
+    "View": "View",
+    "Abnormal quota drain: {0} dropped {1}pp while the IDE was closed (now {2}%).": "Consumo anomalo della quota: {0} è sceso di {1}pp mentre l'IDE era chiuso (ora {2}%).",
+    "Abnormal quota drain: {0} dropped {1}pp with no editor activity (now {2}%).": "Consumo anomalo della quota: {0} è sceso di {1}pp senza attività nell'editor (ora {2}%).",
+    "Last 7 days": "Ultimi 7 giorni",
+    "Local 7-day estimate: percentage points of the short-term quota pool consumed. Not the official weekly limit.": "Stima locale su 7 giorni: punti percentuali consumati del pool di quota a breve termine. Non è il limite settimanale ufficiale.",
+    "No previous-week data": "Nessun dato della settimana precedente",
+    "No sampling data (IDE was closed)": "Nessun dato di campionamento (IDE chiuso)",
+    "Previous 7 days": "7 giorni precedenti",
+    "Weekly Usage": "Utilizzo settimanale"
 }

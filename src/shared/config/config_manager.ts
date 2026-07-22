@@ -54,6 +54,7 @@ export class ConfigManager {
       "dashboard.includeSecondaryModels": this.reader.get<boolean>("dashboard.includeSecondaryModels", false),
       "dashboard.showCreditsCard": this.reader.get<boolean>("dashboard.showCreditsCard", false),
       "dashboard.uiScale": Math.min(Math.max(this.reader.get<number>("dashboard.uiScale", 1.0), 0.8), 2.0),
+      "dashboard.showWeeklyCard": this.reader.get<boolean>("dashboard.showWeeklyCard", true),
 
       // 2. Status Bar Settings
       "status.showQuota": this.reader.get<boolean>("status.showQuota", true),
@@ -78,6 +79,8 @@ export class ConfigManager {
         this.reader.get<number>("system.autoAcceptInterval", 800),
         MIN_AUTO_ACCEPT_INTERVAL
       ),
+      "system.notifyOnQuotaReset": this.reader.get<boolean>("system.notifyOnQuotaReset", true),
+      "system.notifyOnAbnormalDrain": this.reader.get<boolean>("system.notifyOnAbnormalDrain", true),
     };
   }
 

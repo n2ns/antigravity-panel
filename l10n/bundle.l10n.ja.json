@@ -53,6 +53,7 @@
     "Please ensure you are logged into Antigravity IDE (Authentication failed).": "Antigravity IDE にログインしていることを確認してください（認証失敗）。",
     "Process found but no listening port detected.": "プロセスは見つかりましたが、リスニングポートが検出されませんでした。",
     "Prompt": "Prompt",
+    "Quota reset: {0} is back to {1}%.": "クォータがリセットされました：{0} は {1}% に回復しました。",
     "Quota usage status: Stable": "クォータ使用ステータス：安定",
     "Reasoning Credits: Consumed by conversation input and result generation (thinking).": "推論クレジット：対話入力と結果生成（思考）によって消費されます。",
     "Reload the entire window (use when Agent panel is blank or unresponsive)": "ウィンドウ全体を再読み込みします（エージェントパネルが空白になったり反応しなくなったりした場合に使用）",
@@ -74,5 +75,13 @@
     "Usage History": "Usage History",
     "Usage Rate: Average percentage of quota consumed per hour": "使用率：1時間あたりの平均クォータ消費率",
     "Usage stable": "使用量は安定",
-    "View": "View"
+    "View": "View",
+    "Abnormal quota drain: {0} dropped {1}pp while the IDE was closed (now {2}%).": "クォータの異常消費：IDE の終了中に {0} が {1}pp 減少しました（現在 {2}%）。",
+    "Abnormal quota drain: {0} dropped {1}pp with no editor activity (now {2}%).": "クォータの異常消費：エディタ操作がない状態で {0} が {1}pp 減少しました（現在 {2}%）。",
+    "Last 7 days": "過去 7 日間",
+    "Local 7-day estimate: percentage points of the short-term quota pool consumed. Not the official weekly limit.": "ローカル 7 日間の推定値：短期クォータプールの消費ポイントです。公式の週次上限ではありません。",
+    "No previous-week data": "前週のデータなし",
+    "No sampling data (IDE was closed)": "サンプリングデータなし（IDE が起動していませんでした）",
+    "Previous 7 days": "その前の 7 日間",
+    "Weekly Usage": "週間使用量"
 }

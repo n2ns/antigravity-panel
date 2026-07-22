@@ -79,9 +79,12 @@ export const window = {
     };
   },
   showInformationMessage(message: string, ...items: any[]): Thenable<any> {
-    return Promise.resolve();
+    (window as any).lastInfoMessage = message;
+    (window as any).lastMessageItems = items;
+    return Promise.resolve((window as any).nextMessageSelection);
   },
   showWarningMessage(message: string, ...items: any[]): Thenable<any> {
+    (window as any).lastWarningMessage = message;
     (window as any).lastMessageItems = items;
     return Promise.resolve((window as any).nextMessageSelection);
   },
@@ -90,7 +93,11 @@ export const window = {
     return Promise.resolve((window as any).nextMessageSelection);
   },
   lastMessageItems: [] as any[],
-  nextMessageSelection: undefined as any
+  lastInfoMessage: undefined as string | undefined,
+  lastWarningMessage: undefined as string | undefined,
+  nextMessageSelection: undefined as any,
+  onDidChangeWindowState: (_listener: (e: { focused: boolean }) => void) => ({ dispose: () => { } }),
+  state: { focused: true }
 };
 
 export const commands = {
@@ -142,7 +149,8 @@ export const workspace = {
   getConfiguration: (section?: string) => ({
     get: (key: string, defaultValue?: any) => defaultValue,
     update: (key: string, value: any) => Promise.resolve()
-  })
+  }),
+  onDidChangeTextDocument: (_listener: (e: unknown) => void) => ({ dispose: () => { } })
 };
 
 export const l10n = {

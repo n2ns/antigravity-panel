@@ -44,6 +44,7 @@
     "config.system.autoAccept.description": "Befehle des KI-Agenten und Dateibearbeitungen automatisch akzeptieren (Freihandmodus)",
     "config.system.autoAcceptInterval.description": "Intervall für die Annahmeprüfung in Millisekunden (Standard: 800ms). Niedrigere Werte sind schneller, verbrauchen aber mehr Ressourcen.",
     "config.system.debugMode.description": "Debug-Protokollierung im 'Antigravity Panel' Ausgabekanal aktivieren",
+    "config.system.notifyOnQuotaReset.description": "Benachrichtigung anzeigen, wenn ein Kontingent-Reset erkannt wird",
     "config.system.serverHost.description": "⚠️ Erweitert: Benutzerdefinierter Server-Hostname für Kontingentmetriken (Standard: 127.0.0.1)",
     "config.title.cache": "AP: Cache-Verwaltung",
     "config.title.commitMessage": "AP: Commit-Nachricht (Lokales LLM)",
@@ -55,5 +56,7 @@
     "extension.category": "Antigravity Panel",
     "extension.description": "Ein Begleitprogramm für Google Antigravity IDE mit lokaler Kontingentvisualisierung, Cache-Verwaltung und Tools zur Workflow-Verbesserung",
     "views.tfa.sidebar.name": "Antigravity Panel",
-    "viewsContainers.tfa-sidebar.title": "Antigravity Panel"
+    "viewsContainers.tfa-sidebar.title": "Antigravity Panel",
+    "config.dashboard.showWeeklyCard.description": "Karte mit lokaler 7-Tage-Verbrauchsschätzung in der Seitenleiste anzeigen",
+    "config.system.notifyOnAbnormalDrain.description": "Bei ungewöhnlichem Kontingentverbrauch warnen, wenn die IDE geschlossen oder das Fenster inaktiv ist und keine Editor-Aktivität vorliegt"
 }

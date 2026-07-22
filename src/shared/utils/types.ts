@@ -19,6 +19,8 @@ export interface ModelQuotaInfo {
   isExhausted: boolean;
   /** Reset time */
   resetTime: Date;
+  /** True when the server sent an invalid resetTime and `resetTime` is a synthetic fallback */
+  resetTimeIsFallback?: boolean;
   /** Time until reset description */
   timeUntilReset: string;
 }
@@ -278,6 +280,8 @@ export interface TfaConfig {
   "dashboard.showCreditsCard": boolean;
   /** UI Scale factor (0.8 - 2.0), default 1.0 */
   "dashboard.uiScale": number;
+  /** Whether to show the 7-day local usage estimate card */
+  "dashboard.showWeeklyCard": boolean;
 
   // ===== 2. Status Bar Settings =====
   /** Whether to show quota in status bar */
@@ -314,6 +318,10 @@ export interface TfaConfig {
   "system.autoAccept": boolean;
   /** Auto-accept check interval (milliseconds) */
   "system.autoAcceptInterval": number;
+  /** Whether to show a notification when a quota reset is detected */
+  "system.notifyOnQuotaReset": boolean;
+  /** Whether to warn about abnormal quota drain (offline or idle consumption) */
+  "system.notifyOnAbnormalDrain": boolean;
 }
 
 // ==================== Callback Types ====================

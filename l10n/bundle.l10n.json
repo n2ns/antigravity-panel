@@ -53,6 +53,7 @@
     "Please ensure you are logged into Antigravity IDE (Authentication failed).": "Please ensure you are logged into Antigravity IDE (Authentication failed).",
     "Process found but no listening port detected.": "Process found but no listening port detected.",
     "Prompt": "Prompt",
+    "Quota reset: {0} is back to {1}%.": "Quota reset: {0} is back to {1}%.",
     "Quota usage status: Stable": "Quota usage status: Stable",
     "Reasoning Credits: Consumed by conversation input and result generation (thinking).": "Reasoning Credits: Consumed by conversation input and result generation (thinking).",
     "Reload the entire window (use when Agent panel is blank or unresponsive)": "Reload the entire window (use when Agent panel is blank or unresponsive)",
@@ -74,5 +75,13 @@
     "Usage History": "Usage History",
     "Usage Rate: Average percentage of quota consumed per hour": "Usage Rate: Average percentage of quota consumed per hour",
     "Usage stable": "Usage stable",
-    "View": "View"
+    "View": "View",
+    "Abnormal quota drain: {0} dropped {1}pp while the IDE was closed (now {2}%).": "Abnormal quota drain: {0} dropped {1}pp while the IDE was closed (now {2}%).",
+    "Abnormal quota drain: {0} dropped {1}pp with no editor activity (now {2}%).": "Abnormal quota drain: {0} dropped {1}pp with no editor activity (now {2}%).",
+    "Last 7 days": "Last 7 days",
+    "Local 7-day estimate: percentage points of the short-term quota pool consumed. Not the official weekly limit.": "Local 7-day estimate: percentage points of the short-term quota pool consumed. Not the official weekly limit.",
+    "No previous-week data": "No previous-week data",
+    "No sampling data (IDE was closed)": "No sampling data (IDE was closed)",
+    "Previous 7 days": "Previous 7 days",
+    "Weekly Usage": "Weekly Usage"
 }

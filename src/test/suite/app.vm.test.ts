@@ -18,7 +18,9 @@ const defaultMockAutomationService: IAutomationService = {
 // Mock Config Reader (reused)
 class MockConfigReader implements IConfigReader {
     private values: Map<string, any> = new Map();
-    get<T>(key: string, defaultValue: T): T { return this.values.get(key) as T || defaultValue; }
+    get<T>(key: string, defaultValue: T): T {
+        return this.values.has(key) ? this.values.get(key) as T : defaultValue;
+    }
     set(key: string, value: any) { this.values.set(key, value); }
 }
 
@@ -53,7 +55,8 @@ const defaultMockStorageService: IStorageService = {
     recordQuotaPoint: async () => { },
     calculateUsageBuckets: () => [],
     getMaxUsage: () => 0,
-    clearGroupHistory: async () => { },
+    getLatestResetTime: () => null,
+    getDailyConsumption: () => [],
     setLastViewState: async () => { },
     getLastViewState: () => null,
     setLastSnapshot: async () => { },
@@ -478,5 +481,271 @@ suite('AppViewModel Test Suite', () => {
     test('getSidebarData should allow the credits card to be explicitly enabled', () => {
         configReader.set('dashboard.showCreditsCard', true);
         assert.strictEqual(vm.getSidebarData().showCreditsCard, true);
+    });
+
+    suite('Quota reset notification', () => {
+        const makeSnapshot = (remainingPercentage: number): QuotaSnapshot => ({
+            timestamp: new Date(),
+            models: [{
+                modelId: 'MODEL_PLACEHOLDER_M47',
+                label: 'Gemini 3 Flash',
+                remainingPercentage,
+                isExhausted: false,
+                resetTime: new Date(),
+                timeUntilReset: '1h'
+            }]
+        });
+
+        const refreshWith = async (remaining: number) => {
+            mockQuota.fetchQuota = async () => makeSnapshot(remaining);
+            await vm.refreshQuota();
+        };
+
+        setup(() => {
+            (vscode.window as any).lastInfoMessage = undefined;
+        });
+
+        test('should notify when quota rebounds above the reset threshold', async () => {
+            await refreshWith(10);
+            await refreshWith(100);
+            const message = (vscode.window as any).lastInfoMessage as string | undefined;
+            assert.ok(message?.startsWith('Quota reset:'), `Expected reset notification, got: ${message}`);
+        });
+
+        test('should stay silent on small rebounds (server jitter)', async () => {
+            await refreshWith(50);
+            await refreshWith(52);
+            assert.strictEqual((vscode.window as any).lastInfoMessage, undefined);
+        });
+
+        test('should respect system.notifyOnQuotaReset = false', async () => {
+            configReader.set('system.notifyOnQuotaReset', false);
+            await refreshWith(10);
+            await refreshWith(100);
+            assert.strictEqual((vscode.window as any).lastInfoMessage, undefined);
+        });
+
+        test('should apply the notification cooldown per group', async () => {
+            await refreshWith(10);
+            await refreshWith(100);
+            assert.ok((vscode.window as any).lastInfoMessage, 'First reset should notify');
+
+            (vscode.window as any).lastInfoMessage = undefined;
+            await refreshWith(10);
+            await refreshWith(100);
+            assert.strictEqual((vscode.window as any).lastInfoMessage, undefined, 'Second reset within cooldown should stay silent');
+        });
+
+        test('should not treat the Ready display fallback as an observed quota reset', async () => {
+            const records: { usage: Record<string, number>; resets?: string[] }[] = [];
+            mockStorage.recordQuotaPoint = async (usage, resets) => { records.push({ usage, resets }); };
+            const readySnapshot = (): QuotaSnapshot => ({
+                timestamp: new Date(),
+                models: [{
+                    modelId: 'MODEL_PLACEHOLDER_M47',
+                    label: 'Gemini 3 Flash',
+                    remainingPercentage: 10,
+                    isExhausted: false,
+                    resetTime: new Date(Date.now() - 60_000),
+                    timeUntilReset: 'Ready'
+                }]
+            });
+
+            mockQuota.fetchQuota = async () => readySnapshot();
+            await vm.refreshQuota();
+            await vm.refreshQuota();
+
+            assert.deepStrictEqual(records.map(record => record.usage), [{ gemini: 10 }, { gemini: 10 }]);
+            assert.deepStrictEqual(records[1].resets, []);
+            assert.strictEqual((vscode.window as any).lastInfoMessage, undefined);
+        });
+    });
+
+    suite('Abnormal quota drain alerts', () => {
+        const makeSnapshot = (remainingPercentage: number): QuotaSnapshot => ({
+            timestamp: new Date(),
+            models: [{
+                modelId: 'MODEL_PLACEHOLDER_M47',
+                label: 'Gemini 3 Flash',
+                remainingPercentage,
+                isExhausted: false,
+                resetTime: new Date(Date.now() + 60 * 60 * 1000),
+                timeUntilReset: '1h'
+            }]
+        });
+
+        setup(() => {
+            (vscode.window as any).lastWarningMessage = undefined;
+            (vscode.window as any).state.focused = true;
+        });
+
+        teardown(() => {
+            (vscode.window as any).state.focused = true;
+        });
+
+        test('should warn when quota dropped while the IDE was closed', async () => {
+            const now = Date.now();
+            mockStorage.getRecentHistory = () => [{
+                timestamp: now - 5 * 60 * 1000,
+                usage: { gemini: 90 }
+            }];
+            mockStorage.getLastSnapshot = <T>() => makeSnapshot(90) as T;
+            mockQuota.fetchQuota = async () => makeSnapshot(80);
+
+            await vm.refreshQuota();
+
+            assert.match(
+                (vscode.window as any).lastWarningMessage || '',
+                /^Abnormal quota drain:/
+            );
+        });
+
+        test('should not treat a fallback reset timestamp as a real offline reset', async () => {
+            const now = Date.now();
+            mockStorage.getRecentHistory = () => [{
+                timestamp: now - 2 * 60 * 60 * 1000,
+                usage: { gemini: 90 }
+            }];
+            const stored = makeSnapshot(90);
+            stored.models[0].resetTime = new Date(now - 60 * 60 * 1000);
+            stored.models[0].resetTimeIsFallback = true;
+            mockStorage.getLastSnapshot = <T>() => stored as T;
+            mockQuota.fetchQuota = async () => makeSnapshot(80);
+
+            await vm.refreshQuota();
+
+            assert.match(
+                (vscode.window as any).lastWarningMessage || '',
+                /^Abnormal quota drain:/
+            );
+        });
+
+        test('should require an unfocused window before accumulating idle drain', async () => {
+            const realNow = Date.now;
+            const start = 1_700_000_000_000;
+
+            try {
+                global.Date.now = () => start;
+                vm.dispose();
+                vm = new AppViewModel(
+                    mockQuota,
+                    mockCache,
+                    mockStorage,
+                    configManager,
+                    strategyManager,
+                    defaultMockAutomationService
+                );
+
+                mockQuota.fetchQuota = async () => makeSnapshot(100);
+                await vm.refreshQuota();
+
+                global.Date.now = () => start + 11 * 60 * 1000;
+                mockQuota.fetchQuota = async () => makeSnapshot(94);
+                await vm.refreshQuota();
+                assert.strictEqual((vscode.window as any).lastWarningMessage, undefined);
+
+                (vscode.window as any).state.focused = false;
+                global.Date.now = () => start + 12 * 60 * 1000;
+                mockQuota.fetchQuota = async () => makeSnapshot(88);
+                await vm.refreshQuota();
+                assert.match(
+                    (vscode.window as any).lastWarningMessage || '',
+                    /^Abnormal quota drain:/
+                );
+            } finally {
+                global.Date.now = realNow;
+            }
+        });
+    });
+
+    test('getSidebarData should include current and previous seven-day usage totals', () => {
+        mockStorage.getDailyConsumption = (_groupId, days, maxSampleGapMs) => {
+            assert.strictEqual(days, 14);
+            assert.strictEqual(maxSampleGapMs, 10 * 60 * 1000);
+            return Array.from({ length: 14 }, (_, index) => ({
+                dayStart: index,
+                usage: index < 7 ? 1 : 2,
+                hasData: true
+            }));
+        };
+
+        const weekly = vm.getSidebarData().weekly;
+
+        assert.ok(weekly);
+        assert.strictEqual(weekly.days.length, 7);
+        assert.strictEqual(weekly.total, 14);
+        assert.strictEqual(weekly.previousTotal, 7);
+    });
+
+    test('restoreFromCache should normalize reset timestamps serialized as strings', () => {
+        const cachedQuota = vm.getState().quota;
+        const cachedSnapshot = {
+            timestamp: new Date().toISOString(),
+            models: [{
+                modelId: 'MODEL_PLACEHOLDER_M47',
+                label: 'Gemini 3 Flash',
+                remainingPercentage: 50,
+                isExhausted: false,
+                resetTime: new Date(Date.now() + 60 * 60 * 1000).toISOString(),
+                timeUntilReset: '1h'
+            }]
+        } as unknown as QuotaSnapshot;
+        mockStorage.getLastViewState = <T>() => cachedQuota as T;
+        mockStorage.getLastSnapshot = <T>() => cachedSnapshot as T;
+
+        assert.strictEqual(vm.restoreFromCache(), true);
+        const gemini = vm.getState().quota.displayItems.find(item => item.id === 'gemini');
+        assert.strictEqual(typeof gemini?.resetDate, 'number');
+    });
+
+    test('dispose should invalidate a quota fetch that is still in flight', async () => {
+        let resolveFetch!: (snapshot: QuotaSnapshot) => void;
+        let recordCount = 0;
+        mockQuota.fetchQuota = () => new Promise(resolve => { resolveFetch = resolve; });
+        mockStorage.recordQuotaPoint = async () => { recordCount++; };
+
+        const refresh = vm.refreshQuota();
+        vm.dispose();
+        resolveFetch({ timestamp: new Date(), models: [] });
+        await refresh;
+
+        assert.strictEqual(recordCount, 0);
+    });
+
+    test('serialized quota updates should not let an older refresh overwrite a newer one', async () => {
+        const snapshot = (remainingPercentage: number): QuotaSnapshot => ({
+            timestamp: new Date(),
+            models: [{
+                modelId: 'MODEL_PLACEHOLDER_M47',
+                label: 'Gemini 3 Flash',
+                remainingPercentage,
+                isExhausted: false,
+                resetTime: new Date(Date.now() + 60 * 60 * 1000),
+                timeUntilReset: '1h'
+            }]
+        });
+        let firstRecordStarted!: () => void;
+        const firstRecord = new Promise<void>(resolve => { firstRecordStarted = resolve; });
+        let releaseFirstRecord!: () => void;
+        const firstRecordBlocked = new Promise<void>(resolve => { releaseFirstRecord = resolve; });
+        let recordCount = 0;
+        mockStorage.recordQuotaPoint = async () => {
+            recordCount++;
+            if (recordCount === 1) {
+                firstRecordStarted();
+                await firstRecordBlocked;
+            }
+        };
+
+        mockQuota.fetchQuota = async () => snapshot(50);
+        const olderRefresh = vm.refreshQuota();
+        await firstRecord;
+        mockQuota.fetchQuota = async () => snapshot(40);
+        const newerRefresh = vm.refreshQuota();
+        releaseFirstRecord();
+        await Promise.all([olderRefresh, newerRefresh]);
+
+        const gemini = vm.getState().quota.groups.find(group => group.id === 'gemini');
+        assert.strictEqual(gemini?.remaining, 40);
     });
 });

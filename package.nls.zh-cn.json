@@ -44,6 +44,7 @@
     "config.system.autoAccept.description": "自动接受 AI 智能体的终端命令和文件修改。 (无人值守模式)",
     "config.system.autoAcceptInterval.description": "自动接受检查的间隔时间（毫秒，默认：800ms）。值越小响应越快，但资源消耗略高。",
     "config.system.debugMode.description": "启用调试日志和高级连接诊断。",
+    "config.system.notifyOnQuotaReset.description": "检测到配额重置时显示通知",
     "config.system.serverHost.description": "⚠️ 高级：自定义配额查询服务器地址（默认：127.0.0.1）",
     "config.title.cache": "AP: 缓存管理",
     "config.title.commitMessage": "AP: 提交信息生成 (本地模型)",
@@ -55,5 +56,7 @@
     "extension.category": "Antigravity Panel",
     "extension.description": "Google Antigravity IDE 用户的必备工具箱。提供本地配额监控、缓存管理和系统指标可视化。",
     "views.tfa.sidebar.name": "Antigravity Panel",
-    "viewsContainers.tfa-sidebar.title": "Antigravity Panel"
+    "viewsContainers.tfa-sidebar.title": "Antigravity Panel",
+    "config.dashboard.showWeeklyCard.description": "在侧边栏显示 7 天本地用量估算卡片",
+    "config.system.notifyOnAbnormalDrain.description": "IDE 关闭期间，或窗口失焦且无编辑活动时配额异常消耗则发出警告"
 }

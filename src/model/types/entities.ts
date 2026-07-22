@@ -61,6 +61,11 @@ export interface QuotaHistoryPoint {
     timestamp: number;
     /** Group quota remaining { groupId: percentage } */
     usage: Record<string, number>;
+    /**
+     * Group IDs whose quota reset was detected at this point. Rate windows
+     * restart here; consumption deltas never span a reset marker.
+     */
+    resets?: string[];
 }
 
 /** Bar chart data item */

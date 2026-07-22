@@ -44,6 +44,7 @@
     "config.system.autoAccept.description": "Автоматически принимать команды ИИ-агента и изменения файлов (режим «Без рук»)",
     "config.system.autoAcceptInterval.description": "Интервал проверки автоматического принятия в миллисекундах (по умолчанию: 800 мс). Меньшие значения обеспечивают более быструю реакцию, но потребляют больше ресурсов.",
     "config.system.debugMode.description": "Включить журнал отладки в канале 'Antigravity Panel'",
+    "config.system.notifyOnQuotaReset.description": "Показывать уведомление при обнаружении сброса квоты",
     "config.system.serverHost.description": "⚠️ Расширенные: Пользовательское имя хоста для метрик квоты (по умолчанию: 127.0.0.1)",
     "config.title.cache": "AP: Управление кешем",
     "config.title.commitMessage": "AP: Сообщение коммита (Локальный LLM)",
@@ -55,5 +56,7 @@
     "extension.category": "Antigravity Panel",
     "extension.description": "Вспомогательная утилита для Google Antigravity IDE с локальной визуализацией квот, управлением кешем и инструментами рабочего процесса",
     "views.tfa.sidebar.name": "Antigravity Panel",
-    "viewsContainers.tfa-sidebar.title": "Antigravity Panel"
+    "viewsContainers.tfa-sidebar.title": "Antigravity Panel",
+    "config.dashboard.showWeeklyCard.description": "Показывать на боковой панели карточку локальной оценки использования за 7 дней",
+    "config.system.notifyOnAbnormalDrain.description": "Предупреждать об аномальном расходе квоты, когда IDE закрыта или окно неактивно и в редакторе нет действий"
 }

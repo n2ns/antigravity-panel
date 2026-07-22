@@ -44,6 +44,7 @@
     "config.system.autoAccept.description": "Otomatis menerima perintah dan perubahan file dari AI agent. (Mode Hands-free)",
     "config.system.autoAcceptInterval.description": "Interval pemeriksaan auto-accept dalam milidetik (default: 800ms). Nilai lebih kecil lebih cepat tetapi memakai lebih banyak sumber daya.",
     "config.system.debugMode.description": "Aktifkan log debug dan diagnostik koneksi lanjutan.",
+    "config.system.notifyOnQuotaReset.description": "Tampilkan notifikasi saat reset quota terdeteksi",
     "config.system.serverHost.description": "⚠️ Lanjutan: Hostname server kustom untuk metrik quota. Default: 127.0.0.1",
     "config.title.cache": "AP: Cache",
     "config.title.commitMessage": "AP: Commit Message (LLM Lokal)",
@@ -55,5 +56,7 @@
     "extension.category": "Antigravity Panel",
     "extension.description": "Monitor quota & pengelola cache untuk Google Antigravity IDE. Pelacakan penggunaan Gemini / Claude / GPT real-time, dashboard quota AI, analitik penggunaan, mode auto-accept agent, dan pembuat commit message AI.",
     "views.tfa.sidebar.name": "Antigravity Panel",
-    "viewsContainers.tfa-sidebar.title": "Antigravity Panel"
+    "viewsContainers.tfa-sidebar.title": "Antigravity Panel",
+    "config.dashboard.showWeeklyCard.description": "Tampilkan kartu estimasi penggunaan lokal 7 hari di sidebar",
+    "config.system.notifyOnAbnormalDrain.description": "Peringatkan konsumsi quota tidak wajar saat IDE tertutup atau jendela tidak fokus dan tidak ada aktivitas editor"
 }

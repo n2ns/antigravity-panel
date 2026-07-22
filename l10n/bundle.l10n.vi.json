@@ -53,6 +53,7 @@
     "Please ensure you are logged into Antigravity IDE (Authentication failed).": "Vui lòng đảm bảo bạn đã đăng nhập vào Antigravity IDE (Xác thực thất bại).",
     "Process found but no listening port detected.": "Tìm thấy tiến trình nhưng không phát hiện được cổng lắng nghe.",
     "Prompt": "Prompt",
+    "Quota reset: {0} is back to {1}%.": "Quota đã được đặt lại: {0} đã trở về {1}%.",
     "Quota usage status: Stable": "Trạng thái sử dụng quota: Ổn định",
     "Reasoning Credits: Consumed by conversation input and result generation (thinking).": "Reasoning Credits: Dùng cho đầu vào hội thoại và tạo kết quả (thinking).",
     "Reload the entire window (use when Agent panel is blank or unresponsive)": "Tải lại toàn bộ cửa sổ (dùng khi Agent panel trống hoặc không phản hồi)",
@@ -74,5 +75,13 @@
     "Usage History": "Usage History",
     "Usage Rate: Average percentage of quota consumed per hour": "Usage Rate: Tỷ lệ quota tiêu thụ trung bình mỗi giờ",
     "Usage stable": "Mức sử dụng ổn định",
-    "View": "View"
+    "View": "View",
+    "Abnormal quota drain: {0} dropped {1}pp while the IDE was closed (now {2}%).": "Tiêu hao quota bất thường: {0} đã giảm {1}pp trong khi IDE đóng (hiện tại {2}%).",
+    "Abnormal quota drain: {0} dropped {1}pp with no editor activity (now {2}%).": "Tiêu hao quota bất thường: {0} đã giảm {1}pp khi không có hoạt động soạn thảo (hiện tại {2}%).",
+    "Last 7 days": "7 ngày qua",
+    "Local 7-day estimate: percentage points of the short-term quota pool consumed. Not the official weekly limit.": "Ước tính cục bộ 7 ngày: số điểm phần trăm đã tiêu thụ của pool quota ngắn hạn. Không phải hạn mức tuần chính thức.",
+    "No previous-week data": "Không có dữ liệu tuần trước",
+    "No sampling data (IDE was closed)": "Không có dữ liệu lấy mẫu (IDE đã đóng)",
+    "Previous 7 days": "7 ngày trước đó",
+    "Weekly Usage": "Mức sử dụng hàng tuần"
 }

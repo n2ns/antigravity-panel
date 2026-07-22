@@ -1,5 +1,5 @@
 import * as assert from 'assert';
-import { formatBytes } from '../../shared/utils/format';
+import { formatBytes, formatTimeUntilReset } from '../../shared/utils/format';
 
 suite('Format Utils Test Suite', () => {
     suite('formatBytes', () => {
@@ -53,6 +53,36 @@ suite('Format Utils Test Suite', () => {
             assert.strictEqual(formatBytes(1024), '1.0 KB');
             assert.strictEqual(formatBytes(1048575), '1024.0 KB'); // 1MB - 1B
             assert.strictEqual(formatBytes(1048576), '1.0 MB'); // Exactly 1MB
+        });
+    });
+
+    suite('formatTimeUntilReset', () => {
+        const MINUTE = 60_000;
+        const HOUR = 60 * MINUTE;
+        const DAY = 24 * HOUR;
+
+        test('should return Ready for elapsed reset times', () => {
+            assert.strictEqual(formatTimeUntilReset(0), 'Ready');
+            assert.strictEqual(formatTimeUntilReset(-5 * MINUTE), 'Ready');
+        });
+
+        test('should format minutes with ceiling', () => {
+            assert.strictEqual(formatTimeUntilReset(1), '1m');
+            assert.strictEqual(formatTimeUntilReset(5 * MINUTE), '5m');
+            assert.strictEqual(formatTimeUntilReset(59 * MINUTE), '59m');
+        });
+
+        test('should format hours and minutes', () => {
+            assert.strictEqual(formatTimeUntilReset(HOUR), '1h 0m');
+            assert.strictEqual(formatTimeUntilReset(1.5 * HOUR), '1h 30m');
+            assert.strictEqual(formatTimeUntilReset(23 * HOUR), '23h 0m');
+        });
+
+        test('should format days and weeks', () => {
+            assert.strictEqual(formatTimeUntilReset(26 * HOUR), '1d 2h');
+            assert.strictEqual(formatTimeUntilReset(7 * DAY), '1w');
+            assert.strictEqual(formatTimeUntilReset(8 * DAY), '1w 1d');
+            assert.strictEqual(formatTimeUntilReset(8 * DAY + 3 * HOUR), '1w 1d 3h');
         });
     });
 

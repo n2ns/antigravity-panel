@@ -44,6 +44,7 @@
     "config.system.autoAccept.description": "AI 에이전트 명령 및 파일 수정을 자동으로 승인합니다. (핸즈프리 모드)",
     "config.system.autoAcceptInterval.description": "자동 승인 확인 간격(밀리초, 기본값: 800ms). 값이 작을수록 빠르지만 리소스가 더 많이 소모됩니다.",
     "config.system.debugMode.description": "'Antigravity Panel' 출력 채널에 디버그 로깅 활성화",
+    "config.system.notifyOnQuotaReset.description": "쿼터 초기화가 감지되면 알림을 표시합니다",
     "config.system.serverHost.description": "⚠️ 고급: 할당량 메트릭용 사용자 정의 서버 호스트명 (기본값: 127.0.0.1)",
     "config.title.cache": "AP: 캐시 관리",
     "config.title.commitMessage": "AP: 커밋 메시지 (로컬 LLM)",
@@ -55,5 +56,7 @@
     "extension.category": "Antigravity Panel",
     "extension.description": "로컬 할당량 시각화, 캐시 관리 및 워크플로우 향상 기능을 갖춘 Google Antigravity IDE용 보조 유틸리티",
     "views.tfa.sidebar.name": "Antigravity Panel",
-    "viewsContainers.tfa-sidebar.title": "Antigravity Panel"
+    "viewsContainers.tfa-sidebar.title": "Antigravity Panel",
+    "config.dashboard.showWeeklyCard.description": "사이드바에 7일 로컬 사용량 추정 카드를 표시합니다",
+    "config.system.notifyOnAbnormalDrain.description": "IDE가 종료되어 있거나 창이 비활성화되고 편집 활동이 없을 때 비정상적인 쿼터 소모를 경고합니다"
 }

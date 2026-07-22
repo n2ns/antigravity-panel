@@ -53,6 +53,7 @@
     "Please ensure you are logged into Antigravity IDE (Authentication failed).": "Pastikan Anda sudah login ke Antigravity IDE (Autentikasi gagal).",
     "Process found but no listening port detected.": "Proses ditemukan tetapi port listening tidak terdeteksi.",
     "Prompt": "Prompt",
+    "Quota reset: {0} is back to {1}%.": "Quota telah direset: {0} kembali ke {1}%.",
     "Quota usage status: Stable": "Status penggunaan quota: Stabil",
     "Reasoning Credits: Consumed by conversation input and result generation (thinking).": "Reasoning Credits: Terpakai oleh input percakapan dan pembuatan hasil (thinking).",
     "Reload the entire window (use when Agent panel is blank or unresponsive)": "Muat ulang seluruh jendela (gunakan saat panel Agent kosong atau tidak merespons)",
@@ -74,5 +75,13 @@
     "Usage History": "Usage History",
     "Usage Rate: Average percentage of quota consumed per hour": "Usage Rate: Rata-rata persentase quota yang terpakai per jam",
     "Usage stable": "Penggunaan stabil",
-    "View": "View"
+    "View": "View",
+    "Abnormal quota drain: {0} dropped {1}pp while the IDE was closed (now {2}%).": "Konsumsi quota tidak wajar: {0} turun {1}pp saat IDE tertutup (sekarang {2}%).",
+    "Abnormal quota drain: {0} dropped {1}pp with no editor activity (now {2}%).": "Konsumsi quota tidak wajar: {0} turun {1}pp tanpa aktivitas editor (sekarang {2}%).",
+    "Last 7 days": "7 hari terakhir",
+    "Local 7-day estimate: percentage points of the short-term quota pool consumed. Not the official weekly limit.": "Estimasi lokal 7 hari: poin persentase pool quota jangka pendek yang terpakai. Bukan batas mingguan resmi.",
+    "No previous-week data": "Tidak ada data minggu sebelumnya",
+    "No sampling data (IDE was closed)": "Tidak ada data sampling (IDE tertutup)",
+    "Previous 7 days": "7 hari sebelumnya",
+    "Weekly Usage": "Penggunaan Mingguan"
 }

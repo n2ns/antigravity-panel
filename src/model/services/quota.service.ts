@@ -6,6 +6,7 @@
  */
 
 import { retry } from '../../shared/utils/retry';
+import { formatTimeUntilReset } from '../../shared/utils/format';
 import { httpRequest } from '../../shared/utils/http_client';
 import { logQuotaParseError, warnLog } from '../../shared/utils/logger';
 import type { IQuotaService } from './interfaces';
@@ -260,10 +261,14 @@ export class QuotaService implements IQuotaService {
                 const now = new Date();
                 let resetTime = new Date(m.quotaInfo!.resetTime);
 
-                // Handle invalid resetTime - use 24h from now as fallback
+                // Handle invalid resetTime - use 24h from now as fallback, but flag it
+                // so the UI shows N/A instead of a fake countdown and no refresh timer
+                // is scheduled against it.
+                let resetTimeIsFallback = false;
                 if (Number.isNaN(resetTime.getTime())) {
                     warnLog(`Invalid resetTime for model ${m.label}: ${m.quotaInfo!.resetTime}`);
                     resetTime = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+                    resetTimeIsFallback = true;
                 }
 
                 const diff = resetTime.getTime() - now.getTime();
@@ -275,7 +280,8 @@ export class QuotaService implements IQuotaService {
                     remainingPercentage: remainingFraction * 100,
                     isExhausted: remainingFraction === 0,
                     resetTime,
-                    timeUntilReset: this.formatTime(diff),
+                    resetTimeIsFallback,
+                    timeUntilReset: resetTimeIsFallback ? 'N/A' : formatTimeUntilReset(diff),
                 };
             });
 
@@ -298,36 +304,6 @@ export class QuotaService implements IQuotaService {
         return Math.min(1, Math.max(0, parsed));
     }
 
-    private formatTime(ms: number): string {
-        if (ms <= 0) {
-            return 'Ready';
-        }
-        const mins = Math.ceil(ms / 60000);
-        if (mins < 60) {
-            return `${mins}m`;
-        }
-        const hours = Math.floor(mins / 60);
-        if (hours >= 24) {
-            const days = Math.floor(hours / 24);
-            const remainingHours = hours % 24;
-            if (days >= 7) {
-                const weeks = Math.floor(days / 7);
-                const remDays = days % 7;
-                if (remDays === 0 && remainingHours === 0) {
-                    return `${weeks}w`;
-                }
-                if (remDays === 0) {
-                    return `${weeks}w ${remainingHours}h`;
-                }
-                if (remainingHours === 0) {
-                    return `${weeks}w ${remDays}d`;
-                }
-                return `${weeks}w ${remDays}d ${remainingHours}h`;
-            }
-            return `${days}d ${remainingHours}h`;
-        }
-        return `${hours}h ${mins % 60}m`;
-    }
 }
 
 // Server Response Types (internal)

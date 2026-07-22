@@ -53,6 +53,7 @@
     "Please ensure you are logged into Antigravity IDE (Authentication failed).": "Upewnij się, że jesteś zalogowany do Antigravity IDE (Błąd uwierzytelniania).",
     "Process found but no listening port detected.": "Znaleziono proces, ale nie wykryto portu nasłuchiwania.",
     "Prompt": "Prompt",
+    "Quota reset: {0} is back to {1}%.": "Limit zresetowany: {0} wrócił do {1}%.",
     "Quota usage status: Stable": "Status użycia limitu: Stabilny",
     "Reasoning Credits: Consumed by conversation input and result generation (thinking).": "Kredyty rozumowania: Zużywane przez dane wejściowe rozmowy i generowanie wyników (myślenie).",
     "Reload the entire window (use when Agent panel is blank or unresponsive)": "Przeładuj całe okno (użyj, gdy panel Agent jest pusty lub nie reaguje)",
@@ -74,5 +75,13 @@
     "Usage History": "Usage History",
     "Usage Rate: Average percentage of quota consumed per hour": "Wskaźnik użycia: Średni procent limitu zużywanego na godzinę",
     "Usage stable": "Stabilne zużycie",
-    "View": "View"
+    "View": "View",
+    "Abnormal quota drain: {0} dropped {1}pp while the IDE was closed (now {2}%).": "Nietypowe zużycie limitu: {0} spadł o {1}pp, gdy IDE było zamknięte (obecnie {2}%).",
+    "Abnormal quota drain: {0} dropped {1}pp with no editor activity (now {2}%).": "Nietypowe zużycie limitu: {0} spadł o {1}pp bez aktywności w edytorze (obecnie {2}%).",
+    "Last 7 days": "Ostatnie 7 dni",
+    "Local 7-day estimate: percentage points of the short-term quota pool consumed. Not the official weekly limit.": "Lokalne oszacowanie z 7 dni: zużyte punkty procentowe krótkoterminowej puli limitu. To nie jest oficjalny limit tygodniowy.",
+    "No previous-week data": "Brak danych z poprzedniego tygodnia",
+    "No sampling data (IDE was closed)": "Brak danych próbkowania (IDE było zamknięte)",
+    "Previous 7 days": "Poprzednie 7 dni",
+    "Weekly Usage": "Użycie tygodniowe"
 }

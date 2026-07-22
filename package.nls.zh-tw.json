@@ -44,6 +44,7 @@
     "config.system.autoAccept.description": "自動接受 AI 代理的終端機指令和檔案修改。（無人值守模式）",
     "config.system.autoAcceptInterval.description": "自動接受檢查的間隔時間（毫秒，預設：800ms）。值越小回應越快，但資源消耗略高。",
     "config.system.debugMode.description": "啟用偵錯記錄，輸出至 'Antigravity Panel' 頻道",
+    "config.system.notifyOnQuotaReset.description": "偵測到配額重置時顯示通知",
     "config.system.serverHost.description": "⚠️ 進階：配額指標的自訂伺服器主機名稱（預設：127.0.0.1）",
     "config.title.cache": "AP: 快取管理",
     "config.title.commitMessage": "AP: 提交信息生成 (本地模型)",
@@ -55,5 +56,7 @@
     "extension.category": "Antigravity Panel",
     "extension.description": "專為 Google Antigravity IDE 設計的本機配額視覺化、快取管理與工作流程增強輔助工具",
     "views.tfa.sidebar.name": "Antigravity Panel",
-    "viewsContainers.tfa-sidebar.title": "Antigravity Panel"
+    "viewsContainers.tfa-sidebar.title": "Antigravity Panel",
+    "config.dashboard.showWeeklyCard.description": "在側邊欄顯示 7 天本地用量估算卡片",
+    "config.system.notifyOnAbnormalDrain.description": "IDE 關閉期間，或視窗失焦且無編輯活動時配額異常消耗則發出警告"
 }

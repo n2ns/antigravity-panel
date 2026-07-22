@@ -44,6 +44,7 @@
     "config.system.autoAccept.description": "Yapay zeka aracısı komutlarını ve dosya düzenlemelerini otomatik olarak kabul et. (Eller Serbest Modu)",
     "config.system.autoAcceptInterval.description": "Milisaniye cinsinden otomatik kabul kontrol aralığı (varsayılan: 800 ms). Daha düşük değerler daha hızlıdır ancak daha fazla kaynak tüketir.",
     "config.system.debugMode.description": "'Antigravity Panel' çıktı kanalına hata ayıklama günlüklerini etkinleştir",
+    "config.system.notifyOnQuotaReset.description": "Kota sıfırlaması algılandığında bildirim göster",
     "config.system.serverHost.description": "⚠️ Gelişmiş: Kota metrikleri için özel sunucu ana bilgisayar adı. Varsayılan: 127.0.0.1",
     "config.title.cache": "AP: Önbellek Yönetimi",
     "config.title.commitMessage": "AP: Commit Mesajı (Yerel LLM)",
@@ -55,5 +56,7 @@
     "extension.category": "Antigravity Panel",
     "extension.description": "Google Antigravity IDE kullanıcıları için temel araç kutusu. Kotaları izleyin, önbellekleri yönetin ve sistem metriklerini görselleştirin.",
     "views.tfa.sidebar.name": "Antigravity Panel",
-    "viewsContainers.tfa-sidebar.title": "Antigravity Panel"
+    "viewsContainers.tfa-sidebar.title": "Antigravity Panel",
+    "config.dashboard.showWeeklyCard.description": "Kenar çubuğunda 7 günlük yerel kullanım tahmini kartını göster",
+    "config.system.notifyOnAbnormalDrain.description": "IDE kapalıyken veya pencere odak dışındayken ve düzenleyici etkinliği yokken olağan dışı kota tüketimini bildir"
 }

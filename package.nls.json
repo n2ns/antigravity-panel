@@ -44,6 +44,7 @@
     "config.system.autoAccept.description": "Automatically accept AI agent commands and file edits. (Hands-free Mode)",
     "config.system.autoAcceptInterval.description": "Interval for checking auto-accept in milliseconds (default: 800ms). Lower values are faster but consume more resources.",
     "config.system.debugMode.description": "Enable debug logging and advanced connection diagnostics.",
+    "config.system.notifyOnQuotaReset.description": "Show a notification when a quota reset is detected",
     "config.system.serverHost.description": "⚠️ Advanced: Custom server hostname for quota metrics. Default: 127.0.0.1",
     "config.title.cache": "AP: Cache",
     "config.title.commitMessage": "AP: Commit Message (Local LLM)",
@@ -55,5 +56,7 @@
     "extension.category": "Antigravity Panel",
     "extension.description": "Quota monitor & cache manager for Google Antigravity IDE. Real-time Gemini / Claude / GPT usage tracking, AI quota dashboard, usage analytics, auto-accept agent mode, and AI commit message generator.",
     "views.tfa.sidebar.name": "Antigravity Panel",
-    "viewsContainers.tfa-sidebar.title": "Antigravity Panel"
+    "viewsContainers.tfa-sidebar.title": "Antigravity Panel",
+    "config.dashboard.showWeeklyCard.description": "Show the 7-day local usage estimate card in the sidebar",
+    "config.system.notifyOnAbnormalDrain.description": "Warn when quota drains abnormally while the IDE is closed or the window is unfocused with no editor activity"
 }

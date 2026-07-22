@@ -13,7 +13,7 @@
     "type": "git",
     "url": "https://github.com/n2ns/antigravity-panel.git"
   },
-  "homepage": "https://datafrog.io",
+  "homepage": "https://n2ns.com",
   "bugs": {
     "url": "https://github.com/n2ns/antigravity-panel/issues"
   },
@@ -207,6 +207,12 @@
             "order": 15,
             "description": "%config.dashboard.uiScale.description%"
           },
+          "tfa.dashboard.showWeeklyCard": {
+            "type": "boolean",
+            "default": true,
+            "order": 35,
+            "description": "%config.dashboard.showWeeklyCard.description%"
+          },
           "tfa.dashboard.showUserInfoCard": {
             "type": "boolean",
             "default": true,
@@ -377,6 +383,18 @@
             "maximum": 5000,
             "order": 31,
             "description": "%config.system.autoAcceptInterval.description%"
+          },
+          "tfa.system.notifyOnQuotaReset": {
+            "type": "boolean",
+            "default": true,
+            "order": 40,
+            "description": "%config.system.notifyOnQuotaReset.description%"
+          },
+          "tfa.system.notifyOnAbnormalDrain": {
+            "type": "boolean",
+            "default": true,
+            "order": 41,
+            "description": "%config.system.notifyOnAbnormalDrain.description%"
           }
         }
       },

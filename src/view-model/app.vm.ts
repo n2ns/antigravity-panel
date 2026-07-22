@@ -21,6 +21,7 @@ import type {
     StatusBarGroupItem,
     SidebarData,
     UsageChartData,
+    WeeklyUsageData,
     TokenUsageViewState,
     UserViewState,
     ConnectionStatus,
@@ -37,6 +38,16 @@ export class AppViewModel implements vscode.Disposable {
     /** Previous remaining % per group for request detection */
     private _prevGroupRemaining = new Map<string, number>();
     private _quotaRefreshVersion = 0;
+    private _quotaUpdateQueue: Promise<void> = Promise.resolve();
+    private _disposed = false;
+
+    private _resetRefreshTimer: ReturnType<typeof setTimeout> | null = null;
+    private _resetRefreshTargetMs = 0;
+
+    // Abnormal drain detection state
+    private _lastActivityTs = Date.now();
+    private _idleDrainAccum = new Map<string, number>();
+    private _offlineDrainChecked = new Set<string>();
 
     private readonly _onStateChange = new vscode.EventEmitter<AppState>();
     readonly onStateChange = this._onStateChange.event;
@@ -75,6 +86,20 @@ export class AppViewModel implements vscode.Disposable {
             this.automationService.start();
         }
         this._state.automation.enabled = initialAutoAccept;
+
+        // Editor activity feeds idle-drain detection: quota dropping while the
+        // user is verifiably away is worth a warning, normal usage is not.
+        this._disposables.push(
+            vscode.workspace.onDidChangeTextDocument(() => this.recordUserActivity()),
+            vscode.window.onDidChangeWindowState(e => {
+                if (e.focused) this.recordUserActivity();
+            })
+        );
+    }
+
+    private recordUserActivity(): void {
+        this._lastActivityTs = Date.now();
+        this._idleDrainAccum.clear();
     }
 
     private createEmptyState(): AppState {
@@ -123,19 +148,30 @@ export class AppViewModel implements vscode.Disposable {
     }
 
     async refreshQuota(): Promise<void> {
+        if (this._disposed) return;
         const quotaRefreshVersion = ++this._quotaRefreshVersion;
         const quota = await this.quotaService.fetchQuota();
-        if (quotaRefreshVersion !== this._quotaRefreshVersion) {
-            return;
-        }
-        if (quota) {
-            await this.updateQuotaState(quota);
+        if (!quota || !this.isCurrentQuotaRefresh(quotaRefreshVersion)) return;
+
+        if (await this.enqueueQuotaUpdate(quota, quotaRefreshVersion)) {
             this._state.connectionStatus = 'connected';
             this._onQuotaChange.fire(this._state.quota);
             this._onStateChange.fire(this._state);
         }
     }
 
+    private async enqueueQuotaUpdate(snapshot: QuotaSnapshot, refreshVersion: number): Promise<boolean> {
+        const updateTask = this._quotaUpdateQueue.then(async () => {
+            if (!this.isCurrentQuotaRefresh(refreshVersion)) return false;
+            return this.updateQuotaState(snapshot, refreshVersion);
+        });
+        this._quotaUpdateQueue = updateTask.then(() => undefined, () => undefined);
+        return updateTask;
+    }
+
+    private isCurrentQuotaRefresh(version: number): boolean {
+        return !this._disposed && version === this._quotaRefreshVersion;
+    }
 
 
     async refreshCache(): Promise<void> {
@@ -319,8 +355,10 @@ export class AppViewModel implements vscode.Disposable {
     async onConfigurationChanged(): Promise<void> {
         // If we have cached data, re-render UI with new config (e.g. chart time range)
         if (this._lastSnapshot) {
-            await this.updateQuotaState(this._lastSnapshot);
-            this._onQuotaChange.fire(this._state.quota);
+            const refreshVersion = ++this._quotaRefreshVersion;
+            if (await this.enqueueQuotaUpdate(this._lastSnapshot, refreshVersion)) {
+                this._onQuotaChange.fire(this._state.quota);
+            }
         } else {
             // No data implies we might need to fetch
             await this.refreshQuota();
@@ -344,41 +382,69 @@ export class AppViewModel implements vscode.Disposable {
         }
     }
 
-    private async updateQuotaState(snapshot: QuotaSnapshot): Promise<void> {
+    private async updateQuotaState(snapshot: QuotaSnapshot, refreshVersion: number): Promise<boolean> {
         this._lastSnapshot = snapshot;
         const prevState = this._state.quota;
         const newGroups = this.aggregateGroups(snapshot);
+        const observedRemaining = new Map<string, number>();
+        for (const group of newGroups) {
+            const model = this.getMinModelForPool(snapshot, group.id);
+            if (model) observedRemaining.set(group.id, model.remainingPercentage);
+        }
         const activeGroupId = this.detectActiveGroup(prevState, newGroups);
         const activeGroup = newGroups.find(g => g.id === activeGroupId);
         const currentRemaining = activeGroup?.remaining || 0;
 
         // === Quota reset detection: compare with previous remaining to reset consumption rate ===
         const RESET_THRESHOLD_PP = 0.1;
+        const resetGroups: string[] = [];
         for (const group of newGroups) {
             if (!group.hasData) continue;
+            const currentObserved = observedRemaining.get(group.id) ?? group.remaining;
             const prev = this._prevGroupRemaining.get(group.id);
             if (prev !== undefined) {
-                if (group.remaining > prev + RESET_THRESHOLD_PP) {
-                    // Quota increased -> reset detected
-                    // Clear history points for this group so pp/h restarts from zero
-                    await this.storageService.clearGroupHistory(group.id);
+                if (currentObserved > prev + RESET_THRESHOLD_PP) {
+                    // Quota increased -> reset detected. Mark the point instead of
+                    // deleting history: rate windows restart at the marker while the
+                    // usage timeline keeps its pre-reset consumption bars.
+                    resetGroups.push(group.id);
+                    this._idleDrainAccum.delete(group.id);
+                    this.maybeNotifyQuotaReset(group, prev, currentObserved);
+                } else {
+                    this.trackIdleDrain(group, prev, currentObserved);
                 }
+            } else {
+                // First live value this session: check for drain while the IDE was closed
+                this.checkOfflineDrain(group, currentObserved);
             }
-            this._prevGroupRemaining.set(group.id, group.remaining);
+            this._prevGroupRemaining.set(group.id, currentObserved);
         }
+
+        this.scheduleResetRefresh(newGroups);
 
         const quotaRecord: Record<string, number> = {};
         for (const group of newGroups) {
-            if (group.hasData) quotaRecord[group.id] = group.remaining;
+            if (group.hasData) quotaRecord[group.id] = observedRemaining.get(group.id) ?? group.remaining;
         }
-        await this.storageService.recordQuotaPoint(quotaRecord);
+        await this.storageService.recordQuotaPoint(quotaRecord, resetGroups);
+        if (!this.isCurrentQuotaRefresh(refreshVersion)) return false;
 
         const chart = this.buildChartData(activeGroupId, currentRemaining);
 
-        // Compute accumulated pp consumed per group from chart buckets
+        // Compute accumulated pp consumed per group from chart buckets,
+        // counting only consumption after each group's latest reset
         const groupConsumption = new Map<string, number>();
+        const latestResetCache = new Map<string, number | null>();
+        const latestResetFor = (groupId: string): number | null => {
+            if (!latestResetCache.has(groupId)) {
+                latestResetCache.set(groupId, this.storageService.getLatestResetTime(groupId));
+            }
+            return latestResetCache.get(groupId)!;
+        };
         for (const bucket of chart.buckets) {
             for (const item of bucket.items) {
+                const latestReset = latestResetFor(item.groupId);
+                if (latestReset !== null && bucket.endTime <= latestReset) continue;
                 groupConsumption.set(item.groupId, (groupConsumption.get(item.groupId) || 0) + item.usage);
             }
         }
@@ -430,24 +496,185 @@ export class AppViewModel implements vscode.Disposable {
         }
 
         await this.storageService.setLastViewState(this._state.quota);
+        if (!this.isCurrentQuotaRefresh(refreshVersion)) return false;
         await this.storageService.setLastSnapshot(snapshot);
+        if (!this.isCurrentQuotaRefresh(refreshVersion)) return false;
         await this.storageService.setLastDisplayPercentage(Math.round(currentRemaining));
+        if (!this.isCurrentQuotaRefresh(refreshVersion)) return false;
         await this.storageService.setLastPrediction(
             chart.prediction?.usageRate || 0,
             chart.prediction?.runway || 'Stable',
             activeGroupId
         );
+        if (!this.isCurrentQuotaRefresh(refreshVersion)) return false;
 
         // Cache user info and token usage for instant startup
         if (this._state.user) {
             await this.storageService.setLastUserInfo(this._state.user);
+            if (!this.isCurrentQuotaRefresh(refreshVersion)) return false;
         }
         if (this._state.tokenUsage) {
             await this.storageService.setLastTokenUsage(this._state.tokenUsage);
+            if (!this.isCurrentQuotaRefresh(refreshVersion)) return false;
         }
 
         // Trigger notifications for the active group
         this.checkQuotaNotifications(activeGroup);
+        return true;
+    }
+
+    /**
+     * Notify when a group's quota rebounds enough to be a real reset.
+     * Uses its own high threshold, separate from the 0.1pp rate-clearing
+     * threshold above, so server-side fraction jitter never produces a toast.
+     */
+    private maybeNotifyQuotaReset(group: QuotaGroupState, prevRemaining: number, currentRemaining: number): void {
+        const RESET_NOTIFY_THRESHOLD_PP = 5;
+        if (currentRemaining - prevRemaining < RESET_NOTIFY_THRESHOLD_PP) return;
+
+        const config = this.configManager.getConfig();
+        if (!config["system.notifyOnQuotaReset"]) return;
+
+        const cooldownKey = `reset:${group.id}`;
+        const now = Date.now();
+        const lastNotify = this._notificationCooldowns.get(cooldownKey) || 0;
+        if (now - lastNotify < this.NOTIFICATION_COOLDOWN) return;
+
+        vscode.window.showInformationMessage(
+            vscode.l10n.t("Quota reset: {0} is back to {1}%.", group.label, Math.round(currentRemaining))
+        );
+        this._notificationCooldowns.set(cooldownKey, now);
+    }
+
+    /**
+     * Warn when the first live value of a session sits far below the last value
+     * persisted by the previous session — quota drained while the IDE was closed.
+     * Skipped when a reset fell inside the offline window: the old value is then
+     * not a valid baseline for the comparison.
+     */
+    private checkOfflineDrain(group: QuotaGroupState, currentRemaining: number): void {
+        if (this._offlineDrainChecked.has(group.id)) return;
+        this._offlineDrainChecked.add(group.id);
+
+        // Runs before this cycle's recordQuotaPoint, so the newest matching
+        // history point still belongs to the previous session.
+        const history = this.storageService.getRecentHistory(7 * 24 * 60);
+        let lastValue: number | undefined;
+        let lastTimestamp = 0;
+        for (let i = history.length - 1; i >= 0; i--) {
+            const value = history[i].usage[group.id];
+            if (value !== undefined) {
+                lastValue = value;
+                lastTimestamp = history[i].timestamp;
+                break;
+            }
+        }
+        if (lastValue === undefined) return;
+
+        const drop = lastValue - currentRemaining;
+        if (drop < AppViewModel.ABNORMAL_DRAIN_THRESHOLD_PP) return;
+
+        const stored = this.storageService.getLastSnapshot<QuotaSnapshot>();
+        if (stored?.models) {
+            const model = this.getMinModelForPool(stored, group.id);
+            if (model && !model.resetTimeIsFallback) {
+                const resetMs = this.getResetTimestamp(model);
+                if (resetMs !== undefined && resetMs > lastTimestamp && resetMs <= Date.now()) return;
+            }
+        }
+
+        this.notifyAbnormalDrain(group, drop, currentRemaining, 'offline');
+    }
+
+    /**
+     * Accumulate quota drops that happen while the user is verifiably idle
+     * (window unfocused / no edits for a sustained period) and warn once the
+     * accumulated drain crosses the threshold. Any activity clears the tally.
+     */
+    private trackIdleDrain(group: QuotaGroupState, prevRemaining: number, currentRemaining: number): void {
+        const IDLE_MS = 10 * 60 * 1000;
+        const drop = prevRemaining - currentRemaining;
+        if (drop <= 0) return;
+        if (vscode.window.state.focused || Date.now() - this._lastActivityTs < IDLE_MS) {
+            this._idleDrainAccum.delete(group.id);
+            return;
+        }
+
+        const accumulated = (this._idleDrainAccum.get(group.id) || 0) + drop;
+        if (accumulated >= AppViewModel.ABNORMAL_DRAIN_THRESHOLD_PP) {
+            this._idleDrainAccum.delete(group.id);
+            this.notifyAbnormalDrain(group, accumulated, currentRemaining, 'idle');
+        } else {
+            this._idleDrainAccum.set(group.id, accumulated);
+        }
+    }
+
+    private static readonly ABNORMAL_DRAIN_THRESHOLD_PP = 5;
+
+    private notifyAbnormalDrain(
+        group: QuotaGroupState,
+        drop: number,
+        currentRemaining: number,
+        kind: 'offline' | 'idle'
+    ): void {
+        const config = this.configManager.getConfig();
+        if (!config["system.notifyOnAbnormalDrain"]) return;
+
+        const cooldownKey = `drain:${group.id}`;
+        const now = Date.now();
+        const lastNotify = this._notificationCooldowns.get(cooldownKey) || 0;
+        if (now - lastNotify < this.NOTIFICATION_COOLDOWN) return;
+
+        const message = kind === 'offline'
+            ? vscode.l10n.t(
+                "Abnormal quota drain: {0} dropped {1}pp while the IDE was closed (now {2}%).",
+                group.label, Math.round(drop), Math.round(currentRemaining)
+            )
+            : vscode.l10n.t(
+                "Abnormal quota drain: {0} dropped {1}pp with no editor activity (now {2}%).",
+                group.label, Math.round(drop), Math.round(currentRemaining)
+            );
+        vscode.window.showWarningMessage(message);
+        this._notificationCooldowns.set(cooldownKey, now);
+    }
+
+    /**
+     * Schedule one refresh right after the earliest upcoming quota reset, so the
+     * panel reflects a reset within seconds instead of waiting a polling cycle.
+     * The next updateQuotaState reschedules against fresh server data, so a
+     * server-side late reset simply pushes the timer forward — no retry loop.
+     */
+    private scheduleResetRefresh(groups: QuotaGroupState[]): void {
+        const RESET_REFRESH_BUFFER_MS = 45_000;
+        const now = Date.now();
+
+        let earliest: number | null = null;
+        for (const group of groups) {
+            if (!group.hasData || group.resetDate === undefined) continue;
+            if (group.resetDate <= now) continue;
+            if (earliest === null || group.resetDate < earliest) earliest = group.resetDate;
+        }
+        if (earliest === null) {
+            if (this._resetRefreshTimer) {
+                clearTimeout(this._resetRefreshTimer);
+                this._resetRefreshTimer = null;
+                this._resetRefreshTargetMs = 0;
+            }
+            return;
+        }
+
+        const target = earliest + RESET_REFRESH_BUFFER_MS;
+        // Keep an already-armed timer aimed at the same reset
+        if (this._resetRefreshTimer && Math.abs(target - this._resetRefreshTargetMs) < 1000) return;
+
+        if (this._resetRefreshTimer) clearTimeout(this._resetRefreshTimer);
+        this._resetRefreshTargetMs = target;
+        this._resetRefreshTimer = setTimeout(() => {
+            this._resetRefreshTimer = null;
+            if (!this._disposed) void this.refreshQuota();
+        }, target - now);
+        // Never keep the process alive just for this convenience refresh
+        this._resetRefreshTimer.unref?.();
     }
 
     /**
@@ -525,6 +752,14 @@ export class AppViewModel implements vscode.Disposable {
         );
     }
 
+    private getResetTimestamp(model: ModelQuotaInfo): number | undefined {
+        if (model.resetTimeIsFallback) return undefined;
+        const timestamp = model.resetTime instanceof Date
+            ? model.resetTime.getTime()
+            : new Date(model.resetTime as unknown as string).getTime();
+        return Number.isFinite(timestamp) ? timestamp : undefined;
+    }
+
     private aggregateGroups(snapshot: QuotaSnapshot): QuotaGroupState[] {
         const pools = this.strategyManager.getQuotaPools();
 
@@ -551,6 +786,7 @@ export class AppViewModel implements vscode.Disposable {
                 label: pool.label,
                 remaining,
                 resetTime: minModel.timeUntilReset,
+                resetDate: this.getResetTimestamp(minModel),
                 themeColor: pool.themeColor,
                 hasData: true
             };
@@ -566,10 +802,9 @@ export class AppViewModel implements vscode.Disposable {
         if (!this._lastSnapshot?.models?.length) return null;
         const minModel = this.getMinModelForPool(this._lastSnapshot, groupId);
         if (!minModel) return null;
-        const resetDate = minModel.resetTime instanceof Date
-            ? minModel.resetTime
-            : new Date(minModel.resetTime);
-        const ms = resetDate.getTime() - Date.now();
+        const resetTimestamp = this.getResetTimestamp(minModel);
+        if (resetTimestamp === undefined) return null;
+        const ms = resetTimestamp - Date.now();
         if (isNaN(ms) || ms <= 0) return null;
         return ms / 3_600_000;
     }
@@ -602,7 +837,8 @@ export class AppViewModel implements vscode.Disposable {
 
         const rawBuckets = this.storageService.calculateUsageBuckets(
             displayMinutes,
-            bucketMinutes
+            bucketMinutes,
+            Math.max(10 * 60_000, config["dashboard.refreshRate"] * 3_000)
         );
 
         const groupColors: Record<string, string> = {};
@@ -683,8 +919,11 @@ export class AppViewModel implements vscode.Disposable {
         currentRemaining: number,
         config: TfaConfig
     ): UsageChartData['prediction'] {
+        // Rate restarts at the latest reset: skip buckets that ended before it
+        const latestReset = this.storageService.getLatestResetTime(activeGroupId);
         let totalUsage = 0;
         for (const bucket of buckets) {
+            if (latestReset !== null && bucket.endTime <= latestReset) continue;
             for (const item of bucket.items) {
                 if (item.groupId === activeGroupId) totalUsage += item.usage;
             }
@@ -754,6 +993,7 @@ export class AppViewModel implements vscode.Disposable {
                     type: 'model' as const,
                     remaining,
                     resetTime: m.timeUntilReset,
+                    resetDate: this.getResetTimestamp(m),
                     hasData: true,
                     themeColor: group.themeColor,
                     subLabel: formatConsumption(group.quotaPoolId)
@@ -766,6 +1006,7 @@ export class AppViewModel implements vscode.Disposable {
             type: 'group' as const,
             remaining: g.remaining,
             resetTime: g.resetTime,
+            resetDate: g.resetDate,
             hasData: g.hasData,
             themeColor: g.themeColor,
             subLabel: formatConsumption(g.id)
@@ -826,7 +1067,9 @@ export class AppViewModel implements vscode.Disposable {
                 // Find the original model info to get absolute date
                 let resetDate: Date | undefined;
                 if (this._lastSnapshot && this._lastSnapshot.models) {
-                    resetDate = this.getMinModelForPool(this._lastSnapshot, g.id)?.resetTime;
+                    const model = this.getMinModelForPool(this._lastSnapshot, g.id);
+                    const timestamp = model ? this.getResetTimestamp(model) : undefined;
+                    resetDate = timestamp === undefined ? undefined : new Date(timestamp);
                 }
 
                 return {
@@ -853,11 +1096,40 @@ export class AppViewModel implements vscode.Disposable {
         this._onStateChange.fire(this._state);
     }
 
+    /** Local 7-day usage estimate for the active pool (null when disabled or empty) */
+    private buildWeeklyUsage(): WeeklyUsageData | null {
+        const config = this.configManager.getConfig();
+        if (!config["dashboard.showWeeklyCard"]) return null;
+
+        const activeGroupId = this._state.quota.activeGroupId;
+        const allDays = this.storageService.getDailyConsumption(
+            activeGroupId,
+            14,
+            Math.max(10 * 60_000, config["dashboard.refreshRate"] * 3_000)
+        );
+        const previousDays = allDays.slice(0, 7);
+        const days = allDays.slice(7);
+        if (!days.some(d => d.hasData)) return null;
+
+        const activeGroup = this.strategyManager.getQuotaPools().find(pool => pool.id === activeGroupId);
+        return {
+            groupId: activeGroupId,
+            groupLabel: activeGroup?.label || activeGroupId,
+            themeColor: activeGroup?.themeColor || '#888',
+            days,
+            total: days.reduce((sum, d) => sum + d.usage, 0),
+            previousTotal: previousDays.some(d => d.hasData)
+                ? previousDays.reduce((sum, d) => sum + d.usage, 0)
+                : null
+        };
+    }
+
     getSidebarData(): SidebarData {
         const config = this.configManager.getConfig();
         return {
             quotas: this._state.quota.displayItems,
             chart: this._state.quota.chart,
+            weekly: this.buildWeeklyUsage(),
             cache: this._state.cache,
             user: this._state.user,
             tokenUsage: this._state.tokenUsage,
@@ -966,6 +1238,13 @@ export class AppViewModel implements vscode.Disposable {
     }
 
     dispose(): void {
+        if (this._disposed) return;
+        this._disposed = true;
+        this._quotaRefreshVersion++;
+        if (this._resetRefreshTimer) {
+            clearTimeout(this._resetRefreshTimer);
+            this._resetRefreshTimer = null;
+        }
         this._onStateChange.dispose();
         this._onQuotaChange.dispose();
         this._onCacheChange.dispose();

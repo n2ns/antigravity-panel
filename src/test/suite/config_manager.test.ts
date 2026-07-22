@@ -101,6 +101,25 @@ suite('ConfigManager Test Suite', () => {
       assert.strictEqual(configManager.getConfig()["dashboard.showCreditsCard"], false);
     });
 
+    test('manifest and runtime should align quota insight defaults', () => {
+      const manifest = JSON.parse(fs.readFileSync(path.resolve(process.cwd(), 'package.json'), 'utf8'));
+      const properties = Object.assign(
+        {},
+        ...manifest.contributes.configuration.map(
+          (section: { properties?: Record<string, { default?: unknown }> }) => section.properties ?? {}
+        )
+      );
+
+      assert.strictEqual(properties['tfa.dashboard.showWeeklyCard'].default, true);
+      assert.strictEqual(properties['tfa.system.notifyOnQuotaReset'].default, true);
+      assert.strictEqual(properties['tfa.system.notifyOnAbnormalDrain'].default, true);
+
+      const config = configManager.getConfig();
+      assert.strictEqual(config["dashboard.showWeeklyCard"], true);
+      assert.strictEqual(config["system.notifyOnQuotaReset"], true);
+      assert.strictEqual(config["system.notifyOnAbnormalDrain"], true);
+    });
+
     test('should use default for statusBarShowQuota', () => {
       const config = configManager.getConfig();
       assert.strictEqual(config["status.showQuota"], true);

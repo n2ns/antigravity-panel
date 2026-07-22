@@ -53,6 +53,7 @@
     "Please ensure you are logged into Antigravity IDE (Authentication failed).": "请确保已登录 Antigravity IDE (身份校验失败)。",
     "Process found but no listening port detected.": "已找到进程，但未检测到监听端口。",
     "Prompt": "Prompt",
+    "Quota reset: {0} is back to {1}%.": "配额已重置：{0} 已恢复至 {1}%。",
     "Quota usage status: Stable": "配额使用状态：稳定",
     "Reasoning Credits: Consumed by conversation input and result generation (thinking).": "推理点数：每次对话输入和结果生成（思考）消耗。",
     "Reload the entire window (use when Agent panel is blank or unresponsive)": "重新加载整个窗口（当 Agent 面板空白或无响应时使用）",
@@ -74,5 +75,13 @@
     "Usage History": "Usage History",
     "Usage Rate: Average percentage of quota consumed per hour": "使用速率：每小时平均消耗的配额百分比",
     "Usage stable": "用量稳定",
-    "View": "View"
+    "View": "View",
+    "Abnormal quota drain: {0} dropped {1}pp while the IDE was closed (now {2}%).": "配额异常消耗：IDE 关闭期间 {0} 下降了 {1}pp（当前 {2}%）。",
+    "Abnormal quota drain: {0} dropped {1}pp with no editor activity (now {2}%).": "配额异常消耗：{0} 在无编辑活动的情况下下降了 {1}pp（当前 {2}%）。",
+    "Last 7 days": "最近 7 天",
+    "Local 7-day estimate: percentage points of the short-term quota pool consumed. Not the official weekly limit.": "本地 7 天估算：短期配额池被消耗的百分点数，并非官方周限额。",
+    "No previous-week data": "无前一周数据",
+    "No sampling data (IDE was closed)": "无采样数据（IDE 未运行）",
+    "Previous 7 days": "前 7 天",
+    "Weekly Usage": "周用量"
 }

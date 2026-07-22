@@ -44,6 +44,7 @@
     "config.system.autoAccept.description": "Accetta automaticamente i comandi dell'agente IA e le modifiche ai file. (Modalità mani libere)",
     "config.system.autoAcceptInterval.description": "Intervallo di controllo per l'accettazione automatica in millisecondi (predefinito: 800 ms). Valori più bassi sono più veloci ma consumano più risorse.",
     "config.system.debugMode.description": "Abilita la registrazione del debug e la diagnostica avanzata delle connessioni.",
+    "config.system.notifyOnQuotaReset.description": "Mostra una notifica quando viene rilevato un ripristino della quota",
     "config.system.serverHost.description": "⚠️ Avanzato: Nome host personalizzato per le metriche di quota (predefinito: 127.0.0.1)",
     "config.title.cache": "AP: Gestione cache",
     "config.title.commitMessage": "AP: Messaggio di commit (LLM locale)",
@@ -55,5 +56,7 @@
     "extension.category": "Antigravity Panel",
     "extension.description": "Il toolkit essenziale per gli utenti di Google Antigravity IDE. Monitora le quote, gestisci le cache e visualizza le metriche di sistema.",
     "views.tfa.sidebar.name": "Antigravity Panel",
-    "viewsContainers.tfa-sidebar.title": "Antigravity Panel"
+    "viewsContainers.tfa-sidebar.title": "Antigravity Panel",
+    "config.dashboard.showWeeklyCard.description": "Mostra la scheda di stima locale dell'utilizzo su 7 giorni nella barra laterale",
+    "config.system.notifyOnAbnormalDrain.description": "Avvisa del consumo anomalo della quota quando l'IDE è chiuso o la finestra non è attiva e non vi è attività nell'editor"
 }

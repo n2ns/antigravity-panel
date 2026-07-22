@@ -53,6 +53,7 @@
     "Please ensure you are logged into Antigravity IDE (Authentication failed).": "Antigravity IDE에 로그인되어 있는지 확인하세요 (인증 실패).",
     "Process found but no listening port detected.": "프로세스를 찾았지만 수신 포트가 감지되지 않았습니다.",
     "Prompt": "Prompt",
+    "Quota reset: {0} is back to {1}%.": "쿼터가 초기화되었습니다: {0}이(가) {1}%로 회복되었습니다.",
     "Quota usage status: Stable": "할당량 사용 상태: 안정",
     "Reasoning Credits: Consumed by conversation input and result generation (thinking).": "추론 크레딧: 대화 입력 및 결과 생성(생각) 시 소비됩니다.",
     "Reload the entire window (use when Agent panel is blank or unresponsive)": "창 전체를 다시 로드합니다(에이전트 패널이 비어 있거나 반응이 없을 때 사용).",
@@ -74,5 +75,13 @@
     "Usage History": "Usage History",
     "Usage Rate: Average percentage of quota consumed per hour": "사용률: 시간당 평균 할당량 소비 비율",
     "Usage stable": "사용량 안정",
-    "View": "View"
+    "View": "View",
+    "Abnormal quota drain: {0} dropped {1}pp while the IDE was closed (now {2}%).": "쿼터 비정상 소모: IDE가 종료된 동안 {0}이(가) {1}pp 감소했습니다(현재 {2}%).",
+    "Abnormal quota drain: {0} dropped {1}pp with no editor activity (now {2}%).": "쿼터 비정상 소모: 편집 활동이 없는 상태에서 {0}이(가) {1}pp 감소했습니다(현재 {2}%).",
+    "Last 7 days": "최근 7일",
+    "Local 7-day estimate: percentage points of the short-term quota pool consumed. Not the official weekly limit.": "로컬 7일 추정치: 단기 쿼터 풀에서 소모된 퍼센트 포인트입니다. 공식 주간 한도가 아닙니다.",
+    "No previous-week data": "이전 주 데이터 없음",
+    "No sampling data (IDE was closed)": "샘플링 데이터 없음(IDE가 실행되지 않음)",
+    "Previous 7 days": "이전 7일",
+    "Weekly Usage": "주간 사용량"
 }

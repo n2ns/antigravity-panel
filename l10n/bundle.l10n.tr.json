@@ -53,6 +53,7 @@
     "Please ensure you are logged into Antigravity IDE (Authentication failed).": "Lütfen Antigravity IDE'ye giriş yaptığınızdan emin olun (Kimlik doğrulama başarısız).",
     "Process found but no listening port detected.": "İşlem bulundu ancak dinleme portu algılanmadı.",
     "Prompt": "Prompt",
+    "Quota reset: {0} is back to {1}%.": "Kota sıfırlandı: {0} yeniden %{1} seviyesinde.",
     "Quota usage status: Stable": "Kota kullanım durumu: Kararlı",
     "Reasoning Credits: Consumed by conversation input and result generation (thinking).": "Akıl Yürütme Kredileri: Konuşma girişi ve sonuç üretimi (düşünme) tarafından tüketilir.",
     "Reload the entire window (use when Agent panel is blank or unresponsive)": "Tüm pencereyi yeniden yükle (Agent paneli boş olduğunda veya yanıt vermediğinde kullanın)",
@@ -74,5 +75,13 @@
     "Usage History": "Usage History",
     "Usage Rate: Average percentage of quota consumed per hour": "Kullanım Oranı: Saat başına tüketilen ortalama kota yüzdesi",
     "Usage stable": "Kullanım kararlı",
-    "View": "View"
+    "View": "View",
+    "Abnormal quota drain: {0} dropped {1}pp while the IDE was closed (now {2}%).": "Olağan dışı kota tüketimi: IDE kapalıyken {0} {1}pp düştü (şu an %{2}).",
+    "Abnormal quota drain: {0} dropped {1}pp with no editor activity (now {2}%).": "Olağan dışı kota tüketimi: {0} düzenleyici etkinliği olmadan {1}pp düştü (şu an %{2}).",
+    "Last 7 days": "Son 7 gün",
+    "Local 7-day estimate: percentage points of the short-term quota pool consumed. Not the official weekly limit.": "Yerel 7 günlük tahmin: kısa vadeli kota havuzundan tüketilen yüzde puanları. Resmî haftalık limit değildir.",
+    "No previous-week data": "Önceki haftaya ait veri yok",
+    "No sampling data (IDE was closed)": "Örnekleme verisi yok (IDE kapalıydı)",
+    "Previous 7 days": "Önceki 7 gün",
+    "Weekly Usage": "Haftalık Kullanım"
 }

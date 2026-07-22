@@ -99,8 +99,9 @@ export interface IStorageService {
 
     /**
      * Record a quota data point
+     * @param resets Group IDs whose quota reset was detected at this point
      */
-    recordQuotaPoint(usage: Record<string, number>): Promise<void>;
+    recordQuotaPoint(usage: Record<string, number>, resets?: string[]): Promise<void>;
 
     /**
      * Get recent history points
@@ -111,7 +112,7 @@ export interface IStorageService {
     /**
      * Calculate usage buckets for chart display
      */
-    calculateUsageBuckets(displayMinutes: number, bucketMinutes: number): UsageBucket[];
+    calculateUsageBuckets(displayMinutes: number, bucketMinutes: number, maxSampleGapMs?: number): UsageBucket[];
 
     /**
      * Get maximum usage value for chart scaling
@@ -119,9 +120,16 @@ export interface IStorageService {
     getMaxUsage(buckets: UsageBucket[]): number;
 
     /**
-     * Clear history points for a specific group (used on quota reset to restart pp/h)
+     * Timestamp of the latest recorded reset marker for a group, or null if
+     * no reset is on record. Rate windows restart at this point.
      */
-    clearGroupHistory(groupId: string): Promise<void>;
+    getLatestResetTime(groupId: string): number | null;
+
+    /**
+     * Per-day consumption sums (percentage points) for a group over the
+     * trailing `days` local calendar days, chronological, today included.
+     */
+    getDailyConsumption(groupId: string, days: number, maxSampleGapMs?: number): { dayStart: number; usage: number; hasData: boolean }[];
 
 
 

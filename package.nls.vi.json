@@ -44,6 +44,7 @@
     "config.system.autoAccept.description": "Tự động chấp nhận lệnh terminal và chỉnh sửa file của AI agent (Chế độ tự động)",
     "config.system.autoAcceptInterval.description": "Chu kỳ kiểm tra auto-accept (mili giây, mặc định: 800ms). Giá trị nhỏ hơn = phản hồi nhanh hơn nhưng tốn nhiều tài nguyên hơn.",
     "config.system.debugMode.description": "Bật ghi nhật ký debug và chẩn đoán kết nối nâng cao.",
+    "config.system.notifyOnQuotaReset.description": "Hiển thị thông báo khi phát hiện quota được đặt lại",
     "config.system.serverHost.description": "⚠️ Nâng cao: Địa chỉ server tùy chỉnh để lấy dữ liệu quota (mặc định: 127.0.0.1)",
     "config.title.cache": "AP: Cache",
     "config.title.commitMessage": "AP: Commit Message (Local LLM)",
@@ -55,5 +56,7 @@
     "extension.category": "Antigravity Panel",
     "extension.description": "Công cụ giám sát quota và quản lý cache cho Google Antigravity IDE. Theo dõi thời gian thực Gemini / Claude / GPT, dashboard quota AI, phân tích lịch sử sử dụng, chế độ auto-accept và tạo commit message bằng AI.",
     "views.tfa.sidebar.name": "Antigravity Panel",
-    "viewsContainers.tfa-sidebar.title": "Antigravity Panel"
+    "viewsContainers.tfa-sidebar.title": "Antigravity Panel",
+    "config.dashboard.showWeeklyCard.description": "Hiển thị thẻ ước tính mức sử dụng cục bộ 7 ngày trong thanh bên",
+    "config.system.notifyOnAbnormalDrain.description": "Cảnh báo mức tiêu hao quota bất thường khi IDE đóng hoặc cửa sổ mất tiêu điểm và không có hoạt động soạn thảo"
 }

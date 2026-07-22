@@ -7,6 +7,7 @@ import { customElement, state } from 'lit/decorators.js';
 import type {
   QuotaDisplayItem,
   UsageChartData,
+  WeeklyUsageData,
   TreeSectionState,
   WebviewStateUpdate,
   VsCodeApi,
@@ -18,6 +19,7 @@ import type {
 
 import './quota-dashboard.js';
 import './usage-chart.js';
+import './weekly-usage.js';
 
 // Extend Window interface to include __TRANSLATIONS__
 declare global {
@@ -44,6 +46,9 @@ export class SidebarApp extends LitElement {
 
   @state()
   private _chartData: UsageChartData | null = null;
+
+  @state()
+  private _weekly: WeeklyUsageData | null = null;
 
   @state()
   private _tasks: TreeSectionState = {
@@ -186,6 +191,9 @@ export class SidebarApp extends LitElement {
   private _applyState(state: WebviewStateUpdate): void {
     if (state.quotas) {
       this._quotas = state.quotas;
+    }
+    if (state.weekly !== undefined) {
+      this._weekly = state.weekly;
     }
     if (state.chart) {
       this._chartData = state.chart;
@@ -338,6 +346,8 @@ export class SidebarApp extends LitElement {
         ></quota-dashboard>
 
         <usage-chart .data=${this._chartData}></usage-chart>
+
+        <weekly-usage .data=${this._weekly}></weekly-usage>
 
         <credits-bar
           .tokenUsage=${this._tokenUsage}

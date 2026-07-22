@@ -4,6 +4,16 @@ English | [中文文档](docs/CHANGELOG_zh.md)
 
 ## [Unreleased]
 
+### Added
+
+- **Quota Reset Countdown & Notification**: The sidebar countdown now ticks live between polls, driven by the absolute reset timestamp already provided by the server. When a pool's quota rebounds past a reset threshold (5pp), a notification announces the reset (toggle: `tfa.system.notifyOnQuotaReset`, cooldown-protected against server jitter). A one-shot timer aimed at the earliest upcoming reset triggers an immediate refresh, so resets surface within seconds instead of waiting for the next polling cycle. Invalid server reset times are now flagged and rendered as N/A instead of a synthetic 24-hour countdown.
+- **Abnormal Consumption Alerts**: Optional warnings now flag quota drops of at least 5pp while the IDE was closed, or while its window stayed unfocused with no editor activity. Reset-aware checks and per-pool cooldowns reduce false positives (toggle: `tfa.system.notifyOnAbnormalDrain`).
+- **Weekly Usage Local Estimate**: The sidebar can now show seven daily consumption bars, the current 7-day total, and the preceding 7-day total for comparison (toggle: `tfa.dashboard.showWeeklyCard`). Unsampled periods remain visibly distinct from zero consumption, and the card explicitly identifies the metric as a local short-term-pool estimate rather than Google's official weekly limit.
+
+### Changed
+
+- **Usage History Survives Quota Resets**: A detected reset no longer deletes the group's quota history; it now writes a reset marker onto the recorded point. Consumption rate (pp/h) and runway prediction still restart at the marker — deltas never span a reset — while 14 days of history support the current-versus-previous 7-day comparison. History points older than 24 hours are downsampled to 5-minute granularity (markers preserved) to bound storage size. The stored `tfa.quotaHistory_v2` format is unchanged apart from the additive `resets` field.
+
 ## [2.7.2] - 2026-07-22
 
 ### Fixed

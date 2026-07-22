@@ -15,6 +15,8 @@ export interface QuotaGroupState {
     label: string;
     remaining: number;
     resetTime: string;
+    /** Absolute reset timestamp (epoch ms); absent when unknown or server value was invalid */
+    resetDate?: number;
     themeColor: string;
     hasData: boolean;
 }
@@ -26,9 +28,24 @@ export interface QuotaDisplayItem {
     type: 'group' | 'model';
     remaining: number;
     resetTime: string;
+    /** Absolute reset timestamp (epoch ms); absent when unknown or server value was invalid */
+    resetDate?: number;
     hasData: boolean;
     themeColor: string;
     subLabel?: string;
+}
+
+/** Local 7-day usage estimate for one quota pool */
+export interface WeeklyUsageData {
+    groupId: string;
+    groupLabel: string;
+    themeColor: string;
+    /** Chronological daily sums, today last */
+    days: { dayStart: number; usage: number; hasData: boolean }[];
+    /** Sum over all days (percentage points of the short-term pool) */
+    total: number;
+    /** Previous seven-day sum, or null when that period has no sampled intervals */
+    previousTotal: number | null;
 }
 
 /** Usage chart data for visualization */
@@ -189,6 +206,8 @@ export interface TokenUsageViewState {
 export interface SidebarData {
     quotas: QuotaDisplayItem[];
     chart: UsageChartData;
+    /** null = card disabled or no data yet (explicit so the webview can clear it) */
+    weekly: WeeklyUsageData | null;
     cache: CacheViewState;
     user?: UserViewState;
     tokenUsage?: TokenUsageViewState;

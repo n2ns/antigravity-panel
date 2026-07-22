@@ -53,6 +53,7 @@
     "Please ensure you are logged into Antigravity IDE (Authentication failed).": "Veuillez vous assurer que vous êtes connecté à Antigravity IDE (Échec de l'authentification).",
     "Process found but no listening port detected.": "Processus trouvé mais aucun port d'écoute détecté.",
     "Prompt": "Prompt",
+    "Quota reset: {0} is back to {1}%.": "Quota réinitialisé : {0} est revenu à {1}%.",
     "Quota usage status: Stable": "État d'utilisation du quota : Stable",
     "Reasoning Credits: Consumed by conversation input and result generation (thinking).": "Crédits de Raisonnement : Consommés par la saisie de conversation et la génération de résultats (réflexion).",
     "Reload the entire window (use when Agent panel is blank or unresponsive)": "Recharger toute la fenêtre (à utiliser lorsque le panneau Agent est vide ou ne répond pas)",
@@ -74,5 +75,13 @@
     "Usage History": "Usage History",
     "Usage Rate: Average percentage of quota consumed per hour": "Taux d'utilisation : Moyenne du quota consommé par heure",
     "Usage stable": "Utilisation stable",
-    "View": "View"
+    "View": "View",
+    "Abnormal quota drain: {0} dropped {1}pp while the IDE was closed (now {2}%).": "Consommation anormale de quota : {0} a chuté de {1}pp pendant que l'IDE était fermé (actuellement {2}%).",
+    "Abnormal quota drain: {0} dropped {1}pp with no editor activity (now {2}%).": "Consommation anormale de quota : {0} a chuté de {1}pp sans activité dans l'éditeur (actuellement {2}%).",
+    "Last 7 days": "7 derniers jours",
+    "Local 7-day estimate: percentage points of the short-term quota pool consumed. Not the official weekly limit.": "Estimation locale sur 7 jours : points de pourcentage consommés du pool de quota à court terme. Ce n'est pas la limite hebdomadaire officielle.",
+    "No previous-week data": "Aucune donnée pour la semaine précédente",
+    "No sampling data (IDE was closed)": "Aucune donnée d'échantillonnage (IDE fermé)",
+    "Previous 7 days": "7 jours précédents",
+    "Weekly Usage": "Utilisation hebdomadaire"
 }

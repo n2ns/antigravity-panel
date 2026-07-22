@@ -53,6 +53,7 @@
     "Please ensure you are logged into Antigravity IDE (Authentication failed).": "Bitte stellen Sie sicher, dass Sie bei Antigravity IDE angemeldet sind (Authentifizierung fehlgeschlagen).",
     "Process found but no listening port detected.": "Prozess gefunden, aber kein Listening-Port erkannt.",
     "Prompt": "Prompt",
+    "Quota reset: {0} is back to {1}%.": "Kontingent zurückgesetzt: {0} ist wieder bei {1}%.",
     "Quota usage status: Stable": "Status der Quotenbelegung: Stabil",
     "Reasoning Credits: Consumed by conversation input and result generation (thinking).": "Reasoning Credits: Verbraucht durch Konversationseingaben und Ergebnisgenerierung (Denken).",
     "Reload the entire window (use when Agent panel is blank or unresponsive)": "Das gesamte Fenster neu laden (verwenden, wenn das Agent-Panel leer ist oder nicht reagiert)",
@@ -74,5 +75,13 @@
     "Usage History": "Usage History",
     "Usage Rate: Average percentage of quota consumed per hour": "Nutzungsrate: Durchschnittlicher Prozentsatz des verbrauchten Kontingents pro Stunde",
     "Usage stable": "Nutzung stabil",
-    "View": "View"
+    "View": "View",
+    "Abnormal quota drain: {0} dropped {1}pp while the IDE was closed (now {2}%).": "Ungewöhnlicher Kontingentverbrauch: {0} ist um {1}pp gesunken, während die IDE geschlossen war (jetzt {2}%).",
+    "Abnormal quota drain: {0} dropped {1}pp with no editor activity (now {2}%).": "Ungewöhnlicher Kontingentverbrauch: {0} ist ohne Editor-Aktivität um {1}pp gesunken (jetzt {2}%).",
+    "Last 7 days": "Letzte 7 Tage",
+    "Local 7-day estimate: percentage points of the short-term quota pool consumed. Not the official weekly limit.": "Lokale 7-Tage-Schätzung: verbrauchte Prozentpunkte des Kurzzeit-Kontingentpools. Nicht das offizielle Wochenlimit.",
+    "No previous-week data": "Keine Daten der Vorwoche",
+    "No sampling data (IDE was closed)": "Keine Messdaten (IDE war geschlossen)",
+    "Previous 7 days": "Vorherige 7 Tage",
+    "Weekly Usage": "Wöchentliche Nutzung"
 }

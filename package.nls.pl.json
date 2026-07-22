@@ -44,6 +44,7 @@
     "config.system.autoAccept.description": "Automatycznie akceptuj polecenia agenta AI i edycje plików. (Tryb bez użycia rąk)",
     "config.system.autoAcceptInterval.description": "Interwał sprawdzania automatycznego akceptowania w milisekundach (domyślnie: 800 ms). Niższe wartości są szybsze, ale zużywają więcej zasobów.",
     "config.system.debugMode.description": "Włącz logowanie debugowania do kanału wyjściowego 'Antigravity Panel'",
+    "config.system.notifyOnQuotaReset.description": "Pokaż powiadomienie po wykryciu resetu limitu",
     "config.system.serverHost.description": "⚠️ Zaawansowane: Niestandardowa nazwa hosta serwera dla metryk limitów. Domyślnie: 127.0.0.1",
     "config.title.cache": "AP: Zarządzanie pamięcią podręczną",
     "config.title.commitMessage": "AP: Wiadomość commita (Lokalny LLM)",
@@ -55,5 +56,7 @@
     "extension.category": "Antigravity Panel",
     "extension.description": "Niezbędny przybornik dla użytkowników Google Antigravity IDE. Monitoruj limity, zarządzaj pamięcią podręczną i wizualizuj metryki systemowe.",
     "views.tfa.sidebar.name": "Antigravity Panel",
-    "viewsContainers.tfa-sidebar.title": "Antigravity Panel"
+    "viewsContainers.tfa-sidebar.title": "Antigravity Panel",
+    "config.dashboard.showWeeklyCard.description": "Pokaż na pasku bocznym kartę lokalnego oszacowania zużycia z 7 dni",
+    "config.system.notifyOnAbnormalDrain.description": "Ostrzegaj o nietypowym zużyciu limitu, gdy IDE jest zamknięte albo okno nieaktywne i brak aktywności w edytorze"
 }

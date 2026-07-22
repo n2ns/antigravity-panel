@@ -44,6 +44,7 @@
     "config.system.autoAccept.description": "AIエージェントのコマンドとファイルの編集を自動的に受け入れます（ハンズフリーモード）",
     "config.system.autoAcceptInterval.description": "自動受け入れを確認する間隔（ミリ秒、デフォルト:800ms）。値が小さいほど速くなりますが、より多くのリソースを消費します。",
     "config.system.debugMode.description": "'Antigravity Panel' 出力チャンネルにデバッグログを有効化",
+    "config.system.notifyOnQuotaReset.description": "クォータのリセットを検出したときに通知を表示します",
     "config.system.serverHost.description": "⚠️上級者向け:使用量メトリクス用のカスタムサーバーホスト名（デフォルト:127.0.0.1）",
     "config.title.cache": "AP:キャッシュ管理",
     "config.title.commitMessage": "AP:コミットメッセージ (ローカルLLM)",
@@ -55,5 +56,7 @@
     "extension.category": "Antigravity Panel",
     "extension.description": "Google Antigravity IDE 用のローカル使用量可視化、キャッシュ管理、ワークフロー強化のためのコンパニオンユーティリティ",
     "views.tfa.sidebar.name": "Antigravity Panel",
-    "viewsContainers.tfa-sidebar.title": "Antigravity Panel"
+    "viewsContainers.tfa-sidebar.title": "Antigravity Panel",
+    "config.dashboard.showWeeklyCard.description": "サイドバーに 7 日間のローカル使用量推定カードを表示します",
+    "config.system.notifyOnAbnormalDrain.description": "IDE の終了中、またはウィンドウが非アクティブでエディタ操作がないときの異常なクォータ消費を警告します"
 }

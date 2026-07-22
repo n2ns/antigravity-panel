@@ -217,4 +217,41 @@ suite('QuotaService Test Suite', () => {
         assert.strictEqual(snapshot!.flowCredits, undefined);
         assert.deepStrictEqual(snapshot!.models.map(m => m.remainingPercentage), [100, 0, 0]);
     });
+
+    test('should flag invalid resetTime as fallback and display N/A', async () => {
+        service.mockResponse = {
+            userStatus: {
+                cascadeModelConfigData: {
+                    clientModelConfigs: [
+                        {
+                            label: 'Broken Model',
+                            modelOrAlias: { model: 'broken' },
+                            quotaInfo: {
+                                remainingFraction: 0.5,
+                                resetTime: 'not-a-date'
+                            }
+                        }
+                    ]
+                }
+            }
+        };
+
+        const snapshot = await service.fetchQuota();
+
+        assert.ok(snapshot);
+        const model = snapshot!.models[0];
+        assert.strictEqual(model.resetTimeIsFallback, true);
+        assert.strictEqual(model.timeUntilReset, 'N/A', 'Fallback reset time must not render a fake countdown');
+        assert.ok(model.resetTime.getTime() > Date.now(), 'Fallback date still sorts into the future');
+    });
+
+    test('should not flag valid resetTime as fallback', async () => {
+        service.mockResponse = validResponse;
+        const snapshot = await service.fetchQuota();
+
+        assert.ok(snapshot);
+        const model = snapshot!.models[0];
+        assert.strictEqual(model.resetTimeIsFallback, false);
+        assert.notStrictEqual(model.timeUntilReset, 'N/A');
+    });
 });
