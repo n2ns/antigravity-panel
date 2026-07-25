@@ -3,7 +3,10 @@
  */
 
 import type { ProcessInfo, PlatformStrategy } from "../utils/types";
-import { getPortListCommand } from "./detection_utils";
+import {
+  getPortListCommand,
+  hasAntigravityAppDataDir,
+} from "./detection_utils";
 
 /** Windows process item from PowerShell/WMI output */
 interface WinProcessItem {
@@ -127,11 +130,7 @@ export class WindowsStrategy implements PlatformStrategy {
           );
 
           if (tokenMatch?.[1]) {
-            // STRICT CHECK: Ensure process belongs to Antigravity
-            if (
-              !commandLine.includes("--app_data_dir") ||
-              !/app_data_dir\s+["']?antigravity/i.test(commandLine)
-            ) {
+            if (!hasAntigravityAppDataDir(commandLine)) {
               continue;
             }
 
@@ -171,10 +170,7 @@ export class WindowsStrategy implements PlatformStrategy {
       );
 
       if (tokenMatch?.[1]) {
-        if (
-          !commandLine.includes("--app_data_dir") ||
-          !/app_data_dir\s+["']?antigravity/i.test(commandLine)
-        ) {
+        if (!hasAntigravityAppDataDir(commandLine)) {
           continue;
         }
         results.push({
@@ -292,11 +288,7 @@ export class UnixStrategy implements PlatformStrategy {
           );
 
           if (tokenMatch?.[1]) {
-            // STRICT CHECK: Ensure process belongs to Antigravity
-            if (
-              !cmd.includes("--app_data_dir") ||
-              !/app_data_dir\s+["']?antigravity/i.test(cmd)
-            ) {
+            if (!hasAntigravityAppDataDir(cmd)) {
               continue;
             }
 

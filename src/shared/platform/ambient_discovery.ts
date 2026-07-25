@@ -1,6 +1,7 @@
 import {
     verifyServerGateway,
     getPortListCommand,
+    hasAntigravityAppDataDir,
 } from "./detection_utils";
 import { exec } from "child_process";
 import { promisify } from "util";
@@ -12,6 +13,63 @@ import { debugLog, infoLog, errorLog } from "../utils/logger";
 import { isWsl, getWslHostIp } from "../utils/wsl";
 
 const spawnShell = promisify(exec);
+
+/**
+ * Parses PID-scoped listening-port output from the platform commands used by
+ * AmbientDiscovery.
+ */
+export function parseAmbientListeningPorts(
+    raw: string,
+    platform: string,
+    pid: number,
+): number[] {
+    const ports = new Set<number>();
+
+    for (const line of raw.split(/\r?\n/)) {
+        let port = 0;
+
+        if (platform === "win32") {
+            const match = line.match(
+                /(?:127\.0\.0\.1|0\.0\.0\.0|\[::1?\]):(\d+)\s+\S+\s+LISTENING\s+(\d+)\s*$/i,
+            );
+            if (match?.[1] && parseInt(match[2], 10) === pid) {
+                port = parseInt(match[1], 10);
+            }
+        } else {
+            const ssMatch = line.match(
+                /^\s*LISTEN\s+\S+\s+\S+\s+(?:\*|[\d.]+|\[[\da-f:]+\]|[\da-f:]+):(\d+)\b/i,
+            );
+            const ssPids = [...line.matchAll(/\bpid=(\d+),/gi)]
+                .map((match) => parseInt(match[1], 10));
+
+            const lsofMatch = line.match(
+                /\b(?:TCP|UDP)\s+(?:\*|[\d.]+|\[[\da-f:]+\]|[\da-f:]+):(\d+)\s+\(LISTEN\)/i,
+            );
+            const lsofPid = parseInt(line.trim().split(/\s+/)[1], 10);
+
+            const netstatMatch = line.match(
+                /^\s*tcp\S*\s+\S+\s+\S+\s+(?:\*|[\d.]+|\[[\da-f:]+\]|[\da-f:]+):(\d+)\s+\S+\s+LISTEN\s+(\d+)\/\S+/i,
+            );
+
+            if (ssMatch?.[1] && ssPids.includes(pid)) {
+                port = parseInt(ssMatch[1], 10);
+            } else if (lsofMatch?.[1] && lsofPid === pid) {
+                port = parseInt(lsofMatch[1], 10);
+            } else if (
+                netstatMatch?.[1]
+                && parseInt(netstatMatch[2], 10) === pid
+            ) {
+                port = parseInt(netstatMatch[1], 10);
+            }
+        }
+
+        if (port > 0 && port <= 65535) {
+            ports.add(port);
+        }
+    }
+
+    return [...ports];
+}
 
 /**
  * AmbientDiscovery: A standalone, signature-based discovery layer.
@@ -100,7 +158,11 @@ export class AmbientDiscovery {
     }
 
     private extractDetails(cmd: string, pid: number, ppid: number): ProcessInfo | null {
-        if (!cmd.includes("--csrf_token") || !cmd.includes("--extension_server_port")) {
+        if (
+            !cmd.includes("--csrf_token")
+            || !cmd.includes("--extension_server_port")
+            || !hasAntigravityAppDataDir(cmd)
+        ) {
             return null;
         }
 
@@ -144,17 +206,7 @@ export class AmbientDiscovery {
 
         try {
             const { stdout } = await spawnShell(cmd, { timeout: 5000 });
-            const store: number[] = [];
-            const regex = process.platform === "win32"
-                ? /(?:127\.0\.0\.1|0\.0\.0\.0|\[::1?\]):(\d+)\s+\S+\s+LISTENING/gi
-                : /(?:TCP|UDP|LISTEN)\s+(?:\*|[\d.]+|\[[\da-f:]+\]):(\d+)/gi;
-
-            let m;
-            while ((m = regex.exec(stdout)) !== null) {
-                const p = parseInt(m[1], 10);
-                if (p > 0 && !store.includes(p)) store.push(p);
-            }
-            return store;
+            return parseAmbientListeningPorts(stdout, process.platform, pid);
         } catch {
             return [];
         }

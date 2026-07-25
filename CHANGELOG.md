@@ -14,6 +14,10 @@ English | [中文文档](docs/CHANGELOG_zh.md)
 
 - **Usage History Survives Quota Resets**: A detected reset no longer deletes the group's quota history; it now writes a reset marker onto the recorded point. Consumption rate (pp/h) and runway prediction still restart at the marker — deltas never span a reset — while 14 days of history support the current-versus-previous 7-day comparison. History points older than 24 hours are downsampled to 5-minute granularity (markers preserved) to bound storage size. The stored `tfa.quotaHistory_v2` format is unchanged apart from the additive `resets` field.
 
+### Fixed
+
+- **Language Server Fallback Isolation** (#192): Ambient fallback discovery now requires the same explicit Antigravity app-data marker allowlist as the primary platform strategies before probing a candidate process. Listening-port discovery now parses Linux `ss` output correctly and verifies exact PIDs across Windows `netstat`, macOS/Linux `lsof`, Linux `ss`, and Linux `netstat`, preventing prefix-colliding processes from contributing ports.
+
 ## [2.7.2] - 2026-07-22
 
 ### Fixed
