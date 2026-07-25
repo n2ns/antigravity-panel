@@ -1070,30 +1070,55 @@ export class AppViewModel implements vscode.Disposable {
         this._onStateChange.fire(this._state);
     }
 
-    /** Local 7-day usage estimate for the active pool (null when disabled or empty) */
+    /** Local 7-day usage estimate across all quota pools (null when disabled or empty) */
     private buildWeeklyUsage(): WeeklyUsageData | null {
         const config = this.configManager.getConfig();
         if (!config["dashboard.showWeeklyCard"]) return null;
 
-        const activeGroupId = this._state.quota.activeGroupId;
-        const allDays = this.storageService.getDailyConsumption(
-            activeGroupId,
-            14,
-            Math.max(10 * 60_000, config["dashboard.refreshRate"] * 3_000)
-        );
-        const previousDays = allDays.slice(0, 7);
-        const days = allDays.slice(7);
+        const maxSampleGapMs = Math.max(10 * 60_000, config["dashboard.refreshRate"] * 3_000);
+        const perPool = this.strategyManager.getQuotaPools().map(pool => ({
+            pool,
+            byDay: new Map(
+                this.storageService.getDailyConsumption(pool.id, 14, maxSampleGapMs)
+                    .map(day => [day.dayStart, day] as const)
+            )
+        }));
+        if (perPool.length === 0) return null;
+
+        // Anchor every pool to one local-calendar frame so a refresh crossing
+        // midnight cannot merge different dates into the same bar.
+        const todayStart = new Date(Date.now());
+        todayStart.setHours(0, 0, 0, 0);
+        const dayStarts = Array.from({ length: 14 }, (_, index) => {
+            const date = new Date(todayStart);
+            date.setDate(date.getDate() - (13 - index));
+            return date.getTime();
+        });
+        const mergedDays: WeeklyUsageData['days'] = dayStarts.map(dayStart => {
+            const items: WeeklyUsageData['days'][number]['items'] = [];
+            let hasData = false;
+            for (const { pool, byDay } of perPool) {
+                const day = byDay.get(dayStart);
+                if (!day) continue;
+                hasData = hasData || day.hasData;
+                if (day.usage > 0) {
+                    items.push({ groupId: pool.id, usage: day.usage, color: pool.themeColor, label: pool.label });
+                }
+            }
+            return { dayStart, hasData, items };
+        });
+        const previousDays = mergedDays.slice(0, 7);
+        const days = mergedDays.slice(7);
         if (!days.some(d => d.hasData)) return null;
 
-        const activeGroup = this.strategyManager.getQuotaPools().find(pool => pool.id === activeGroupId);
         return {
-            groupId: activeGroupId,
-            groupLabel: activeGroup?.label || activeGroupId,
-            themeColor: activeGroup?.themeColor || '#888',
             days,
-            total: days.reduce((sum, d) => sum + d.usage, 0),
-            previousTotal: previousDays.some(d => d.hasData)
-                ? previousDays.reduce((sum, d) => sum + d.usage, 0)
+            total: days.reduce((sum, d) => sum + d.items.reduce((s, item) => s + item.usage, 0), 0),
+            previousTotal: previousDays.some(day => day.hasData)
+                ? previousDays.reduce(
+                    (sum, day) => sum + day.items.reduce((daySum, item) => daySum + item.usage, 0),
+                    0
+                )
                 : null
         };
     }

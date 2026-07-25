@@ -658,11 +658,20 @@ suite('AppViewModel Test Suite', () => {
     });
 
     test('getSidebarData should include current and previous seven-day usage totals', () => {
-        mockStorage.getDailyConsumption = (_groupId, days, maxSampleGapMs) => {
+        const queriedGroups: string[] = [];
+        const todayStart = new Date(Date.now());
+        todayStart.setHours(0, 0, 0, 0);
+        const dayStarts = Array.from({ length: 14 }, (_, index) => {
+            const date = new Date(todayStart);
+            date.setDate(date.getDate() - (13 - index));
+            return date.getTime();
+        });
+        mockStorage.getDailyConsumption = (groupId, days, maxSampleGapMs) => {
+            queriedGroups.push(groupId);
             assert.strictEqual(days, 14);
             assert.strictEqual(maxSampleGapMs, 10 * 60 * 1000);
-            return Array.from({ length: 14 }, (_, index) => ({
-                dayStart: index,
+            return dayStarts.map((dayStart, index) => ({
+                dayStart,
                 usage: index < 7 ? 1 : 2,
                 hasData: true
             }));
@@ -670,10 +679,35 @@ suite('AppViewModel Test Suite', () => {
 
         const weekly = vm.getSidebarData().weekly;
 
+        assert.deepStrictEqual(queriedGroups, ['gemini', 'non-google']);
         assert.ok(weekly);
         assert.strictEqual(weekly.days.length, 7);
-        assert.strictEqual(weekly.total, 14);
-        assert.strictEqual(weekly.previousTotal, 7);
+        assert.strictEqual(weekly.days[6].items.length, 2);
+        assert.strictEqual(weekly.total, 28);
+        assert.strictEqual(weekly.previousTotal, 14);
+    });
+
+    test('getSidebarData should align quota pools by local day instead of array index', () => {
+        const todayStart = new Date(Date.now());
+        todayStart.setHours(0, 0, 0, 0);
+        const makeDayStarts = (lastDayOffset: number) => Array.from({ length: 14 }, (_, index) => {
+            const date = new Date(todayStart);
+            date.setDate(date.getDate() - (13 - index) + lastDayOffset);
+            return date.getTime();
+        });
+        mockStorage.getDailyConsumption = groupId => {
+            const dayStarts = makeDayStarts(groupId === 'gemini' ? 0 : -1);
+            return dayStarts.map(dayStart => ({ dayStart, usage: 1, hasData: true }));
+        };
+
+        const weekly = vm.getSidebarData().weekly;
+
+        assert.ok(weekly);
+        assert.strictEqual(weekly.days[6].dayStart, todayStart.getTime());
+        assert.deepStrictEqual(weekly.days[6].items.map(item => item.groupId), ['gemini']);
+        assert.deepStrictEqual(weekly.days[5].items.map(item => item.groupId), ['gemini', 'non-google']);
+        assert.strictEqual(weekly.total, 13);
+        assert.strictEqual(weekly.previousTotal, 14);
     });
 
     test('restoreFromCache should normalize reset timestamps serialized as strings', () => {

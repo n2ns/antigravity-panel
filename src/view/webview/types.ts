@@ -141,14 +141,15 @@ export interface TokenUsageData {
 /** Connection status for sidebar feedback */
 export type ConnectionStatus = 'connected' | 'failed' | 'detecting';
 
-/** Local 7-day usage estimate for one quota pool */
+/** Local 7-day usage estimate across all quota pools */
 export interface WeeklyUsageData {
-  groupId: string;
-  groupLabel: string;
-  themeColor: string;
-  /** Chronological daily sums, today last */
-  days: { dayStart: number; usage: number; hasData: boolean }[];
-  /** Sum over all days (percentage points of the short-term pool) */
+  /** Chronological days, today last; each day stacks per-pool consumption */
+  days: {
+    dayStart: number;
+    hasData: boolean;
+    items: { groupId: string; usage: number; color: string; label: string }[];
+  }[];
+  /** Sum over all days and pools (percentage points of the short-term pools) */
   total: number;
   /** Previous seven-day sum, or null when that period has no sampled intervals */
   previousTotal: number | null;

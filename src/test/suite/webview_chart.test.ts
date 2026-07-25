@@ -71,7 +71,7 @@ suite('Webview Usage Chart Test Suite', () => {
                     usageStable: '用量稳定',
                     noReportedQuotaChange: '未上报配额变化',
                     totalConsumed: '已消耗',
-                    weeklyUsageTooltip: '本地估算，并非官方周限额',
+                    weeklyUsageTooltip: '本地 7 天估算：所有短期配额池累计消耗的百分点，并非官方周限额。',
                     noSamplingData: '无采样数据',
                     previous7Days: '前 7 天',
                     noPreviousWeekData: '无前一周数据'
@@ -104,15 +104,15 @@ suite('Webview Usage Chart Test Suite', () => {
                 prediction: { groupId: 'claude', groupLabel: 'Claude', usageRate: 0.5, runway: 'Stable', remaining: 80 }
             };
             const weeklyData = {
-                groupId: 'gemini-flash',
-                groupLabel: 'Gemini Flash',
-                themeColor: '#40C4FF',
                 days: Array.from({ length: 7 }, (_, index) => ({
                     dayStart: index * 24 * 60 * 60 * 1000,
-                    usage: index,
-                    hasData: index !== 0
+                    hasData: index !== 0,
+                    items: index === 0 ? [] : [
+                        { groupId: 'gemini-flash', usage: index, color: '#40C4FF', label: 'Gemini Flash' },
+                        ...(index === 6 ? [{ groupId: 'claude', usage: 3, color: '#FFAB40', label: 'Claude' }] : [])
+                    ]
                 })),
-                total: 21,
+                total: 24,
                 previousTotal: 12
             };
             const sidebarTokenUsage = { userCredits: [{ creditType: 'GOOGLE_ONE_AI', creditAmount: '0' }] };
@@ -246,13 +246,54 @@ suite('Webview Usage Chart Test Suite', () => {
                 template.strings.some(part => part.includes('class="usage-bar'))
             );
             assert.strictEqual(weeklyBars.length, 7, 'WeeklyUsage must render one bar per current-day bucket');
-            assert.ok(weeklyValues.includes('21.0'), 'WeeklyUsage must render the current seven-day total');
-            assert.ok(weeklyValues.includes('本地估算，并非官方周限额'), 'WeeklyUsage must explain the estimate boundary');
+            assert.ok(weeklyValues.includes('24.0'), 'WeeklyUsage must render the current seven-day total');
+            assert.ok(
+                weeklyValues.includes('本地 7 天估算：所有短期配额池累计消耗的百分点，并非官方周限额。'),
+                'WeeklyUsage must explain its cross-pool estimate boundary'
+            );
             const weeklyTooltips = weeklyBars.map(template => {
                 const index = template.strings.findIndex(part => part.includes('data-tooltip="'));
                 return template.values[index] as string;
             });
             assert.ok(weeklyTooltips[0].includes('无采样数据'), 'Unsampled days must not render as zero usage');
+            assert.ok(
+                weeklyTooltips[6].includes('Gemini Flash: -6.0 pp') && weeklyTooltips[6].includes('Claude: -3.0 pp'),
+                'Multi-pool days must list every pool in the tooltip'
+            );
+            const weeklyBackgrounds = weeklyBars.map(template => {
+                const index = template.strings.findIndex(part => part.includes('px; background: '));
+                return template.values[index] as string;
+            });
+            assert.ok(
+                weeklyBackgrounds[6].includes('#40C4FF') && weeklyBackgrounds[6].includes('#FFAB40'),
+                'Multi-pool days must stack every pool color in one bar'
+            );
+            const smallStack = WeeklyUsage.prototype.render.call({
+                data: {
+                    ...weeklyData,
+                    days: weeklyData.days.map((day, index) => index === 1
+                        ? {
+                            ...day,
+                            hasData: true,
+                            items: [
+                                { groupId: 'gemini-flash', usage: 0.1, color: '#40C4FF', label: 'Gemini Flash' },
+                                { groupId: 'claude', usage: 0.1, color: '#FFAB40', label: 'Claude' }
+                            ]
+                        }
+                        : day)
+                }
+            });
+            const smallStackBars = collectTemplates(smallStack).filter(template =>
+                template.strings.some(part => part.includes('class="usage-bar'))
+            );
+            const smallHeightIndex = smallStackBars[1].strings.findIndex(part => part.includes('style="height: '));
+            const smallBackgroundIndex = smallStackBars[1].strings.findIndex(part => part.includes('px; background: '));
+            assert.strictEqual(smallStackBars[1].values[smallHeightIndex], 3);
+            assert.ok(
+                (smallStackBars[1].values[smallBackgroundIndex] as string)
+                    .includes('#40C4FF 0% 50%, #FFAB40 50% 100%'),
+                'Minimum-height bars must preserve each pool share'
+            );
             assert.ok(
                 weeklyValues.some(value => value === '前 7 天: 12.0 pp'),
                 'WeeklyUsage must render the localized previous-period comparison'

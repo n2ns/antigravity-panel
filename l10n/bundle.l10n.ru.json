@@ -47,7 +47,6 @@
     "No workspace folder open": "No workspace folder open",
     "Operating System": "Операционная система",
     "Parsing Details": "Сведения о разборе",
-    "percentage points": "процентные пункты",
     "Please ensure you are logged into Antigravity IDE (Authentication failed).": "Убедитесь, что вы вошли в Antigravity IDE (Ошибка аутентификации).",
     "Process found but no listening port detected.": "Процесс найден, но порт прослушивания не обнаружен.",
     "Prompt": "Prompt",
@@ -70,16 +69,15 @@
     "Show Details": "Show Details",
     "Star": "Star",
     "Toolkit is still initializing or failed to start. Try reloading the window.": "Набор инструментов все еще инициализируется или не смог запуститься. Попробуйте перезагрузить окно.",
-    "Usage History": "Usage History",
     "Usage Rate: Average percentage of quota consumed per hour": "Скорость использования: Средний процент потребления квоты в час",
     "Usage stable": "Использование стабильно",
     "View": "View",
     "Abnormal quota drain: {0} dropped {1}pp while the IDE was closed (now {2}%).": "Аномальный расход квоты: {0} снизилась на {1}pp, пока IDE была закрыта (сейчас {2}%).",
     "Abnormal quota drain: {0} dropped {1}pp with no editor activity (now {2}%).": "Аномальный расход квоты: {0} снизилась на {1}pp без активности в редакторе (сейчас {2}%).",
     "Last 7 days": "Последние 7 дней",
-    "Local 7-day estimate: percentage points of the short-term quota pool consumed. Not the official weekly limit.": "Локальная оценка за 7 дней: израсходованные процентные пункты краткосрочного пула квоты. Это не официальный недельный лимит.",
+    "Local 7-day estimate: percentage points consumed across all short-term quota pools. Not an official weekly limit.": "Локальная оценка за 7 дней: процентные пункты, израсходованные во всех краткосрочных пулах квоты. Это не официальный недельный лимит.",
     "No previous-week data": "Нет данных за предыдущую неделю",
     "No sampling data (IDE was closed)": "Нет данных выборки (IDE была закрыта)",
     "Previous 7 days": "Предыдущие 7 дней",
-    "Weekly Usage": "Использование за неделю"
+    "Last {0} min": "Последние {0} мин"
 }

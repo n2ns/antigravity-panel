@@ -47,7 +47,6 @@
     "No workspace folder open": "No workspace folder open",
     "Operating System": "Système d'exploitation",
     "Parsing Details": "Détails de l'analyse",
-    "percentage points": "points de pourcentage",
     "Please ensure you are logged into Antigravity IDE (Authentication failed).": "Veuillez vous assurer que vous êtes connecté à Antigravity IDE (Échec de l'authentification).",
     "Process found but no listening port detected.": "Processus trouvé mais aucun port d'écoute détecté.",
     "Prompt": "Prompt",
@@ -70,16 +69,15 @@
     "Show Details": "Show Details",
     "Star": "Star",
     "Toolkit is still initializing or failed to start. Try reloading the window.": "La boîte à outils est toujours en cours d'initialisation ou n'a pas pu démarrer. Essayez de recharger la fenêtre.",
-    "Usage History": "Usage History",
     "Usage Rate: Average percentage of quota consumed per hour": "Taux d'utilisation : Moyenne du quota consommé par heure",
     "Usage stable": "Utilisation stable",
     "View": "View",
     "Abnormal quota drain: {0} dropped {1}pp while the IDE was closed (now {2}%).": "Consommation anormale de quota : {0} a chuté de {1}pp pendant que l'IDE était fermé (actuellement {2}%).",
     "Abnormal quota drain: {0} dropped {1}pp with no editor activity (now {2}%).": "Consommation anormale de quota : {0} a chuté de {1}pp sans activité dans l'éditeur (actuellement {2}%).",
     "Last 7 days": "7 derniers jours",
-    "Local 7-day estimate: percentage points of the short-term quota pool consumed. Not the official weekly limit.": "Estimation locale sur 7 jours : points de pourcentage consommés du pool de quota à court terme. Ce n'est pas la limite hebdomadaire officielle.",
+    "Local 7-day estimate: percentage points consumed across all short-term quota pools. Not an official weekly limit.": "Estimation locale sur 7 jours : points de pourcentage consommés dans tous les pools de quota à court terme. Il ne s’agit pas d’une limite hebdomadaire officielle.",
     "No previous-week data": "Aucune donnée pour la semaine précédente",
     "No sampling data (IDE was closed)": "Aucune donnée d'échantillonnage (IDE fermé)",
     "Previous 7 days": "7 jours précédents",
-    "Weekly Usage": "Utilisation hebdomadaire"
+    "Last {0} min": "{0} dernières min"
 }

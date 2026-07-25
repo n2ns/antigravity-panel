@@ -47,7 +47,6 @@
     "No workspace folder open": "No workspace folder open",
     "Operating System": "운영 체제",
     "Parsing Details": "파싱 세부 정보",
-    "percentage points": "백분율 포인트",
     "Please ensure you are logged into Antigravity IDE (Authentication failed).": "Antigravity IDE에 로그인되어 있는지 확인하세요 (인증 실패).",
     "Process found but no listening port detected.": "프로세스를 찾았지만 수신 포트가 감지되지 않았습니다.",
     "Prompt": "Prompt",
@@ -70,16 +69,15 @@
     "Show Details": "Show Details",
     "Star": "Star",
     "Toolkit is still initializing or failed to start. Try reloading the window.": "툴킷이 아직 초기화 중이거나 시작하지 못했습니다. 창을 다시 로드해 보세요.",
-    "Usage History": "Usage History",
     "Usage Rate: Average percentage of quota consumed per hour": "사용률: 시간당 평균 할당량 소비 비율",
     "Usage stable": "사용량 안정",
     "View": "View",
     "Abnormal quota drain: {0} dropped {1}pp while the IDE was closed (now {2}%).": "쿼터 비정상 소모: IDE가 종료된 동안 {0}이(가) {1}pp 감소했습니다(현재 {2}%).",
     "Abnormal quota drain: {0} dropped {1}pp with no editor activity (now {2}%).": "쿼터 비정상 소모: 편집 활동이 없는 상태에서 {0}이(가) {1}pp 감소했습니다(현재 {2}%).",
     "Last 7 days": "최근 7일",
-    "Local 7-day estimate: percentage points of the short-term quota pool consumed. Not the official weekly limit.": "로컬 7일 추정치: 단기 쿼터 풀에서 소모된 퍼센트 포인트입니다. 공식 주간 한도가 아닙니다.",
+    "Local 7-day estimate: percentage points consumed across all short-term quota pools. Not an official weekly limit.": "로컬 7일 추정치: 모든 단기 할당량 풀에서 소비된 퍼센트 포인트입니다. 공식 주간 한도가 아닙니다.",
     "No previous-week data": "이전 주 데이터 없음",
     "No sampling data (IDE was closed)": "샘플링 데이터 없음(IDE가 실행되지 않음)",
     "Previous 7 days": "이전 7일",
-    "Weekly Usage": "주간 사용량"
+    "Last {0} min": "최근 {0}분"
 }

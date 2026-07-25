@@ -47,7 +47,6 @@
     "No workspace folder open": "未打开工作区文件夹",
     "Operating System": "操作系统",
     "Parsing Details": "解析详情",
-    "percentage points": "百分点",
     "Please ensure you are logged into Antigravity IDE (Authentication failed).": "请确保已登录 Antigravity IDE (身份校验失败)。",
     "Process found but no listening port detected.": "已找到进程，但未检测到监听端口。",
     "Prompt": "Prompt",
@@ -70,16 +69,15 @@
     "Show Details": "Show Details",
     "Star": "Star",
     "Toolkit is still initializing or failed to start. Try reloading the window.": "工具包仍在初始化或启动失败，请尝试重新加载窗口。",
-    "Usage History": "Usage History",
     "Usage Rate: Average percentage of quota consumed per hour": "使用速率：每小时平均消耗的配额百分比",
     "Usage stable": "用量稳定",
     "View": "View",
     "Abnormal quota drain: {0} dropped {1}pp while the IDE was closed (now {2}%).": "配额异常消耗：IDE 关闭期间 {0} 下降了 {1}pp（当前 {2}%）。",
     "Abnormal quota drain: {0} dropped {1}pp with no editor activity (now {2}%).": "配额异常消耗：{0} 在无编辑活动的情况下下降了 {1}pp（当前 {2}%）。",
     "Last 7 days": "最近 7 天",
-    "Local 7-day estimate: percentage points of the short-term quota pool consumed. Not the official weekly limit.": "本地 7 天估算：短期配额池被消耗的百分点数，并非官方周限额。",
+    "Local 7-day estimate: percentage points consumed across all short-term quota pools. Not an official weekly limit.": "本地 7 天估算：所有短期配额池累计消耗的百分点，并非官方周限额。",
     "No previous-week data": "无前一周数据",
     "No sampling data (IDE was closed)": "无采样数据（IDE 未运行）",
     "Previous 7 days": "前 7 天",
-    "Weekly Usage": "周用量"
+    "Last {0} min": "最近 {0} 分钟"
 }

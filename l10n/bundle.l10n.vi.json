@@ -47,7 +47,6 @@
     "No workspace folder open": "Không có thư mục workspace nào đang mở",
     "Operating System": "Hệ điều hành",
     "Parsing Details": "Chi tiết phân tích",
-    "percentage points": "điểm phần trăm",
     "Please ensure you are logged into Antigravity IDE (Authentication failed).": "Vui lòng đảm bảo bạn đã đăng nhập vào Antigravity IDE (Xác thực thất bại).",
     "Process found but no listening port detected.": "Tìm thấy tiến trình nhưng không phát hiện được cổng lắng nghe.",
     "Prompt": "Prompt",
@@ -70,16 +69,15 @@
     "Show Details": "Show Details",
     "Star": "Star",
     "Toolkit is still initializing or failed to start. Try reloading the window.": "Bộ công cụ vẫn đang khởi tạo hoặc không thể khởi động. Hãy thử tải lại cửa sổ.",
-    "Usage History": "Usage History",
     "Usage Rate: Average percentage of quota consumed per hour": "Usage Rate: Tỷ lệ quota tiêu thụ trung bình mỗi giờ",
     "Usage stable": "Mức sử dụng ổn định",
     "View": "View",
     "Abnormal quota drain: {0} dropped {1}pp while the IDE was closed (now {2}%).": "Tiêu hao quota bất thường: {0} đã giảm {1}pp trong khi IDE đóng (hiện tại {2}%).",
     "Abnormal quota drain: {0} dropped {1}pp with no editor activity (now {2}%).": "Tiêu hao quota bất thường: {0} đã giảm {1}pp khi không có hoạt động soạn thảo (hiện tại {2}%).",
     "Last 7 days": "7 ngày qua",
-    "Local 7-day estimate: percentage points of the short-term quota pool consumed. Not the official weekly limit.": "Ước tính cục bộ 7 ngày: số điểm phần trăm đã tiêu thụ của pool quota ngắn hạn. Không phải hạn mức tuần chính thức.",
+    "Local 7-day estimate: percentage points consumed across all short-term quota pools. Not an official weekly limit.": "Ước tính cục bộ trong 7 ngày: số điểm phần trăm đã dùng trên tất cả nhóm hạn mức ngắn hạn. Không phải hạn mức hàng tuần chính thức.",
     "No previous-week data": "Không có dữ liệu tuần trước",
     "No sampling data (IDE was closed)": "Không có dữ liệu lấy mẫu (IDE đã đóng)",
     "Previous 7 days": "7 ngày trước đó",
-    "Weekly Usage": "Mức sử dụng hàng tuần"
+    "Last {0} min": "{0} phút qua"
 }

@@ -47,7 +47,6 @@
     "No workspace folder open": "No workspace folder open",
     "Operating System": "Operating System",
     "Parsing Details": "Parsing Details",
-    "percentage points": "percentage points",
     "Please ensure you are logged into Antigravity IDE (Authentication failed).": "Please ensure you are logged into Antigravity IDE (Authentication failed).",
     "Process found but no listening port detected.": "Process found but no listening port detected.",
     "Prompt": "Prompt",
@@ -70,16 +69,15 @@
     "Show Details": "Show Details",
     "Star": "Star",
     "Toolkit is still initializing or failed to start. Try reloading the window.": "Toolkit is still initializing or failed to start. Try reloading the window.",
-    "Usage History": "Usage History",
     "Usage Rate: Average percentage of quota consumed per hour": "Usage Rate: Average percentage of quota consumed per hour",
     "Usage stable": "Usage stable",
     "View": "View",
     "Abnormal quota drain: {0} dropped {1}pp while the IDE was closed (now {2}%).": "Abnormal quota drain: {0} dropped {1}pp while the IDE was closed (now {2}%).",
     "Abnormal quota drain: {0} dropped {1}pp with no editor activity (now {2}%).": "Abnormal quota drain: {0} dropped {1}pp with no editor activity (now {2}%).",
     "Last 7 days": "Last 7 days",
-    "Local 7-day estimate: percentage points of the short-term quota pool consumed. Not the official weekly limit.": "Local 7-day estimate: percentage points of the short-term quota pool consumed. Not the official weekly limit.",
+    "Local 7-day estimate: percentage points consumed across all short-term quota pools. Not an official weekly limit.": "Local 7-day estimate: percentage points consumed across all short-term quota pools. Not an official weekly limit.",
     "No previous-week data": "No previous-week data",
     "No sampling data (IDE was closed)": "No sampling data (IDE was closed)",
     "Previous 7 days": "Previous 7 days",
-    "Weekly Usage": "Weekly Usage"
+    "Last {0} min": "Last {0} min"
 }

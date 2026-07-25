@@ -47,7 +47,6 @@
     "No workspace folder open": "Tidak ada folder workspace yang terbuka",
     "Operating System": "Sistem Operasi",
     "Parsing Details": "Detail Parsing",
-    "percentage points": "poin persentase",
     "Please ensure you are logged into Antigravity IDE (Authentication failed).": "Pastikan Anda sudah login ke Antigravity IDE (Autentikasi gagal).",
     "Process found but no listening port detected.": "Proses ditemukan tetapi port listening tidak terdeteksi.",
     "Prompt": "Prompt",
@@ -70,16 +69,15 @@
     "Show Details": "Show Details",
     "Star": "Star",
     "Toolkit is still initializing or failed to start. Try reloading the window.": "Toolkit masih diinisialisasi atau gagal dimulai. Coba muat ulang jendela.",
-    "Usage History": "Usage History",
     "Usage Rate: Average percentage of quota consumed per hour": "Usage Rate: Rata-rata persentase quota yang terpakai per jam",
     "Usage stable": "Penggunaan stabil",
     "View": "View",
     "Abnormal quota drain: {0} dropped {1}pp while the IDE was closed (now {2}%).": "Konsumsi quota tidak wajar: {0} turun {1}pp saat IDE tertutup (sekarang {2}%).",
     "Abnormal quota drain: {0} dropped {1}pp with no editor activity (now {2}%).": "Konsumsi quota tidak wajar: {0} turun {1}pp tanpa aktivitas editor (sekarang {2}%).",
     "Last 7 days": "7 hari terakhir",
-    "Local 7-day estimate: percentage points of the short-term quota pool consumed. Not the official weekly limit.": "Estimasi lokal 7 hari: poin persentase pool quota jangka pendek yang terpakai. Bukan batas mingguan resmi.",
+    "Local 7-day estimate: percentage points consumed across all short-term quota pools. Not an official weekly limit.": "Perkiraan lokal 7 hari: poin persentase yang digunakan di seluruh pool kuota jangka pendek. Bukan batas mingguan resmi.",
     "No previous-week data": "Tidak ada data minggu sebelumnya",
     "No sampling data (IDE was closed)": "Tidak ada data sampling (IDE tertutup)",
     "Previous 7 days": "7 hari sebelumnya",
-    "Weekly Usage": "Penggunaan Mingguan"
+    "Last {0} min": "{0} menit terakhir"
 }

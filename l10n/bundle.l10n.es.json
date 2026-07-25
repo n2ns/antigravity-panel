@@ -47,7 +47,6 @@
     "No workspace folder open": "No workspace folder open",
     "Operating System": "Sistema operativo",
     "Parsing Details": "Detalles del análisis",
-    "percentage points": "puntos porcentuales",
     "Please ensure you are logged into Antigravity IDE (Authentication failed).": "Asegúrese de haber iniciado sesión en Antigravity IDE (Falló la autenticación).",
     "Process found but no listening port detected.": "Proceso encontrado pero no se detectó puerto de escucha.",
     "Prompt": "Prompt",
@@ -70,16 +69,15 @@
     "Show Details": "Show Details",
     "Star": "Star",
     "Toolkit is still initializing or failed to start. Try reloading the window.": "El kit de herramientas aún se está inicializando o no pudo iniciarse. Intenta volver a cargar la ventana.",
-    "Usage History": "Usage History",
     "Usage Rate: Average percentage of quota consumed per hour": "Tasa de uso: Porcentaje medio de cuota consumida por hora",
     "Usage stable": "Uso estable",
     "View": "View",
     "Abnormal quota drain: {0} dropped {1}pp while the IDE was closed (now {2}%).": "Consumo anómalo de cuota: {0} bajó {1}pp mientras el IDE estaba cerrado (ahora {2}%).",
     "Abnormal quota drain: {0} dropped {1}pp with no editor activity (now {2}%).": "Consumo anómalo de cuota: {0} bajó {1}pp sin actividad en el editor (ahora {2}%).",
     "Last 7 days": "Últimos 7 días",
-    "Local 7-day estimate: percentage points of the short-term quota pool consumed. Not the official weekly limit.": "Estimación local de 7 días: puntos porcentuales consumidos del grupo de cuota a corto plazo. No es el límite semanal oficial.",
+    "Local 7-day estimate: percentage points consumed across all short-term quota pools. Not an official weekly limit.": "Estimación local de 7 días: puntos porcentuales consumidos en todos los grupos de cuota a corto plazo. No es un límite semanal oficial.",
     "No previous-week data": "Sin datos de la semana anterior",
     "No sampling data (IDE was closed)": "Sin datos de muestreo (el IDE estaba cerrado)",
     "Previous 7 days": "7 días anteriores",
-    "Weekly Usage": "Uso semanal"
+    "Last {0} min": "Últimos {0} min"
 }

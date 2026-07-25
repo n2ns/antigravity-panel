@@ -46,25 +46,13 @@ export class UsageChart extends LitElement {
     const intervalSeconds = Number.isFinite(interval) && interval > 0
       ? interval
       : Math.max(1, Math.round((this.data.displayMinutes * 60) / buckets.length));
-    const timelineText = `Last ${this.data.displayMinutes} min · ${formatInterval(intervalSeconds)}`;
-
-    // Build unique group entries for the legend (only groups with actual data)
-    const legendGroups = new Map<string, { label: string; color: string }>();
-    for (const bucket of buckets) {
-      for (const item of bucket.items) {
-        if (!legendGroups.has(item.groupId)) {
-          legendGroups.set(item.groupId, {
-            label: groupLabels?.[item.groupId] || item.groupId,
-            color: (groupColors && groupColors[item.groupId]) || item.color || '#888'
-          });
-        }
-      }
-    }
+    const titleText = (t?.lastNMin || 'Last {0} min').replace('{0}', String(this.data.displayMinutes));
 
     return html`
       <div class="usage-chart">
-        <div class="usage-chart-title">
-          <span>${t?.usageHistory || 'Usage History'}</span>
+        <div class="usage-chart-title"
+             data-tooltip="${t?.chartLegendTooltip || 'Each bar shows quota percentage points consumed per interval. Height = consumption intensity.'}">
+          <span>${titleText}</span>
           <span class="usage-total">${t?.totalConsumed || 'consumed'}: ${formatUsage(totalConsumption)} pp</span>
         </div>
         <div class="usage-chart-bars">
@@ -111,7 +99,7 @@ export class UsageChart extends LitElement {
     })}
         </div>
         <div class="usage-legend">
-          <div class="timeline-info">${timelineText}</div>
+          <div class="timeline-info">${formatInterval(intervalSeconds)}</div>
           <div class="prediction-info" style="display: flex; gap: 6px;">
             ${prediction && prediction.usageRate > 0 ? html`
               <span data-tooltip="${t?.usageRateTooltip || 'Usage Rate: Average percentage of quota consumed per hour'}">
@@ -128,18 +116,6 @@ export class UsageChart extends LitElement {
             ` : nothing)}
           </div>
         </div>
-        ${legendGroups.size > 0 ? html`
-          <div class="usage-chart-group-legend"
-               data-tooltip="${t?.chartLegendTooltip || 'Each bar shows quota percentage points consumed per interval. Height = consumption intensity.'}">
-            ${Array.from(legendGroups.entries()).map(([, g]) => html`
-              <span class="legend-item">
-                <span class="legend-dot" style="background: ${g.color}"></span>
-                ${g.label}
-              </span>
-            `)}
-            <span class="legend-unit">pp = ${t?.ppExplanation || 'percentage points'}</span>
-          </div>
-        ` : nothing}
       </div>
     `;
   }

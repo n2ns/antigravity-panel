@@ -47,7 +47,6 @@
     "No workspace folder open": "No workspace folder open",
     "Operating System": "Sistema operativo",
     "Parsing Details": "Dettagli di parsing",
-    "percentage points": "punti percentuali",
     "Please ensure you are logged into Antigravity IDE (Authentication failed).": "Assicurati di aver effettuato l'accesso ad Antigravity IDE (Autenticazione fallita).",
     "Process found but no listening port detected.": "Processo trovato ma nessuna porta di ascolto rilevata.",
     "Prompt": "Prompt",
@@ -70,16 +69,15 @@
     "Show Details": "Show Details",
     "Star": "Star",
     "Toolkit is still initializing or failed to start. Try reloading the window.": "Il toolkit è ancora in fase di inizializzazione o non è riuscito ad avviarsi. Prova a ricaricare la finestra.",
-    "Usage History": "Usage History",
     "Usage Rate: Average percentage of quota consumed per hour": "Tasso di utilizzo: Media della quota consumata all'ora",
     "Usage stable": "Utilizzo stabile",
     "View": "View",
     "Abnormal quota drain: {0} dropped {1}pp while the IDE was closed (now {2}%).": "Consumo anomalo della quota: {0} è sceso di {1}pp mentre l'IDE era chiuso (ora {2}%).",
     "Abnormal quota drain: {0} dropped {1}pp with no editor activity (now {2}%).": "Consumo anomalo della quota: {0} è sceso di {1}pp senza attività nell'editor (ora {2}%).",
     "Last 7 days": "Ultimi 7 giorni",
-    "Local 7-day estimate: percentage points of the short-term quota pool consumed. Not the official weekly limit.": "Stima locale su 7 giorni: punti percentuali consumati del pool di quota a breve termine. Non è il limite settimanale ufficiale.",
+    "Local 7-day estimate: percentage points consumed across all short-term quota pools. Not an official weekly limit.": "Stima locale di 7 giorni: punti percentuali consumati in tutti i pool di quota a breve termine. Non è un limite settimanale ufficiale.",
     "No previous-week data": "Nessun dato della settimana precedente",
     "No sampling data (IDE was closed)": "Nessun dato di campionamento (IDE chiuso)",
     "Previous 7 days": "7 giorni precedenti",
-    "Weekly Usage": "Utilizzo settimanale"
+    "Last {0} min": "Ultimi {0} min"
 }
