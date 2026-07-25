@@ -1026,6 +1026,10 @@ export class AppViewModel implements vscode.Disposable {
         await this.updateTreeState(cache.brainTasks);
         await this.updateContextTreeState(cache.codeContexts);
         await this.storageService.setLastCacheSize(cache.totalSize);
+        await this.storageService.setLastCacheDetails(
+            cache.brainSize,
+            cache.conversationsSize
+        );
 
         await this.persistTreeState();
     }

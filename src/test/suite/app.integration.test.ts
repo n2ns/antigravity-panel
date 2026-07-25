@@ -81,10 +81,10 @@ suite('App Initialization & Cache Integration Test', () => {
         if (viewModel) viewModel.dispose();
     });
 
-    function createViewModel() {
+    function createViewModel(cacheService: ICacheService = mockCacheService) {
         return new AppViewModel(
             mockQuotaService,
-            mockCacheService,
+            cacheService,
             storageService,
             configManager,
             strategyManager,
@@ -135,6 +135,37 @@ suite('App Initialization & Cache Integration Test', () => {
         const state = viewModel.getState();
         assert.strictEqual(state.tree.tasks.folders.length, 1);
         assert.strictEqual(state.tree.tasks.folders[0].label, 'Task 1');
+    });
+
+    test('should persist cache details for cache-first startup', async () => {
+        const populatedCacheService: ICacheService = {
+            ...mockCacheService,
+            getCacheInfo: async () => ({
+                totalSize: 3072,
+                brainSize: 1024,
+                conversationsSize: 2048,
+                brainCount: 1,
+                conversationsCount: 1,
+                brainTasks: [],
+                codeContexts: []
+            })
+        };
+
+        const writer = createViewModel(populatedCacheService);
+        await writer.refreshCache();
+        writer.dispose();
+
+        viewModel = createViewModel();
+        const success = viewModel.restoreFromCache();
+        const state = viewModel.getState();
+
+        assert.ok(success, 'Should report success restoring refreshed cache');
+        assert.strictEqual(state.cache.totalSize, 3072);
+        assert.strictEqual(state.cache.brainSize, 1024);
+        assert.strictEqual(state.cache.conversationsSize, 2048);
+        assert.strictEqual(state.cache.formattedTotal, '3.0 KB');
+        assert.strictEqual(state.cache.formattedBrain, '1.0 KB');
+        assert.strictEqual(state.cache.formattedConversations, '2.0 KB');
     });
 
     test('should handle missing cache gracefully', () => {

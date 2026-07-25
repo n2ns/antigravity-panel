@@ -184,7 +184,11 @@ export class SidebarApp extends LitElement {
     const msg = event.data;
     if (msg.type === 'update' && msg.payload) {
       this._applyState(msg.payload);
-      this._vscode.setState({ payload: msg.payload });
+      const currentState = this._vscode.getState() || {};
+      this._vscode.setState({
+        ...currentState,
+        payload: msg.payload
+      });
     }
   };
 

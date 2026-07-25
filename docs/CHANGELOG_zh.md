@@ -18,6 +18,8 @@
 ### 修复
 
 - **Language Server 回退隔离** (#192)：Ambient 回退发现现在会在探测候选进程前，应用与主平台策略一致的 Antigravity app-data 标识白名单。监听端口发现现在可正确解析 Linux `ss` 输出，并在 Windows `netstat`、macOS/Linux `lsof`、Linux `ss` 与 Linux `netstat` 中精确核验 PID，避免 PID 前缀相同的其他进程混入端口。
+- **缓存优先启动的大小明细**：缓存刷新现在会在总量之外同步持久化 Brain 与对话缓存大小，面板重建后可立即恢复三项数值，不再先短暂显示 `0 B`、等待下一次异步扫描。
+- **Footer 折叠状态持久化**：后台 Webview 更新现在会保留 payload 之外的本地 UI 状态，因此配额或缓存刷新后 Footer 仍保持折叠，并可在后续面板重建时正确恢复。
 
 ## [2.7.2] - 2026-07-22
 

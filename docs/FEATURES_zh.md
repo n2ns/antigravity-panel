@@ -118,8 +118,9 @@
 
 ### 缓存优先启动
 - UI 立即从缓存数据渲染
+- 跨面板实例恢复总缓存、Brain 和对话缓存大小
 - 异步刷新获取最新数据
-- Webview 状态持久化（`vscode.setState()`/`getState()`）
+- Webview 状态持久化（`vscode.setState()`/`getState()`），后台更新不会覆盖本地 UI 状态
 
 ### MVVM 架构
 - `AppViewModel` 作为统一状态协调和数据聚合层

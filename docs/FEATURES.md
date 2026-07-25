@@ -116,8 +116,9 @@ In WSL remote sessions the shortcuts follow where Antigravity actually reads eac
 
 ### Cache-First Startup
 - UI renders immediately from cached data
+- Total, Brain, and conversation cache sizes are restored across panel instances
 - Asynchronous refresh with latest data
-- Webview state persistence using `vscode.setState()`/`getState()`
+- Webview state persistence using `vscode.setState()`/`getState()` preserves local UI state across backend updates
 
 ### MVVM Architecture
 - `AppViewModel` as unified state coordination and data aggregation layer

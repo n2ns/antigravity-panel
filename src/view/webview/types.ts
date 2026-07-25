@@ -182,7 +182,6 @@ export interface WebviewStateUpdate {
   };
   autoAcceptEnabled?: boolean;
   uiScale?: number;
-  footerCollapsed?: boolean;
 }
 
 // ==================== VS Code API ====================

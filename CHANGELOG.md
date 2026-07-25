@@ -18,6 +18,8 @@ English | [中文文档](docs/CHANGELOG_zh.md)
 ### Fixed
 
 - **Language Server Fallback Isolation** (#192): Ambient fallback discovery now requires the same explicit Antigravity app-data marker allowlist as the primary platform strategies before probing a candidate process. Listening-port discovery now parses Linux `ss` output correctly and verifies exact PIDs across Windows `netstat`, macOS/Linux `lsof`, Linux `ss`, and Linux `netstat`, preventing prefix-colliding processes from contributing ports.
+- **Cache-First Size Breakdown**: Cache refreshes now persist the Brain and conversation size breakdown alongside the total, so a recreated panel restores all three values immediately instead of briefly showing `0 B` until the next asynchronous scan.
+- **Footer Collapse Persistence**: Backend Webview updates now preserve local UI state stored beside the payload, so the collapsed footer remains collapsed after quota/cache refreshes and subsequent panel recreation.
 
 ## [2.7.2] - 2026-07-22
 
