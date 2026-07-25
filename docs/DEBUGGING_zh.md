@@ -2,89 +2,97 @@
 
 # 调试 Antigravity Language Server 与配额连接
 
-本文档说明如何调试、追踪并诊断 **Antigravity Panel** 扩展与本地 **Antigravity Language Server** 之间的连接和配额相关问题。
+本文档说明如何交互式调试扩展，以及如何使用本地工具连接真实的 Antigravity Language Server。
 
----
+## 1. Extension Host 调试
 
-## 🏗️ 1. IDE Extension Host 调试
+1. 在 Antigravity IDE 中打开项目目录。
+2. 按 `F5`，或在 **Run and Debug** 中选择 **Run Antigravity Panel (Extension Host)**。
+3. Extension Development Host 会启动扩展并连接本地 Language Server。
 
-交互式调试扩展 UI 和后端逻辑的主要方式：
+启动配置见 [.vscode/launch.json](../.vscode/launch.json)。
 
-1. 在 **Antigravity IDE** 中打开项目目录。
-2. 按 **`F5`**，或进入 **Run and Debug** 视图并选择 `Run Antigravity Panel (Extension Host)`。
-3. 这会打开一个隔离的 **Extension Development Host** 窗口。
-4. 扩展会自动尝试检测并连接本地运行中的 **Antigravity Language Server** 实例，以便使用真实指标进行调试。
+## 2. 本地真实服务器工具
 
-*底层调试配置见 [.vscode/launch.json](../.vscode/launch.json)。*
+所有工具统一放在 `scripts/debug/`。它们仅用于本地开发，不会进入 VSIX，并且要求 Antigravity IDE 及其 Language Server 正在本机运行。
 
----
+| 命令 | 用途 |
+| --- | --- |
+| `npm run debug:processes` | 检查 Language Server 进程及连接参数 |
+| `npm run debug:quota` | 独立请求并输出完整真实 `GetUserStatus` 响应 |
+| `npm run debug:server` | 验证生产 `ProcessFinder` 与 `QuotaService` 链路 |
+| `npm run debug:windows-tree` | 检查原生 Windows 下 IDE、Extension Host 与 Language Server 的进程祖先关系 |
 
-## 🔍 2. 进程诊断
+工具成功时退出码为 `0`，检测或连接失败时为 `1`。Windows 专用工具在非原生 Windows 环境运行时退出码为 `2`。
 
-如果面板无法显示指标或出现连接错误，可以使用进程诊断工具确认 Language Server 是否正在运行。
+### 2.1 检查 Language Server 进程
 
-运行诊断脚本：
 ```bash
-node scripts/diagnose_processes.js
+npm run debug:processes
 ```
 
-### 功能说明：
-* 扫描系统中正在运行的 `language_server` 进程。
-* 提取并打印关键命令行参数：
-  * `--port`：本地 API 端口。
-  * `--extension_server_port`：IDE 与 Language Server 通信使用的端口。
-  * `--csrf_token`：API 请求所需的认证令牌。
+该命令列出匹配的进程、PID、父 PID、workspace ID、端口、完整 CSRF token 及相关命令行参数。
 
----
+### 2.2 独立获取真实配额响应
 
-## 📡 3. 实时配额获取与验证
-
-要验证 Language Server 是否能正确响应 API 请求，并查看服务端返回的原始数据：
-
-运行实时获取脚本：
 ```bash
-node scripts/fetch_real_quota.js
+npm run debug:quota
 ```
 
-### 功能说明：
-1. 自动发现活动的 Language Server 进程。
-2. 解析活动端口并提取 API CSRF token。
-3. 向服务端端点发送真实 `POST` 请求：
-   `/exa.language_server_pb.LanguageServerService/GetUserStatus`
-4. 打印服务端返回的格式化 JSON 响应。
+这个独立 JavaScript 工具会发现真实 Language Server 进程，依次通过 HTTPS 和 HTTP 探测其 localhost 监听端口，并请求：
 
----
+```text
+/exa.language_server_pb.LanguageServerService/GetUserStatus
+```
 
-## 🛠️ 4. 二进制架构与序列化检查
+并直接输出实际使用的协议和完整真实响应。
 
-当服务端字段消失或表现异常时，例如 JSON 响应中缺少某些属性，可以直接从服务端二进制文件中检查已编译的 Go Protobuf 定义。
+### 2.3 验证生产连接链路
 
-### 示例：检查 Credit 相关字段
-Language Server 二进制文件通常位于：
-`~/.antigravity-ide-server/bin/<version>/extensions/antigravity/bin/language_server_linux_x64`
+```bash
+npm run debug:server
+```
 
-运行以下命令过滤二进制文件中的字符串：
+该命令先通过 `tsconfig.debug.json` 编译 TypeScript 调试入口，再运行扩展实际使用的 `ProcessFinder`、协议回退、`QuotaService`、解析器和 logger，并直接输出完整解析后的 snapshot。修改连接或解析代码后，应优先运行此命令。
+
+需要独立核对原始端点时使用 `debug:quota`；需要验证扩展生产代码链路时使用 `debug:server`。
+
+### 2.4 检查原生 Windows 进程树
+
+请在原生 Windows Node.js 环境运行：
+
+```bash
+npm run debug:windows-tree
+```
+
+该工具只报告真实的 IDE、Extension Host 与 `language_server_windows_x64.exe` 祖先关系，不再创建模拟进程。它不适用于 WSL 或 Linux Node.js。
+
+## 3. 二进制架构与序列化检查
+
+当服务端字段消失或行为异常时，可以检查 Language Server 二进制文件中的 Go Protobuf 字符串。Linux 环境的典型位置为：
+
+```text
+~/.antigravity-ide-server/bin/<version>/extensions/antigravity/bin/language_server_linux_x64
+```
+
+示例：
+
 ```bash
 strings ~/.antigravity-ide-server/bin/*/extensions/antigravity/bin/language_server_linux_x64 | grep -iE 'creditAmount|creditType|minimumCreditAmountForUsage'
 ```
 
-### 理解 Protobuf `omitempty` 序列化：
-服务端 Protobuf 定义中的许多数值字段，例如 `creditAmount` / `credit_amount`，会带有 `json:"...,omitempty"` 标记。
-* **行为：** 当用户配额余额为 `0` 时，Go JSON 编码器会从响应中完全省略该 key，而不是输出 `"creditAmount": 0`。
-* **影响：** 客户端扩展会把缺失字段解析为 JavaScript 中的 `undefined`，可能导致 UI 问题，例如状态栏显示 `💳 undefined`。
-* **修复策略：** 解析列表数据时始终做防御性类型校验，并把缺失属性映射到安全默认值，例如 `'0'`。
+Protobuf 数值字段可能使用 `omitempty`。零值可能从 JSON 中完全省略，而不是返回 `0`；解析代码应为缺失的可选数值字段提供明确默认值。
 
----
+## 4. 自动化验证
 
-## 🧪 5. 运行自动化测试
+```bash
+npm test
+npm run test:server
+npm run typecheck
+npm run typecheck:debug
+npm run lint
+npm run check:l10n
+npm run build
+```
 
-为确保解析和调试相关代码改动不会破坏现有功能：
-
-* **运行单元测试：**
-  ```bash
-  npm test
-  ```
-* **仅运行集成/服务端测试：**
-  ```bash
-  npm run test:server
-  ```
+本机服务器可用时，`npm run test:server` 会连接真实服务器；服务器不存在时会跳过 live 检查。四个 `debug:*` 命令是手工诊断入口，不会在 CI 中运行。

@@ -1,90 +1,98 @@
 English | [中文文档](DEBUGGING_zh.md)
 
-# Debugging Antigravity Language Server & Quota Connections
+# Debugging Antigravity Language Server and Quota Connections
 
-This document describes how to debug, trace, and diagnose connection and quota-related issues between the **Antigravity Panel** extension and the local **Antigravity Language Server**.
+This document covers interactive extension debugging and the local tools that connect to a real Antigravity Language Server.
 
----
+## 1. Extension Host debugging
 
-## 🏗️ 1. IDE Extension Host Debugging
+1. Open the project folder in Antigravity IDE.
+2. Press `F5`, or select **Run Antigravity Panel (Extension Host)** from **Run and Debug**.
+3. The Extension Development Host starts the extension and connects to the local Language Server.
 
-The primary method for interactive debugging of the extension UI and backend:
+See [.vscode/launch.json](../.vscode/launch.json) for the launch configuration.
 
-1. Open the project folder in **Antigravity IDE**.
-2. Press **`F5`** (or go to the **Run and Debug** view and select `Run Antigravity Panel (Extension Host)`).
-3. This opens a sandboxed **Extension Development Host** window.
-4. The extension automatically attempts to detect and connect to your local running **Antigravity Language Server** instance, allowing you to debug with real-time metrics.
+## 2. Local real-server tools
 
-*See [.vscode/launch.json](../.vscode/launch.json) for the underlying debug configuration.*
+All tools live under `scripts/debug/`. They are development-only, are excluded from the VSIX, and expect Antigravity IDE and its Language Server to be running locally.
 
----
+| Command | Purpose |
+| --- | --- |
+| `npm run debug:processes` | Inspect Language Server processes and connection arguments |
+| `npm run debug:quota` | Fetch and print the complete real `GetUserStatus` response |
+| `npm run debug:server` | Verify the production `ProcessFinder` and `QuotaService` path |
+| `npm run debug:windows-tree` | Inspect native Windows IDE/Extension Host/Language Server ancestry |
 
-## 🔍 2. Process Diagnostics
+Successful tools exit with code `0`. Detection or connection failures exit with code `1`. The Windows-only tool exits with code `2` when run outside native Windows.
 
-If the panel fails to display metrics or shows connection errors, use the process diagnostics tool to verify if the Language Server is running.
+### 2.1 Inspect Language Server processes
 
-Run the diagnostic script:
 ```bash
-node scripts/diagnose_processes.js
+npm run debug:processes
 ```
 
-### What It Does:
-* Scans the system for running `language_server` processes.
-* Extracts and prints essential command-line arguments:
-  * `--port`: The local API port.
-  * `--extension_server_port`: The port used for IDE-to-LS communication.
-  * `--csrf_token`: The authentication token required for API requests.
+This lists matching processes, PIDs, parent PIDs, workspace IDs, ports, complete CSRF tokens, and the relevant command-line arguments.
 
----
+### 2.2 Fetch the raw quota endpoint independently
 
-## 📡 3. Live Quota Retrieval & Verification
-
-To verify that the Language Server is responding correctly to API requests and to inspect the raw payload returned by the server:
-
-Run the real-time fetch script:
 ```bash
-node scripts/fetch_real_quota.js
+npm run debug:quota
 ```
 
-### What It Does:
-1. Automatically discovers the active Language Server process.
-2. Resolves the active port and extracts the API CSRF token.
-3. Sends a real `POST` request to the server's endpoint:
-   `/exa.language_server_pb.LanguageServerService/GetUserStatus`
-4. Prints the formatted JSON response returned by the server.
+This standalone JavaScript tool discovers a real Language Server process, probes its localhost ports over HTTPS and then HTTP, requests:
 
----
+```text
+/exa.language_server_pb.LanguageServerService/GetUserStatus
+```
 
-## 🛠️ 4. Binary Schema & Serialization Inspection
+and prints the protocol used and the complete real response.
 
-When server fields disappear or behave unexpectedly (e.g., missing properties in the JSON response), you can inspect the compiled Go Protobuf definitions directly from the server binary.
+### 2.3 Verify the production connection path
 
-### Example: Inspecting Credit-Related Fields
-The Language Server binary is typically located at:
-`~/.antigravity-ide-server/bin/<version>/extensions/antigravity/bin/language_server_linux_x64`
+```bash
+npm run debug:server
+```
 
-Run the following command to filter strings in the binary:
+This command compiles the TypeScript debug entry with `tsconfig.debug.json`, then exercises the same production `ProcessFinder`, protocol fallback, `QuotaService`, parser, and logger used by the extension and prints the complete parsed snapshot. It is the preferred check after changing connection or parsing code.
+
+Use `debug:quota` when you need an independent raw endpoint check. Use `debug:server` when you need to verify the extension's production code path.
+
+### 2.4 Inspect the native Windows process tree
+
+Run this from native Windows Node.js:
+
+```bash
+npm run debug:windows-tree
+```
+
+It reports only real IDE, Extension Host, and `language_server_windows_x64.exe` ancestry. It does not create simulated processes. This command is not intended for WSL or Linux Node.js.
+
+## 3. Binary schema and serialization inspection
+
+When server fields disappear or behave unexpectedly, inspect the compiled Go Protobuf strings in the Language Server binary. A typical Linux installation is:
+
+```text
+~/.antigravity-ide-server/bin/<version>/extensions/antigravity/bin/language_server_linux_x64
+```
+
+Example:
+
 ```bash
 strings ~/.antigravity-ide-server/bin/*/extensions/antigravity/bin/language_server_linux_x64 | grep -iE 'creditAmount|creditType|minimumCreditAmountForUsage'
 ```
 
-### Understanding Protobuf `omitempty` Serialization:
-Many numeric fields (like `creditAmount` / `credit_amount`) in the server's Protobuf definitions are marked with `json:"...,omitempty"`.
-* **Behavior:** When a user's credit balance is `0`, Go's JSON encoder completely omits the key from the response instead of outputting `"creditAmount": 0`.
-* **Impact:** The client extension parses this omission as `undefined` in JavaScript, which can cause UI bugs (e.g., displaying `💳 undefined` in the status bar).
-* **Fix Strategy:** Always implement defensive type validation when parsing lists, mapping missing properties to their safe defaults (like `'0'`).
+Numeric Protobuf fields may use `omitempty`. A zero value can therefore be absent from JSON rather than returned as `0`; parsing code should map missing optional numeric fields to an intentional default.
 
----
+## 4. Automated validation
 
-## 🧪 5. Running Automated Tests
+```bash
+npm test
+npm run test:server
+npm run typecheck
+npm run typecheck:debug
+npm run lint
+npm run check:l10n
+npm run build
+```
 
-To ensure changes to the parsing and debugging code do not break existing functionality:
-
-* **Run unit tests:**
-  ```bash
-  npm test
-  ```
-* **Run integration/server tests only:**
-  ```bash
-  npm run test:server
-  ```
+`npm run test:server` connects to the real local server when available and skips its live checks when no server is running. The four `debug:*` commands are manual diagnostics and are not run in CI.

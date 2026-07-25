@@ -24,6 +24,7 @@ docs/**
 # Configuration files
 tsconfig.json
 tsconfig.test.json
+tsconfig.debug.json
 .eslintrc.json
 .eslintignore
 eslint.config.mjs
@@ -56,4 +57,3 @@ assets/preview*.png
 .agent/**
 .cursor/**
 check-l10n.js
-

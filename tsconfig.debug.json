@@ -1,0 +1,22 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "module": "Node16",
+    "moduleResolution": "Node16",
+    "target": "ES2022",
+    "types": [
+      "node",
+      "vscode"
+    ],
+    "outDir": "out/debug",
+    "rootDir": ".",
+    "sourceMap": false,
+    "noEmit": false
+  },
+  "include": [
+    "scripts/debug/verify-production-server-connection.ts"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+}
