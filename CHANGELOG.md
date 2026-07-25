@@ -12,6 +12,7 @@ English | [中文文档](docs/CHANGELOG_zh.md)
 
 ### Changed
 
+- **Dependency Updates**: Updated mocha to 11.7.6, eslint to 10.8.0, lint-staged to 17.2.0, and refreshed the remaining development dependencies within their declared ranges. Added mocha-scoped npm overrides (diff, glob, minimatch, brace-expansion) to clear all five `npm audit` findings (four high, one low — all DoS-class issues confined to the development toolchain; the production dependency tree was already clean).
 - **Usage History Survives Quota Resets**: A detected reset no longer deletes the group's quota history; it now writes a reset marker onto the recorded point. Consumption rate (pp/h) and runway prediction still restart at the marker — deltas never span a reset — while 14 days of history support the current-versus-previous 7-day comparison. History points older than 24 hours are downsampled to 5-minute granularity (markers preserved) to bound storage size. The stored `tfa.quotaHistory_v2` format is unchanged apart from the additive `resets` field.
 
 ### Fixed
