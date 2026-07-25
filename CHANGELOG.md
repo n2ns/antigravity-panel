@@ -4,6 +4,8 @@ English | [中文文档](docs/CHANGELOG_zh.md)
 
 ## [Unreleased]
 
+## [2.7.3] - 2026-07-25
+
 ### Added
 
 - **Quota Reset Countdown & Notification**: The sidebar countdown now ticks live between polls, driven by the absolute reset timestamp already provided by the server. When a pool's quota rebounds past a reset threshold (5pp), a notification announces the reset (toggle: `tfa.system.notifyOnQuotaReset`, cooldown-protected against server jitter). A one-shot timer aimed at the earliest upcoming reset triggers an immediate refresh, so resets surface within seconds instead of waiting for the next polling cycle. Invalid server reset times are now flagged and rendered as N/A instead of a synthetic 24-hour countdown.
@@ -14,11 +16,15 @@ English | [中文文档](docs/CHANGELOG_zh.md)
 
 - **Dependency Updates**: Updated mocha to 11.7.6, eslint to 10.8.0, lint-staged to 17.2.0, and refreshed the remaining development dependencies within their declared ranges. Added mocha-scoped npm overrides (diff, glob, minimatch, brace-expansion) to clear all five `npm audit` findings (four high, one low — all DoS-class issues confined to the development toolchain; the production dependency tree was already clean).
 - **Usage History Survives Quota Resets**: A detected reset no longer deletes the group's quota history; it now writes a reset marker onto the recorded point. Consumption rate (pp/h) and runway prediction still restart at the marker — deltas never span a reset — while 14 days of history support the current-versus-previous 7-day comparison. History points older than 24 hours are downsampled to 5-minute granularity (markers preserved) to bound storage size. The stored `tfa.quotaHistory_v2` format is unchanged apart from the additive `resets` field.
+- **Runtime and Payload Cleanup**: Removed obsolete cache, storage, automation, scheduler, status-bar, quota, and Webview DTO fields and helpers after verifying their production call paths. The usage chart now derives its scale directly from the rendered buckets, while per-item colors continue to preserve the existing chart appearance.
+- **Language Server Debug Tools**: Consolidated real-server diagnostics under `scripts/debug` with explicit npm commands and documentation. The quota tool prints the complete real response and can resolve Linux listening ports through the target process's `/proc` socket descriptors when socket tools are unavailable.
 
 ### Fixed
 
 - **Language Server Fallback Isolation** (#192): Ambient fallback discovery now requires the same explicit Antigravity app-data marker allowlist as the primary platform strategies before probing a candidate process. Listening-port discovery now parses Linux `ss` output correctly and verifies exact PIDs across Windows `netstat`, macOS/Linux `lsof`, Linux `ss`, and Linux `netstat`, preventing prefix-colliding processes from contributing ports.
 - **Cache-First Size Breakdown**: Cache refreshes now persist the Brain and conversation size breakdown alongside the total, so a recreated panel restores all three values immediately instead of briefly showing `0 B` until the next asynchronous scan.
+- **Cache-First Tree Metadata**: Task and context entries now persist and restore their raw byte sizes and modification timestamps, preserving the initial size display and sort order after an IDE restart.
+- **Quota Failure Logging**: Restored the production error callback registration so failed quota requests are recorded in the extension log instead of being silently discarded.
 - **Footer Collapse Persistence**: Backend Webview updates now preserve local UI state stored beside the payload, so the collapsed footer remains collapsed after quota/cache refreshes and subsequent panel recreation.
 
 ## [2.7.2] - 2026-07-22

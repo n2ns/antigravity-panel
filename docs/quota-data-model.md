@@ -235,10 +235,8 @@ drop = previous.remaining - current.remaining
 | `tfa.quotaHistory_v2` | 配额历史采样 |
 | `tfa.lastViewState` | 最近一次视图状态 |
 | `tfa.lastSnapshot` | 最近一次服务端快照 |
-| `tfa.lastDisplayPercentage` | 最近显示百分比 |
-| `tfa.lastPredictionGroup` | 最近预测池 ID |
 
-启动时优先恢复缓存；如果缓存仍使用旧模型分组 ID，但存在模型快照，则会按照当前 `quotaPoolId` 重新聚合。无法映射到当前池的旧图表序列会被忽略。
+启动时通过完整视图状态和服务端快照恢复配额、活动池及预测图表；如果缓存仍使用旧模型分组 ID，但存在模型快照，则会按照当前 `quotaPoolId` 重新聚合。无法映射到当前池的旧图表序列会被忽略。
 
 ---
 

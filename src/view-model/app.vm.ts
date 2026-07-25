@@ -115,11 +115,9 @@ export class AppViewModel implements vscode.Disposable {
                     hasData: false
                 })),
                 activeGroupId: pools[0]?.id || 'gemini',
-                chart: { buckets: [], maxUsage: 1, groupColors: {} },
+                chart: { buckets: [] },
                 displayItems: pools.map(pool => ({
-                    id: pool.id,
                     label: pool.label,
-                    type: 'group' as const,
                     remaining: 0,
                     resetTime: 'N/A',
                     hasData: false,
@@ -128,9 +126,6 @@ export class AppViewModel implements vscode.Disposable {
             },
             cache: {
                 totalSize: 0,
-                brainSize: 0,
-                conversationsSize: 0,
-                brainCount: 0,
                 formattedTotal: '0 B',
                 formattedBrain: '0 B',
                 formattedConversations: '0 B'
@@ -142,8 +137,7 @@ export class AppViewModel implements vscode.Disposable {
             automation: {
                 enabled: false
             },
-            connectionStatus: 'detecting',
-            lastUpdated: 0
+            connectionStatus: 'detecting'
         };
     }
 
@@ -337,15 +331,23 @@ export class AppViewModel implements vscode.Disposable {
         // Persist tree state for cache-first startup
         await this.storageService.setLastTreeState({
             brainTasks: this._state.tree.tasks.folders.map(f => {
-                // Find original task to get accurate bytes if possible, but path/size mapping is enough here
-                return { id: f.id, title: f.label, size: "0", lastModified: Date.now() };
+                return {
+                    id: f.id,
+                    title: f.label,
+                    size: String(f.sizeBytes ?? 0),
+                    lastModified: f.lastModified ?? 0
+                };
             }),
             codeContexts: this._state.tree.contexts.folders.map(f => {
-                return { id: f.id, name: f.label, size: "0" };
+                return {
+                    id: f.id,
+                    name: f.label,
+                    size: String(f.sizeBytes ?? 0),
+                    lastModified: f.lastModified
+                };
             }),
             brainExpanded: this._state.tree.tasks.expanded,
-            contextsExpanded: this._state.tree.contexts.expanded,
-            lastUpdated: Date.now()
+            contextsExpanded: this._state.tree.contexts.expanded
         });
     }
 
@@ -444,15 +446,8 @@ export class AppViewModel implements vscode.Disposable {
         // Update user info if available
         if (snapshot.userInfo) {
             this._state.user = {
-                name: snapshot.userInfo.name,
                 email: snapshot.userInfo.email,
-                tier: snapshot.userInfo.tier,
-                tierDescription: snapshot.userInfo.tierDescription,
-                planName: snapshot.userInfo.planName,
-                browserEnabled: snapshot.userInfo.browserEnabled,
-                knowledgeBaseEnabled: snapshot.userInfo.knowledgeBaseEnabled,
-                upgradeUri: snapshot.userInfo.upgradeUri,
-                upgradeText: snapshot.userInfo.upgradeText,
+                tier: snapshot.userInfo.tier
             };
         }
 
@@ -460,19 +455,25 @@ export class AppViewModel implements vscode.Disposable {
         if (snapshot.tokenUsage) {
             const tu = snapshot.tokenUsage;
             this._state.tokenUsage = {
-                promptCredits: tu.promptCredits,
-                flowCredits: tu.flowCredits,
-                totalAvailable: tu.totalAvailable,
-                totalMonthly: tu.totalMonthly,
-                overallRemainingPercentage: tu.overallRemainingPercentage,
-                userCredits: tu.userCredits,
+                promptCredits: tu.promptCredits ? {
+                    available: tu.promptCredits.available,
+                    monthly: tu.promptCredits.monthly,
+                    remainingPercentage: tu.promptCredits.remainingPercentage
+                } : undefined,
+                flowCredits: tu.flowCredits ? {
+                    available: tu.flowCredits.available,
+                    monthly: tu.flowCredits.monthly,
+                    remainingPercentage: tu.flowCredits.remainingPercentage
+                } : undefined,
+                userCredits: tu.userCredits?.map(({ creditType, creditAmount }) => ({
+                    creditType,
+                    creditAmount
+                })),
                 formatted: {
                     promptAvailable: this.formatCredits(tu.promptCredits?.available),
                     promptMonthly: this.formatCredits(tu.promptCredits?.monthly),
                     flowAvailable: this.formatCredits(tu.flowCredits?.available),
-                    flowMonthly: this.formatCredits(tu.flowCredits?.monthly),
-                    totalAvailable: this.formatCredits(tu.totalAvailable),
-                    totalMonthly: this.formatCredits(tu.totalMonthly),
+                    flowMonthly: this.formatCredits(tu.flowCredits?.monthly)
                 },
             };
         }
@@ -480,14 +481,6 @@ export class AppViewModel implements vscode.Disposable {
         await this.storageService.setLastViewState(this._state.quota);
         if (!this.isCurrentQuotaRefresh(refreshVersion)) return false;
         await this.storageService.setLastSnapshot(snapshot);
-        if (!this.isCurrentQuotaRefresh(refreshVersion)) return false;
-        await this.storageService.setLastDisplayPercentage(Math.round(currentRemaining));
-        if (!this.isCurrentQuotaRefresh(refreshVersion)) return false;
-        await this.storageService.setLastPrediction(
-            chart.prediction?.usageRate || 0,
-            chart.prediction?.runway || 'Stable',
-            activeGroupId
-        );
         if (!this.isCurrentQuotaRefresh(refreshVersion)) return false;
 
         // Cache user info and token usage for instant startup
@@ -853,26 +846,12 @@ export class AppViewModel implements vscode.Disposable {
         const prediction = this.calculatePrediction(filteredBuckets, activeGroupId, currentRemaining, config);
 
         return {
-            buckets: filteredBuckets,
-            maxUsage: this.getFilteredMaxUsage(filteredBuckets),
-            groupColors,
+            buckets: filteredBuckets.map(({ endTime, items }) => ({ endTime, items })),
             groupLabels,
             displayMinutes,
             interval: Math.round(bucketMinutes * 60),
             prediction
         };
-    }
-
-    /**
-     * Calculate max usage from filtered buckets for proper Y-axis scaling
-     */
-    private getFilteredMaxUsage(buckets: UsageBucket[]): number {
-        let max = 0;
-        for (const bucket of buckets) {
-            const totalUsage = bucket.items.reduce((sum, item) => sum + item.usage, 0);
-            max = Math.max(max, totalUsage);
-        }
-        return max || 1;
     }
 
     /** Human-readable runway for the usage chart when burn rate would exhaust quota before reset. */
@@ -922,13 +901,9 @@ export class AppViewModel implements vscode.Disposable {
                 runway = this.formatRunwayDuration(hoursUntilEmpty);
             }
         }
-        const activeGroup = this.strategyManager.getQuotaPools().find(pool => pool.id === activeGroupId);
         return {
-            groupId: activeGroupId,
-            groupLabel: activeGroup?.label || activeGroupId,
             usageRate,
-            runway,
-            remaining: currentRemaining
+            runway
         };
     }
 
@@ -960,9 +935,7 @@ export class AppViewModel implements vscode.Disposable {
                 const remaining = m.timeUntilReset === 'Ready' ? 100 : m.remainingPercentage;
 
                 return {
-                    id: m.modelId,
                     label: this.strategyManager.getModelDisplayName(m.modelId, m.label) || m.label || m.modelId,
-                    type: 'model' as const,
                     remaining,
                     resetTime: m.timeUntilReset,
                     resetDate: this.getResetTimestamp(m),
@@ -972,9 +945,7 @@ export class AppViewModel implements vscode.Disposable {
             });
         }
         return groups.map(g => ({
-            id: g.id,
             label: g.label,
-            type: 'group' as const,
             remaining: g.remaining,
             resetTime: g.resetTime,
             resetDate: g.resetDate,
@@ -986,9 +957,6 @@ export class AppViewModel implements vscode.Disposable {
     private async updateCacheState(cache: CacheInfo): Promise<void> {
         this._state.cache = {
             totalSize: cache.totalSize,
-            brainSize: cache.brainSize,
-            conversationsSize: cache.conversationsSize,
-            brainCount: cache.brainCount,
             formattedTotal: formatBytes(cache.totalSize),
             formattedBrain: formatBytes(cache.brainSize),
             formattedConversations: formatBytes(cache.conversationsSize)
@@ -1012,7 +980,6 @@ export class AppViewModel implements vscode.Disposable {
             sizeBytes: ctx.size,
             lastModified: ctx.lastModified,
             expanded: this._expandedContexts.has(ctx.id),
-            loading: false,
             files: []
         }));
     }
@@ -1025,7 +992,6 @@ export class AppViewModel implements vscode.Disposable {
             sizeBytes: task.size,
             lastModified: task.createdAt,
             expanded: this._expandedTasks.has(task.id),
-            loading: false,
             files: []
         }));
     }
@@ -1038,28 +1004,16 @@ export class AppViewModel implements vscode.Disposable {
             .filter(g => g.hasData)
             .map(g => {
                 const config = poolsConfig.find(cfg => cfg.id === g.id);
-                // Find the original model info to get absolute date
-                let resetDate: Date | undefined;
-                if (this._lastSnapshot && this._lastSnapshot.models) {
-                    const model = this.getMinModelForPool(this._lastSnapshot, g.id);
-                    const timestamp = model ? this.getResetTimestamp(model) : undefined;
-                    resetDate = timestamp === undefined ? undefined : new Date(timestamp);
-                }
-
                 return {
                     id: g.id,
                     label: g.label,
                     shortLabel: config?.shortLabel || g.label.substring(0, 3),
                     percentage: Math.round(g.remaining),
-                    resetTime: g.resetTime,
-                    resetDate: resetDate,
-                    color: g.themeColor,
-                    usageRate: 0,
-                    runway: 'Stable'
+                    resetTime: g.resetTime
                 };
             });
         const primary = allGroups.find(g => g.id === this._state.quota.activeGroupId) || allGroups[0] || {
-            id: 'unknown', label: 'Unknown', shortLabel: 'N/A', percentage: 0, resetTime: 'N/A', color: '#888', usageRate: 0, runway: 'Stable'
+            id: 'unknown', label: 'Unknown', shortLabel: 'N/A', percentage: 0, resetTime: 'N/A'
         };
         return { primary, allGroups };
     }
@@ -1102,7 +1056,7 @@ export class AppViewModel implements vscode.Disposable {
                 if (!day) continue;
                 hasData = hasData || day.hasData;
                 if (day.usage > 0) {
-                    items.push({ groupId: pool.id, usage: day.usage, color: pool.themeColor, label: pool.label });
+                    items.push({ usage: day.usage, color: pool.themeColor, label: pool.label });
                 }
             }
             return { dayStart, hasData, items };
@@ -1129,7 +1083,10 @@ export class AppViewModel implements vscode.Disposable {
             quotas: this._state.quota.displayItems,
             chart: this._state.quota.chart,
             weekly: this.buildWeeklyUsage(),
-            cache: this._state.cache,
+            cache: {
+                formattedBrain: this._state.cache.formattedBrain,
+                formattedConversations: this._state.cache.formattedConversations
+            },
             user: this._state.user,
             tokenUsage: this._state.tokenUsage,
             tasks: this._state.tree.tasks,
@@ -1193,9 +1150,9 @@ export class AppViewModel implements vscode.Disposable {
                 id: t.id,
                 label: t.title,
                 size: formatBytes(typeof t.size === 'string' ? parseInt(t.size) : t.size),
+                sizeBytes: typeof t.size === 'string' ? parseInt(t.size) : t.size,
                 lastModified: t.lastModified,
                 expanded: false,
-                loading: false,
                 files: []
             }));
 
@@ -1203,8 +1160,9 @@ export class AppViewModel implements vscode.Disposable {
                 id: c.id,
                 label: c.name,
                 size: formatBytes(typeof c.size === 'string' ? parseInt(c.size) : c.size),
+                sizeBytes: typeof c.size === 'string' ? parseInt(c.size) : c.size,
+                lastModified: c.lastModified,
                 expanded: false,
-                loading: false,
                 files: []
             }));
         }
@@ -1214,9 +1172,6 @@ export class AppViewModel implements vscode.Disposable {
         const totalSize = this.storageService.getLastCacheSize();
         this._state.cache = {
             totalSize,
-            brainSize: cacheDetails.brain,
-            conversationsSize: cacheDetails.workspace,
-            brainCount: this._state.tree.tasks.folders.length,
             formattedTotal: formatBytes(totalSize),
             formattedBrain: formatBytes(cacheDetails.brain),
             formattedConversations: formatBytes(cacheDetails.workspace)

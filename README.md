@@ -59,7 +59,7 @@ English | [中文文档](docs/README_zh.md)
 
 **Understand your consumption patterns**
 - Interactive bar charts showing reported quota changes over time (10-120 minutes), adaptively grouped into at most about 24 readable intervals; the card stays hidden until the first positive change is recorded
-- 24-hour history tracking with persistent storage
+- 14-day history tracking with persistent storage; the latest 24 hours keep raw samples, while older data is downsampled to 5-minute intervals
 - Color-coded visualization by quota pool, with interval and per-pool details on hover
 - 🔥 **Usage Rate**: Average consumption speed in percentage points per hour (pp/h)
 - ⏱️ **Runway Prediction**: Estimated time until quota exhaustion

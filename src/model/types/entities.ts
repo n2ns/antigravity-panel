@@ -97,6 +97,7 @@ export interface CachedContextInfo {
     id: string;
     name: string;
     size: string;
+    lastModified?: number;
 }
 
 /** Cached tree state */
@@ -105,5 +106,4 @@ export interface CachedTreeState {
     codeContexts: CachedContextInfo[];
     brainExpanded?: boolean;
     contextsExpanded?: boolean;
-    lastUpdated: number;
 }

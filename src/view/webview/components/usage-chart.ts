@@ -19,7 +19,7 @@ export class UsageChart extends LitElement {
       return nothing;
     }
 
-    const { buckets, maxUsage, interval, prediction, groupColors, groupLabels } = this.data;
+    const { buckets, interval, prediction, groupLabels } = this.data;
     const bucketTotals = buckets.map(bucket => bucket.items.reduce(
       (sum, item) => sum + (Number.isFinite(item.usage) && item.usage > 0 ? item.usage : 0),
       0
@@ -33,8 +33,7 @@ export class UsageChart extends LitElement {
     const runwayText = prediction?.runway === 'Stable'
       ? (t?.usageStable || 'Usage stable')
       : prediction?.runway;
-    // Trust the actual bucket data as a fallback for restored or older cached state.
-    const effectiveMaxUsage = Math.max(Number.isFinite(maxUsage) ? maxUsage : 0, ...bucketTotals, 0.01);
+    const effectiveMaxUsage = Math.max(...bucketTotals, 0.01);
 
     const formatUsage = (usage: number): string => usage > 0 && usage < 0.1
       ? usage.toFixed(2)
@@ -68,7 +67,7 @@ export class UsageChart extends LitElement {
           const height = (item.usage / effectiveMaxUsage) * maxHeight;
           const start = currentHeight;
           const end = currentHeight + height;
-          const color = item.color || groupColors?.[item.groupId] || '#888';
+          const color = item.color || '#888';
           gradientStops.push(`${color} ${start}px ${end}px`);
 
           currentHeight = end;

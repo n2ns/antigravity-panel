@@ -18,10 +18,7 @@ suite('StatusBarManager Test Suite', () => {
         label: 'Gemini',
         shortLabel: 'Fls',
         percentage: 75,
-        resetTime: '2h 30m',
-        color: '#ff0000',
-        usageRate: 10,
-        runway: '5h'
+        resetTime: '2h 30m'
     };
 
     const mockGptGroupItem: StatusBarGroupItem = {
@@ -29,10 +26,7 @@ suite('StatusBarManager Test Suite', () => {
         label: 'GPT',
         shortLabel: 'Gpt',
         percentage: 50,
-        resetTime: '1h',
-        color: '#00ff00',
-        usageRate: 5,
-        runway: '2h'
+        resetTime: '1h'
     };
 
     const mockStatusBarData: StatusBarData = {
@@ -42,9 +36,6 @@ suite('StatusBarManager Test Suite', () => {
 
     const mockCacheState = {
         totalSize: 1024 * 1024 * 10, // 10MB
-        brainSize: 0,
-        conversationsSize: 0,
-        brainCount: 0,
         formattedTotal: '10 MB',
         formattedBrain: '0 B',
         formattedConversations: '0 B'

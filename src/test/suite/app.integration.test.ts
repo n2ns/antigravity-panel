@@ -11,8 +11,6 @@ import type { CachedTreeState } from '../../model/types/entities';
 const mockAutomationService: IAutomationService = {
     start: () => { },
     stop: () => { },
-    isRunning: () => false,
-    toggle: () => false,
     updateInterval: () => { }
 };
 
@@ -34,8 +32,6 @@ const mockCacheService: ICacheService = {
         totalSize: 0,
         brainSize: 0,
         conversationsSize: 0,
-        brainCount: 0,
-        conversationsCount: 0,
         brainTasks: [],
         codeContexts: []
     }),
@@ -99,7 +95,7 @@ suite('App Initialization & Cache Integration Test', () => {
                 { id: 'non-google', label: 'Claude', remaining: 45.2, resetTime: '3h', themeColor: '#D97706', hasData: true }
             ],
             activeGroupId: 'non-google',
-            chart: { buckets: [], maxUsage: 1, groupColors: {} },
+            chart: { buckets: [] },
             displayItems: []
         };
         await storageService.setLastViewState(cachedState);
@@ -120,10 +116,11 @@ suite('App Initialization & Cache Integration Test', () => {
     test('should restore cached tree state', async () => {
         const cachedTree: CachedTreeState = {
             brainTasks: [
-                { id: 't1', title: 'Task 1', size: '1MB', lastModified: 0 }
+                { id: 't1', title: 'Task 1', size: '1048576', lastModified: 1234 }
             ],
-            codeContexts: [],
-            lastUpdated: Date.now()
+            codeContexts: [
+                { id: 'c1', name: 'Context 1', size: '2048', lastModified: 5678 }
+            ]
         };
         await storageService.setLastTreeState(cachedTree);
 
@@ -135,6 +132,12 @@ suite('App Initialization & Cache Integration Test', () => {
         const state = viewModel.getState();
         assert.strictEqual(state.tree.tasks.folders.length, 1);
         assert.strictEqual(state.tree.tasks.folders[0].label, 'Task 1');
+        assert.strictEqual(state.tree.tasks.folders[0].size, '1.0 MB');
+        assert.strictEqual(state.tree.tasks.folders[0].sizeBytes, 1048576);
+        assert.strictEqual(state.tree.tasks.folders[0].lastModified, 1234);
+        assert.strictEqual(state.tree.contexts.folders[0].size, '2.0 KB');
+        assert.strictEqual(state.tree.contexts.folders[0].sizeBytes, 2048);
+        assert.strictEqual(state.tree.contexts.folders[0].lastModified, 5678);
     });
 
     test('should persist cache details for cache-first startup', async () => {
@@ -144,10 +147,20 @@ suite('App Initialization & Cache Integration Test', () => {
                 totalSize: 3072,
                 brainSize: 1024,
                 conversationsSize: 2048,
-                brainCount: 1,
-                conversationsCount: 1,
-                brainTasks: [],
-                codeContexts: []
+                brainTasks: [{
+                    id: 'task-1',
+                    label: 'Task 1',
+                    path: '/tmp/task-1',
+                    size: 1024,
+                    fileCount: 1,
+                    createdAt: 1234
+                }],
+                codeContexts: [{
+                    id: 'context-1',
+                    name: 'Context 1',
+                    size: 2048,
+                    lastModified: 5678
+                }]
             })
         };
 
@@ -161,11 +174,17 @@ suite('App Initialization & Cache Integration Test', () => {
 
         assert.ok(success, 'Should report success restoring refreshed cache');
         assert.strictEqual(state.cache.totalSize, 3072);
-        assert.strictEqual(state.cache.brainSize, 1024);
-        assert.strictEqual(state.cache.conversationsSize, 2048);
         assert.strictEqual(state.cache.formattedTotal, '3.0 KB');
         assert.strictEqual(state.cache.formattedBrain, '1.0 KB');
         assert.strictEqual(state.cache.formattedConversations, '2.0 KB');
+        assert.deepStrictEqual(
+            state.tree.tasks.folders.map(({ size, sizeBytes, lastModified }) => ({ size, sizeBytes, lastModified })),
+            [{ size: '1.0 KB', sizeBytes: 1024, lastModified: 1234 }]
+        );
+        assert.deepStrictEqual(
+            state.tree.contexts.folders.map(({ size, sizeBytes, lastModified }) => ({ size, sizeBytes, lastModified })),
+            [{ size: '2.0 KB', sizeBytes: 2048, lastModified: 5678 }]
+        );
     });
 
     test('should handle missing cache gracefully', () => {

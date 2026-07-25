@@ -256,6 +256,9 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     quotaService.onUpdate((snapshot) => {
       logQuotaSnapshot(snapshot);
     });
+    quotaService.onError((error) => {
+      errorLog("Quota fetch error", error);
+    });
 
     // 3. ViewModel (The Brain)
     appViewModel = new AppViewModel(

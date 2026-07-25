@@ -1,6 +1,7 @@
 const http = require('http');
 const https = require('https');
 const os = require('os');
+const fs = require('fs');
 const {
     extractArgument,
     listLanguageServerProcesses,
@@ -36,25 +37,80 @@ function belongsToProcess(line, pid) {
     return new RegExp(`(?:pid=${pid}[,)]|\\s${pid}/)`).test(line);
 }
 
-async function discoverListeningPorts(pid) {
-    let result;
-    if (os.platform() === 'win32') {
-        result = await runCommand('netstat -ano');
-    } else if (os.platform() === 'darwin') {
-        result = await runCommand('lsof -nP -iTCP -sTCP:LISTEN');
-    } else {
-        result = await runCommand('ss -tlnp');
-        if (result.error || !result.stdout.trim()) {
-            result = await runCommand('netstat -tlnp');
-        }
-    }
-
+function extractListeningPorts(stdout, pid) {
     const ports = [];
-    for (const line of result.stdout.split(/\r?\n/)) {
+    for (const line of stdout.split(/\r?\n/)) {
         if (!/LISTEN/i.test(line) || !belongsToProcess(line, pid)) continue;
         for (const match of line.matchAll(/(?:127\.0\.0\.1|\[?::1\]?):(\d{2,5})/g)) {
             const port = Number(match[1]);
             if (port > 0 && port < 65536) ports.push(port);
+        }
+    }
+    return ports;
+}
+
+async function discoverProcListeningPorts(pid) {
+    let fdNames;
+    try {
+        fdNames = await fs.promises.readdir(`/proc/${pid}/fd`);
+    } catch {
+        return [];
+    }
+
+    const socketInodes = new Set();
+    await Promise.all(fdNames.map(async fdName => {
+        try {
+            const target = await fs.promises.readlink(`/proc/${pid}/fd/${fdName}`);
+            const match = target.match(/^socket:\[(\d+)\]$/);
+            if (match) socketInodes.add(match[1]);
+        } catch {
+            // File descriptors can disappear while the process is running.
+        }
+    }));
+    if (socketInodes.size === 0) return [];
+
+    const ports = [];
+    for (const tablePath of ['/proc/net/tcp', '/proc/net/tcp6']) {
+        let table;
+        try {
+            table = await fs.promises.readFile(tablePath, 'utf8');
+        } catch {
+            continue;
+        }
+
+        for (const row of table.split(/\r?\n/).slice(1)) {
+            const columns = row.trim().split(/\s+/);
+            if (columns.length < 10 || columns[3] !== '0A' || !socketInodes.has(columns[9])) continue;
+
+            const [address, portHex] = columns[1].split(':');
+            const isIpv4Loopback = address === '0100007F';
+            const isIpv6Loopback = address === '00000000000000000000000001000000';
+            if (!portHex || (!isIpv4Loopback && !isIpv6Loopback)) continue;
+
+            const port = Number.parseInt(portHex, 16);
+            if (port > 0 && port < 65536) ports.push(port);
+        }
+    }
+    return ports;
+}
+
+async function discoverListeningPorts(pid) {
+    let ports = [];
+    if (os.platform() === 'win32') {
+        const result = await runCommand('netstat -ano');
+        ports = extractListeningPorts(result.stdout, pid);
+    } else if (os.platform() === 'darwin') {
+        const result = await runCommand('lsof -nP -iTCP -sTCP:LISTEN');
+        ports = extractListeningPorts(result.stdout, pid);
+    } else {
+        const ssResult = await runCommand('ss -tlnp');
+        ports = extractListeningPorts(ssResult.stdout, pid);
+        if (ports.length === 0) {
+            const netstatResult = await runCommand('netstat -tlnp');
+            ports = extractListeningPorts(netstatResult.stdout, pid);
+        }
+        if (ports.length === 0) {
+            ports = await discoverProcListeningPorts(pid);
         }
     }
 
@@ -175,7 +231,13 @@ async function main() {
     throw new Error('No candidate port accepted the Language Server request.');
 }
 
-main().catch(error => {
-    console.error(`Quota fetch failed: ${error instanceof Error ? error.message : String(error)}`);
-    process.exitCode = 1;
-});
+if (require.main === module) {
+    main().catch(error => {
+        console.error(`Quota fetch failed: ${error instanceof Error ? error.message : String(error)}`);
+        process.exitCode = 1;
+    });
+}
+
+module.exports = {
+    discoverListeningPorts,
+};

@@ -181,18 +181,6 @@ export class StorageService implements IStorageService {
         return buckets;
     }
 
-    /**
-     * Get maximum usage value for chart scaling
-     */
-    getMaxUsage(buckets: UsageBucket[]): number {
-        let max = 0;
-        for (const bucket of buckets) {
-            const totalUsage = bucket.items.reduce((sum, item) => sum + item.usage, 0);
-            max = Math.max(max, totalUsage);
-        }
-        return max || 1;
-    }
-
     // ==================== View State Cache ====================
 
     getLastViewState<T>(): T | null {
@@ -239,14 +227,6 @@ export class StorageService implements IStorageService {
         await this.globalState.update('tfa.lastCacheWarningTime', time);
     }
 
-    getLastDisplayPercentage(): number {
-        return this.globalState.get<number>('tfa.lastDisplayPercentage') ?? 0;
-    }
-
-    async setLastDisplayPercentage(pct: number): Promise<void> {
-        await this.globalState.update('tfa.lastDisplayPercentage', pct);
-    }
-
     getLastCacheSize(): number {
         return this.globalState.get<number>('tfa.lastCacheSize') ?? 0;
     }
@@ -265,20 +245,6 @@ export class StorageService implements IStorageService {
     async setLastCacheDetails(brain: number, workspace: number): Promise<void> {
         await this.globalState.update('tfa.lastBrainSize', brain);
         await this.globalState.update('tfa.lastWorkspaceSize', workspace);
-    }
-
-    getLastPrediction(): { usageRate: number; runway: string; groupId: string } {
-        return {
-            usageRate: this.globalState.get<number>('tfa.lastUsageRate') ?? 0,
-            runway: this.globalState.get<string>('tfa.lastRunway') ?? 'Stable',
-            groupId: this.globalState.get<string>('tfa.lastPredictionGroup') ?? 'gemini'
-        };
-    }
-
-    async setLastPrediction(usageRate: number, runway: string, groupId: string): Promise<void> {
-        await this.globalState.update('tfa.lastUsageRate', usageRate);
-        await this.globalState.update('tfa.lastRunway', runway);
-        await this.globalState.update('tfa.lastPredictionGroup', groupId);
     }
 
     // ==================== User & Token Cache ====================

@@ -13,7 +13,6 @@ src/test/**
 .vscode-test/**
 .github/**
 scripts/**
-src/scripts/**
 local_bak/**
 docs/**
 !docs/DISCLAIMER*.md
@@ -40,11 +39,6 @@ node_modules/**
 !node_modules/@vscode/codicons/dist/codicon.css
 !node_modules/@vscode/codicons/dist/codicon.ttf
 
-# Documentation (keep only essential ones in English)
-README_zh.md
-CHANGELOG_zh.md
-DEVELOPMENT_HISTORY.md
-
 # README preview images (vsce auto-converts relative paths to GitHub raw URLs)
 assets/preview*.png
 
@@ -56,4 +50,3 @@ assets/preview*.png
 .npmrc
 .agent/**
 .cursor/**
-check-l10n.js

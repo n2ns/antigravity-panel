@@ -5,9 +5,7 @@
 // ==================== Quota Types ====================
 
 export interface QuotaDisplayItem {
-  id: string;
   label: string;
-  type: 'group' | 'model';
   remaining: number;
   resetTime: string;
   /** Absolute reset timestamp (epoch ms); absent when unknown or server value was invalid */
@@ -25,32 +23,22 @@ export interface BucketItem {
 }
 
 export interface UsageBucket {
-  startTime: number;
   endTime: number;
   items: BucketItem[];
 }
 
 export interface UsageChartData {
   buckets: UsageBucket[];
-  maxUsage: number;
-  /** Color mapping for each group ID (e.g. { 'gemini-flash': '#40C4FF' }) */
-  groupColors?: Record<string, string>;
   /** Display label mapping for each group ID */
   groupLabels?: Record<string, string>;
   displayMinutes: number;
   interval: number;
   /** Prediction data (optional, calculated by ViewModel) */
   prediction?: {
-    /** Active group ID */
-    groupId: string;
-    /** Active group display name */
-    groupLabel: string;
     /** Usage rate (pp/hour - percentage points consumed per hour) */
     usageRate: number;
     /** Estimated duration description (e.g. "~38h" or "Stable") */
     runway: string;
-    /** Current remaining percentage */
-    remaining: number;
   };
 }
 
@@ -94,15 +82,8 @@ export interface WebviewMessage {
 
 /** User info data */
 export interface UserInfoData {
-  name?: string;
   email?: string;
   tier?: string;
-  tierDescription?: string;
-  planName?: string;
-  browserEnabled?: boolean;
-  knowledgeBaseEnabled?: boolean;
-  upgradeUri?: string;
-  upgradeText?: string;
 }
 
 export interface UserCreditData {
@@ -115,26 +96,19 @@ export interface TokenUsageData {
   promptCredits?: {
     available: number;
     monthly: number;
-    usedPercentage: number;
     remainingPercentage: number;
   };
   flowCredits?: {
     available: number;
     monthly: number;
-    usedPercentage: number;
     remainingPercentage: number;
   };
-  totalAvailable: number;
-  totalMonthly: number;
-  overallRemainingPercentage: number;
   userCredits?: UserCreditData[];
   formatted: {
     promptAvailable: string;
     promptMonthly: string;
     flowAvailable: string;
     flowMonthly: string;
-    totalAvailable: string;
-    totalMonthly: string;
   };
 }
 
@@ -147,7 +121,7 @@ export interface WeeklyUsageData {
   days: {
     dayStart: number;
     hasData: boolean;
-    items: { groupId: string; usage: number; color: string; label: string }[];
+    items: { usage: number; color: string; label: string }[];
   }[];
   /** Sum over all days and pools (percentage points of the short-term pools) */
   total: number;
@@ -170,11 +144,6 @@ export interface WebviewStateUpdate {
   showUserInfoCard?: boolean;
   showCreditsCard?: boolean;
   cache?: {
-    totalSize: number;
-    brainSize: number;
-    conversationsSize: number;
-    brainCount: number;
-    formattedTotal: string;
     formattedBrain: string;
     formattedConversations: string;
   };

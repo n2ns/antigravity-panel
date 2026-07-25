@@ -10,8 +10,6 @@ import type { QuotaSnapshot } from '../../model/types/entities';
 const defaultMockAutomationService: IAutomationService = {
     start: () => { },
     stop: () => { },
-    isRunning: () => false,
-    toggle: () => false,
     updateInterval: () => { }
 };
 
@@ -36,8 +34,6 @@ const defaultMockCacheService: ICacheService = {
         totalSize: 1024,
         brainSize: 512,
         conversationsSize: 512,
-        brainCount: 1,
-        conversationsCount: 1,
         brainTasks: [],
         codeContexts: []
     }),
@@ -54,7 +50,6 @@ const defaultMockCacheService: ICacheService = {
 const defaultMockStorageService: IStorageService = {
     recordQuotaPoint: async () => { },
     calculateUsageBuckets: () => [],
-    getMaxUsage: () => 0,
     getLatestResetTime: () => null,
     getDailyConsumption: () => [],
     setLastViewState: async () => { },
@@ -67,13 +62,9 @@ const defaultMockStorageService: IStorageService = {
     getLastCacheDetails: () => ({ brain: 0, workspace: 0 }),
     setLastTreeState: async () => { },
     getLastTreeState: () => null,
-    setLastDisplayPercentage: async () => { },
-    setLastPrediction: async () => { },
     setLastCacheWarningTime: async () => { },
     getLastCacheWarningTime: () => 0,
     getRecentHistory: () => [],
-    getLastDisplayPercentage: () => 0,
-    getLastPrediction: () => ({ usageRate: 0, runway: '', groupId: '' }),
     getLastUserInfo: () => null,
     setLastUserInfo: async () => { },
     getLastTokenUsage: () => null,
@@ -111,7 +102,6 @@ suite('AppViewModel Test Suite', () => {
     test('should initialize with empty state', () => {
         const state = vm.getState();
         assert.ok(state.quota.groups.length > 0);
-        assert.strictEqual(state.lastUpdated, 0);
     });
 
     test('refreshQuota should update state from service', async () => {
@@ -280,8 +270,6 @@ suite('AppViewModel Test Suite', () => {
             totalSize: 2048,
             brainSize: 1024,
             conversationsSize: 1024,
-            brainCount: 5,
-            conversationsCount: 5,
             brainTasks: [],
             codeContexts: []
         });
@@ -291,6 +279,7 @@ suite('AppViewModel Test Suite', () => {
         const state = vm.getState();
         assert.strictEqual(state.cache.totalSize, 2048);
         assert.strictEqual(state.cache.formattedTotal, '2.0 KB');
+        assert.strictEqual(state.cache.formattedBrain, '1.0 KB');
     });
 
     test('should detect active group based on consumption', async () => {
@@ -408,7 +397,7 @@ suite('AppViewModel Test Suite', () => {
         const taskId = 'task-1';
 
         // Setup initial tree state
-        vm.getState().tree.tasks.folders = [{ id: taskId, label: 'Task 1', size: '', lastModified: 0, expanded: false, loading: false, files: [] }];
+        vm.getState().tree.tasks.folders = [{ id: taskId, label: 'Task 1', size: '', lastModified: 0, expanded: false, files: [] }];
 
         // Mock file loading
         mockCache.getTaskFiles = async (id) => ([{ name: 'file1.txt', path: '/path/file1.txt' }]);
@@ -438,7 +427,7 @@ suite('AppViewModel Test Suite', () => {
         const contextId = 'ctx-1';
 
         // Setup initial tree state
-        vm.getState().tree.contexts.folders = [{ id: contextId, label: 'Ctx 1', size: '', lastModified: 0, expanded: false, loading: false, files: [] }];
+        vm.getState().tree.contexts.folders = [{ id: contextId, label: 'Ctx 1', size: '', lastModified: 0, expanded: false, files: [] }];
 
         // Mock file loading
         mockCache.getContextFiles = async (id) => ([{ name: 'ctx_file.ts', path: '/path/ctx_file.ts' }]);
@@ -704,8 +693,8 @@ suite('AppViewModel Test Suite', () => {
 
         assert.ok(weekly);
         assert.strictEqual(weekly.days[6].dayStart, todayStart.getTime());
-        assert.deepStrictEqual(weekly.days[6].items.map(item => item.groupId), ['gemini']);
-        assert.deepStrictEqual(weekly.days[5].items.map(item => item.groupId), ['gemini', 'non-google']);
+        assert.deepStrictEqual(weekly.days[6].items.map(item => item.label), ['Gemini']);
+        assert.deepStrictEqual(weekly.days[5].items.map(item => item.label), ['Gemini', 'Claude']);
         assert.strictEqual(weekly.total, 13);
         assert.strictEqual(weekly.previousTotal, 14);
     });
@@ -727,7 +716,7 @@ suite('AppViewModel Test Suite', () => {
         mockStorage.getLastSnapshot = <T>() => cachedSnapshot as T;
 
         assert.strictEqual(vm.restoreFromCache(), true);
-        const gemini = vm.getState().quota.displayItems.find(item => item.id === 'gemini');
+        const gemini = vm.getState().quota.displayItems[0];
         assert.strictEqual(typeof gemini?.resetDate, 'number');
     });
 

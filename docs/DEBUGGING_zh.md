@@ -45,7 +45,7 @@ npm run debug:quota
 /exa.language_server_pb.LanguageServerService/GetUserStatus
 ```
 
-并直接输出实际使用的协议和完整真实响应。
+并直接输出实际使用的协议和完整真实响应。在 Linux 上，如果 `ss` 和 `netstat` 不可用或无法识别监听端口所属 PID，端口发现会回退到目标进程的 `/proc` socket 描述符。
 
 ### 2.3 验证生产连接链路
 

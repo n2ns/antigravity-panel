@@ -82,13 +82,6 @@ suite('StorageService Test Suite', () => {
         global.Date.now = realNow;
     });
 
-    test('should store and retrieve last display percentage', async () => {
-        assert.strictEqual(service.getLastDisplayPercentage(), 0); // default
-
-        await service.setLastDisplayPercentage(75);
-        assert.strictEqual(service.getLastDisplayPercentage(), 75);
-    });
-
     test('should clear history', async () => {
         await service.recordQuotaPoint({ gemini: 100 });
         assert.strictEqual(service.count, 1);

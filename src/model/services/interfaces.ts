@@ -115,11 +115,6 @@ export interface IStorageService {
     calculateUsageBuckets(displayMinutes: number, bucketMinutes: number, maxSampleGapMs?: number): UsageBucket[];
 
     /**
-     * Get maximum usage value for chart scaling
-     */
-    getMaxUsage(buckets: UsageBucket[]): number;
-
-    /**
      * Timestamp of the latest recorded reset marker for a group, or null if
      * no reset is on record. Rate windows restart at this point.
      */
@@ -178,16 +173,6 @@ export interface IStorageService {
     setLastCacheWarningTime(time: number): Promise<void>;
 
     /**
-     * Get last display percentage
-     */
-    getLastDisplayPercentage(): number;
-
-    /**
-     * Set last display percentage
-     */
-    setLastDisplayPercentage(pct: number): Promise<void>;
-
-    /**
      * Get last cache size
      */
     getLastCacheSize(): number;
@@ -206,16 +191,6 @@ export interface IStorageService {
      * Set last cache details
      */
     setLastCacheDetails(brain: number, workspace: number): Promise<void>;
-
-    /**
-     * Get last prediction data
-     */
-    getLastPrediction(): { usageRate: number; runway: string; groupId: string };
-
-    /**
-     * Set last prediction data
-     */
-    setLastPrediction(usageRate: number, runway: string, groupId: string): Promise<void>;
 
     // ==================== User & Token Cache ====================
 
@@ -265,17 +240,6 @@ export interface IAutomationService {
      * Stop the auto-accept loop
      */
     stop(): void;
-
-    /**
-     * Check if currently running
-     */
-    isRunning(): boolean;
-
-    /**
-     * Toggle the service state
-     * @returns New state
-     */
-    toggle(): boolean;
 
     /**
      * Update execution interval

@@ -92,24 +92,22 @@ suite('Webview Usage Chart Test Suite', () => {
             const { SidebarApp, UsageChart, WeeklyUsage, QuotaPie, CreditsBar } = await importModule(moduleUrl);
             const chartData = {
                 buckets: [
-                    { startTime: 0, endTime: 1, items: [] },
-                    { startTime: 1, endTime: 2, items: [{ groupId: 'gemini-flash', usage: 0.25, color: '#40C4FF' }] },
-                    { startTime: 2, endTime: 3, items: [{ groupId: 'claude', usage: 0.5, color: '#FFAB40' }] }
+                    { endTime: 1, items: [] },
+                    { endTime: 2, items: [{ groupId: 'gemini-flash', usage: 0.25, color: '#40C4FF' }] },
+                    { endTime: 3, items: [{ groupId: 'claude', usage: 0.5, color: '#FFAB40' }] }
                 ],
-                maxUsage: 0.5,
-                groupColors: { 'gemini-flash': '#40C4FF', claude: '#FFAB40' },
                 groupLabels: { 'gemini-flash': 'Gemini Flash', claude: 'Claude' },
                 displayMinutes: 90,
                 interval: 240,
-                prediction: { groupId: 'claude', groupLabel: 'Claude', usageRate: 0.5, runway: 'Stable', remaining: 80 }
+                prediction: { usageRate: 0.5, runway: 'Stable' }
             };
             const weeklyData = {
                 days: Array.from({ length: 7 }, (_, index) => ({
                     dayStart: index * 24 * 60 * 60 * 1000,
                     hasData: index !== 0,
                     items: index === 0 ? [] : [
-                        { groupId: 'gemini-flash', usage: index, color: '#40C4FF', label: 'Gemini Flash' },
-                        ...(index === 6 ? [{ groupId: 'claude', usage: 3, color: '#FFAB40', label: 'Claude' }] : [])
+                        { usage: index, color: '#40C4FF', label: 'Gemini Flash' },
+                        ...(index === 6 ? [{ usage: 3, color: '#FFAB40', label: 'Claude' }] : [])
                     ]
                 })),
                 total: 24,
@@ -276,8 +274,8 @@ suite('Webview Usage Chart Test Suite', () => {
                             ...day,
                             hasData: true,
                             items: [
-                                { groupId: 'gemini-flash', usage: 0.1, color: '#40C4FF', label: 'Gemini Flash' },
-                                { groupId: 'claude', usage: 0.1, color: '#FFAB40', label: 'Claude' }
+                                { usage: 0.1, color: '#40C4FF', label: 'Gemini Flash' },
+                                { usage: 0.1, color: '#FFAB40', label: 'Claude' }
                             ]
                         }
                         : day)

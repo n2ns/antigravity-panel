@@ -5,7 +5,7 @@
  * These types represent the UI-ready data structures.
  */
 
-import type { UsageBucket, UserCredit } from '../model/types/entities';
+import type { UserCredit } from '../model/types/entities';
 
 // ==================== Quota View State ====================
 
@@ -23,9 +23,7 @@ export interface QuotaGroupState {
 
 /** Quota display item for sidebar (either group or model) */
 export interface QuotaDisplayItem {
-    id: string;
     label: string;
-    type: 'group' | 'model';
     remaining: number;
     resetTime: string;
     /** Absolute reset timestamp (epoch ms); absent when unknown or server value was invalid */
@@ -40,7 +38,7 @@ export interface WeeklyUsageData {
     days: {
         dayStart: number;
         hasData: boolean;
-        items: { groupId: string; usage: number; color: string; label: string }[];
+        items: { usage: number; color: string; label: string }[];
     }[];
     /** Sum over all days and pools (percentage points of the short-term pools) */
     total: number;
@@ -48,20 +46,21 @@ export interface WeeklyUsageData {
     previousTotal: number | null;
 }
 
+/** Usage bucket projected for the Webview */
+export interface UsageChartBucket {
+    endTime: number;
+    items: { groupId: string; usage: number; color: string }[];
+}
+
 /** Usage chart data for visualization */
 export interface UsageChartData {
-    buckets: UsageBucket[];
-    maxUsage: number;
-    groupColors: Record<string, string>;
+    buckets: UsageChartBucket[];
     groupLabels?: Record<string, string>;
     displayMinutes?: number;
     interval?: number;
     prediction?: {
-        groupId: string;
-        groupLabel: string;
         usageRate: number;
         runway: string;
-        remaining: number;
     };
 }
 
@@ -71,7 +70,6 @@ export interface QuotaViewState {
     activeGroupId: string;
     chart: UsageChartData;
     displayItems: QuotaDisplayItem[];
-    lastUpdated?: number;
 }
 
 // ==================== Cache View State ====================
@@ -79,9 +77,6 @@ export interface QuotaViewState {
 /** Cache view state */
 export interface CacheViewState {
     totalSize: number;
-    brainSize: number;
-    conversationsSize: number;
-    brainCount: number;
     formattedTotal: string;
     formattedBrain: string;
     formattedConversations: string;
@@ -100,9 +95,9 @@ export interface TreeFolderItem {
     id: string;
     label: string;
     size: string;
+    sizeBytes?: number;
     lastModified?: number;
     expanded: boolean;
-    loading: boolean;
     files: TreeFileItem[];
 }
 
@@ -127,10 +122,6 @@ export interface StatusBarGroupItem {
     shortLabel: string;
     percentage: number;
     resetTime: string;
-    resetDate?: Date; // Absolute reset time for accurate timestamp display
-    color: string;
-    usageRate: number;
-    runway: string;
 }
 
 /** StatusBar display data */
@@ -143,24 +134,10 @@ export interface StatusBarData {
 
 /** User subscription view state */
 export interface UserViewState {
-    /** User display name */
-    name?: string;
     /** User email */
     email?: string;
     /** Subscription tier (e.g., "Pro", "Individual", "Enterprise") */
     tier?: string;
-    /** Tier description */
-    tierDescription?: string;
-    /** Plan name */
-    planName?: string;
-    /** Whether browser feature is enabled */
-    browserEnabled?: boolean;
-    /** Whether knowledge base is enabled */
-    knowledgeBaseEnabled?: boolean;
-    /** Upgrade URI if available */
-    upgradeUri?: string;
-    /** Upgrade button text */
-    upgradeText?: string;
 }
 
 // ==================== Token Usage View State ====================
@@ -171,32 +148,22 @@ export interface TokenUsageViewState {
     promptCredits?: {
         available: number;
         monthly: number;
-        usedPercentage: number;
         remainingPercentage: number;
     };
     /** Flow credits info */
     flowCredits?: {
         available: number;
         monthly: number;
-        usedPercentage: number;
         remainingPercentage: number;
     };
-    /** Total available credits */
-    totalAvailable: number;
-    /** Total monthly credits */
-    totalMonthly: number;
-    /** Overall remaining percentage */
-    overallRemainingPercentage: number;
     /** User tier credits (like GOOGLE_ONE_AI) */
-    userCredits?: UserCredit[];
+    userCredits?: Pick<UserCredit, 'creditType' | 'creditAmount'>[];
     /** Formatted display strings */
     formatted: {
         promptAvailable: string;
         promptMonthly: string;
         flowAvailable: string;
         flowMonthly: string;
-        totalAvailable: string;
-        totalMonthly: string;
     };
 }
 
@@ -208,7 +175,7 @@ export interface SidebarData {
     chart: UsageChartData;
     /** null = card disabled or no data yet (explicit so the webview can clear it) */
     weekly: WeeklyUsageData | null;
-    cache: CacheViewState;
+    cache: Pick<CacheViewState, 'formattedBrain' | 'formattedConversations'>;
     user?: UserViewState;
     tokenUsage?: TokenUsageViewState;
     tasks: TreeSectionState;
@@ -239,7 +206,6 @@ export interface AppState {
     automation: {
         enabled: boolean;
     };
-    lastUpdated: number;
 }
 
 /** Webview Message Protocol */

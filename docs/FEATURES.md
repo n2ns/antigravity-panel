@@ -27,7 +27,7 @@ English | [中文文档](FEATURES_zh.md)
 ### Usage History & Analytics
 - Interactive bar charts showing reported quota changes over time; hidden until the first positive change is recorded
 - Configurable display range (10-120 minutes)
-- 24-hour history tracking with persistent storage
+- 14-day history tracking with persistent storage; the latest 24 hours keep raw samples, while older data is downsampled to 5-minute intervals
 - Color-coded visualization by quota pool
 
 ### Usage Prediction

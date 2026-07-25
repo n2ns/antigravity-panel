@@ -393,19 +393,6 @@ export class AutomationService implements IAutomationService, vscode.Disposable 
         infoLog("Automation: Auto-accept disabled");
     }
 
-    isRunning(): boolean {
-        return this._enabled && this.scheduler.isRunning(this.taskName);
-    }
-
-    toggle(): boolean {
-        if (this._enabled) {
-            this.stop();
-        } else {
-            this.start();
-        }
-        return this._enabled;
-    }
-
     updateInterval(ms: number): void {
         this.scheduler.updateInterval(this.taskName, ms);
     }

@@ -241,17 +241,7 @@ export class QuotaService implements IQuotaService {
             name: userStatus.name,
             email: userStatus.email,
             tier: userTier?.name || planInfo?.teamsTier,
-            tierId: userTier?.id,
-            tierDescription: userTier?.description,
             planName: planInfo?.planName,
-            teamsTier: planInfo?.teamsTier,
-            upgradeUri: userTier?.upgradeSubscriptionUri,
-            upgradeText: userTier?.upgradeSubscriptionText,
-            browserEnabled: planInfo?.browserEnabled,
-            knowledgeBaseEnabled: planInfo?.knowledgeBaseEnabled,
-            canBuyMoreCredits: planInfo?.canBuyMoreCredits,
-            monthlyPromptCredits: planInfo?.monthlyPromptCredits,
-            availablePromptCredits: availableCredits,
         } : undefined;
 
         const rawModels = userStatus.cascadeModelConfigData?.clientModelConfigs || [];
@@ -327,11 +317,7 @@ interface ServerUserStatusResponse {
         name?: string;
         email?: string;
         userTier?: {
-            id?: string;
             name?: string;
-            description?: string;
-            upgradeSubscriptionUri?: string;
-            upgradeSubscriptionText?: string;
             availableCredits?: RawUserCredit[];
         };
         planStatus?: {
@@ -340,9 +326,6 @@ interface ServerUserStatusResponse {
                 monthlyFlowCredits?: number;
                 planName?: string;
                 teamsTier?: string;
-                browserEnabled?: boolean;
-                knowledgeBaseEnabled?: boolean;
-                canBuyMoreCredits?: boolean;
             };
             availablePromptCredits: number;
             availableFlowCredits?: number;

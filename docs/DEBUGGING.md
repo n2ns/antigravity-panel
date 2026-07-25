@@ -45,7 +45,7 @@ This standalone JavaScript tool discovers a real Language Server process, probes
 /exa.language_server_pb.LanguageServerService/GetUserStatus
 ```
 
-and prints the protocol used and the complete real response.
+and prints the protocol used and the complete real response. On Linux, port discovery falls back to the target process's `/proc` socket descriptors when `ss` and `netstat` are unavailable or cannot identify the owning PID.
 
 ### 2.3 Verify the production connection path
 

@@ -104,28 +104,8 @@ export interface UserInfo {
   email?: string;
   /** Subscription tier name (e.g., "Pro", "Individual", "Enterprise") */
   tier?: string;
-  /** Tier ID */
-  tierId?: string;
-  /** Tier description */
-  tierDescription?: string;
   /** Plan name */
   planName?: string;
-  /** Teams tier */
-  teamsTier?: string;
-  /** Upgrade subscription URI */
-  upgradeUri?: string;
-  /** Upgrade subscription text */
-  upgradeText?: string;
-  /** Whether browser feature is enabled */
-  browserEnabled?: boolean;
-  /** Whether knowledge base is enabled */
-  knowledgeBaseEnabled?: boolean;
-  /** Whether user can buy more credits */
-  canBuyMoreCredits?: boolean;
-  /** Monthly prompt credits limit */
-  monthlyPromptCredits?: number;
-  /** Available prompt credits */
-  availablePromptCredits?: number;
 }
 
 // ==================== Process Detection Related ====================
@@ -249,10 +229,6 @@ export interface CacheInfo {
   conversationsSize: number;
   /** Total size */
   totalSize: number;
-  /** brain task count */
-  brainCount: number;
-  /** Conversation file count */
-  conversationsCount: number;
   /** brain task list */
   brainTasks: BrainTask[];
   /** code context list */

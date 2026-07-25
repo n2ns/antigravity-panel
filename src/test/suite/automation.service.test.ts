@@ -181,17 +181,11 @@ suite('AutomationService Test Suite', () => {
         sandbox.restore();
     });
 
-    test('should be disabled by default', () => {
-        assert.strictEqual(service.isRunning(), false);
-    });
-
     test('start() should enable service and start scheduler', () => {
         schedulerMock.expects('start').withExactArgs('autoAccept').once();
-        schedulerMock.expects('isRunning').withExactArgs('autoAccept').returns(true);
 
         service.start();
 
-        assert.strictEqual(service.isRunning(), true);
         schedulerMock.verify();
     });
 
@@ -204,24 +198,9 @@ suite('AutomationService Test Suite', () => {
 
         service.stop();
 
-        assert.strictEqual(service.isRunning(), false);
         assert.ok(connection.close.calledOnce, 'Stopping should close tracked CDP connections');
         assert.strictEqual(service['connections'].size, 0);
         schedulerMock.verify();
-    });
-
-    test('toggle() should switch state', () => {
-        // Disabled -> Enabled
-        schedulerMock.expects('start').once();
-        schedulerMock.expects('isRunning').returns(true);
-
-        service.toggle();
-        assert.strictEqual(service.isRunning(), true);
-
-        // Enabled -> Disabled
-        schedulerMock.expects('stop').once();
-        service.toggle();
-        assert.strictEqual(service.isRunning(), false);
     });
 
     test('updateInterval() should delegate to scheduler', () => {
@@ -344,8 +323,6 @@ suite('AutomationService Test Suite', () => {
         const schedulerStub = sandbox.stub(Scheduler.prototype, 'register');
         service = new AutomationService();
         const taskArgs = schedulerStub.firstCall.args[0];
-
-        assert.strictEqual(service.isRunning(), false);
 
         await taskArgs.execute();
 

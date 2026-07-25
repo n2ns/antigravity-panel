@@ -31,21 +31,18 @@ export class CacheService implements ICacheService {
      * Get comprehensive cache information including sizes and task list
      */
     async getCacheInfo(): Promise<CacheInfo> {
-        const [brainSize, conversationsSize, brainTasks, codeContexts, conversationsCount] =
+        const [brainSize, conversationsSize, brainTasks, codeContexts] =
             await Promise.all([
                 this.getDirectorySize(this.baseBrainDir),
                 this.getDirectorySize(this.baseConversationsDir),
                 this.getBrainTasks(),
                 this.getCodeContexts(),
-                this.getFileCount(this.baseConversationsDir),
             ]);
 
         return {
             brainSize,
             conversationsSize,
             totalSize: brainSize + conversationsSize,
-            brainCount: brainTasks.length,
-            conversationsCount,
             brainTasks,
             codeContexts,
         };

@@ -37,8 +37,7 @@ suite('CacheService Test Suite', () => {
     test('should report empty cache initially', async () => {
         const info = await cacheService.getCacheInfo();
         assert.strictEqual(info.totalSize, 0);
-        assert.strictEqual(info.brainCount, 0);
-        assert.strictEqual(info.conversationsCount, 0);
+        assert.deepStrictEqual(info.brainTasks, []);
     });
 
     test('should calculate cache size correctly', async () => {
@@ -53,8 +52,7 @@ suite('CacheService Test Suite', () => {
 
         const info = await cacheService.getCacheInfo();
 
-        assert.strictEqual(info.conversationsCount, 2);
-        assert.strictEqual(info.brainCount, 1);
+        assert.strictEqual(info.brainTasks.length, 1);
 
         // Note: Directory sizes might vary by OS, but file content size is consistent
         // We check rough consistency or specific known sizes if logic sums file sizes strictly
@@ -76,7 +74,7 @@ suite('CacheService Test Suite', () => {
         }
 
         let info = await cacheService.getCacheInfo();
-        assert.strictEqual(info.brainCount, 7);
+        assert.strictEqual(info.brainTasks.length, 7);
 
         // Clean to keep 5
         const result = await cacheService.cleanCache(5);
@@ -84,7 +82,7 @@ suite('CacheService Test Suite', () => {
         info = await cacheService.getCacheInfo();
         assert.strictEqual(result.deletedCount, 2);
         assert.ok(result.freedBytes > 0); // Should have freed some bytes
-        assert.strictEqual(info.brainCount, 5);
+        assert.strictEqual(info.brainTasks.length, 5);
     });
 
     test('deleteContext should only delete exact context basename matches', async () => {

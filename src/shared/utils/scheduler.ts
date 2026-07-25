@@ -124,13 +124,6 @@ export class Scheduler {
   }
 
   /**
-   * Check if task is running
-   */
-  isRunning(name: string): boolean {
-    return this.timers.has(name);
-  }
-
-  /**
    * Execute task (internal method)
    */
   private async executeTask(task: SchedulerTask): Promise<void> {
