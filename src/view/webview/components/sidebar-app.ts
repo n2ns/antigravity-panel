@@ -52,7 +52,6 @@ export class SidebarApp extends LitElement {
 
   @state()
   private _tasks: TreeSectionState = {
-    title: 'Brain',
     stats: 'Loading...',
     collapsed: true,
     folders: [],
@@ -61,7 +60,6 @@ export class SidebarApp extends LitElement {
 
   @state()
   private _contexts: TreeSectionState = {
-    title: 'Code Tracker',
     stats: 'Loading...',
     collapsed: true,
     folders: [],
@@ -93,7 +91,7 @@ export class SidebarApp extends LitElement {
   private _connectionStatus: ConnectionStatus = 'detecting';
 
   @state()
-  private _failureReason: 'no_process' | 'ambiguous' | 'no_port' | 'auth_failed' | 'workspace_mismatch' | null = null;
+  private _failureReason: 'no_process' | 'no_port' | 'auth_failed' | 'workspace_mismatch' | null = null;
 
   @state()
   private _uiScale: number = 1.0;
@@ -209,7 +207,6 @@ export class SidebarApp extends LitElement {
       // Adapter: Backend (expanded) -> Frontend (collapsed)
       const backendTasks = state.tasks as TreeSectionState & { expanded?: boolean };
       this._tasks = {
-        title: 'Brain',
         stats: this._cache?.formattedBrain || `${backendTasks.folders?.length || 0} Tasks`,
         collapsed: !backendTasks.expanded, // Invert logic
         folders: backendTasks.folders || [],
@@ -220,7 +217,6 @@ export class SidebarApp extends LitElement {
       // Adapter: Backend (expanded) -> Frontend (collapsed)
       const backendContexts = state.contexts as TreeSectionState & { expanded?: boolean };
       this._contexts = {
-        title: 'Code Tracker',
         stats: this._cache?.formattedConversations || `${backendContexts.folders?.length || 0} Projects`,
         collapsed: !backendContexts.expanded, // Invert logic
         folders: backendContexts.folders || [],
@@ -315,9 +311,9 @@ export class SidebarApp extends LitElement {
 
   protected render() {
     return html`
-      <div class="scrollable-content" style="flex: 1; overflow-y: auto; overflow-x: hidden; min-height: 0; scrollbar-gutter: stable;">
+      <div style="flex: 1; overflow-y: auto; overflow-x: hidden; min-height: 0; scrollbar-gutter: stable;">
         ${this._connectionStatus === 'detecting' ? html`
-          <div class="connection-hint info">
+          <div class="connection-hint">
             <span class="codicon codicon-loading codicon-modifier-spin"></span>
             <span>Connecting to Antigravity service...</span>
           </div>

@@ -207,6 +207,12 @@ suite('Webview Usage Chart Test Suite', () => {
             const chartTemplates = collectTemplates(chartTemplate);
             const chartValues = chartTemplates.flatMap(template => template.values);
             assert.ok(chartValues.includes('用量稳定'), 'Stable runway should use the visible localized status');
+            const usageRateTemplate = chartTemplates.find(template =>
+                template.strings.some(part => part.includes('pp/h'))
+            );
+            assert.ok(usageRateTemplate, 'UsageChart must keep the pp/h usage rate');
+            const usageRateValueIndex = usageRateTemplate.strings.findIndex(part => part.includes('🔥'));
+            assert.strictEqual(usageRateTemplate.values[usageRateValueIndex], '0.5');
             const renderedBars = chartTemplates.filter(template =>
                 template.strings.some(part => part.includes('class="usage-bar'))
             );
@@ -258,6 +264,30 @@ suite('Webview Usage Chart Test Suite', () => {
             assert.ok(
                 collectTemplates(noPreviousData).flatMap(template => template.values).includes('无前一周数据'),
                 'WeeklyUsage must render the no-previous-period state'
+            );
+
+            const dashboardGauge = QuotaPie.prototype.render.call({
+                data: {
+                    remaining: 50,
+                    resetTime: '1h',
+                    hasData: true,
+                    subLabel: '🔥2.0 pp/h'
+                },
+                color: '#40C4FF',
+                label: 'Gemini Flash',
+                gaugeStyle: 'classic-donut',
+                resetTimeText: '1h'
+            });
+            const dashboardGaugeTemplates = collectTemplates(dashboardGauge);
+            assert.ok(
+                !dashboardGaugeTemplates.some(template =>
+                    template.strings.some(part => part.includes('gauge-sub-label'))
+                ),
+                'Dashboard gauges must not render a pp/h sub-label'
+            );
+            assert.ok(
+                !dashboardGaugeTemplates.flatMap(template => template.values).includes('🔥2.0 pp/h'),
+                'Dashboard gauges must ignore legacy pp/h sub-label data'
             );
 
             const resetTimeGetter = Object.getOwnPropertyDescriptor(QuotaPie.prototype, 'resetTimeText')?.get;

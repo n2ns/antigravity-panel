@@ -35,7 +35,6 @@ export class ProcessFinder {
   // Stores the reason for the last detection failure
   public failureReason:
     | "no_process"
-    | "ambiguous"
     | "no_port"
     | "auth_failed"
     | "workspace_mismatch"

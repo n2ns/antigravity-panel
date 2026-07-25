@@ -32,7 +32,6 @@ export interface QuotaDisplayItem {
     resetDate?: number;
     hasData: boolean;
     themeColor: string;
-    subLabel?: string;
 }
 
 /** Local 7-day usage estimate for one quota pool */
@@ -214,7 +213,7 @@ export interface SidebarData {
     tasks: TreeSectionState;
     contexts: TreeSectionState;
     connectionStatus: ConnectionStatus;
-    failureReason?: 'no_process' | 'ambiguous' | 'no_port' | 'auth_failed' | 'workspace_mismatch' | null;
+    failureReason?: 'no_process' | 'no_port' | 'auth_failed' | 'workspace_mismatch' | null;
     gaugeStyle?: string;
     showUserInfoCard?: boolean;
     showCreditsCard?: boolean;
@@ -223,7 +222,7 @@ export interface SidebarData {
 }
 
 /** Connection status for sidebar feedback */
-export type ConnectionStatus = 'connecting' | 'connected' | 'failed' | 'detecting';
+export type ConnectionStatus = 'connected' | 'failed' | 'detecting';
 
 // ==================== App State ====================
 
@@ -235,7 +234,7 @@ export interface AppState {
     tokenUsage?: TokenUsageViewState;
     tree: TreeViewState;
     connectionStatus: ConnectionStatus;
-    failureReason?: 'no_process' | 'ambiguous' | 'no_port' | 'auth_failed' | 'workspace_mismatch' | null;
+    failureReason?: 'no_process' | 'no_port' | 'auth_failed' | 'workspace_mismatch' | null;
     automation: {
         enabled: boolean;
     };
@@ -247,6 +246,5 @@ export interface WebviewMessage {
     type: string;
     taskId?: string;
     contextId?: string;
-    folderId?: string;
     path?: string;
 }

@@ -6,7 +6,6 @@ export interface QuotaData {
     /** Absolute reset timestamp (epoch ms) enabling a live client-side countdown */
     resetDate?: number;
     hasData: boolean;
-    subLabel?: string;
 }
 
 export interface GaugeRendererProps {

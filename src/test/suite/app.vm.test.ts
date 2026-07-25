@@ -196,7 +196,6 @@ suite('AppViewModel Test Suite', () => {
         const items = vm.getState().quota.displayItems;
         assert.deepStrictEqual(items.map(item => item.label), ['Gemini 3 Flash', 'Gemini 3.1 Pro (High)']);
         assert.deepStrictEqual(items.map(item => item.themeColor), ['#40C4FF', '#69F0AE']);
-        assert.ok(items.every(item => item.subLabel === '🔥2.0 pp/h'));
     });
 
     test('chart should aggregate polling samples into a readable number of buckets', async () => {

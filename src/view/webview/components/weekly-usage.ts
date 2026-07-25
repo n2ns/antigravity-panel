@@ -33,7 +33,7 @@ export class WeeklyUsage extends LitElement {
       : usage.toFixed(1);
 
     return html`
-      <div class="usage-chart weekly-usage">
+      <div class="usage-chart">
         <div class="usage-chart-title"
              data-tooltip="${t?.weeklyUsageTooltip || 'Local 7-day estimate: percentage points of the short-term quota pool consumed. Not the official weekly limit.'}">
           <span>${t?.weeklyUsage || 'Weekly Usage'} · ${data.groupLabel}</span>

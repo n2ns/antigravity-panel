@@ -14,7 +14,6 @@ export interface QuotaDisplayItem {
   resetDate?: number;
   hasData: boolean;
   themeColor: string;
-  subLabel?: string;
 }
 
 // ==================== Chart Types ====================
@@ -76,7 +75,6 @@ export interface FolderItem {
 
 /** Tree section state */
 export interface TreeSectionState {
-  title: string;
   stats: string;
   collapsed: boolean;
   folders: FolderItem[];
@@ -89,7 +87,6 @@ export interface WebviewMessage {
   type: string;
   taskId?: string;
   contextId?: string;
-  folderId?: string;
   path?: string;
 }
 
@@ -142,7 +139,7 @@ export interface TokenUsageData {
 }
 
 /** Connection status for sidebar feedback */
-export type ConnectionStatus = 'connecting' | 'connected' | 'failed' | 'detecting';
+export type ConnectionStatus = 'connected' | 'failed' | 'detecting';
 
 /** Local 7-day usage estimate for one quota pool */
 export interface WeeklyUsageData {
@@ -167,7 +164,7 @@ export interface WebviewStateUpdate {
   tasks?: TreeSectionState;
   contexts?: TreeSectionState;
   connectionStatus?: ConnectionStatus;
-  failureReason?: 'no_process' | 'ambiguous' | 'no_port' | 'auth_failed' | 'workspace_mismatch' | null;
+  failureReason?: 'no_process' | 'no_port' | 'auth_failed' | 'workspace_mismatch' | null;
   gaugeStyle?: string;
   showUserInfoCard?: boolean;
   showCreditsCard?: boolean;

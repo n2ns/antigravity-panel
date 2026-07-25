@@ -200,32 +200,6 @@
     box-shadow: 0 0 4px rgba(255, 255, 255, 0.15);
 }
 
-/* Footer Links */
-.footer-links {
-    display: flex;
-    gap: 8px;
-    padding: 8px;
-    margin: 0 8px;
-}
-
-.link-btn {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    padding: 6px 12px;
-    background: var(--vscode-button-secondaryBackground);
-    color: var(--vscode-button-secondaryForeground);
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-family: inherit;
-    font-size: 0.9rem;
-    font-weight: 500;
-    transition: all 0.2s ease;
-}
-
 .link-btn:hover {
     background: var(--vscode-button-secondaryHoverBackground);
     color: var(--vscode-button-secondaryForeground);

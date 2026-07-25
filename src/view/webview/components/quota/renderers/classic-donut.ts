@@ -23,7 +23,6 @@ export const renderClassicDonut = ({ data, color, label }: GaugeRendererProps) =
       <div class="gauge-info">
         <div class="gauge-label">${label}</div>
         <div class="gauge-reset-inner">${resetTime}</div>
-        ${data.subLabel ? html`<div class="gauge-sub-label" title="${data.subLabel}">${data.subLabel}</div>` : ''}
       </div>
     </div>
   `;

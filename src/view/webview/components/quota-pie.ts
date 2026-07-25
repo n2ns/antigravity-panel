@@ -56,8 +56,7 @@ export class QuotaPie extends LitElement {
       data: {
         hasData: this.data?.hasData ?? false,
         remaining: this.data?.remaining ?? 0,
-        resetTime: this.resetTimeText,
-        subLabel: this.data?.subLabel
+        resetTime: this.resetTimeText
       },
       color: this.color,
       label: this.label

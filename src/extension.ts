@@ -175,7 +175,6 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
         } else {
           const reasonMap: Record<string, string> = {
             'no_process': vscode.l10n.t("No server process found."),
-            'ambiguous': vscode.l10n.t("Multiple servers found but none belong to this IDE instance."),
             'no_port': vscode.l10n.t("Process found but no listening port detected."),
             'auth_failed': vscode.l10n.t("Handshake failed (possible login issue).")
           };
@@ -373,7 +372,6 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
 
           const messages: Record<string, string> = {
             'no_process': vscode.l10n.t("Local server not found"),
-            'ambiguous': vscode.l10n.t("Local server not found, unable to get quota reference"),
             'no_port': vscode.l10n.t("Server process found but no listening port detected"),
             'auth_failed': vscode.l10n.t("Handshake with server failed (CSRF check failed)")
           };

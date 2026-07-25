@@ -218,14 +218,6 @@ quota-pie {
     line-height: 1.2;
 }
 
-.gauge-sub-label {
-    font-size: 0.65rem;
-    color: var(--vscode-descriptionForeground, rgba(255, 255, 255, 0.6));
-    opacity: 0.7;
-    margin-top: 1px;
-    font-style: italic;
-}
-
 /* Dashboard Container Styles */
 .pies-container {
     display: grid;

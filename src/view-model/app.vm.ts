@@ -431,25 +431,7 @@ export class AppViewModel implements vscode.Disposable {
 
         const chart = this.buildChartData(activeGroupId, currentRemaining);
 
-        // Compute accumulated pp consumed per group from chart buckets,
-        // counting only consumption after each group's latest reset
-        const groupConsumption = new Map<string, number>();
-        const latestResetCache = new Map<string, number | null>();
-        const latestResetFor = (groupId: string): number | null => {
-            if (!latestResetCache.has(groupId)) {
-                latestResetCache.set(groupId, this.storageService.getLatestResetTime(groupId));
-            }
-            return latestResetCache.get(groupId)!;
-        };
-        for (const bucket of chart.buckets) {
-            for (const item of bucket.items) {
-                const latestReset = latestResetFor(item.groupId);
-                if (latestReset !== null && bucket.endTime <= latestReset) continue;
-                groupConsumption.set(item.groupId, (groupConsumption.get(item.groupId) || 0) + item.usage);
-            }
-        }
-
-        const displayItems = this.buildDisplayItems(newGroups, groupConsumption);
+        const displayItems = this.buildDisplayItems(newGroups);
 
         this._state.quota = {
             groups: newGroups,
@@ -950,22 +932,12 @@ export class AppViewModel implements vscode.Disposable {
         };
     }
 
-    private buildDisplayItems(groups: QuotaGroupState[], groupConsumption?: Map<string, number>): QuotaDisplayItem[] {
+    private buildDisplayItems(groups: QuotaGroupState[]): QuotaDisplayItem[] {
         const config = this.configManager.getConfig();
 
         // Cache group order for sorting
         const strategyGroups = this.strategyManager.getGroups();
         const groupOrder = new Map(strategyGroups.map((g, i) => [g.id, i]));
-
-        /** Format hourly consumption rate for display as subLabel */
-        const historyHours = config["dashboard.historyRange"] / 60;
-        const formatConsumption = (groupId: string): string | undefined => {
-            if (!groupConsumption || historyHours <= 0) return undefined;
-            const pp = groupConsumption.get(groupId);
-            if (pp === undefined || pp <= 0) return undefined;
-            const ratePerHour = pp / historyHours;
-            return `🔥${ratePerHour.toFixed(1)} pp/h`;
-        };
 
         if (config["dashboard.viewMode"] === 'models' && this._lastSnapshot) {
             const models = this._lastSnapshot.models || [];
@@ -995,8 +967,7 @@ export class AppViewModel implements vscode.Disposable {
                     resetTime: m.timeUntilReset,
                     resetDate: this.getResetTimestamp(m),
                     hasData: true,
-                    themeColor: group.themeColor,
-                    subLabel: formatConsumption(group.quotaPoolId)
+                    themeColor: group.themeColor
                 };
             });
         }
@@ -1008,8 +979,7 @@ export class AppViewModel implements vscode.Disposable {
             resetTime: g.resetTime,
             resetDate: g.resetDate,
             hasData: g.hasData,
-            themeColor: g.themeColor,
-            subLabel: formatConsumption(g.id)
+            themeColor: g.themeColor
         }));
     }
 
@@ -1094,7 +1064,7 @@ export class AppViewModel implements vscode.Disposable {
         return { primary, allGroups };
     }
 
-    setConnectionStatus(status: ConnectionStatus, reason?: 'no_process' | 'ambiguous' | 'no_port' | 'auth_failed' | 'workspace_mismatch' | null): void {
+    setConnectionStatus(status: ConnectionStatus, reason?: 'no_process' | 'no_port' | 'auth_failed' | 'workspace_mismatch' | null): void {
         this._state.connectionStatus = status;
         this._state.failureReason = status === 'failed' ? reason : null;
         this._onStateChange.fire(this._state);
