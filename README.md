@@ -335,10 +335,10 @@ Licensed under the [Apache License, Version 2.0](LICENSE).
 
 ## ⭐ Star History
 
-<a href="https://star-history.com/#n2ns/antigravity-panel&Date">
+<a href="https://star-history.dera.page/#n2ns/antigravity-panel&type=Date">
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=n2ns/antigravity-panel&type=Date&theme=dark">
-    <img src="https://api.star-history.com/svg?repos=n2ns/antigravity-panel&type=Date" alt="Star History Chart">
+    <source media="(prefers-color-scheme: dark)" srcset="https://star-history.dera.page/svg?repos=n2ns/antigravity-panel&type=Date&theme=dark">
+    <img src="https://star-history.dera.page/svg?repos=n2ns/antigravity-panel&type=Date" alt="Star History Chart">
   </picture>
 </a>
 
