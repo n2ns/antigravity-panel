@@ -32,10 +32,16 @@ const RAW_CUTOFF_TEST_MS = 24 * 60 * 60 * 1000;
 suite('StorageService Test Suite', () => {
     let globalState: MockMemento;
     let service: StorageService;
+    let originalDateNow: typeof Date.now;
 
     setup(() => {
+        originalDateNow = Date.now;
         globalState = new MockMemento();
         service = new StorageService(globalState);
+    });
+
+    teardown(() => {
+        Date.now = originalDateNow;
     });
 
     test('should record history points', async () => {

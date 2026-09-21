@@ -115,9 +115,8 @@ suite('QuotaStrategyManager Test Suite', () => {
     });
 
     test('should normalize model ID with MODEL_ prefix', () => {
-        // Test normalization: MODEL_PLACEHOLDER_M35 -> placeholder-m35 (no direct match, falls through)
-        const def = manager.getModelDefinition('claude-4-6-sonnet-thinking');
-        assert.ok(def, 'Should find model by exact id');
+        const def = manager.getModelDefinition('MODEL_CLAUDE_4_6_SONNET_THINKING');
+        assert.ok(def, 'Should find model by normalized id');
         assert.strictEqual(def.id, 'claude-4-6-sonnet-thinking');
     });
 

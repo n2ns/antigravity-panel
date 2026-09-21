@@ -82,7 +82,9 @@ suite('CacheService Test Suite', () => {
         info = await cacheService.getCacheInfo();
         assert.strictEqual(result.deletedCount, 2);
         assert.ok(result.freedBytes > 0); // Should have freed some bytes
-        assert.strictEqual(info.brainTasks.length, 5);
+        const keptTasks = ['task-3', 'task-4', 'task-5', 'task-6', 'task-7'];
+        assert.deepStrictEqual(info.brainTasks.map(task => task.id).sort(), keptTasks);
+        assert.deepStrictEqual((await fs.promises.readdir(conversationsDir)).sort(), keptTasks.map(id => `${id}.pb`));
     });
 
     test('deleteContext should only delete exact context basename matches', async () => {

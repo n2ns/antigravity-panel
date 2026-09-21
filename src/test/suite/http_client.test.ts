@@ -102,20 +102,17 @@ suite('HttpClient Test Suite', function () {
     });
 
     test('should fail when connecting to an invalid local port', async () => {
-        try {
-            await httpRequest({
+        await assert.rejects(
+            httpRequest({
                 hostname: '127.0.0.1',
                 port: 9999, // Unused port
                 path: '/invalid-path',
                 method: 'POST',
                 allowFallback: false,
                 timeout: 500
-            });
-            assert.fail('Should have failed to connect to invalid port');
-        } catch (err: any) {
-            assert.ok(err instanceof Error);
-            assert.ok(err.message.includes('failed') || err.message.includes('timeout'));
-        }
+            }),
+            /failed|timeout/
+        );
     });
 
     test('testPort should return success: false on invalid port', async () => {
@@ -227,7 +224,8 @@ suite('HttpClient Test Suite', function () {
         );
 
         // If authenticated, success is true. If 401/403, success is false. Both are valid outcomes.
-        assert.strictEqual(typeof result.success, 'boolean');
+        assert.ok([200, 401, 403].includes(result.statusCode ?? 0), 'Should receive a response from the Language Server');
+        assert.strictEqual(result.success, result.statusCode === 200);
         assert.ok(result.protocol === 'http' || result.protocol === 'https');
     });
 });

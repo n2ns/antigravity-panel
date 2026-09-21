@@ -1,4 +1,5 @@
 import * as assert from 'assert';
+import * as sinon from 'sinon';
 import { Scheduler } from '../../shared/utils/scheduler';
 
 suite('Scheduler Test Suite', () => {
@@ -86,27 +87,29 @@ suite('Scheduler Test Suite', () => {
         scheduler.start('error-task');
     });
 
-    test('should update interval', (done) => {
-        let timestamps: number[] = [];
-        const task = {
-            name: 'update-interval-task',
-            interval: 50,
-            execute: () => {
-                timestamps.push(Date.now());
-                if (timestamps.length >= 2) {
-                    // Check logic elsewhere
-                }
-            }
-        };
+    test('should update interval', async () => {
+        const clock = sinon.useFakeTimers();
+        const timestamps: number[] = [];
+        try {
+            scheduler.register({
+                name: 'update-interval-task',
+                interval: 50,
+                execute: () => { timestamps.push(Date.now()); }
+            });
+            scheduler.start('update-interval-task');
+            await clock.tickAsync(50);
+            assert.deepStrictEqual(timestamps, [50]);
 
-        scheduler.register(task);
-        scheduler.start('update-interval-task');
-
-        // Check if updating interval works
-        // This is hard to test precisely with setTimeout variance, so we just check it returns true
-        const result = scheduler.updateInterval('update-interval-task', 100);
-        assert.strictEqual(result, true);
-
-        done();
+            assert.strictEqual(scheduler.updateInterval('update-interval-task', 100), true);
+            await clock.tickAsync(99);
+            assert.deepStrictEqual(timestamps, [50]);
+            await clock.tickAsync(1);
+            assert.deepStrictEqual(timestamps, [50, 150]);
+            await clock.tickAsync(100);
+            assert.deepStrictEqual(timestamps, [50, 150, 250]);
+        } finally {
+            scheduler.dispose();
+            clock.restore();
+        }
     });
 });

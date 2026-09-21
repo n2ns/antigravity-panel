@@ -28,9 +28,9 @@ suite('Gauge Math Test Suite', () => {
 
     test('getArcPath should set largeArcFlag correctly', () => {
         const pathSmall = getArcPath({ centerX: 0, centerY: 0, radius: 10, startAngle: 0, endAngle: 90 });
-        assert.ok(pathSmall.includes(' 0 1 '), 'Large arc flag should be 0 for 90 degrees');
+        assert.strictEqual(pathSmall.split(' A ')[1].split(' ')[3], '0', 'Large arc flag should be 0 for 90 degrees');
 
         const pathLarge = getArcPath({ centerX: 0, centerY: 0, radius: 10, startAngle: 0, endAngle: 270 });
-        assert.ok(pathLarge.includes(' 1 1 '), 'Large arc flag should be 1 for 270 degrees');
+        assert.strictEqual(pathLarge.split(' A ')[1].split(' ')[3], '1', 'Large arc flag should be 1 for 270 degrees');
     });
 });

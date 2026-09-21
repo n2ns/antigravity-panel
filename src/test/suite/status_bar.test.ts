@@ -52,6 +52,7 @@ suite('StatusBarManager Test Suite', () => {
     };
 
     setup(() => {
+        mockGroupItem.percentage = 75;
         isShown = false;
         isHidden = false;
 

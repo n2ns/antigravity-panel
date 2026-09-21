@@ -1,4 +1,7 @@
 import * as assert from 'assert';
+import fs from 'fs';
+import * as os from 'os';
+import * as sinon from 'sinon';
 import { getDetailedOSVersion, getIdeProductInfo } from '../../shared/utils/platform';
 
 suite('Platform Utils Test Suite', () => {
@@ -9,13 +12,22 @@ suite('Platform Utils Test Suite', () => {
     });
 
     test('getDetailedOSVersion format check', () => {
-        const version = getDetailedOSVersion();
-        if (process.platform === 'win32') {
-            assert.ok(version.includes('Windows'), 'Should identify as Windows');
-        } else if (process.platform === 'darwin') {
-            assert.ok(version.includes('macOS'), 'Should identify as macOS');
-        } else if (process.platform === 'linux') {
-            assert.ok(version.includes('Linux') || version.includes('Ubuntu') || version.includes('Debian') || version.includes('CentOS') || version.includes('Fedora'), 'Should identify as Linux or a Distribution');
+        const sandbox = sinon.createSandbox();
+        try {
+            if (process.platform === 'linux') {
+                sandbox.stub(fs, 'existsSync').withArgs('/etc/os-release').returns(true);
+                sandbox.stub(fs, 'readFileSync').withArgs('/etc/os-release', 'utf8').returns('PRETTY_NAME="openSUSE Tumbleweed"');
+            }
+            const version = getDetailedOSVersion();
+            if (process.platform === 'win32') {
+                assert.ok(version.includes('Windows'), 'Should identify as Windows');
+            } else if (process.platform === 'darwin') {
+                assert.ok(version.includes('macOS'), 'Should identify as macOS');
+            } else if (process.platform === 'linux') {
+                assert.strictEqual(version, `openSUSE Tumbleweed (Kernel ${os.release()}, ${process.arch})`);
+            }
+        } finally {
+            sandbox.restore();
         }
     });
 
