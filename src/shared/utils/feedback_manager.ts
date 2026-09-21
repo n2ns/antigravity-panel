@@ -9,6 +9,10 @@ export interface DiagnosticMetadata {
     version: string;
     // New fields for enhanced diagnostics
     ideVersion?: string;
+    ideName?: string;
+    productName?: string;
+    applicationName?: string;
+    remoteName?: string;
     /** Antigravity product version (product.json "ideVersion", e.g. "2.1.1") */
     productVersion?: string;
     processName?: string;
@@ -60,7 +64,11 @@ export class FeedbackManager {
         const osString = meta.osDetailedVersion ? `${meta.platform} (${meta.osDetailedVersion})` : `${meta.platform} (${meta.arch})`;
         diagInfo += `- **${vscode.l10n.t("Operating System")}**: ${osString}\n`;
         if (meta.ideVersion) diagInfo += `- **IDE Version**: ${meta.ideVersion}\n`;
+        if (meta.ideName) diagInfo += `- **IDE Name**: ${meta.ideName}\n`;
+        if (meta.productName) diagInfo += `- **IDE Product Name**: ${meta.productName}\n`;
+        if (meta.applicationName) diagInfo += `- **IDE Application Name**: ${meta.applicationName}\n`;
         if (meta.productVersion) diagInfo += `- **IDE Product Version**: ${meta.productVersion}\n`;
+        if (meta.remoteName) diagInfo += `- **Remote Environment**: ${meta.remoteName}\n`;
         diagInfo += `- **${vscode.l10n.t("Error Code")}**: ${meta.reason}\n`;
         if (meta.processName) diagInfo += `- **Process Searched**: ${meta.processName}\n`;
         if (meta.candidateCount !== undefined) diagInfo += `- **${vscode.l10n.t("Candidate Process Count")}**: ${meta.candidateCount}\n`;

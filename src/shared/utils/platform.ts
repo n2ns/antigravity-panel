@@ -3,18 +3,24 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 /**
- * Reads the Antigravity product version (the "ideVersion" field of the IDE's
- * product.json, e.g. "2.1.1") from the app root. vscode.version only exposes
- * the VS Code base version (product.json "version", e.g. "1.107.0"), which
- * cannot identify the actual Antigravity release in diagnostic reports.
- * Returns undefined when the file or field is missing.
+ * Reads product identity from the current extension host's product.json.
+ * vscode.version only exposes the VS Code base version, not the product identity.
+ * Missing fields remain undefined; an unreadable file returns no product fields.
  */
-export function getIdeProductVersion(appRoot: string, readFile: (p: string) => string = (p) => fs.readFileSync(p, 'utf8')): string | undefined {
+export function getIdeProductInfo(appRoot: string, readFile: (p: string) => string = (p) => fs.readFileSync(p, 'utf8')): {
+    productName?: string;
+    applicationName?: string;
+    productVersion?: string;
+} {
     try {
         const product = JSON.parse(readFile(path.join(appRoot, 'product.json')));
-        return typeof product.ideVersion === 'string' ? product.ideVersion : undefined;
+        return {
+            productName: typeof product.nameLong === 'string' ? product.nameLong : undefined,
+            applicationName: typeof product.applicationName === 'string' ? product.applicationName : undefined,
+            productVersion: typeof product.ideVersion === 'string' ? product.ideVersion : undefined,
+        };
     } catch {
-        return undefined;
+        return {};
     }
 }
 

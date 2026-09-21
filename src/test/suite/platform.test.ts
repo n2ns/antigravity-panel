@@ -1,5 +1,5 @@
 import * as assert from 'assert';
-import { getDetailedOSVersion, getIdeProductVersion } from '../../shared/utils/platform';
+import { getDetailedOSVersion, getIdeProductInfo } from '../../shared/utils/platform';
 
 suite('Platform Utils Test Suite', () => {
     test('getDetailedOSVersion should return a string containing platform and arch', () => {
@@ -19,16 +19,26 @@ suite('Platform Utils Test Suite', () => {
         }
     });
 
-    test('getIdeProductVersion should read ideVersion from product.json', () => {
+    test('getIdeProductInfo should read identity and ideVersion from product.json', () => {
         // Observed live: Antigravity product.json carries the product release in
         // "ideVersion" while "version" holds the VS Code base version
-        const reader = () => JSON.stringify({ version: '1.107.0', ideVersion: '2.1.1' });
-        assert.strictEqual(getIdeProductVersion('/app/root', reader), '2.1.1');
+        const reader = () => JSON.stringify({ nameLong: 'Antigravity', applicationName: 'antigravity', version: '1.107.0', ideVersion: '2.1.1' });
+        assert.deepStrictEqual(getIdeProductInfo('/app/root', reader), {
+            productName: 'Antigravity', applicationName: 'antigravity', productVersion: '2.1.1'
+        });
     });
 
-    test('getIdeProductVersion should return undefined when field or file is missing', () => {
-        assert.strictEqual(getIdeProductVersion('/app/root', () => JSON.stringify({ version: '1.107.0' })), undefined);
-        assert.strictEqual(getIdeProductVersion('/app/root', () => { throw new Error('ENOENT'); }), undefined);
-        assert.strictEqual(getIdeProductVersion('/app/root', () => 'not json'), undefined);
+    test('getIdeProductInfo should preserve identity without an Antigravity product version', () => {
+        assert.deepStrictEqual(getIdeProductInfo('/app/root', () => JSON.stringify({ nameLong: 'Visual Studio Code', applicationName: 'code', version: '1.107.0' })), {
+            productName: 'Visual Studio Code', applicationName: 'code', productVersion: undefined
+        });
+    });
+
+    test('getIdeProductInfo should tolerate missing fields or unreadable files', () => {
+        assert.deepStrictEqual(getIdeProductInfo('/app/root', () => JSON.stringify({ version: '1.107.0' })), {
+            productName: undefined, applicationName: undefined, productVersion: undefined
+        });
+        assert.deepStrictEqual(getIdeProductInfo('/app/root', () => { throw new Error('ENOENT'); }), {});
+        assert.deepStrictEqual(getIdeProductInfo('/app/root', () => 'not json'), {});
     });
 });

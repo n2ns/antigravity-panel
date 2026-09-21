@@ -18,7 +18,7 @@ import { SidebarProvider } from "./view/sidebar-provider";
 import { initLogger, setDebugMode, infoLog, errorLog, warnLog, debugLog, getLogger, logQuotaSnapshot } from "./shared/utils/logger";
 import { formatBytes } from "./shared/utils/format";
 import type { CommunicationAttempt, TfaConfig } from "./shared/utils/types";
-import { getDetailedOSVersion, getIdeProductVersion } from "./shared/utils/platform";
+import { getDetailedOSVersion, getIdeProductInfo } from "./shared/utils/platform";
 import { getExpectedWorkspaceIds } from "./shared/utils/workspace_id";
 import { generateCommitMessageCommand, setAnthropicApiKeyCommand } from "./commitMessageClaude";
 
@@ -65,6 +65,12 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
   // === Phase 0: Logger (infallible) ===
   initLogger(context);
   infoLog("Antigravity Panel: Activating (MVVM Refactored)...");
+  const ideIdentity = {
+    ideName: vscode.env.appName,
+    ...getIdeProductInfo(vscode.env.appRoot),
+    remoteName: vscode.env.remoteName ?? "none",
+  };
+  infoLog(`IDE identity: ${JSON.stringify(ideIdentity)}`);
 
   // Mutable service references — command closures capture these variables
   // and read their current value at invocation time, not at registration time.
@@ -162,6 +168,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
         // Use default detect (with retries) but for diagnostics,
         // we might want to see the steps
         infoLog("Diagnostic run started...");
+        infoLog(`IDE identity: ${JSON.stringify(ideIdentity)}`);
         const result = await finder.detect({ verbose: true });
         const duration = ((Date.now() - start) / 1000).toFixed(1);
 
@@ -306,7 +313,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
           arch: process.arch,
           version: extVersion,
           ideVersion,
-          productVersion: getIdeProductVersion(vscode.env.appRoot),
+          ...ideIdentity,
           processName: processFinder.getProcessName(),
           osDetailedVersion: getDetailedOSVersion()
         };

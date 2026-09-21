@@ -54,12 +54,32 @@ suite('FeedbackManager Test Suite', () => {
         assert.ok(decodedBody.includes('Related process output: none'), 'Missing diagnostic summary');
     });
 
-    test('getFeedbackUrl should include IDE product version when provided', () => {
-        const url = FeedbackManager.getFeedbackUrl({ ...mockMeta, ideVersion: '1.107.0', productVersion: '2.1.1' });
+    test('getFeedbackUrl should include IDE identity and remote environment when provided', () => {
+        const url = FeedbackManager.getFeedbackUrl({
+            ...mockMeta, ideVersion: '1.107.0', ideName: 'Antigravity',
+            productName: 'Antigravity', applicationName: 'antigravity',
+            productVersion: '2.1.1', remoteName: 'wsl'
+        });
         const decodedBody = decodeURIComponent(url.path.split('body=')[1].split('&')[0]);
 
         assert.ok(decodedBody.includes('**IDE Version**: 1.107.0'), 'Missing IDE base version');
         assert.ok(decodedBody.includes('**IDE Product Version**: 2.1.1'), 'Missing IDE product version');
+        assert.ok(decodedBody.includes('**IDE Name**: Antigravity'), 'Missing host name');
+        assert.ok(decodedBody.includes('**IDE Product Name**: Antigravity'), 'Missing product name');
+        assert.ok(decodedBody.includes('**IDE Application Name**: antigravity'), 'Missing application name');
+        assert.ok(decodedBody.includes('**Remote Environment**: wsl'), 'Missing remote environment');
+    });
+
+    test('getFeedbackUrl should identify a local non-Antigravity host', () => {
+        const url = FeedbackManager.getFeedbackUrl({
+            ...mockMeta, ideName: 'Visual Studio Code', productName: 'Visual Studio Code',
+            applicationName: 'code', remoteName: 'none'
+        });
+        const decodedBody = decodeURIComponent(url.path.split('body=')[1].split('&')[0]);
+
+        assert.ok(decodedBody.includes('**IDE Name**: Visual Studio Code'));
+        assert.ok(decodedBody.includes('**IDE Application Name**: code'));
+        assert.ok(decodedBody.includes('**Remote Environment**: none'));
     });
 
     test('getFeedbackUrl should substitute URL-hostile ASCII chars with full-width lookalikes', () => {
