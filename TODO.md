@@ -2,7 +2,7 @@ English | [中文文档](docs/TODO_zh.md)
 
 # TODO List
 
-> Last Updated: 2026-07-22
+> Last Updated: 2026-09-21
 
 > ⚠️ **Note**: This document should only contain pending tasks. Completed tasks should be removed and documented in [CHANGELOG.md](CHANGELOG.md) or [FEATURES.md](docs/FEATURES.md).
 
@@ -10,53 +10,26 @@ English | [中文文档](docs/TODO_zh.md)
 
 ## 🟡 Medium Priority (P2)
 
-### Test Coverage
+### Lifecycle Validation
 
-- [ ] **Extension Activation Lifecycle Tests**
-  - Add tests for command registration from `activate()`
-  - Cover initialization failure fallback behavior
-  - Verify `deactivate()` clears boot timers, schedulers, and automation resources
-
-- [ ] **Webview Runtime Tests**
-  - Add jsdom/happy-dom or equivalent tests for `sidebar-app`
-  - Cover state hydration, `postMessage` routing, folder actions, and event dispatch
+- [ ] **Antigravity Extension Activation Lifecycle**
+  - Verify that commands remain registered when service initialization fails
+  - Verify initialization failure feedback and command fallback behavior
+  - Verify boot timer and scheduler cleanup in `deactivate()`, and resource disposal through the host's `context.subscriptions`
+  - Validate host-dependent behavior in the Antigravity IDE Extension Development Host
 
 ### Configuration Correctness
 
-- [ ] **Unify Configuration Schema**
-  - Keep `package.json` contributes, defaults, `TfaConfig`, and validation rules aligned
-  - Include currently separate settings such as `dashboard.showUserInfoCard` and commit-message configuration
-  - Avoid direct configuration reads outside `ConfigManager` unless there is a documented reason
-  - Add a contract test that compares manifest keys/defaults with the runtime schema
+- [ ] **Check Configuration Defaults and Constraints**
+  - Compare defaults and constraints declared in `package.json` with runtime configuration reads
+  - Confirm whether the `dashboard.refreshRate` manifest default of 90 seconds and `ConfigManager` fallback of 120 seconds are intentionally different
+  - Correct unintended differences and extend existing configuration tests where needed
 
 ---
 
-## 🟢 Low Priority (P3)
+## 🔵 Optional Improvements (P4)
 
-### Test Coverage
-
-- [ ] **CI Coverage Guardrails**
-  - Add `c8`, `nyc`, or equivalent coverage tooling to the existing unit-test runner
-  - Publish a coverage summary in CI without requiring a third-party upload service
-  - Add focused minimum thresholds for critical service, view-model, and platform parsing modules
-
----
-
-## 🔵 Architecture (P4)
-
-### Maintainability
-
-- [ ] **Split AppViewModel Responsibilities**
-  - Extract quota projection into a dedicated `QuotaStateProjector`
-  - Extract cache tree state into a dedicated cache/tree view model
-  - Extract notification policy and automation coordination from `AppViewModel`
-
-- [ ] **Clarify Domain Type Ownership**
-  - Move quota/cache domain types out of `shared/utils/types.ts`
-  - Keep platform process types under `shared/platform`
-  - Keep configuration types under `shared/config`
-
-- [ ] **Strongly Type the Webview Protocol**
-  - Add a shared `webview-protocol.ts`
-  - Use discriminated unions for messages and payloads
-  - Avoid separate frontend/backend types with the same name but different semantics
+- [ ] **Strongly Type Webview Messages**
+  - Share the message type between the extension host and Webview
+  - Use discriminated unions to associate each message name with its required parameters
+  - Keep complete state payloads and partial updates distinct where their semantics differ
