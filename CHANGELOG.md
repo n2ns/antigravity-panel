@@ -4,6 +4,16 @@ English | [中文文档](docs/CHANGELOG_zh.md)
 
 ## [Unreleased]
 
+## [2.7.4] - 2026-09-21
+
+### Changed
+
+- **IDE Diagnostic Identity**: Activation logs and diagnostic reports now include the host name, product identity, Antigravity product version, and remote environment.
+
+### Fixed
+
+- **Test Reliability**: Corrected HTTP failure and live-response assertions, verified retained cache task identities and scheduler interval changes, exercised model ID normalization, and checked SVG arc flags precisely. Isolated status-bar fixtures, restored mocked time after storage test failures, and removed Linux distribution-name assumptions from platform tests.
+
 ## [2.7.3] - 2026-07-25
 
 ### Added
