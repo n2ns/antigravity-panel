@@ -79,6 +79,7 @@ export class ConfigManager {
         this.reader.get<number>("system.autoAcceptInterval", 800),
         MIN_AUTO_ACCEPT_INTERVAL
       ),
+      "system.autoAcceptTerminal": this.reader.get<boolean>("system.autoAcceptTerminal", false),
       "system.notifyOnQuotaReset": this.reader.get<boolean>("system.notifyOnQuotaReset", true),
       "system.notifyOnAbnormalDrain": this.reader.get<boolean>("system.notifyOnAbnormalDrain", true),
     };

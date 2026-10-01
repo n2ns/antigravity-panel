@@ -1,5 +1,6 @@
 import * as assert from 'assert';
 import * as vscode from 'vscode';
+import * as sinon from 'sinon';
 import { AppViewModel } from '../../view-model/app.vm';
 import { QuotaStrategyManager } from '../../model/strategy';
 import { ConfigManager, IConfigReader } from '../../shared/config/config_manager';
@@ -10,7 +11,8 @@ import type { QuotaSnapshot } from '../../model/types/entities';
 const defaultMockAutomationService: IAutomationService = {
     start: () => { },
     stop: () => { },
-    updateInterval: () => { }
+    updateInterval: () => { },
+    setAcceptTerminalCommands: () => { }
 };
 
 // Mock Config Reader (reused)
@@ -44,7 +46,9 @@ const defaultMockCacheService: ICacheService = {
     deleteTask: async () => { },
     deleteContext: async () => { },
     deleteFile: async () => { },
-    cleanCache: async () => ({ deletedCount: 0, freedBytes: 0 })
+    getCleanPlan: async (keepCount = 5) => ({ keepCount, tasks: [], orphanConversations: [], conversationFileCount: 0, totalBytes: 0 }),
+    executeCleanPlan: async () => ({ deletedCount: 0, deletedConversationCount: 0, freedBytes: 0, failedCount: 0 }),
+    cleanCache: async () => ({ deletedCount: 0, deletedConversationCount: 0, freedBytes: 0, failedCount: 0 })
 };
 
 const defaultMockStorageService: IStorageService = {
@@ -102,6 +106,47 @@ suite('AppViewModel Test Suite', () => {
     test('should initialize with empty state', () => {
         const state = vm.getState();
         assert.ok(state.quota.groups.length > 0);
+    });
+
+    test('auto-accept terminal setting should reach the automation service at startup and on change', async () => {
+        vm.dispose();
+        const terminalCalls: boolean[] = [];
+        const automation: IAutomationService = {
+            ...defaultMockAutomationService,
+            setAcceptTerminalCommands: (enabled: boolean) => { terminalCalls.push(enabled); }
+        };
+        configReader.set('system.autoAcceptTerminal', true);
+        vm = new AppViewModel(mockQuota, mockCache, mockStorage, configManager, strategyManager, automation);
+        assert.deepStrictEqual(terminalCalls, [true]);
+
+        configReader.set('system.autoAcceptTerminal', false);
+        await vm.onConfigurationChanged();
+        assert.deepStrictEqual(terminalCalls, [true, false]);
+    });
+
+    test('toggleAutoAccept should persist the toggle without the config listener flipping it back', async () => {
+        vm.dispose();
+        const calls: string[] = [];
+        const automation: IAutomationService = {
+            ...defaultMockAutomationService,
+            start: () => { calls.push('start'); },
+            stop: () => { calls.push('stop'); }
+        };
+        const writes: Array<[string, unknown]> = [];
+        const reader = new MockConfigReader() as MockConfigReader & IConfigReader;
+        reader.update = async (key: string, value: unknown) => {
+            writes.push([key, value]);
+            reader.set(key, value);
+            await vm.onConfigurationChanged();
+        };
+        vm = new AppViewModel(mockQuota, mockCache, mockStorage, new ConfigManager(reader), strategyManager, automation);
+
+        await vm.toggleAutoAccept();
+        assert.strictEqual(vm.getState().automation.enabled, true);
+        await vm.toggleAutoAccept();
+        assert.strictEqual(vm.getState().automation.enabled, false);
+        assert.deepStrictEqual(writes, [['system.autoAccept', true], ['system.autoAccept', false]]);
+        assert.deepStrictEqual(calls, ['start', 'stop']);
     });
 
     test('refreshQuota should update state from service', async () => {
@@ -265,6 +310,35 @@ suite('AppViewModel Test Suite', () => {
         assert.strictEqual(gemini?.remaining, 80);
     });
 
+    test('refreshQuota should report fetch success and failure', async () => {
+        vm.setConnectionStatus('detecting', null);
+        mockQuota.fetchQuota = async () => null;
+        assert.strictEqual(await vm.refreshQuota(), false);
+        assert.strictEqual(vm.getState().connectionStatus, 'detecting', 'A failed fetch must not claim connected');
+
+        mockQuota.fetchQuota = async () => ({ timestamp: new Date(), models: [] });
+        assert.strictEqual(await vm.refreshQuota(), true);
+        assert.strictEqual(vm.getState().connectionStatus, 'connected');
+
+        vm.dispose();
+        assert.strictEqual(await vm.refreshQuota(), false, 'No-op after dispose');
+    });
+
+    test('refreshQuota superseded by a newer refresh still reports a successful fetch', async () => {
+        let resolveFirst: (value: QuotaSnapshot) => void = () => { };
+        let calls = 0;
+        mockQuota.fetchQuota = async () => {
+            calls++;
+            if (calls === 1) return new Promise<QuotaSnapshot>(resolve => { resolveFirst = resolve; });
+            return null;
+        };
+
+        const first = vm.refreshQuota();
+        assert.strictEqual(await vm.refreshQuota(), false);
+        resolveFirst({ timestamp: new Date(), models: [] });
+        assert.strictEqual(await first, true);
+    });
+
     test('refreshCache should update cache state', async () => {
         mockCache.getCacheInfo = async () => ({
             totalSize: 2048,
@@ -361,6 +435,124 @@ suite('AppViewModel Test Suite', () => {
 
         assert.strictEqual(deletedId, 'task-to-delete');
         assert.strictEqual(refreshed, true);
+    });
+
+    suite('Cache cleaning confirmations', () => {
+        const plan = {
+            keepCount: 3,
+            tasks: [{ id: 'old-task', size: 1000, conversation: { path: '/c/old-task.pb', size: 24 } }],
+            orphanConversations: [{ path: '/c/orphan.pb', size: 1024 }],
+            conversationFileCount: 2,
+            totalBytes: 2048
+        };
+        let planKeepCount: number | undefined;
+        let executedPlan: unknown;
+        let l10nSpy: sinon.SinonSpy;
+
+        /** Arguments of the l10n.t call for the given English message */
+        function l10nArgs(message: string): unknown[] | undefined {
+            return l10nSpy.getCalls().find(c => c.args[0] === message)?.args.slice(1);
+        }
+
+        setup(() => {
+            l10nSpy = sinon.spy(vscode.l10n as any, 't');
+            planKeepCount = undefined;
+            executedPlan = undefined;
+            (vscode.window as any).lastInfoMessage = undefined;
+            (vscode.window as any).lastWarningMessage = undefined;
+            (vscode.window as any).nextMessageSelection = undefined;
+            mockCache.getCleanPlan = async (keepCount) => { planKeepCount = keepCount; return plan; };
+            mockCache.executeCleanPlan = async (p) => {
+                executedPlan = p;
+                return { deletedCount: 1, deletedConversationCount: 2, freedBytes: 2048, failedCount: 0 };
+            };
+            configReader.set('cache.autoCleanKeepCount', 3);
+        });
+
+        teardown(() => {
+            l10nSpy.restore();
+            (vscode.window as any).nextMessageSelection = undefined;
+        });
+
+        test('cleanCache asks before deleting and deletes nothing when dismissed', async () => {
+            const result = await vm.cleanCache();
+
+            assert.strictEqual(result, null);
+            assert.strictEqual(planKeepCount, 3);
+            assert.strictEqual(executedPlan, undefined);
+            const confirmMessage = 'Permanently delete {0} tasks and {1} conversation files ({2})? The {3} most recently active tasks will be kept.';
+            assert.strictEqual((vscode.window as any).lastWarningMessage, confirmMessage);
+            assert.deepStrictEqual(l10nArgs(confirmMessage), [1, 2, '2.0 KB', 3]);
+            assert.deepStrictEqual((vscode.window as any).lastMessageItems, [{ modal: true }, 'Delete']);
+        });
+
+        test('cleanCache executes exactly the confirmed plan and reports the result', async () => {
+            (vscode.window as any).nextMessageSelection = 'Delete';
+            const result = await vm.cleanCache();
+
+            assert.strictEqual(executedPlan, plan);
+            assert.strictEqual(result?.deletedCount, 1);
+            const doneMessage = 'Cache cleaned: deleted {0} tasks and {1} conversation files, freed {2}.';
+            assert.strictEqual((vscode.window as any).lastInfoMessage, doneMessage);
+            assert.deepStrictEqual(l10nArgs(doneMessage), [1, 2, '2.0 KB']);
+        });
+
+        test('cleanCache reports failures as a warning', async () => {
+            mockCache.executeCleanPlan = async () => ({ deletedCount: 0, deletedConversationCount: 1, freedBytes: 1024, failedCount: 1 });
+            (vscode.window as any).nextMessageSelection = 'Delete';
+            await vm.cleanCache();
+
+            const failMessage = 'Cache cleaned: deleted {0} tasks and {1} conversation files, freed {2}. {3} items could not be deleted; see the log for details.';
+            assert.strictEqual((vscode.window as any).lastWarningMessage, failMessage);
+            assert.deepStrictEqual(l10nArgs(failMessage), [0, 1, '1.0 KB', 1]);
+        });
+
+        test('cleanCache shows an info message and stops when nothing is to be deleted', async () => {
+            mockCache.getCleanPlan = async (keepCount = 5) => ({ keepCount, tasks: [], orphanConversations: [], conversationFileCount: 0, totalBytes: 0 });
+            const result = await vm.cleanCache();
+
+            assert.strictEqual(result, null);
+            assert.strictEqual((vscode.window as any).lastWarningMessage, undefined);
+            assert.ok(((vscode.window as any).lastInfoMessage as string).startsWith('Nothing to clean'));
+        });
+
+        test('performAutoClean cleans unattended with the configured keepCount', async () => {
+            configReader.set('cache.autoClean', true);
+            let cleanKeepCount: number | undefined;
+            mockCache.cleanCache = async (keepCount) => {
+                cleanKeepCount = keepCount;
+                return { deletedCount: 1, deletedConversationCount: 0, freedBytes: 10, failedCount: 0 };
+            };
+
+            const result = await vm.performAutoClean();
+
+            assert.strictEqual(cleanKeepCount, 3);
+            assert.strictEqual(result?.deletedCount, 1);
+            assert.strictEqual((vscode.window as any).lastWarningMessage, undefined);
+        });
+
+        test('deleteFile does nothing when the confirmation is dismissed', async () => {
+            let deletedPath: string | undefined;
+            mockCache.deleteFile = async (p) => { deletedPath = p; };
+
+            await vm.deleteFile('/brain/task-1/notes.md');
+
+            assert.strictEqual(deletedPath, undefined);
+            const confirmMessage = 'Are you sure you want to permanently delete {0}?';
+            assert.strictEqual((vscode.window as any).lastWarningMessage, confirmMessage);
+            assert.deepStrictEqual(l10nArgs(confirmMessage), ['notes.md']);
+            assert.deepStrictEqual((vscode.window as any).lastMessageItems, [{ modal: true }, 'Delete']);
+        });
+
+        test('deleteFile deletes after confirmation', async () => {
+            let deletedPath: string | undefined;
+            mockCache.deleteFile = async (p) => { deletedPath = p; };
+            (vscode.window as any).nextMessageSelection = 'Delete';
+
+            await vm.deleteFile('/brain/task-1/notes.md');
+
+            assert.strictEqual(deletedPath, '/brain/task-1/notes.md');
+        });
     });
     test('toggleTasksSection should invert tasks expanded state', () => {
         const initialState = vm.getState().tree.tasks.expanded;

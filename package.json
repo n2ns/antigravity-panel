@@ -373,6 +373,7 @@
           "tfa.system.autoAccept": {
             "type": "boolean",
             "default": false,
+            "scope": "application",
             "order": 30,
             "description": "%config.system.autoAccept.description%"
           },
@@ -383,6 +384,13 @@
             "maximum": 5000,
             "order": 31,
             "description": "%config.system.autoAcceptInterval.description%"
+          },
+          "tfa.system.autoAcceptTerminal": {
+            "type": "boolean",
+            "default": false,
+            "scope": "application",
+            "order": 32,
+            "description": "%config.system.autoAcceptTerminal.description%"
           },
           "tfa.system.notifyOnQuotaReset": {
             "type": "boolean",

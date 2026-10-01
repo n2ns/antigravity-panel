@@ -5,6 +5,7 @@
 import * as vscode from "vscode";
 import { ProcessFinder } from "./shared/platform/process_finder";
 import { QuotaService } from "./model/services/quota.service";
+import { ConnectionService } from "./model/services/connection.service";
 import { CacheService } from "./model/services/cache.service";
 import { StorageService } from "./model/services/storage.service";
 import { AutomationService } from "./model/services/automation.service";
@@ -59,7 +60,7 @@ class VscodeConfigReader implements IConfigReader, vscode.Disposable {
 // Service instances (kept for debugging if needed)
 let scheduler: Scheduler;
 let bootTimeoutHandle: ReturnType<typeof setTimeout> | undefined;
-let isDeactivated = false;
+let connectionService: ConnectionService<ProcessFinder> | undefined;
 
 export async function activate(context: vscode.ExtensionContext): Promise<void> {
   // === Phase 0: Logger (infallible) ===
@@ -95,13 +96,28 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
         );
         return;
       }
-      await appViewModel.refreshQuota();
-      vscode.window.showInformationMessage("Antigravity Panel: Data Updated.");
+      // refreshNow() also starts a reconnect when the fetch fails (not on HTTP 401/403)
+      const result = connectionService
+        ? await connectionService.refreshNow()
+        : (await appViewModel.refreshQuota() ? 'ok' : 'failed');
+      if (result === 'ok') {
+        vscode.window.showInformationMessage("Antigravity Panel: Data Updated.");
+      } else if (result === 'auth_failed') {
+        vscode.window.showErrorMessage(
+          vscode.l10n.t("Please ensure you are logged into Antigravity IDE (Authentication failed).")
+        );
+      } else {
+        vscode.window.showWarningMessage(
+          vscode.l10n.t("Failed to refresh quota data. Reconnecting to the language server...")
+        );
+      }
     }),
     vscode.commands.registerCommand("tfa.restartLanguageServer", async () => {
       try {
         await vscode.commands.executeCommand("antigravity.restartLanguageServer");
         vscode.window.showInformationMessage("Antigravity Panel: Agent Service restarted.");
+        // The server needs time to come back: bounded retries, first probe delayed
+        void connectionService?.reconnect({ supersede: true, delayFirstAttempt: true });
       } catch (e) {
         errorLog("Failed to restart Language Server", e);
         vscode.window.showErrorMessage("Failed to restart Antigravity Agent Service.");
@@ -116,9 +132,9 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
         vscode.window.showErrorMessage("Failed to reset Antigravity status updater.");
       }
     }),
-    vscode.commands.registerCommand("tfa.cleanCache", () => {
+    vscode.commands.registerCommand("tfa.cleanCache", async () => {
       if (!appViewModel) return;
-      appViewModel.cleanCache();
+      await appViewModel.cleanCache();
     }),
     vscode.commands.registerCommand("tfa.showCacheSize", () => {
       if (!appViewModel) return;
@@ -171,6 +187,8 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
         infoLog(`IDE identity: ${JSON.stringify(ideIdentity)}`);
         const result = await finder.detect({ verbose: true });
         const duration = ((Date.now() - start) / 1000).toFixed(1);
+        // Use the server found by diagnostics instead of discarding it
+        if (result) void connectionService?.useServerInfo(result);
 
         const reason = finder.failureReason;
         const count = finder.candidateCount;
@@ -283,19 +301,39 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
 
     const MAX_BOOT_RETRY = 7;
     const BOOT_RETRY_DELAY_MS = 5000;
-    let bootRetryCount = 0;
+
+    const commonMetaFor = (processFinder: ProcessFinder) => ({
+      platform: process.platform,
+      arch: process.arch,
+      version: context.extension.packageJSON.version,
+      ideVersion: vscode.version,
+      ...ideIdentity,
+      processName: processFinder.getProcessName(),
+      osDetailedVersion: getDetailedOSVersion()
+    });
 
     /**
-     * Boot server connection with external retry mechanism
-     * This provides an additional layer of retry on top of ProcessFinder's internal retries
+     * Server connection with an external retry layer on top of ProcessFinder's
+     * internal retries. Used for boot and every later reconnect.
      */
-    async function bootServerConnection(): Promise<void> {
-      if (isDeactivated) return; // Guard: don't run on disposed services
-      const processFinder = new ProcessFinder();
-
-      try {
+    const connection = new ConnectionService<ProcessFinder>({
+      createDetector: () => new ProcessFinder(),
+      setServerInfo: (info) => quotaService.setServerInfo(info),
+      setStatus: (status, reason) => appViewModel!.setConnectionStatus(status, reason),
+      refreshQuota: async () => {
+        if (await appViewModel!.refreshQuota()) return 'ok';
+        return quotaService.parsingError?.startsWith('AUTH_FAILED') ? 'auth_failed' : 'failed';
+      },
+      onAuthFailed: () => {
+        warnLog(`Quota request rejected (${quotaService.parsingError}); polling continues without reconnecting`);
+        vscode.window.showErrorMessage(
+          vscode.l10n.t("Please ensure you are logged into Antigravity IDE (Authentication failed).")
+        );
+      },
+      onError: (e) => errorLog("Server detection failed", e),
+      onAttempt: (attempt, total) => {
         // Enhanced diagnostics: Log connection attempt details
-        infoLog(`🔍 Attempting to connect to Antigravity language server (attempt ${bootRetryCount + 1}/${MAX_BOOT_RETRY + 1})...`);
+        infoLog(`🔍 Attempting to connect to Antigravity language server (attempt ${attempt + 1}/${total})...`);
         const expectedIds = getExpectedWorkspaceIds();
         if (expectedIds.length > 0) {
           debugLog(`📁 Expected workspace IDs: ${JSON.stringify(expectedIds)}`);
@@ -304,149 +342,98 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
         }
         debugLog(`🖥️  Platform: ${process.platform}, Arch: ${process.arch}`);
         debugLog(`🔢 Process PID: ${process.pid}, PPID: ${process.ppid}`);
+      },
+      onConnected: async (processFinder, serverInfo) => {
+        // Enhanced diagnostics: Log successful connection
+        infoLog(`✅ Connected to language server on port ${serverInfo.port}`);
+        debugLog(`🔑 CSRF Token: ${serverInfo.csrfToken.substring(0, 8)}...`);
+        debugLog(`📊 Connection stats: ${processFinder.attemptDetails.length} attempts, Protocol: ${processFinder.protocolUsed}`);
+        debugLog(`📡 Ports: ${processFinder.portsFromCmdline} from cmdline, ${processFinder.portsFromNetstat} from netstat`);
 
-        const serverInfo = await processFinder.detect();
-        const extVersion = context.extension.packageJSON.version;
-        const ideVersion = vscode.version;
-        const commonMeta = {
-          platform: process.platform,
-          arch: process.arch,
-          version: extVersion,
-          ideVersion,
-          ...ideIdentity,
-          processName: processFinder.getProcessName(),
-          osDetailedVersion: getDetailedOSVersion()
+        // Final check for parsing errors if no higher-level notification was shown.
+        // Auth failures (HTTP 401/403) were already reported through onAuthFailed.
+        if (!hasShownNotification && quotaService.parsingError && !quotaService.parsingError.startsWith('AUTH_FAILED')) {
+          const message = vscode.l10n.t("Server data parsing error detected, some features limited");
+
+          hasShownNotification = true;
+          await FeedbackManager.showFeedbackNotification(message, {
+            ...commonMetaFor(processFinder),
+            reason: "parsing_error",
+            parsingInfo: quotaService.parsingError
+          });
+        }
+
+        infoLog("Server connection established successfully");
+      },
+      onFailed: async (processFinder, threw) => {
+        // Exceptions were already logged and are not reported to the user
+        if (threw) return;
+
+        // Enhanced diagnostics: Log detailed failure information
+        warnLog(`❌ Connection failed. Reason: ${processFinder.failureReason || 'unknown'}`);
+        warnLog(`📊 Candidates found: ${processFinder.candidateCount}, Workspace mismatches: ${processFinder.skippedForWorkspace}`);
+        warnLog(`🔁 Internal retry attempts: ${processFinder.retryCount}, External retries: ${MAX_BOOT_RETRY}`);
+        if (processFinder.tokenPreview) {
+          debugLog(`🔑 Token preview found: ${processFinder.tokenPreview}...`);
+        }
+
+        if (hasShownNotification) return;
+
+        const reason = processFinder.failureReason || "unknown_failure";
+        const count = processFinder.candidateCount;
+        const attempts = processFinder.attemptDetails;
+
+        const messages: Record<string, string> = {
+          'no_process': vscode.l10n.t("Local server not found"),
+          'no_port': vscode.l10n.t("Server process found but no listening port detected"),
+          'auth_failed': vscode.l10n.t("Handshake with server failed (CSRF check failed)")
         };
 
-        if (serverInfo) {
-          quotaService.setServerInfo(serverInfo);
-          appViewModel!.setConnectionStatus('connected', null);
-          bootRetryCount = 0; // Reset on success
+        let message = messages[reason];
+        let parsingInfo: string | undefined;
 
-          // Enhanced diagnostics: Log successful connection
-          infoLog(`✅ Connected to language server on port ${serverInfo.port}`);
-          debugLog(`🔑 CSRF Token: ${serverInfo.csrfToken.substring(0, 8)}...`);
-          debugLog(`📊 Connection stats: ${processFinder.attemptDetails.length} attempts, Protocol: ${processFinder.protocolUsed}`);
-          debugLog(`📡 Ports: ${processFinder.portsFromCmdline} from cmdline, ${processFinder.portsFromNetstat} from netstat`);
-
-          // Update UI and check for parsing errors
-          await appViewModel!.refreshQuota();
-          // Final check for parsing errors if no higher-level notification was shown
-          if (!hasShownNotification && quotaService.parsingError) {
-            let message = vscode.l10n.t("Server data parsing error detected, some features limited");
-
-            // If it's an auth failure during quota fetch, show the login message
-            if (quotaService.parsingError.startsWith('AUTH_FAILED')) {
-              message = vscode.l10n.t("Please ensure you are logged into Antigravity IDE (Authentication failed).");
-            }
-
-            await FeedbackManager.showFeedbackNotification(message, {
-              ...commonMeta,
-              reason: "parsing_error",
-              parsingInfo: quotaService.parsingError
-            });
-            hasShownNotification = true;
-          }
-
-          infoLog("Server connection established successfully");
-        } else {
-          // ProcessFinder internal retries failed, try external retry
-          if (bootRetryCount < MAX_BOOT_RETRY) {
-            bootRetryCount++;
-            infoLog(`🔄 Boot retry ${bootRetryCount}/${MAX_BOOT_RETRY} in ${BOOT_RETRY_DELAY_MS / 1000}s...`);
-            appViewModel!.setConnectionStatus('detecting', null);
-
-            bootTimeoutHandle = setTimeout(() => {
-              bootServerConnection();
-            }, BOOT_RETRY_DELAY_MS);
-            return;
-          }
-
-          // All retries exhausted, show failure notification
-          bootRetryCount = 0;
-          appViewModel!.setConnectionStatus('failed', processFinder.failureReason);
-
-          // Enhanced diagnostics: Log detailed failure information
-          warnLog(`❌ Connection failed. Reason: ${processFinder.failureReason || 'unknown'}`);
-          warnLog(`📊 Candidates found: ${processFinder.candidateCount}, Workspace mismatches: ${processFinder.skippedForWorkspace}`);
-          warnLog(`🔁 Internal retry attempts: ${processFinder.retryCount}, External retries: ${MAX_BOOT_RETRY}`);
-          if (processFinder.tokenPreview) {
-            debugLog(`🔑 Token preview found: ${processFinder.tokenPreview}...`);
-          }
-
-          if (hasShownNotification) return;
-
-          const reason = processFinder.failureReason || "unknown_failure";
-          const count = processFinder.candidateCount;
-          const attempts = processFinder.attemptDetails;
-
-          const messages: Record<string, string> = {
-            'no_process': vscode.l10n.t("Local server not found"),
-            'no_port': vscode.l10n.t("Server process found but no listening port detected"),
-            'auth_failed': vscode.l10n.t("Handshake with server failed (CSRF check failed)")
-          };
-
-          let message = messages[reason];
-          let parsingInfo: string | undefined;
-
-          // Smart decision: If it's a single server but auth failed, it's likely a login issue
-          if (reason === 'auth_failed' && count === 1) {
-            message = vscode.l10n.t("Please ensure you are logged into Antigravity IDE (Authentication failed).");
-          }
-
-          // Collect useful diagnostic info only
-          let attemptDetailsStr: string | undefined;
-          if (attempts.length > 0) {
-            parsingInfo = attempts
-              .map(a => `PID:${a.pid} Port:${a.port} Status:${a.statusCode || 'Failed'}${a.error ? ` (${a.error})` : ''}`)
-              .join('; ');
-            attemptDetailsStr = JSON.stringify(attempts.slice(0, 3)); // Limit to first 3 attempts
-          }
-
-          if (message) {
-            await FeedbackManager.showFeedbackNotification(message, {
-              ...commonMeta,
-              reason,
-              candidateCount: count,
-              parsingInfo,
-              attemptDetails: attemptDetailsStr,
-              // Enhanced diagnostics v2
-              tokenPreview: processFinder.tokenPreview,
-              portsFromCmdline: processFinder.portsFromCmdline,
-              portsFromNetstat: processFinder.portsFromNetstat,
-              protocolUsed: processFinder.protocolUsed,
-              retryCount: processFinder.retryCount,
-              bootRetryCount: MAX_BOOT_RETRY, // Include external retry info
-              diagnosticSummary: processFinder.diagnosticSummary
-            });
-            hasShownNotification = true;
-          }
-        }
-      } catch (e) {
-        errorLog("Server detection failed", e);
-
-        // Also retry on exception
-        if (bootRetryCount < MAX_BOOT_RETRY) {
-          bootRetryCount++;
-          infoLog(`Boot retry ${bootRetryCount}/${MAX_BOOT_RETRY} after error in ${BOOT_RETRY_DELAY_MS / 1000}s...`);
-          appViewModel!.setConnectionStatus('detecting', null);
-
-          bootTimeoutHandle = setTimeout(() => {
-            bootServerConnection();
-          }, BOOT_RETRY_DELAY_MS);
-          return;
+        // Smart decision: If it's a single server but auth failed, it's likely a login issue
+        if (reason === 'auth_failed' && count === 1) {
+          message = vscode.l10n.t("Please ensure you are logged into Antigravity IDE (Authentication failed).");
         }
 
-        bootRetryCount = 0;
-        appViewModel!.setConnectionStatus('failed', null);
-      }
-    }
+        // Collect useful diagnostic info only
+        let attemptDetailsStr: string | undefined;
+        if (attempts.length > 0) {
+          parsingInfo = attempts
+            .map(a => `PID:${a.pid} Port:${a.port} Status:${a.statusCode || 'Failed'}${a.error ? ` (${a.error})` : ''}`)
+            .join('; ');
+          attemptDetailsStr = JSON.stringify(attempts.slice(0, 3)); // Limit to first 3 attempts
+        }
+
+        if (message) {
+          hasShownNotification = true;
+          await FeedbackManager.showFeedbackNotification(message, {
+            ...commonMetaFor(processFinder),
+            reason,
+            candidateCount: count,
+            parsingInfo,
+            attemptDetails: attemptDetailsStr,
+            // Enhanced diagnostics v2
+            tokenPreview: processFinder.tokenPreview,
+            portsFromCmdline: processFinder.portsFromCmdline,
+            portsFromNetstat: processFinder.portsFromNetstat,
+            protocolUsed: processFinder.protocolUsed,
+            retryCount: processFinder.retryCount,
+            bootRetryCount: MAX_BOOT_RETRY, // Include external retry info
+            diagnosticSummary: processFinder.diagnosticSummary
+          });
+        }
+      },
+    }, { retries: MAX_BOOT_RETRY, retryDelayMs: BOOT_RETRY_DELAY_MS });
+    connectionService = connection;
 
     // Attempt connection immediately, fallback to background retry cycle if server is booting
     const INITIAL_CONNECTION_DELAY_MS = 50;
     appViewModel.setConnectionStatus('detecting', null);
-    setTimeout(() => {
-      bootServerConnection();
+    bootTimeoutHandle = setTimeout(() => {
+      bootTimeoutHandle = undefined;
+      void connection.reconnect();
     }, INITIAL_CONNECTION_DELAY_MS);
 
     // 4. View Components (The Face)
@@ -468,7 +455,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
       statusBar.showLoading();
     }
 
-    // Note: Initial quota refresh is handled by bootServerConnection() after connection is established
+    // Note: Initial quota refresh is handled by the connection service after connection is established
     // Cache refresh can run independently since it doesn't require server connection
     appViewModel.refreshCache().catch(e => errorLog("Initial cache refresh failed", e));
 
@@ -483,7 +470,8 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     scheduler.register({
       name: "refreshQuota",
       interval: config['dashboard.refreshRate'] * 1000,
-      execute: () => appViewModel!.refreshQuota(),
+      // Counts consecutive fetch failures and reconnects; idle while not connected
+      execute: () => connection.poll(),
       immediate: false, // Already did initial refresh
     });
 
@@ -585,7 +573,8 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
 }
 
 export function deactivate(): void {
-  isDeactivated = true;
+  connectionService?.dispose();
+  connectionService = undefined;
   if (bootTimeoutHandle) {
     clearTimeout(bootTimeoutHandle);
     bootTimeoutHandle = undefined;

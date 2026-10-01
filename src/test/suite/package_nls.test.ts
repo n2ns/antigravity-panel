@@ -76,4 +76,21 @@ suite('Package NLS Alignment Test Suite', () => {
             );
         });
     });
+
+    test('Auto-Accept terminal setting should be described and translated in every locale', () => {
+        const base = JSON.parse(fs.readFileSync(path.join(projectRoot, 'package.nls.json'), 'utf8'));
+        const key = 'config.system.autoAcceptTerminal.description';
+        assert.ok(base[key], 'English description must exist');
+        assert.ok(String(base['config.system.autoAccept.description']).includes('tfa.system.autoAcceptTerminal'));
+
+        nlsFiles.forEach(file => {
+            const content = JSON.parse(fs.readFileSync(path.join(projectRoot, file), 'utf8'));
+            assert.ok(typeof content[key] === 'string' && content[key].trim(), `[${file}] ${key} must be set`);
+            assert.notStrictEqual(content[key], base[key], `[${file}] ${key} must be translated`);
+            assert.ok(
+                String(content['config.system.autoAccept.description']).includes('tfa.system.autoAcceptTerminal'),
+                `[${file}] Auto-Accept description must point to the terminal opt-in`
+            );
+        });
+    });
 });

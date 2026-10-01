@@ -9,7 +9,8 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { getBrainDir, getConversationsDir, getCodeContextsDir } from '../../shared/utils/paths';
 import type { ICacheService } from './interfaces';
-import type { BrainTask, CacheInfo, CodeContext, FileItem } from '../types/entities';
+import type { BrainTask, CacheInfo, CleanPlan, CleanPlanFile, CleanPlanTask, CleanResult, CodeContext, FileItem } from '../types/entities';
+import { errorLog } from '../../shared/utils/logger';
 
 /**
  * CacheService implementation
@@ -194,74 +195,168 @@ export class CacheService implements ICacheService {
     }
 
     /**
-     * Clean cache by removing old tasks
-     * @param keepCount Number of newest tasks to keep (default: 5)
-     * @returns Object containing number of tasks deleted and total bytes freed
+     * Dry run of cleanCache. Keeps the keepCount most recently active brain tasks
+     * (activity = latest file mtime in the task directory or its conversation .pb),
+     * and the keepCount newest orphan conversation files (.pb without a brain task directory).
+     * The .pb of a kept task is never selected.
      */
-    async cleanCache(keepCount: number = 5): Promise<{ deletedCount: number, freedBytes: number }> {
-        try {
-            let deletedCount = 0;
-            let freedBytes = 0;
+    async getCleanPlan(keepCount: number = 5): Promise<CleanPlan> {
+        const tasks = await this.getBrainTasks();
+        const activities = new Map<string, number>();
+        await Promise.all(tasks.map(async task => {
+            activities.set(task.id, await this.getTaskActivity(task));
+        }));
+        // Stable sort: ties keep the display (creation) order
+        const byActivity = [...tasks].sort((a, b) => (activities.get(b.id) ?? 0) - (activities.get(a.id) ?? 0));
 
-            // 1. Clean Brain Task Directories
-            const tasks = await this.getBrainTasks(); // Already sorted by mtime descending
-            if (tasks.length > keepCount) {
-                const tasksToDelete = tasks.slice(keepCount);
-                for (const task of tasksToDelete) {
-                    freedBytes += task.size;
-                    // Also check for the .pb file size before deleteTask removes it
-                    const pbPath = path.join(this.baseConversationsDir, `${task.id}.pb`);
-                    try {
-                        const pbStat = await fs.promises.stat(pbPath);
-                        freedBytes += pbStat.size;
-                    } catch { /* ignore if not exists */ }
-
-                    await this.deleteTask(task.id);
-                    deletedCount++;
-                }
-            }
-
-            // 2. Clean Orphan Conversation Files (.pb) 
-            // In case some folders were deleted but .pb files remain
-            try {
-                const pbFiles = await fs.promises.readdir(this.baseConversationsDir, { withFileTypes: true });
-                const pbItems = [];
-                for (const file of pbFiles) {
-                    if (file.isFile() && file.name.endsWith('.pb')) {
-                        const filePath = path.join(this.baseConversationsDir, file.name);
-                        const stat = await fs.promises.stat(filePath);
-                        pbItems.push({ name: file.name, path: filePath, mtime: stat.mtimeMs, size: stat.size });
-                    }
-                }
-
-                // Sort by mtime descending (newest first)
-                pbItems.sort((a, b) => b.mtime - a.mtime);
-
-                if (pbItems.length > keepCount) {
-                    const pbToDelete = pbItems.slice(keepCount);
-                    for (const item of pbToDelete) {
-                        // Check if it's already deleted by the deleteTask loop above
-                        try {
-                            await fs.promises.access(item.path); // Check if file still exists
-                            freedBytes += item.size;
-                            await fs.promises.rm(item.path, { force: true });
-                            // We don't increment deletedCount here as it primarily tracks brain tasks.
-                            // Orphan .pb files are a secondary cleanup.
-                        } catch { /* already gone or other error, ignore */ }
-                    }
-                }
-            } catch {
-                // Ignore errors reading conversations dir, e.g., if it doesn't exist
-            }
-
-            return { deletedCount, freedBytes };
-        } catch (err) {
-            console.error('Error during cleanCache:', err);
-            return { deletedCount: 0, freedBytes: 0 };
+        const planTasks: CleanPlanTask[] = [];
+        for (const task of byActivity.slice(keepCount)) {
+            const conversation = await this.statFile(path.join(this.baseConversationsDir, `${task.id}.pb`));
+            planTasks.push(conversation ? { id: task.id, size: task.size, conversation } : { id: task.id, size: task.size });
         }
+
+        const orphans = await this.getOrphanConversations();
+        orphans.sort((a, b) => b.mtime - a.mtime);
+        const orphanConversations = orphans.slice(keepCount).map(o => ({ path: o.path, size: o.size }));
+
+        const taskConversations = planTasks.filter(t => t.conversation);
+        return {
+            keepCount,
+            tasks: planTasks,
+            orphanConversations,
+            conversationFileCount: taskConversations.length + orphanConversations.length,
+            totalBytes: planTasks.reduce((sum, t) => sum + t.size + (t.conversation?.size ?? 0), 0)
+                + orphanConversations.reduce((sum, f) => sum + f.size, 0),
+        };
+    }
+
+    /**
+     * Delete exactly the entries of a clean plan. Each deletion is independent:
+     * a failure is logged and counted, and the remaining entries are still processed.
+     */
+    async executeCleanPlan(plan: CleanPlan): Promise<CleanResult> {
+        const result: CleanResult = { deletedCount: 0, deletedConversationCount: 0, freedBytes: 0, failedCount: 0 };
+
+        for (const task of plan.tasks) {
+            const taskPath = path.join(this.baseBrainDir, task.id);
+            if (!this.isValidId(task.id) || !taskPath.startsWith(this.baseBrainDir + path.sep)) continue;
+            try {
+                await fs.promises.rm(taskPath, { recursive: true });
+            } catch (err) {
+                // Already gone: nothing deleted; its .pb is left to the orphan rule
+                if ((err as NodeJS.ErrnoException).code === 'ENOENT') continue;
+                result.failedCount++;
+                errorLog(`Cache clean: failed to delete task ${task.id}`, err);
+                continue;
+            }
+            result.deletedCount++;
+            result.freedBytes += task.size;
+            if (task.conversation) {
+                await this.removeConversationFile(task.conversation, result);
+            }
+        }
+
+        for (const file of plan.orphanConversations) {
+            await this.removeConversationFile(file, result);
+        }
+
+        return result;
+    }
+
+    /**
+     * Clean cache by removing the least recently active tasks and old orphan conversation files
+     * @param keepCount Number of most recently active tasks (and newest orphan .pb files) to keep (default: 5)
+     */
+    async cleanCache(keepCount: number = 5): Promise<CleanResult> {
+        return this.executeCleanPlan(await this.getCleanPlan(keepCount));
     }
 
     // ==================== Helper Methods ====================
+
+    /**
+     * Latest activity of a brain task: newest mtime among its files (recursive, bounded depth,
+     * symlinks skipped) and its conversation .pb; falls back to the creation time.
+     */
+    private async getTaskActivity(task: BrainTask): Promise<number> {
+        const [filesMtime, pb] = await Promise.all([
+            this.getLatestFileMtime(path.join(this.baseBrainDir, task.id)),
+            this.statFile(path.join(this.baseConversationsDir, `${task.id}.pb`)),
+        ]);
+        const latest = Math.max(filesMtime, pb?.mtime ?? 0);
+        return latest || task.createdAt;
+    }
+
+    private async getLatestFileMtime(dirPath: string, maxDepth = 5): Promise<number> {
+        if (maxDepth <= 0) return 0;
+        let latest = 0;
+        try {
+            const entries = await fs.promises.readdir(dirPath, { withFileTypes: true });
+            for (const entry of entries) {
+                if (entry.isSymbolicLink()) continue;
+                const fullPath = path.join(dirPath, entry.name);
+                if (entry.isFile()) {
+                    latest = Math.max(latest, (await this.statFile(fullPath))?.mtime ?? 0);
+                } else if (entry.isDirectory()) {
+                    latest = Math.max(latest, await this.getLatestFileMtime(fullPath, maxDepth - 1));
+                }
+            }
+        } catch { /* unreadable directory: no activity info */ }
+        return latest;
+    }
+
+    /** Regular file size and mtime, or undefined if missing or not a regular file */
+    private async statFile(filePath: string): Promise<{ path: string; size: number; mtime: number } | undefined> {
+        try {
+            const stat = await fs.promises.lstat(filePath);
+            return stat.isFile() ? { path: filePath, size: stat.size, mtime: stat.mtimeMs } : undefined;
+        } catch {
+            return undefined;
+        }
+    }
+
+    /**
+     * Conversation .pb files that have no brain/<id> directory.
+     * Only a confirmed ENOENT counts as missing, so a brain read error never turns a task's .pb into an orphan.
+     */
+    private async getOrphanConversations(): Promise<{ path: string; size: number; mtime: number }[]> {
+        let entries: fs.Dirent[];
+        try {
+            entries = await fs.promises.readdir(this.baseConversationsDir, { withFileTypes: true });
+        } catch {
+            return [];
+        }
+        const orphans: { path: string; size: number; mtime: number }[] = [];
+        for (const entry of entries) {
+            if (!entry.isFile() || !entry.name.endsWith('.pb')) continue;
+            const id = entry.name.slice(0, -'.pb'.length);
+            if (!this.isValidId(id)) continue;
+            try {
+                await fs.promises.stat(path.join(this.baseBrainDir, id));
+                continue; // brain task exists (or a non-directory entry of that name): not an orphan
+            } catch (err) {
+                if ((err as NodeJS.ErrnoException).code !== 'ENOENT') continue;
+            }
+            const file = await this.statFile(path.join(this.baseConversationsDir, entry.name));
+            if (file) orphans.push(file);
+        }
+        return orphans;
+    }
+
+    /** Delete one planned conversation file, recording the outcome in result */
+    private async removeConversationFile(file: CleanPlanFile, result: CleanResult): Promise<void> {
+        const resolvedPath = path.resolve(file.path);
+        if (!resolvedPath.startsWith(this.baseConversationsDir + path.sep) || !resolvedPath.endsWith('.pb')) return;
+        try {
+            await fs.promises.rm(resolvedPath);
+        } catch (err) {
+            if ((err as NodeJS.ErrnoException).code === 'ENOENT') return;
+            result.failedCount++;
+            errorLog(`Cache clean: failed to delete ${path.basename(resolvedPath)}`, err);
+            return;
+        }
+        result.deletedConversationCount++;
+        result.freedBytes += file.size;
+    }
 
     /**
      * Recursively calculate directory size (in bytes)

@@ -4,7 +4,7 @@
 
 import * as vscode from 'vscode';
 import type { IQuotaService, ICacheService, IStorageService, IAutomationService } from '../model/services/interfaces';
-import type { QuotaSnapshot, BrainTask, CacheInfo, CodeContext, FileItem, ModelQuotaInfo, UsageBucket } from '../model/types/entities';
+import type { QuotaSnapshot, BrainTask, CacheInfo, CleanResult, CodeContext, FileItem, ModelQuotaInfo, UsageBucket } from '../model/types/entities';
 import type { TfaConfig } from '../shared/utils/types';
 import type { QuotaStrategyManager } from '../model/strategy';
 import type { ConfigManager } from '../shared/config/config_manager';
@@ -81,6 +81,7 @@ export class AppViewModel implements vscode.Disposable {
         const initialInterval = this.configManager.get('system.autoAcceptInterval', 800);
 
         this.automationService.updateInterval(initialInterval);
+        this.automationService.setAcceptTerminalCommands(this.configManager.get('system.autoAcceptTerminal', false));
 
         if (initialAutoAccept) {
             this.automationService.start();
@@ -141,17 +142,23 @@ export class AppViewModel implements vscode.Disposable {
         };
     }
 
-    async refreshQuota(): Promise<void> {
-        if (this._disposed) return;
+    /**
+     * Fetch and apply quota.
+     * @returns true when the server returned data (even if a newer refresh superseded it)
+     */
+    async refreshQuota(): Promise<boolean> {
+        if (this._disposed) return false;
         const quotaRefreshVersion = ++this._quotaRefreshVersion;
         const quota = await this.quotaService.fetchQuota();
-        if (!quota || !this.isCurrentQuotaRefresh(quotaRefreshVersion)) return;
+        if (!quota) return false;
+        if (!this.isCurrentQuotaRefresh(quotaRefreshVersion)) return true;
 
         if (await this.enqueueQuotaUpdate(quota, quotaRefreshVersion)) {
             this._state.connectionStatus = 'connected';
             this._onQuotaChange.fire(this._state.quota);
             this._onStateChange.fire(this._state);
         }
+        return true;
     }
 
     private async enqueueQuotaUpdate(snapshot: QuotaSnapshot, refreshVersion: number): Promise<boolean> {
@@ -179,25 +186,61 @@ export class AppViewModel implements vscode.Disposable {
     }
 
     /**
-     * Clean cache by removing old tasks
-     * @param keepCount Number of newest tasks to keep
+     * Interactive cache clean (tfa.cleanCache): computes a dry-run plan, asks for modal
+     * confirmation, then deletes exactly the confirmed plan and reports the outcome.
+     * @returns The clean result, or null if there was nothing to clean or the user cancelled
      */
-    async cleanCache(keepCount?: number): Promise<{ deletedCount: number, freedBytes: number }> {
-        const result = await this.cacheService.cleanCache(keepCount);
+    async cleanCache(): Promise<CleanResult | null> {
+        const plan = await this.cacheService.getCleanPlan(this.getCleanKeepCount());
+        if (plan.tasks.length === 0 && plan.orphanConversations.length === 0) {
+            vscode.window.showInformationMessage(
+                vscode.l10n.t("Nothing to clean. The {0} most recently active tasks are kept.", plan.keepCount)
+            );
+            return null;
+        }
+
+        const deleteLabel = vscode.l10n.t("Delete");
+        const confirm = await vscode.window.showWarningMessage(
+            vscode.l10n.t(
+                "Permanently delete {0} tasks and {1} conversation files ({2})? The {3} most recently active tasks will be kept.",
+                plan.tasks.length, plan.conversationFileCount, formatBytes(plan.totalBytes), plan.keepCount
+            ),
+            { modal: true },
+            deleteLabel
+        );
+        if (confirm !== deleteLabel) return null;
+
+        const result = await this.cacheService.executeCleanPlan(plan);
         await this.refreshCache();
+        if (result.failedCount > 0) {
+            vscode.window.showWarningMessage(vscode.l10n.t(
+                "Cache cleaned: deleted {0} tasks and {1} conversation files, freed {2}. {3} items could not be deleted; see the log for details.",
+                result.deletedCount, result.deletedConversationCount, formatBytes(result.freedBytes), result.failedCount
+            ));
+        } else {
+            vscode.window.showInformationMessage(vscode.l10n.t(
+                "Cache cleaned: deleted {0} tasks and {1} conversation files, freed {2}.",
+                result.deletedCount, result.deletedConversationCount, formatBytes(result.freedBytes)
+            ));
+        }
         return result;
     }
 
     /**
-     * Perform auto-clean based on configuration
+     * Perform unattended auto-clean based on configuration (same selection as cleanCache, no prompt)
      */
-    async performAutoClean(): Promise<{ deletedCount: number, freedBytes: number } | null> {
+    async performAutoClean(): Promise<CleanResult | null> {
         const config = this.configManager.getConfig();
         if (!config["cache.autoClean"]) return null;
 
-        const keepCount = config["cache.autoCleanKeepCount"] || 5;
-        const result = await this.cleanCache(keepCount);
+        const result = await this.cacheService.cleanCache(this.getCleanKeepCount());
+        await this.refreshCache();
         return result;
+    }
+
+    /** Number of most recently active tasks a clean keeps */
+    private getCleanKeepCount(): number {
+        return this.configManager.getConfig()["cache.autoCleanKeepCount"] || 5;
     }
 
     async deleteTask(taskId: string): Promise<void> {
@@ -229,6 +272,15 @@ export class AppViewModel implements vscode.Disposable {
     }
 
     async deleteFile(filePath: string): Promise<void> {
+        const fileName = filePath.split(/[\\/]/).pop() || filePath;
+        const deleteLabel = vscode.l10n.t("Delete");
+        const confirm = await vscode.window.showWarningMessage(
+            vscode.l10n.t("Are you sure you want to permanently delete {0}?", fileName),
+            { modal: true },
+            deleteLabel
+        );
+        if (confirm !== deleteLabel) return;
+
         await this.cacheService.deleteFile(filePath);
         // We don't know exactly which folder this file belongs to, so we clear all file caches
         // and force a refresh to ensure UI consistency.
@@ -374,6 +426,7 @@ export class AppViewModel implements vscode.Disposable {
         const interval = this.configManager.get('system.autoAcceptInterval', 800);
 
         this.automationService.updateInterval(interval);
+        this.automationService.setAcceptTerminalCommands(this.configManager.get('system.autoAcceptTerminal', false));
 
         if (autoAccept !== this._state.automation.enabled) {
             if (autoAccept) this.automationService.start();

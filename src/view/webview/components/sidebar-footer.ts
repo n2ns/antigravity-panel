@@ -4,6 +4,7 @@
 
 import { LitElement, html, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
+import { live } from 'lit/directives/live.js';
 import type { VsCodeApi, WindowWithVsCode } from '../types.js';
 
 /** GitHub repository URLs */
@@ -43,7 +44,10 @@ export class SidebarFooter extends LitElement {
     this._vscode?.postMessage({ type });
   }
 
-  private _toggleAutoAccept(): void {
+  private _toggleAutoAccept(e: Event): void {
+    // The host owns this state: keep the DOM unchanged and let the next
+    // host update drive the checkbox.
+    e.preventDefault();
     this._vscode?.postMessage({ type: 'toggleAutoAccept' });
   }
 
@@ -75,7 +79,7 @@ export class SidebarFooter extends LitElement {
           </span>
           <div class="action-controls">
             <label class="toggle-switch" @click=${(e: Event) => e.stopPropagation()}>
-              <input type="checkbox" ?checked=${this.autoAcceptEnabled} @click=${() => this._toggleAutoAccept()}>
+              <input type="checkbox" .checked=${live(this.autoAcceptEnabled)} @click=${(e: Event) => this._toggleAutoAccept(e)}>
               <span class="toggle-slider"></span>
             </label>
             <i class="codicon codicon-chevron-${this._isCollapsed ? 'down' : 'up'} collapse-icon"></i>

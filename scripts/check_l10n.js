@@ -23,6 +23,7 @@ const PROTECTED_BUNDLE_LABELS = [
     'Auto-Accept',
     'Brain',
     'Code Tracker',
+    'Delete',
     'Docs',
     'Feedback',
     'Flow',

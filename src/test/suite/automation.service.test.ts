@@ -150,7 +150,9 @@ function createClickerHarness(commandText = 'npm test') {
     const panel = new ClickerElement('DIV', '', 'agent-panel');
     const card = new ClickerElement('DIV', commandText);
     const button = new ClickerElement('BUTTON', 'Run');
-    card.append(button);
+    // A terminal-command prompt offers Reject next to Run.
+    const reject = new ClickerElement('BUTTON', 'Reject');
+    card.append(button, reject);
     panel.append(card);
     html.append(panel);
     const document = new ClickerDocument(html);
@@ -159,7 +161,7 @@ function createClickerHarness(commandText = 'npm test') {
         const run = new Function('window', 'document', 'NodeFilter', 'MouseEvent', script);
         run(window, document, { SHOW_ELEMENT: 1 }, class { });
     };
-    return { window, document, html, panel, card, button, execute };
+    return { window, document, html, panel, card, button, reject, execute };
 }
 
 suite('AutomationService Test Suite', () => {
@@ -214,8 +216,7 @@ suite('AutomationService Test Suite', () => {
         // Keep unit tests off the network: a real IDE may be listening on 9222
         sandbox.stub(AutomationService.prototype as any, 'performCdpAutoAccept').resolves();
         sandbox.stub(vscode.commands, 'getCommands').resolves([
-            'antigravity.terminalCommand.accept',
-            'antigravity.command.accept',
+            'antigravity.prioritized.agentAcceptAllInFile',
             'unrelated.command'
         ]);
         service = new AutomationService();
@@ -229,7 +230,7 @@ suite('AutomationService Test Suite', () => {
 
         assert.deepStrictEqual(
             commandsStub.getCalls().map(call => call.args[0]),
-            ['antigravity.terminalCommand.accept', 'antigravity.command.accept'],
+            ['antigravity.prioritized.agentAcceptAllInFile'],
             'Should call exactly the registered candidate commands'
         );
     });
@@ -255,7 +256,7 @@ suite('AutomationService Test Suite', () => {
         sandbox.stub(AutomationService.prototype as any, 'performCdpAutoAccept').resolves();
         const getCommandsStub = sandbox.stub(vscode.commands, 'getCommands');
         getCommandsStub.onFirstCall().resolves([]);
-        getCommandsStub.onSecondCall().resolves(['antigravity.agent.acceptAgentStep']);
+        getCommandsStub.onSecondCall().resolves(['antigravity.prioritized.agentAcceptAllInFile']);
         service = new AutomationService();
         const taskArgs = schedulerStub.firstCall.args[0];
         service.start();
@@ -268,7 +269,7 @@ suite('AutomationService Test Suite', () => {
         await clock.tickAsync(1);
         await taskArgs.execute();
         assert.strictEqual(getCommandsStub.callCount, 2, 'Should refresh command discovery at 60 seconds');
-        assert.deepStrictEqual(commandsStub.getCalls().map(call => call.args[0]), ['antigravity.agent.acceptAgentStep']);
+        assert.deepStrictEqual(commandsStub.getCalls().map(call => call.args[0]), ['antigravity.prioritized.agentAcceptAllInFile']);
     });
 
     test('stop() should invalidate command discovery already in flight', async () => {
@@ -286,7 +287,7 @@ suite('AutomationService Test Suite', () => {
         const execution = taskArgs.execute();
         await Promise.resolve();
         service.stop();
-        resolveCommands(['antigravity.terminalCommand.accept']);
+        resolveCommands(['antigravity.prioritized.agentAcceptAllInFile']);
         await execution;
 
         assert.ok(commandsStub.notCalled, 'An in-flight run must not accept after stop()');
@@ -295,7 +296,12 @@ suite('AutomationService Test Suite', () => {
 
     test('stop() should close a CDP connection completed by a stale run without replacing a new owner', async () => {
         sandbox.stub(service as any, 'getPages').resolves([
-            { type: 'page', id: 'agent', webSocketDebuggerUrl: 'ws://agent' }
+            {
+                type: 'page',
+                id: 'agent',
+                url: 'vscode-file://vscode-app/workbench/workbench.html',
+                webSocketDebuggerUrl: 'ws://127.0.0.1:9222/devtools/page/agent'
+            }
         ]);
         let resolveConnect!: (connected: any) => void;
         sandbox.stub(service as any, 'connectToPage').returns(new Promise(resolve => {
@@ -345,6 +351,7 @@ suite('AutomationService Test Suite', () => {
     });
 
     test('each scheduled pass should relocate the current Agent Panel', () => {
+        service.setAcceptTerminalCommands(true);
         const harness = createClickerHarness();
         const script = service['getClickerScript']();
         harness.execute(script);
@@ -365,6 +372,7 @@ suite('AutomationService Test Suite', () => {
     });
 
     test('danger context should never read text outside the Agent Panel', () => {
+        service.setAcceptTerminalCommands(true);
         const harness = createClickerHarness('npm test');
         harness.html.append(new ClickerElement('DIV', 'rm -rf /'));
         harness.execute(service['getClickerScript']());
@@ -372,6 +380,7 @@ suite('AutomationService Test Suite', () => {
     });
 
     test('danger context should not leak across sibling cards in the Agent Panel', () => {
+        service.setAcceptTerminalCommands(true);
         const harness = createClickerHarness('npm test');
         harness.panel.append(new ClickerElement('DIV', 'rm -rf /'));
         harness.execute(service['getClickerScript']());
@@ -379,6 +388,7 @@ suite('AutomationService Test Suite', () => {
     });
 
     test('danger filtering should be re-evaluated on the next scheduled pass', () => {
+        service.setAcceptTerminalCommands(true);
         const harness = createClickerHarness('rm -rf /');
         const script = service['getClickerScript']();
         harness.execute(script);
@@ -390,6 +400,7 @@ suite('AutomationService Test Suite', () => {
     });
 
     test('node timestamp should suppress immediate repeats without tracking action history', async () => {
+        service.setAcceptTerminalCommands(true);
         const clock = sandbox.useFakeTimers({ now: 10_000 });
         const harness = createClickerHarness('npm test');
         const script = service['getClickerScript']();
@@ -410,13 +421,14 @@ suite('AutomationService Test Suite', () => {
     });
 
     test('scheduled scans should include accessible shadow roots', () => {
+        service.setAcceptTerminalCommands(true);
         const harness = createClickerHarness();
         harness.panel.removeChild(harness.card);
         const host = new ClickerElement('DIV');
         const shadow = new ClickerElement('SHADOW');
         const card = new ClickerElement('DIV', 'npm test');
         const button = new ClickerElement('BUTTON', 'Run');
-        card.append(button);
+        card.append(button, new ClickerElement('BUTTON', 'Reject'));
         shadow.append(card);
         host.shadowRoot = shadow;
         harness.panel.append(host);
@@ -430,6 +442,239 @@ suite('AutomationService Test Suite', () => {
         card.replaceChild(replacement, button);
         harness.execute(service['getClickerScript']());
         assert.strictEqual(replacement.clickCount, 1, 'A later scheduled scan should see shadow-root changes');
+    });
+
+    test('commands that can approve a terminal command should never run, whatever the terminal setting', async () => {
+        const schedulerStub = sandbox.stub(Scheduler.prototype, 'register');
+        sandbox.stub(AutomationService.prototype as any, 'performCdpAutoAccept').resolves();
+        const terminalCapable = [
+            'antigravity.terminalCommand.accept',
+            'antigravity.terminalCommand.run',
+            'antigravity.terminal.accept',
+            'antigravity.command.accept',
+            'antigravity.agent.acceptAllAgentSteps',
+            'antigravity.agent.acceptAgentStep'
+        ];
+        sandbox.stub(vscode.commands, 'getCommands').resolves([
+            ...terminalCapable,
+            'antigravity.prioritized.agentAcceptAllInFile'
+        ]);
+        service = new AutomationService();
+        const taskArgs = schedulerStub.firstCall.args[0];
+        service.start();
+
+        for (const enabled of [false, true, false]) {
+            commandsStub.resetHistory();
+            service.setAcceptTerminalCommands(enabled);
+            await taskArgs.execute();
+            assert.deepStrictEqual(
+                commandsStub.getCalls().map(call => call.args[0]),
+                ['antigravity.prioritized.agentAcceptAllInFile'],
+                `Only non-terminal commands may run (terminal setting ${enabled ? 'on' : 'off'})`
+            );
+            for (const id of terminalCapable) {
+                assert.ok(!commandsStub.calledWith(id), `${id} must never run through the command path`);
+            }
+        }
+    });
+
+    test('Run buttons should be clicked only when terminal accepts are enabled', () => {
+        for (const label of ['Run', 'Run Alt+⏎']) {
+            const harness = createClickerHarness('npm test');
+            const accept = new ClickerElement('BUTTON', 'Accept');
+            const run = new ClickerElement('BUTTON', label);
+            harness.card.removeChild(harness.button);
+            harness.card.append(accept, run);
+
+            harness.execute(service['getClickerScript']());
+            assert.strictEqual(run.clickCount, 0, `"${label}" must not be clicked while terminal accepts are off`);
+            assert.strictEqual(accept.clickCount, 1, 'Non-terminal actions are still accepted');
+
+            service.setAcceptTerminalCommands(true);
+            harness.execute(service['getClickerScript']());
+            assert.strictEqual(run.clickCount, 1, `"${label}" should be clicked once terminal accepts are on`);
+            service.setAcceptTerminalCommands(false);
+        }
+    });
+
+    test('Run should be clicked only inside a terminal-command prompt', () => {
+        service.setAcceptTerminalCommands(true);
+
+        // A Run without a Reject in its card is not a terminal-command prompt.
+        const lone = createClickerHarness('npm test');
+        lone.card.removeChild(lone.reject);
+        lone.execute(service['getClickerScript']());
+        assert.strictEqual(lone.button.clickCount, 0, 'A Run outside a Reject/Run prompt must not be clicked');
+
+        // A Reject in a sibling card must not turn a lone Run into a prompt.
+        const siblings = createClickerHarness('npm test');
+        const list = new ClickerElement('DIV');
+        const loneCard = new ClickerElement('DIV', 'npm run build');
+        const loneRun = new ClickerElement('BUTTON', 'Run');
+        loneCard.append(loneRun);
+        siblings.panel.removeChild(siblings.card);
+        list.append(loneCard, siblings.card);
+        siblings.panel.append(list);
+        siblings.execute(service['getClickerScript']());
+        assert.strictEqual(loneRun.clickCount, 0, 'A Reject from another card must not scope this Run');
+        assert.strictEqual(siblings.button.clickCount, 1, 'The Run of the real prompt is clicked');
+
+        // Run and Reject that only share the Agent Panel are not one prompt.
+        const loose = createClickerHarness('npm test');
+        loose.panel.removeChild(loose.card);
+        const looseRun = new ClickerElement('BUTTON', 'Run');
+        loose.panel.append(looseRun, new ClickerElement('BUTTON', 'Reject'));
+        loose.execute(service['getClickerScript']());
+        assert.strictEqual(looseRun.clickCount, 0, 'The panel itself is never treated as a prompt card');
+    });
+
+    test('Run should not borrow the Reject of a sibling card that has no Run', () => {
+        service.setAcceptTerminalCommands(true);
+        for (const editActions of [['Reject'], ['Accept', 'Reject']]) {
+            const harness = createClickerHarness('npm test');
+            harness.panel.removeChild(harness.card);
+            const list = new ClickerElement('DIV');
+            const runCard = new ClickerElement('DIV', 'npm run build');
+            const run = new ClickerElement('BUTTON', 'Run');
+            runCard.append(run);
+            const editCard = new ClickerElement('DIV', 'src/app.ts');
+            editCard.append(...editActions.map(label => new ClickerElement('BUTTON', label)));
+            list.append(runCard, editCard);
+            harness.panel.append(list);
+            harness.execute(service['getClickerScript']());
+            assert.strictEqual(run.clickCount, 0,
+                `A Run must not be scoped by a sibling card offering ${editActions.join('/')}`);
+        }
+
+        // A keybinding hint next to Run still keeps Run and Reject in one group.
+        const hinted = createClickerHarness('npm test');
+        hinted.card.removeChild(hinted.button);
+        const runGroup = new ClickerElement('DIV');
+        const run = new ClickerElement('BUTTON', 'Run');
+        runGroup.append(run, new ClickerElement('SPAN', 'Alt+⏎'));
+        hinted.card.append(runGroup);
+        hinted.execute(service['getClickerScript']());
+        assert.strictEqual(run.clickCount, 1, 'Run beside its own Reject is still approved');
+    });
+
+    test('Always run should never be clicked, even inside a terminal-command prompt', () => {
+        for (const enabled of [false, true]) {
+            service.setAcceptTerminalCommands(enabled);
+            const harness = createClickerHarness('npm test');
+            const alwaysRun = new ClickerElement('BUTTON', 'Always run');
+            harness.card.append(alwaysRun);
+            harness.execute(service['getClickerScript']());
+            assert.strictEqual(alwaysRun.clickCount, 0, 'Always run is a persistent grant');
+            assert.strictEqual(harness.button.clickCount, enabled ? 1 : 0, 'Only the one-shot Run follows the setting');
+            assert.strictEqual(harness.reject.clickCount, 0, 'Reject is never clicked');
+        }
+    });
+
+    test('danger check should cover the whole terminal prompt card around a deeply nested Run', () => {
+        service.setAcceptTerminalCommands(true);
+        const harness = createClickerHarness('rm -rf /');
+        harness.card.removeChild(harness.button);
+        let parent = harness.card;
+        for (let i = 0; i < 4; i++) {
+            const wrapper = new ClickerElement('DIV');
+            parent.append(wrapper);
+            parent = wrapper;
+        }
+        const run = new ClickerElement('BUTTON', 'Run');
+        parent.append(run);
+
+        harness.execute(service['getClickerScript']());
+        assert.strictEqual(run.clickCount, 0, 'A dangerous command in the prompt card must block its Run button');
+
+        harness.card.innerText = 'npm test';
+        harness.execute(service['getClickerScript']());
+        assert.strictEqual(run.clickCount, 1, 'The same prompt is approved once its command is safe');
+    });
+
+    test('persistent grants should never be clicked', () => {
+        service.setAcceptTerminalCommands(true);
+        for (const label of ['Always allow', 'Always allow this conversation', 'Always run', 'Always Run Alt+⏎']) {
+            const harness = createClickerHarness('npm test');
+            const grant = new ClickerElement('BUTTON', label);
+            harness.card.removeChild(harness.button);
+            harness.card.append(grant);
+            harness.execute(service['getClickerScript']());
+            assert.strictEqual(grant.clickCount, 0, `"${label}" is a persistent grant`);
+        }
+    });
+
+    test('danger check should cover the whole action card, not only the button row', () => {
+        service.setAcceptTerminalCommands(true);
+        const harness = createClickerHarness('rm -fr ~');
+        harness.card.removeChild(harness.button);
+        const row = new ClickerElement('DIV');
+        const run = new ClickerElement('BUTTON', 'Run');
+        row.append(run, new ClickerElement('BUTTON', 'Reject'));
+        harness.card.append(row);
+
+        harness.execute(service['getClickerScript']());
+        assert.strictEqual(run.clickCount, 0, 'A dangerous command elsewhere in the card must block the Run button');
+    });
+
+    test('danger patterns should catch destructive commands and spare ordinary ones', () => {
+        const patterns = AutomationService['DANGER_PATTERNS'] as readonly RegExp[];
+        const isDangerous = (text: string) => {
+            const normalized = text.replace(/\s+/g, ' ').trim().toLowerCase();
+            return patterns.some(re => re.test(normalized));
+        };
+        const dangerous = [
+            'rm -rf /', 'rm -r -f /', 'rm -fr ~', 'rm -Rf ~/', 'rm --recursive --force /', 'sudo rm -rf /*',
+            'rm -rf "$HOME"', 'rm -rf ${HOME}', 'rm -rf "${HOME}/"', 'rm -rf $HOME/*', 'rm -f -r ~ && ls',
+            'rm -rf --no-preserve-root /tmp',
+            // Coverage of the original rule: any -r/-f rm on a path under /, ~ or $HOME
+            'rm -rf /usr', 'rm -rf /etc', 'rm -rf /tmp/build', 'rm -f /', 'rm -rf ~/Documents',
+            'rm -rf ~/project/node_modules', 'rm -f ~/.cache/x', 'rm -rf $HOME/.config', 'rm -rf "$HOME/project"',
+            'git reset --hard', 'git reset --hard HEAD~1', 'git -C repo reset --hard origin/main', 'git reset HEAD~1 --hard',
+            'git clean -f', 'git clean -fdx', 'git clean -xdf', 'git clean -d --force',
+            'Remove-Item -Recurse -Force C:\\build', 'Remove-Item C:\\build -Recurse', 'Remove-Item . -r',
+            'del /s /q C:\\build', 'del /q /s *.*', 'del /f/s/q build', 'erase /s build',
+            'rmdir /s /q C:\\build', 'rd /s build', 'RMDIR /S build',
+            'git push --force origin main', 'DROP TABLE users', 'mkfs.ext4 /dev/sda1', 'dd if=/dev/zero of=/dev/sda'
+        ];
+        const ordinary = [
+            'rm -rf ./dist', 'rm -rf build', 'rm file.txt', 'rm ~', 'npm run rm', 'perform -r /x','git reset --soft HEAD~1', 'git reset HEAD file.txt',
+            'git clean -n', 'git clean --dry-run', 'git clean -nd', 'git push --force-with-lease',
+            'Remove-Item foo.txt', 'Get-ChildItem -Recurse', 'del file.txt', 'del /q file.txt',
+            'rmdir build', 'rmdir /q build', 'model /s', 'npm test'
+        ];
+        for (const text of dangerous) assert.ok(isDangerous(text), `Should flag: ${text}`);
+        for (const text of ordinary) assert.ok(!isDangerous(text), `Should not flag: ${text}`);
+
+        // The same patterns are embedded in the injected scan.
+        for (const text of ['rm -r -f /', 'git clean -fdx', 'rmdir /s /q C:\\build']) {
+            const harness = createClickerHarness(text);
+            harness.button.innerText = 'Accept';
+            harness.execute(service['getClickerScript']());
+            assert.strictEqual(harness.button.clickCount, 0, `Injected scan should block: ${text}`);
+        }
+        const safe = createClickerHarness('rm -rf ./dist');
+        safe.button.innerText = 'Accept';
+        safe.execute(service['getClickerScript']());
+        assert.strictEqual(safe.button.clickCount, 1, 'A project-relative cleanup is not flagged');
+    });
+
+    test('CDP should only attach to workbench targets with a loopback debugger socket', async () => {
+        sandbox.stub(service as any, 'getPages').resolves([
+            { type: 'page', id: 'workbench', url: 'vscode-file://vscode-app/out/workbench.html', webSocketDebuggerUrl: 'ws://127.0.0.1:9222/devtools/page/workbench' },
+            { type: 'webview', id: 'panel', url: 'vscode-webview://abc/index.html', webSocketDebuggerUrl: 'ws://localhost:9222/devtools/page/panel' },
+            { type: 'page', id: 'site', url: 'https://example.com/', webSocketDebuggerUrl: 'ws://127.0.0.1:9222/devtools/page/site' },
+            { type: 'page', id: 'blank', webSocketDebuggerUrl: 'ws://127.0.0.1:9222/devtools/page/blank' },
+            { type: 'page', id: 'devtools', url: 'devtools://devtools/bundled/inspector.html', webSocketDebuggerUrl: 'ws://127.0.0.1:9222/devtools/page/devtools' },
+            { type: 'page', id: 'remote', url: 'vscode-file://vscode-app/out/workbench.html', webSocketDebuggerUrl: 'ws://192.168.1.5:9222/devtools/page/remote' },
+            { type: 'page', id: 'lookalike', url: 'vscode-file://vscode-app/out/workbench.html', webSocketDebuggerUrl: 'ws://127.0.0.1.evil.test:9222/devtools/page/x' },
+            { type: 'page', id: 'bad', url: 'vscode-webview://abc/index.html', webSocketDebuggerUrl: 'not a url' }
+        ]);
+        const connectStub = sandbox.stub(service as any, 'connectToPage').resolves(null);
+        service.start();
+
+        await service['performCdpAutoAccept'](service['runGeneration']);
+
+        assert.deepStrictEqual(connectStub.getCalls().map(call => call.args[0]), ['9222:workbench', '9222:panel']);
     });
 
     test('should use fixed CDP port 9222', () => {

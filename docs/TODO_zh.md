@@ -2,7 +2,7 @@
 
 # 待办事项清单
 
-> 最后更新: 2026-09-21
+> 最后更新: 2026-10-02
 
 > ⚠️ **注意**: 本文档仅包含待办任务。已完成的任务应移除，并记录到 [CHANGELOG.md](../CHANGELOG.md) 或 [FEATURES.md](./FEATURES.md)。
 
@@ -24,6 +24,25 @@
   - 对照 `package.json` 声明的默认值、约束与运行时配置读取逻辑
   - 确认 `dashboard.refreshRate` 的 manifest 默认值 90 秒与 `ConfigManager` fallback 120 秒是否为有意差异
   - 修正非预期差异，并按需补充已有配置测试
+
+### 缓存清理
+
+- [ ] **确定会话 `.db` 文件的清理方式**
+  - Antigravity IDE 2.0 起会话存为 `conversations/<uuid>.db`（以及 `-wal` / `-shm`），而删除任务和清理缓存只处理 `<uuid>.pb`，任务删除后 `.db` 文件仍会保留
+  - 确定是否在删除任务和孤儿规则中一并删除 `.db` / `-wal` / `-shm`，以及删除前是否要求关闭 Antigravity（SQLite 文件可能被占用；侧栏会话列表索引在 `state.vscdb` 中）
+- [ ] **确定 `brain/tempmediaStorage` 的处理方式**
+  - IDE 的临时媒体目录目前被列为 Brain 任务，可能占用保留名额，或被清理删除
+  - 可选方案：只把 UUID 命名的目录当作任务，或按名称排除 `tempmediaStorage`
+
+### Auto-Accept
+
+- [ ] **确定是否自动点击 "Allow this conversation"**
+  - 持久授权（"Always allow"、"Always run"）已不再点击；会话级授权仍会被点击，点击后该会话内的后续步骤将绕过终端开关和危险检查
+
+### 文档
+
+- [ ] **更新 README 中的 Auto-Accept 说明**
+  - CDP 配置说明称仅在命令 API 不可用时才需要远程调试端口，限制说明称命令 API 路径不受危险检查覆盖；现在终端命令只通过 CDP 点击 Run 批准，不再经过命令 API
 
 ---
 

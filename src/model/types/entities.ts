@@ -54,6 +54,42 @@ export interface FileItem {
     path: string;
 }
 
+/** A single file selected for deletion by a cache clean */
+export interface CleanPlanFile {
+    path: string;
+    size: number;
+}
+
+/** Brain task selected for deletion, with its conversation file if one exists */
+export interface CleanPlanTask {
+    id: string;
+    /** Size of the task directory (bytes) */
+    size: number;
+    conversation?: CleanPlanFile;
+}
+
+/** Dry-run result of a cache clean: exactly what cleanCache would delete */
+export interface CleanPlan {
+    keepCount: number;
+    tasks: CleanPlanTask[];
+    /** Conversation .pb files without a brain task directory, beyond the newest keepCount */
+    orphanConversations: CleanPlanFile[];
+    /** Task conversation files plus orphan conversation files */
+    conversationFileCount: number;
+    totalBytes: number;
+}
+
+/** Outcome of a cache clean; counts and bytes cover only what was actually deleted */
+export interface CleanResult {
+    /** Brain tasks deleted */
+    deletedCount: number;
+    /** Conversation .pb files deleted (task and orphan) */
+    deletedConversationCount: number;
+    freedBytes: number;
+    /** Tasks or files that could not be deleted */
+    failedCount: number;
+}
+
 // ==================== History Related ====================
 
 /** Quota history data point */

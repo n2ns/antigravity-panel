@@ -11,6 +11,8 @@ import type {
     BrainTask,
     CodeContext,
     FileItem,
+    CleanPlan,
+    CleanResult,
     QuotaHistoryPoint,
     UsageBucket,
     CachedTreeState,
@@ -84,11 +86,22 @@ export interface ICacheService {
     deleteFile(filePath: string): Promise<void>;
 
     /**
-     * Clean cache by removing old tasks
-     * @param keepCount Number of newest tasks to keep
-     * @returns Object containing number of tasks deleted and total bytes freed
+     * Dry run of cleanCache: the brain tasks beyond the keepCount most recently active,
+     * and orphan conversation files (no brain task) beyond the newest keepCount.
      */
-    cleanCache(keepCount?: number): Promise<{ deletedCount: number, freedBytes: number }>;
+    getCleanPlan(keepCount?: number): Promise<CleanPlan>;
+
+    /**
+     * Delete exactly the entries of a plan from getCleanPlan.
+     * Each deletion is attempted independently; failures are logged and counted.
+     */
+    executeCleanPlan(plan: CleanPlan): Promise<CleanResult>;
+
+    /**
+     * Clean cache: executeCleanPlan(getCleanPlan(keepCount))
+     * @param keepCount Number of most recently active tasks to keep
+     */
+    cleanCache(keepCount?: number): Promise<CleanResult>;
 }
 
 // ==================== Storage Service ====================
@@ -245,4 +258,9 @@ export interface IAutomationService {
      * Update execution interval
      */
     updateInterval(ms: number): void;
+
+    /**
+     * Allow or block clicking Run in terminal-command prompts (CDP only; the command API never approves terminal commands)
+     */
+    setAcceptTerminalCommands(enabled: boolean): void;
 }

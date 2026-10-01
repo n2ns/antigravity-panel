@@ -294,6 +294,8 @@ export interface TfaConfig {
   "system.autoAccept": boolean;
   /** Auto-accept check interval (milliseconds) */
   "system.autoAcceptInterval": number;
+  /** Whether auto-accept may also accept terminal commands */
+  "system.autoAcceptTerminal": boolean;
   /** Whether to show a notification when a quota reset is detected */
   "system.notifyOnQuotaReset": boolean;
   /** Whether to warn about abnormal quota drain (offline or idle consumption) */

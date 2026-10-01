@@ -120,6 +120,30 @@ suite('ConfigManager Test Suite', () => {
       assert.strictEqual(config["system.notifyOnAbnormalDrain"], true);
     });
 
+    test('auto-accept settings should be application-scoped and keep terminal accepts off by default', () => {
+      const manifest = JSON.parse(fs.readFileSync(path.resolve(process.cwd(), 'package.json'), 'utf8'));
+      const section = manifest.contributes.configuration.find(
+        (entry: { properties?: Record<string, unknown> }) => entry.properties?.['tfa.system.autoAccept']
+      );
+      const properties = section.properties as Record<string, { type?: string; default?: unknown; scope?: string; order?: number }>;
+      const keys = Object.keys(properties);
+
+      assert.strictEqual(properties['tfa.system.autoAccept'].scope, 'application');
+      assert.strictEqual(properties['tfa.system.autoAcceptTerminal'].type, 'boolean');
+      assert.strictEqual(properties['tfa.system.autoAcceptTerminal'].default, false);
+      assert.strictEqual(properties['tfa.system.autoAcceptTerminal'].scope, 'application');
+      assert.strictEqual(
+        keys.indexOf('tfa.system.autoAcceptTerminal'),
+        keys.indexOf('tfa.system.autoAcceptInterval') + 1,
+        'The terminal opt-in should follow the auto-accept settings'
+      );
+      assert.ok(properties['tfa.system.autoAcceptTerminal'].order! > properties['tfa.system.autoAcceptInterval'].order!);
+
+      assert.strictEqual(configManager.getConfig()["system.autoAcceptTerminal"], false);
+      mockReader.set('system.autoAcceptTerminal', true);
+      assert.strictEqual(configManager.getConfig()["system.autoAcceptTerminal"], true);
+    });
+
     test('should use default for statusBarShowQuota', () => {
       const config = configManager.getConfig();
       assert.strictEqual(config["status.showQuota"], true);

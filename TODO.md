@@ -2,7 +2,7 @@ English | [中文文档](docs/TODO_zh.md)
 
 # TODO List
 
-> Last Updated: 2026-09-21
+> Last Updated: 2026-10-02
 
 > ⚠️ **Note**: This document should only contain pending tasks. Completed tasks should be removed and documented in [CHANGELOG.md](CHANGELOG.md) or [FEATURES.md](docs/FEATURES.md).
 
@@ -24,6 +24,25 @@ English | [中文文档](docs/TODO_zh.md)
   - Compare defaults and constraints declared in `package.json` with runtime configuration reads
   - Confirm whether the `dashboard.refreshRate` manifest default of 90 seconds and `ConfigManager` fallback of 120 seconds are intentionally different
   - Correct unintended differences and extend existing configuration tests where needed
+
+### Cache Cleaning
+
+- [ ] **Decide how conversation `.db` files are cleaned**
+  - Since Antigravity IDE 2.0 conversations are stored as `conversations/<uuid>.db` (plus `-wal` / `-shm`); task deletion and cache cleaning only handle `<uuid>.pb`, so the `.db` files remain after a task is deleted
+  - Decide whether to delete `.db` / `-wal` / `-shm` together with the task and in the orphan rule, and whether deletion requires Antigravity to be closed (open SQLite files, sidebar index in `state.vscdb`)
+- [ ] **Decide how `brain/tempmediaStorage` is handled**
+  - The IDE's temporary media directory is currently listed as a Brain task and can take a keep slot or be deleted by cleaning
+  - Options: only treat UUID-named directories as tasks, or exclude `tempmediaStorage` by name
+
+### Auto-Accept
+
+- [ ] **Decide whether "Allow this conversation" is auto-clicked**
+  - Persistent grants ("Always allow", "Always run") are never clicked; the conversation-level grant still is, and later steps in that conversation then bypass the terminal setting and the danger check
+
+### Documentation
+
+- [ ] **Update the README Auto-Accept section**
+  - The CDP setup note says the remote debugging port is only needed when the command API is unavailable, and the limitation note says the command-API path is not covered by the danger check; terminal commands are now approved only through CDP Run clicks, never through the command API
 
 ---
 

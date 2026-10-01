@@ -11,7 +11,8 @@ import type { CachedTreeState } from '../../model/types/entities';
 const mockAutomationService: IAutomationService = {
     start: () => { },
     stop: () => { },
-    updateInterval: () => { }
+    updateInterval: () => { },
+    setAcceptTerminalCommands: () => { }
 };
 
 // Mock Config Reader
@@ -42,7 +43,9 @@ const mockCacheService: ICacheService = {
     deleteTask: async () => { },
     deleteContext: async () => { },
     deleteFile: async () => { },
-    cleanCache: async () => ({ deletedCount: 0, freedBytes: 0 })
+    getCleanPlan: async (keepCount = 5) => ({ keepCount, tasks: [], orphanConversations: [], conversationFileCount: 0, totalBytes: 0 }),
+    executeCleanPlan: async () => ({ deletedCount: 0, deletedConversationCount: 0, freedBytes: 0, failedCount: 0 }),
+    cleanCache: async () => ({ deletedCount: 0, deletedConversationCount: 0, freedBytes: 0, failedCount: 0 })
 };
 
 // Mock Memento
