@@ -37,7 +37,7 @@
     "Found {0} candidates. Duration: {1}s.": "Найдено {0} кандидатов. Длительность: {1}с.",
     "Generating commit message...": "Generating commit message...",
     "Git repository error": "Git repository error",
-    "Hands-free Mode: Automatically accept agent suggested edits and terminal commands": "Режим «Без рук»: автоматическое принятие предложенных агентом правок и команд терминала",
+    "Hands-free Mode: Automatically accept agent suggested edits (terminal commands only with tfa.system.autoAcceptTerminal)": "Режим «Без рук»: автоматическое принятие предложенных агентом правок (команды терминала — только с tfa.system.autoAcceptTerminal)",
     "Handshake failed (possible login issue).": "Ошибка рукопожатия (возможна проблема с входом).",
     "Handshake with server failed (CSRF check failed)": "Ошибка рукопожатия с сервером (ошибка проверки CSRF)",
     "LLM API error: {0}": "LLM API error: {0}",

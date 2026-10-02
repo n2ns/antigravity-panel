@@ -34,11 +34,6 @@
   - IDE 的临时媒体目录目前被列为 Brain 任务，可能占用保留名额，或被清理删除
   - 可选方案：只把 UUID 命名的目录当作任务，或按名称排除 `tempmediaStorage`
 
-### Auto-Accept
-
-- [ ] **确定是否自动点击 "Allow this conversation"**
-  - 持久授权（"Always allow"、"Always run"）已不再点击；会话级授权仍会被点击，点击后该会话内的后续步骤将绕过终端开关和危险检查
-
 ### 文档
 
 - [ ] **更新 README 中的 Auto-Accept 说明**

@@ -4,6 +4,12 @@ English | [中文文档](docs/CHANGELOG_zh.md)
 
 ## [Unreleased]
 
+### Fixed
+
+- **Auto-Accept Terminal Approval**: The danger check now covers the whole terminal-command prompt card (climbing from the action row to the card boundary) instead of four fixed ancestor levels, and Run is never clicked when no command text is visible in the card. "Allow this conversation" is a persistent grant and is no longer clicked. Elements nested inside a button are no longer clicked separately. The danger patterns additionally cover `find … -delete` under `/`, `~` or `$HOME`, `git push` with a `+refspec` or a combined `-f` flag, PowerShell `rm`/`ri`/`rd` with `-Recurse` on a drive path, `rm -rf` on a drive path, and `cd ~ && rm -rf *` chains. Changes to `tfa.system.autoAcceptTerminal` and the auto-accept interval now take effect before the configuration handler refreshes quota and cache data, and a failing refresh no longer skips them. The Hands-free Mode tooltip now states that terminal commands are only approved with `tfa.system.autoAcceptTerminal`.
+- **Language Server Reconnection**: Connection hooks that wait on a notification no longer block the reconnect loop: background retries continue after a failed boot when the warning is left open, and quota polling continues after a connection whose first refresh reported a parsing error. Server errors (HTTP 5xx, invalid or unparseable responses) are no longer treated as a lost connection, so they do not trigger a process rescan every polling cycle. Repeated 401/403 responses re-apply the authentication-failed status, a failed manual refresh during a background probe starts a full reconnect, a rejected refresh is reported through the error log instead of an unhandled rejection, and errors while handling a configuration change are logged.
+- **Cache Cleaning**: Task activity now includes the conversation `.db`, `.db-wal` and `.db-shm` files, so an active Antigravity 2.0 conversation is not ranked as stale. Directories with invalid names are excluded from the clean plan and never take a keep slot, and an invalid plan entry is reported as a failure instead of being skipped silently. A task directory that disappeared after confirmation no longer prevents its planned `.pb` file from being deleted. `tfa.cache.autoCleanKeepCount` is read as an integer clamped to 1–50.
+
 ## [2.7.4] - 2026-09-21
 
 ### Changed

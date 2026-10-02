@@ -59,17 +59,24 @@ export class AutomationService implements IAutomationService, vscode.Disposable 
     // Destructive-looking commands that leave an action card for manual review.
     // Patterns run on lower-cased, whitespace-collapsed card text.
     private static readonly DANGER_PATTERNS: readonly RegExp[] = [
-        // rm with an -r/-f flag (any order, separated or long form) on a path under /, ~ or $HOME
-        /\brm(?=(?:\s+[^\s;&|]+){0,8}?\s+(?:-[a-z]*[rf][a-z]*|--recursive|--force)(?=[\s;&|]|$))(?:\s+[^\s;&|]+){0,8}?\s+["']?(?:\/|~|\$home|\$\{home\})/,
+        // rm with an -r/-f flag (any order, separated or long form) on a path under /, ~, $HOME or a drive root
+        /\brm(?=(?:\s+[^\s;&|]+){0,8}?\s+(?:-[a-z]*[rf][a-z]*|--recursive|--force)(?=[\s;&|]|$))(?:\s+[^\s;&|]+){0,8}?\s+["']?(?:\/|~|\$home|\$\{home\}|[a-z]:[\\/])/,
         /--no-preserve-root/,
         /\bmkfs(\.|\s)/,
         /\bdd\s+if=/,
-        /\bgit\s+push\b[^\n]*(--force(?!-with-lease)|\s-f\b)/,
+        // find under /, ~ or $HOME with -delete
+        /\bfind\s+["']?(?:\/|~|\$home|\$\{home\})[^\s;&|"']*["']?(?=[\s;&|]|$)[^;&|]*?\s-delete(?=[\s;&|]|$)/,
+        // cd to /, ~ or $HOME, then a chained recursive/forced rm of * or .
+        /\bcd\s+["']?(?:\/|~\/?|\$home\/?|\$\{home\}\/?)["']?\s*(?:&&|;)\s*(?:sudo\s+)?rm(?=(?:\s+[^\s;&|]+){0,8}?\s+(?:-[a-z]*[rf][a-z]*|--recursive|--force)(?=[\s;&|]|$))(?:\s+[^\s;&|]+){0,8}?\s+["']?(?:\*|\.\/?\*?)["']?(?=[\s;&|]|$)/,
+        // git push --force, a combined short flag holding f (-f, -fu) or a +refspec
+        /\bgit\s+push\b[^\n]*(--force(?!-with-lease)|\s-[a-z]*f[a-z]*(?=[\s;&|]|$)|\s\+[^\s;&|]+)/,
         // git reset --hard / git clean -f, also after global options such as -C <dir>
         /\bgit(?:\s+-c\s+[^\s;&|]+|\s+--?[a-z-]+(?:=[^\s;&|]+)?){0,4}\s+reset(?:\s+[^\s;&|]+){0,8}?\s+--hard(?=[\s;&|]|$)/,
         /\bgit(?:\s+-c\s+[^\s;&|]+|\s+--?[a-z-]+(?:=[^\s;&|]+)?){0,4}\s+clean(?:\s+[^\s;&|]+){0,8}?\s+(?:-[a-z]*f[a-z]*|--force)(?=[\s;&|]|$)/,
         // PowerShell Remove-Item -Recurse (or an unambiguous prefix)
         /\bremove-item(?:\s+[^\s;&|]+){0,8}?\s+-r(?:e|ec|ecu|ecur|ecurs|ecurse)?(?=[\s;&|:]|$)/,
+        // PowerShell Remove-Item aliases (rm, ri, rd, ...) with -Recurse on a drive path
+        /\b(?:rm|ri|rd|rmdir|del|erase)(?=(?:\s+[^\s;&|]+){0,8}?\s+-r(?:e|ec|ecu|ecur|ecurs|ecurse)?(?=[\s;&|:]|$))(?:\s+[^\s;&|]+){0,8}?\s+["']?[a-z]:[\\/]/,
         // cmd.exe recursive delete: del /s, erase /s, rmdir /s, rd /s
         /\b(?:del|erase|rmdir|rd)(?:\s+[^\s;&|]+){0,8}?\s+(?:\/[a-z]+)*\/s(?=[\s/;&|]|$)/,
         /\bdrop\s+(table|database)\b/,
@@ -267,8 +274,9 @@ export class AutomationService implements IAutomationService, vscode.Disposable 
                     return texts;
                 };
 
-                // Leave destructive-looking action cards for manual review. Every
-                // collected ancestor text is checked, so the whole card is seen.
+                // Leave destructive-looking action cards for manual review. This
+                // checks the action text and up to four ancestor texts only; a Run
+                // is also checked against its whole prompt card (findPromptCard).
                 const DANGER_PATTERNS = [${dangerPatterns}];
 
                 const containerIsDangerous = (el, rawText, panel) => {
@@ -298,20 +306,21 @@ export class AutomationService implements IAutomationService, vscode.Disposable 
                     if (p) { try { p.click(); } catch(e) {} }
                 };
 
-                // Persistent grants ('always allow', 'always run', ...) are never
-                // clicked. Run buttons approve terminal commands and need opt-in.
+                // Persistent grants ('always allow', 'always run', 'allow this
+                // conversation', ...) are never clicked. Run buttons approve
+                // terminal commands and need opt-in.
                 const ACCEPT_TERMINAL = ${acceptTerminal};
                 const TARGET_TOKENS = [
                     'accept all', 'accept', 'confirm',
-                    'allow once', 'allow',
-                    'allow this conversation'
+                    'allow once', 'allow'
                 ];
                 const isRunAction = (text) => text === 'run' || text.startsWith('run alt');
                 const EXPANDER_TOKENS = ['requires input', 'expand'];
 
                 // Run is clicked only inside a terminal-command prompt: the nearest
-                // card below the panel that also offers a Reject action. A card
-                // holding more than one Run spans several prompts and is skipped.
+                // ancestor below the panel (within PROMPT_MAX_DEPTH) that also offers
+                // a Reject action, usually just the action row. An ancestor holding
+                // more than one Run spans several prompts and is skipped.
                 // Run and Reject must sit in one action group: below their common
                 // ancestor each is a branch holding only that action (plus its
                 // keybinding hint), so a Reject from a sibling card never counts.
@@ -353,6 +362,38 @@ export class AutomationService implements IAutomationService, vscode.Disposable 
                     }
                     return null;
                 };
+                // Climb from the action group to the whole prompt card: stop below
+                // the panel, after PROMPT_MAX_DEPTH levels, or before an ancestor
+                // holding a second Run or Reject (that would merge another prompt).
+                // Other actions in the card (copy, Always run, ...) do not stop it.
+                const findPromptCard = (group, panel) => {
+                    let card = group;
+                    for (let i = 0; i < PROMPT_MAX_DEPTH; i++) {
+                        const parent = card.parentElement;
+                        if (!parent || parent === panel) break;
+                        const labels = Array.from(parent.querySelectorAll(PROMPT_ACTION_SELECTOR)).map(labelOf);
+                        if (labels.filter(isRunAction).length > 1) break;
+                        if (labels.filter(label => /\\breject\\b/.test(label)).length > 1) break;
+                        card = parent;
+                    }
+                    return card;
+                };
+                // Card text without action labels and without the Run/Reject branch
+                // text (keybinding hints). Empty means the command is not visible.
+                const commandTextOf = (card, group, run) => {
+                    const actions = Array.from(card.querySelectorAll(PROMPT_ACTION_SELECTOR));
+                    const labels = actions.map(labelOf);
+                    labels.push(labelOf(branchOf(run, group)));
+                    for (const action of actions) {
+                        if (action === group || !isInside(action, group)) continue;
+                        const branchText = labelOf(branchOf(action, group));
+                        if (isRejectBranchText(branchText)) labels.push(branchText);
+                    }
+                    let text = labelOf(card);
+                    labels.filter(Boolean).sort((a, b) => b.length - a.length)
+                        .forEach(label => { text = text.split(label).join(' '); });
+                    return normalize(text);
+                };
 
                 agentRoots.forEach(({ root, panel }) => {
                     try {
@@ -361,6 +402,9 @@ export class AutomationService implements IAutomationService, vscode.Disposable 
                         let el;
                         while (el = walker.nextNode()) {
                             if (el.tagName === 'SCRIPT' || el.tagName === 'STYLE') continue;
+                            // Children of an interactive element are reached through it.
+                            const host = el.closest('button, [role="button"]');
+                            if (host && host !== el) continue;
 
                             const rawText = (el.innerText || el.textContent || '').trim().toLowerCase();
                             if (!rawText) continue;
@@ -400,6 +444,13 @@ export class AutomationService implements IAutomationService, vscode.Disposable 
                                 if (terminalPrompt) {
                                     const promptText = normalize(terminalPrompt.innerText || terminalPrompt.textContent);
                                     if (DANGER_PATTERNS.some(re => re.test(promptText))) continue;
+                                    // Check the whole prompt card, and fail closed when
+                                    // no command text is visible in it.
+                                    try {
+                                        const card = findPromptCard(terminalPrompt, panel);
+                                        if (DANGER_PATTERNS.some(re => re.test(labelOf(card)))) continue;
+                                        if (!commandTextOf(card, terminalPrompt, el)) continue;
+                                    } catch (e) { continue; }
                                 }
                             }
 

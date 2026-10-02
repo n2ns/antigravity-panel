@@ -34,11 +34,6 @@ English | [中文文档](docs/TODO_zh.md)
   - The IDE's temporary media directory is currently listed as a Brain task and can take a keep slot or be deleted by cleaning
   - Options: only treat UUID-named directories as tasks, or exclude `tempmediaStorage` by name
 
-### Auto-Accept
-
-- [ ] **Decide whether "Allow this conversation" is auto-clicked**
-  - Persistent grants ("Always allow", "Always run") are never clicked; the conversation-level grant still is, and later steps in that conversation then bypass the terminal setting and the danger check
-
 ### Documentation
 
 - [ ] **Update the README Auto-Accept section**

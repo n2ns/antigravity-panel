@@ -37,7 +37,7 @@
     "Found {0} candidates. Duration: {1}s.": "{0} 個の候補が見つかりました。所要時間：{1}秒。",
     "Generating commit message...": "Generating commit message...",
     "Git repository error": "Git repository error",
-    "Hands-free Mode: Automatically accept agent suggested edits and terminal commands": "ハンズフリーモード: エージェントが提案した編集とターミナルコマンドを自動的に受け入れます",
+    "Hands-free Mode: Automatically accept agent suggested edits (terminal commands only with tfa.system.autoAcceptTerminal)": "ハンズフリーモード: エージェントが提案した編集を自動的に受け入れます（ターミナルコマンドは tfa.system.autoAcceptTerminal が有効な場合のみ）",
     "Handshake failed (possible login issue).": "ハンドシェイクに失敗しました（ログインの問題の可能性があります）。",
     "Handshake with server failed (CSRF check failed)": "サーバーとのハンドシェイクに失敗しました（CSRFチェック失敗）",
     "LLM API error: {0}": "LLM API error: {0}",

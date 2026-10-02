@@ -37,7 +37,7 @@
     "Found {0} candidates. Duration: {1}s.": "{0} aday bulundu. Süre: {1}sn.",
     "Generating commit message...": "Generating commit message...",
     "Git repository error": "Git repository error",
-    "Hands-free Mode: Automatically accept agent suggested edits and terminal commands": "Eller Serbest Modu: aracının önerdiği düzenlemeleri ve terminal komutlarını otomatik olarak kabul eder",
+    "Hands-free Mode: Automatically accept agent suggested edits (terminal commands only with tfa.system.autoAcceptTerminal)": "Eller Serbest Modu: aracının önerdiği düzenlemeleri otomatik olarak kabul eder (terminal komutları yalnızca tfa.system.autoAcceptTerminal ile)",
     "Handshake failed (possible login issue).": "El sıkışma başarısız (olası giriş sorunu).",
     "Handshake with server failed (CSRF check failed)": "Sunucu ile el sıkışma başarısız (CSRF kontrolü başarısız)",
     "LLM API error: {0}": "LLM API error: {0}",

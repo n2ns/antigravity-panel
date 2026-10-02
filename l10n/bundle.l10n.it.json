@@ -37,7 +37,7 @@
     "Found {0} candidates. Duration: {1}s.": "Trovati {0} candidati. Durata: {1}s.",
     "Generating commit message...": "Generating commit message...",
     "Git repository error": "Git repository error",
-    "Hands-free Mode: Automatically accept agent suggested edits and terminal commands": "Modalità mani libere: accetta automaticamente le modifiche suggerite dall'agente e i comandi del terminale",
+    "Hands-free Mode: Automatically accept agent suggested edits (terminal commands only with tfa.system.autoAcceptTerminal)": "Modalità mani libere: accetta automaticamente le modifiche suggerite dall'agente (comandi del terminale solo con tfa.system.autoAcceptTerminal)",
     "Handshake failed (possible login issue).": "Handshake fallito (possibile problema di accesso).",
     "Handshake with server failed (CSRF check failed)": "Handshake con il server fallito (verifica CSRF fallita)",
     "LLM API error: {0}": "LLM API error: {0}",

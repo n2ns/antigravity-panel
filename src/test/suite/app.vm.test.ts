@@ -124,6 +124,43 @@ suite('AppViewModel Test Suite', () => {
         assert.deepStrictEqual(terminalCalls, [true, false]);
     });
 
+    test('terminal accept setting is applied before any await in onConfigurationChanged', () => {
+        vm.dispose();
+        const terminalCalls: boolean[] = [];
+        const automation: IAutomationService = {
+            ...defaultMockAutomationService,
+            setAcceptTerminalCommands: (enabled: boolean) => { terminalCalls.push(enabled); }
+        };
+        // A cache scan that never finishes must not delay the terminal switch
+        mockCache.getCacheInfo = () => new Promise(() => { });
+        configReader.set('system.autoAcceptTerminal', true);
+        vm = new AppViewModel(mockQuota, mockCache, mockStorage, configManager, strategyManager, automation);
+
+        configReader.set('system.autoAcceptTerminal', false);
+        void vm.onConfigurationChanged();
+        assert.deepStrictEqual(terminalCalls, [true, false], 'setAcceptTerminalCommands(false) must run synchronously');
+    });
+
+    test('automation settings still apply when a refresh rejects', async () => {
+        vm.dispose();
+        const intervalCalls: number[] = [];
+        const terminalCalls: boolean[] = [];
+        const automation: IAutomationService = {
+            ...defaultMockAutomationService,
+            updateInterval: (ms: number) => { intervalCalls.push(ms); },
+            setAcceptTerminalCommands: (enabled: boolean) => { terminalCalls.push(enabled); }
+        };
+        mockCache.getCacheInfo = async () => { throw new Error('scan failed'); };
+        vm = new AppViewModel(mockQuota, mockCache, mockStorage, configManager, strategyManager, automation);
+
+        configReader.set('system.autoAcceptInterval', 1200);
+        configReader.set('system.autoAcceptTerminal', true);
+        await vm.onConfigurationChanged().catch(() => { });
+
+        assert.deepStrictEqual(intervalCalls, [800, 1200]);
+        assert.deepStrictEqual(terminalCalls, [false, true]);
+    });
+
     test('toggleAutoAccept should persist the toggle without the config listener flipping it back', async () => {
         vm.dispose();
         const calls: string[] = [];

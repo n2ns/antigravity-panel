@@ -106,6 +106,11 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
         vscode.window.showErrorMessage(
           vscode.l10n.t("Please ensure you are logged into Antigravity IDE (Authentication failed).")
         );
+      } else if (result === 'server_error') {
+        // The server answered without usable data: no reconnect is started
+        vscode.window.showWarningMessage(
+          vscode.l10n.t("Server data parsing error detected, some features limited")
+        );
       } else {
         vscode.window.showWarningMessage(
           vscode.l10n.t("Failed to refresh quota data. Reconnecting to the language server...")
@@ -322,7 +327,9 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
       setStatus: (status, reason) => appViewModel!.setConnectionStatus(status, reason),
       refreshQuota: async () => {
         if (await appViewModel!.refreshQuota()) return 'ok';
-        return quotaService.parsingError?.startsWith('AUTH_FAILED') ? 'auth_failed' : 'failed';
+        const reason = quotaService.parsingError;
+        if (!reason) return 'failed';
+        return reason.startsWith('AUTH_FAILED') ? 'auth_failed' : 'server_error';
       },
       onAuthFailed: () => {
         warnLog(`Quota request rejected (${quotaService.parsingError}); polling continues without reconnecting`);
@@ -556,7 +563,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
       setDebugMode(newConfig['system.debugMode']);
 
       // Also trigger a refresh on config change to update UI view modes
-      appViewModel!.onConfigurationChanged();
+      appViewModel!.onConfigurationChanged().catch(err => errorLog("Configuration change handling failed", err));
     }, configManager);
 
     infoLog("Antigravity Panel: Activation Complete");

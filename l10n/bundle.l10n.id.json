@@ -37,7 +37,7 @@
     "Found {0} candidates. Duration: {1}s.": "Ditemukan {0} kandidat. Durasi: {1}s.",
     "Generating commit message...": "Membuat commit message...",
     "Git repository error": "Error repositori Git",
-    "Hands-free Mode: Automatically accept agent suggested edits and terminal commands": "Mode Hands-free: Otomatis menerima saran perubahan file dan perintah terminal dari agent",
+    "Hands-free Mode: Automatically accept agent suggested edits (terminal commands only with tfa.system.autoAcceptTerminal)": "Mode Hands-free: Otomatis menerima saran perubahan file dari agent (perintah terminal hanya dengan tfa.system.autoAcceptTerminal)",
     "Handshake failed (possible login issue).": "Handshake gagal (kemungkinan masalah login).",
     "Handshake with server failed (CSRF check failed)": "Handshake dengan server gagal (pemeriksaan CSRF gagal)",
     "LLM API error: {0}": "Error LLM API: {0}",

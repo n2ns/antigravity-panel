@@ -37,7 +37,7 @@
     "Found {0} candidates. Duration: {1}s.": "{0}개의 후보를 찾았습니다. 소요 시간: {1}초.",
     "Generating commit message...": "Generating commit message...",
     "Git repository error": "Git repository error",
-    "Hands-free Mode: Automatically accept agent suggested edits and terminal commands": "핸즈프리 모드: 에이전트의 제안된 수정 및 터미널 명령을 자동으로 승인합니다",
+    "Hands-free Mode: Automatically accept agent suggested edits (terminal commands only with tfa.system.autoAcceptTerminal)": "핸즈프리 모드: 에이전트의 제안된 수정을 자동으로 승인합니다 (터미널 명령은 tfa.system.autoAcceptTerminal 사용 시에만)",
     "Handshake failed (possible login issue).": "핸드셰이크 실패 (로그인 문제 가능성).",
     "Handshake with server failed (CSRF check failed)": "서버와의 핸드셰이크 실패 (CSRF 확인 실패)",
     "LLM API error: {0}": "LLM API error: {0}",

@@ -45,6 +45,11 @@ export class ConfigManager {
     const rawCacheCheckInterval = this.reader.get<number>("cache.scanInterval", 120);
     const cacheCheckInterval = Math.max(rawCacheCheckInterval, MIN_CACHE_CHECK_INTERVAL);
 
+    const rawAutoCleanKeepCount = this.reader.get<number>("cache.autoCleanKeepCount", 5);
+    const autoCleanKeepCount = typeof rawAutoCleanKeepCount === "number" && !Number.isNaN(rawAutoCleanKeepCount)
+      ? Math.min(Math.max(Math.floor(rawAutoCleanKeepCount), 1), 50)
+      : 5;
+
     return {
       // 1. Dashboard Settings
       "dashboard.gaugeStyle": this.reader.get<"semi-arc" | "classic-donut">("dashboard.gaugeStyle", "semi-arc"),
@@ -65,7 +70,7 @@ export class ConfigManager {
 
       // 3. Cache Settings
       "cache.autoClean": this.reader.get<boolean>("cache.autoClean", false),
-      "cache.autoCleanKeepCount": this.reader.get<number>("cache.autoCleanKeepCount", 5),
+      "cache.autoCleanKeepCount": autoCleanKeepCount,
       "cache.scanInterval": cacheCheckInterval,
       "cache.warningSize": this.reader.get<number>("cache.warningSize", 500),
       "cache.hideEmptyFolders": this.reader.get<boolean>("cache.hideEmptyFolders", false),

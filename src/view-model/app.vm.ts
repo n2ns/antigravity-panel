@@ -404,23 +404,12 @@ export class AppViewModel implements vscode.Disposable {
     }
 
     /**
-     * Handle configuration changes immediately without waiting for network
+     * Handle configuration changes immediately without waiting for network.
+     * Automation settings (auto-accept, interval, terminal commands) are applied
+     * synchronously before any await, so they take effect at once and are not
+     * skipped when the quota or cache refresh below rejects.
      */
     async onConfigurationChanged(): Promise<void> {
-        // If we have cached data, re-render UI with new config (e.g. chart time range)
-        if (this._lastSnapshot) {
-            const refreshVersion = ++this._quotaRefreshVersion;
-            if (await this.enqueueQuotaUpdate(this._lastSnapshot, refreshVersion)) {
-                this._onQuotaChange.fire(this._state.quota);
-            }
-        } else {
-            // No data implies we might need to fetch
-            await this.refreshQuota();
-        }
-
-        // Also refresh cache view in case thresholds changed
-        await this.refreshCache();
-
         // Handle auto-accept config change
         const autoAccept = this.configManager.get('system.autoAccept', false);
         const interval = this.configManager.get('system.autoAcceptInterval', 800);
@@ -435,6 +424,20 @@ export class AppViewModel implements vscode.Disposable {
             this._state.automation.enabled = autoAccept;
             this._onStateChange.fire(this._state);
         }
+
+        // If we have cached data, re-render UI with new config (e.g. chart time range)
+        if (this._lastSnapshot) {
+            const refreshVersion = ++this._quotaRefreshVersion;
+            if (await this.enqueueQuotaUpdate(this._lastSnapshot, refreshVersion)) {
+                this._onQuotaChange.fire(this._state.quota);
+            }
+        } else {
+            // No data implies we might need to fetch
+            await this.refreshQuota();
+        }
+
+        // Also refresh cache view in case thresholds changed
+        await this.refreshCache();
     }
 
     private async updateQuotaState(snapshot: QuotaSnapshot, refreshVersion: number): Promise<boolean> {

@@ -72,7 +72,7 @@ export class SidebarFooter extends LitElement {
         <!-- Auto-Accept Toggle Row (Sticky Header for collapse) -->
         <div class="action-row auto-accept-row clickable" 
              @click=${this._toggleCollapse}
-             data-tooltip="${this._t.autoAcceptTooltip || 'Hands-free Mode: Automatically accept agent suggested edits and terminal commands'}">
+             data-tooltip="${this._t.autoAcceptTooltip || 'Hands-free Mode: Automatically accept agent suggested edits (terminal commands only with tfa.system.autoAcceptTerminal)'}">
           <span class="action-label">
             <i class="codicon codicon-rocket"></i>
             ${this._t.autoAcceptLabel || 'Auto-Accept'}

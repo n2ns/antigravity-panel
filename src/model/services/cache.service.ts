@@ -196,12 +196,13 @@ export class CacheService implements ICacheService {
 
     /**
      * Dry run of cleanCache. Keeps the keepCount most recently active brain tasks
-     * (activity = latest file mtime in the task directory or its conversation .pb),
+     * (activity = latest file mtime in the task directory or its conversation .pb / .db / .db-wal / .db-shm),
      * and the keepCount newest orphan conversation files (.pb without a brain task directory).
      * The .pb of a kept task is never selected.
      */
     async getCleanPlan(keepCount: number = 5): Promise<CleanPlan> {
-        const tasks = await this.getBrainTasks();
+        // Invalid ids are never deletable: exclude them before ranking so they never take a keep slot
+        const tasks = (await this.getBrainTasks()).filter(task => this.isValidId(task.id));
         const activities = new Map<string, number>();
         await Promise.all(tasks.map(async task => {
             activities.set(task.id, await this.getTaskActivity(task));
@@ -239,18 +240,23 @@ export class CacheService implements ICacheService {
 
         for (const task of plan.tasks) {
             const taskPath = path.join(this.baseBrainDir, task.id);
-            if (!this.isValidId(task.id) || !taskPath.startsWith(this.baseBrainDir + path.sep)) continue;
-            try {
-                await fs.promises.rm(taskPath, { recursive: true });
-            } catch (err) {
-                // Already gone: nothing deleted; its .pb is left to the orphan rule
-                if ((err as NodeJS.ErrnoException).code === 'ENOENT') continue;
+            if (!this.isValidId(task.id) || !taskPath.startsWith(this.baseBrainDir + path.sep)) {
                 result.failedCount++;
-                errorLog(`Cache clean: failed to delete task ${task.id}`, err);
+                errorLog(`Cache clean: refused invalid task entry ${JSON.stringify(task.id)}`);
                 continue;
             }
-            result.deletedCount++;
-            result.freedBytes += task.size;
+            try {
+                await fs.promises.rm(taskPath, { recursive: true });
+                result.deletedCount++;
+                result.freedBytes += task.size;
+            } catch (err) {
+                // Already gone: not counted as deleted, but its planned .pb is still deleted (the user confirmed the plan)
+                if ((err as NodeJS.ErrnoException).code !== 'ENOENT') {
+                    result.failedCount++;
+                    errorLog(`Cache clean: failed to delete task ${task.id}`, err);
+                    continue;
+                }
+            }
             if (task.conversation) {
                 await this.removeConversationFile(task.conversation, result);
             }
@@ -275,14 +281,15 @@ export class CacheService implements ICacheService {
 
     /**
      * Latest activity of a brain task: newest mtime among its files (recursive, bounded depth,
-     * symlinks skipped) and its conversation .pb; falls back to the creation time.
+     * symlinks skipped) and its conversation .pb / .db / .db-wal / .db-shm; falls back to the creation time.
      */
     private async getTaskActivity(task: BrainTask): Promise<number> {
-        const [filesMtime, pb] = await Promise.all([
+        const [filesMtime, conversationFiles] = await Promise.all([
             this.getLatestFileMtime(path.join(this.baseBrainDir, task.id)),
-            this.statFile(path.join(this.baseConversationsDir, `${task.id}.pb`)),
+            Promise.all(['.pb', '.db', '.db-wal', '.db-shm'].map(ext =>
+                this.statFile(path.join(this.baseConversationsDir, `${task.id}${ext}`)))),
         ]);
-        const latest = Math.max(filesMtime, pb?.mtime ?? 0);
+        const latest = Math.max(filesMtime, ...conversationFiles.map(f => f?.mtime ?? 0));
         return latest || task.createdAt;
     }
 
@@ -345,7 +352,11 @@ export class CacheService implements ICacheService {
     /** Delete one planned conversation file, recording the outcome in result */
     private async removeConversationFile(file: CleanPlanFile, result: CleanResult): Promise<void> {
         const resolvedPath = path.resolve(file.path);
-        if (!resolvedPath.startsWith(this.baseConversationsDir + path.sep) || !resolvedPath.endsWith('.pb')) return;
+        if (!resolvedPath.startsWith(this.baseConversationsDir + path.sep) || !resolvedPath.endsWith('.pb')) {
+            result.failedCount++;
+            errorLog(`Cache clean: refused conversation file outside conversations or not .pb: ${file.path}`);
+            return;
+        }
         try {
             await fs.promises.rm(resolvedPath);
         } catch (err) {

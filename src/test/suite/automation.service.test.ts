@@ -118,7 +118,7 @@ class ClickerDocument {
 
     constructor(readonly documentElement: ClickerElement) {
         this.defaultView = {
-            getComputedStyle: element => ({ cursor: element.tagName === 'BUTTON' ? 'pointer' : 'default' })
+            getComputedStyle: element => ({ cursor: element.closest('button') ? 'pointer' : 'default' })
         };
         this.attach(documentElement);
     }
@@ -363,7 +363,7 @@ suite('AutomationService Test Suite', () => {
         nextCard.append(nextButton);
         nextPanel.append(nextCard);
         harness.html.replaceChild(nextPanel, harness.panel);
-        const outside = new ClickerElement('BUTTON', 'Run');
+        const outside = new ClickerElement('BUTTON', 'Accept');
         harness.html.append(outside);
 
         harness.execute(script);
@@ -592,14 +592,17 @@ suite('AutomationService Test Suite', () => {
     });
 
     test('persistent grants should never be clicked', () => {
-        service.setAcceptTerminalCommands(true);
-        for (const label of ['Always allow', 'Always allow this conversation', 'Always run', 'Always Run Alt+⏎']) {
-            const harness = createClickerHarness('npm test');
-            const grant = new ClickerElement('BUTTON', label);
-            harness.card.removeChild(harness.button);
-            harness.card.append(grant);
-            harness.execute(service['getClickerScript']());
-            assert.strictEqual(grant.clickCount, 0, `"${label}" is a persistent grant`);
+        for (const enabled of [false, true]) {
+            service.setAcceptTerminalCommands(enabled);
+            for (const label of ['Always allow', 'Always allow this conversation', 'Allow this conversation', 'Always run', 'Always Run Alt+⏎']) {
+                const harness = createClickerHarness('npm test');
+                const grant = new ClickerElement('BUTTON', label);
+                harness.card.removeChild(harness.button);
+                harness.card.append(grant);
+                harness.execute(service['getClickerScript']());
+                assert.strictEqual(grant.clickCount, 0,
+                    `"${label}" is a persistent grant (terminal setting ${enabled ? 'on' : 'off'})`);
+            }
         }
     });
 
@@ -614,6 +617,53 @@ suite('AutomationService Test Suite', () => {
 
         harness.execute(service['getClickerScript']());
         assert.strictEqual(run.clickCount, 0, 'A dangerous command elsewhere in the card must block the Run button');
+    });
+
+    const buildDeepPromptCard = (commandText: string) => {
+        // card > body > footer > row > [wrapper > Run], Reject
+        const harness = createClickerHarness(commandText);
+        harness.card.removeChild(harness.button);
+        harness.card.removeChild(harness.reject);
+        const body = new ClickerElement('DIV');
+        const footer = new ClickerElement('DIV');
+        const row = new ClickerElement('DIV');
+        const wrapper = new ClickerElement('DIV');
+        const run = new ClickerElement('BUTTON', 'Run');
+        wrapper.append(run);
+        row.append(wrapper, new ClickerElement('BUTTON', 'Reject'));
+        footer.append(row);
+        body.append(footer);
+        harness.card.append(body);
+        return { harness, run };
+    };
+
+    test('danger check should climb from the action row to the whole prompt card', () => {
+        service.setAcceptTerminalCommands(true);
+        const dangerous = buildDeepPromptCard('rm -rf ~');
+        dangerous.harness.execute(service['getClickerScript']());
+        assert.strictEqual(dangerous.run.clickCount, 0, 'A dangerous command five levels above Run must block it');
+
+        const safe = buildDeepPromptCard('npm test');
+        safe.harness.execute(service['getClickerScript']());
+        assert.strictEqual(safe.run.clickCount, 1, 'A safe command five levels above Run is approved');
+    });
+
+    test('Run should not be clicked when its prompt card shows no command text', () => {
+        service.setAcceptTerminalCommands(true);
+        const { harness, run } = buildDeepPromptCard('');
+        harness.execute(service['getClickerScript']());
+        assert.strictEqual(run.clickCount, 0, 'A prompt without visible command text must fail closed');
+    });
+
+    test('elements nested inside a button should not be clicked separately', () => {
+        service.setAcceptTerminalCommands(true);
+        const harness = createClickerHarness('npm test');
+        harness.button.innerText = '';
+        const label = new ClickerElement('SPAN', 'Run');
+        harness.button.append(label);
+        harness.execute(service['getClickerScript']());
+        assert.strictEqual(label.clickCount, 0, 'The label inside the button is not a separate target');
+        assert.strictEqual(harness.button.clickCount, 1, 'The button itself is clicked once');
     });
 
     test('danger patterns should catch destructive commands and spare ordinary ones', () => {
@@ -634,13 +684,18 @@ suite('AutomationService Test Suite', () => {
             'Remove-Item -Recurse -Force C:\\build', 'Remove-Item C:\\build -Recurse', 'Remove-Item . -r',
             'del /s /q C:\\build', 'del /q /s *.*', 'del /f/s/q build', 'erase /s build',
             'rmdir /s /q C:\\build', 'rd /s build', 'RMDIR /S build',
-            'git push --force origin main', 'DROP TABLE users', 'mkfs.ext4 /dev/sda1', 'dd if=/dev/zero of=/dev/sda'
+            'git push --force origin main', 'DROP TABLE users', 'mkfs.ext4 /dev/sda1', 'dd if=/dev/zero of=/dev/sda',
+            'find / -delete', 'find ~ -name "*.log" -delete', 'find /usr -delete', 'find ~/Downloads -type f -delete',
+            'git push origin +main', 'git push -fu origin main',
+            'rm -r -fo C:\\Users\\me\\project', 'ri -recurse -force C:\\build', 'rd -r C:\\build', 'rm -rf C:/Users/me/project',
+            'cd ~ && rm -rf *', 'cd / ; rm -rf .'
         ];
         const ordinary = [
             'rm -rf ./dist', 'rm -rf build', 'rm file.txt', 'rm ~', 'npm run rm', 'perform -r /x','git reset --soft HEAD~1', 'git reset HEAD file.txt',
             'git clean -n', 'git clean --dry-run', 'git clean -nd', 'git push --force-with-lease',
             'Remove-Item foo.txt', 'Get-ChildItem -Recurse', 'del file.txt', 'del /q file.txt',
-            'rmdir build', 'rmdir /q build', 'model /s', 'npm test'
+            'rmdir build', 'rmdir /q build', 'model /s', 'npm test',
+            'find . -name x -delete', 'find ./src -name "*.tmp" -delete', 'git push origin main', 'rm -r build', 'cd src && rm -rf dist'
         ];
         for (const text of dangerous) assert.ok(isDangerous(text), `Should flag: ${text}`);
         for (const text of ordinary) assert.ok(!isDangerous(text), `Should not flag: ${text}`);

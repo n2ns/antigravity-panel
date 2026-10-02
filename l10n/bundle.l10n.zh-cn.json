@@ -37,7 +37,7 @@
     "Found {0} candidates. Duration: {1}s.": "检测到 {0} 个候选。耗时：{1}秒。",
     "Generating commit message...": "正在生成提交信息...",
     "Git repository error": "Git 仓库错误",
-    "Hands-free Mode: Automatically accept agent suggested edits and terminal commands": "无人值守模式：自动接受智能体建议的文件修改和终端命令",
+    "Hands-free Mode: Automatically accept agent suggested edits (terminal commands only with tfa.system.autoAcceptTerminal)": "无人值守模式：自动接受智能体建议的文件修改（终端命令仅在启用 tfa.system.autoAcceptTerminal 时）",
     "Handshake failed (possible login issue).": "握手失败（可能是登录问题导致的）。",
     "Handshake with server failed (CSRF check failed)": "与服务握手认证失败 (CSRF校验未通过)",
     "LLM API error: {0}": "LLM API 错误: {0}",

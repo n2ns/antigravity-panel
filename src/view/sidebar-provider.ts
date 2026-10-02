@@ -196,7 +196,7 @@ export class SidebarProvider implements vscode.WebviewViewProvider, vscode.Dispo
                 stableStatusTooltip: vscode.l10n.t('Quota usage status: Stable'),
                 promptTooltip: vscode.l10n.t('Reasoning Credits: Consumed by conversation input and result generation (thinking).'),
                 flowTooltip: vscode.l10n.t('Execution Credits: Consumed by steps during search, modification, and command execution (operation).'),
-                autoAcceptTooltip: vscode.l10n.t('Hands-free Mode: Automatically accept agent suggested edits and terminal commands'),
+                autoAcceptTooltip: vscode.l10n.t('Hands-free Mode: Automatically accept agent suggested edits (terminal commands only with tfa.system.autoAcceptTerminal)'),
                 autoAcceptLabel: vscode.l10n.t('Auto-Accept'),
                 reloadWindow: vscode.l10n.t('Reload Window'),
                 reloadWindowTooltip: vscode.l10n.t('Reload the entire window (use when Agent panel is blank or unresponsive)'),

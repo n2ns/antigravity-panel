@@ -89,6 +89,37 @@ suite('ConfigManager Test Suite', () => {
     });
   });
 
+  suite('Auto Clean Keep Count Validation', () => {
+    test('should floor fractional values', () => {
+      mockReader.set('cache.autoCleanKeepCount', 2.5);
+      const config = configManager.getConfig();
+      assert.strictEqual(config["cache.autoCleanKeepCount"], 2);
+    });
+
+    test('should clamp values below 1', () => {
+      mockReader.set('cache.autoCleanKeepCount', -1);
+      const config = configManager.getConfig();
+      assert.strictEqual(config["cache.autoCleanKeepCount"], 1);
+    });
+
+    test('should clamp values above 50', () => {
+      mockReader.set('cache.autoCleanKeepCount', 100);
+      const config = configManager.getConfig();
+      assert.strictEqual(config["cache.autoCleanKeepCount"], 50);
+    });
+
+    test('should use default value of 5 when missing', () => {
+      const config = configManager.getConfig();
+      assert.strictEqual(config["cache.autoCleanKeepCount"], 5);
+    });
+
+    test('should fall back to 5 for non-numeric values', () => {
+      mockReader.set('cache.autoCleanKeepCount', 'abc');
+      const config = configManager.getConfig();
+      assert.strictEqual(config["cache.autoCleanKeepCount"], 5);
+    });
+  });
+
   suite('Default Config Values', () => {
     test('manifest and runtime should both hide Prompt/Flow credits by default', () => {
       const manifest = JSON.parse(fs.readFileSync(path.resolve(process.cwd(), 'package.json'), 'utf8'));

@@ -9,14 +9,21 @@
  * answered, it rejected the session. It neither advances nor resets the failure counter,
  * never triggers a rescan, and polling continues; the status shows 'failed'/'auth_failed'
  * until a fetch succeeds.
+ *
+ * A server that answers without usable data ('server_error': HTTP 5xx, malformed body) is
+ * not a connection failure either: it neither advances nor resets the failure counter,
+ * never triggers a rescan, and the status is left as it is.
  */
 
 import type { LanguageServerInfo } from '../types/entities';
 
 export type ConnectionFailureReason = 'no_process' | 'no_port' | 'auth_failed' | 'workspace_mismatch' | null;
 export type ConnectionState = 'connected' | 'detecting' | 'failed';
-/** Outcome of one quota refresh: 'auth_failed' means the server answered HTTP 401/403 */
-export type QuotaRefreshResult = 'ok' | 'failed' | 'auth_failed';
+/**
+ * Outcome of one quota refresh: 'failed' means no answer (refused, timed out), 'auth_failed'
+ * an HTTP 401/403 answer, 'server_error' any other answer without usable data
+ */
+export type QuotaRefreshResult = 'ok' | 'failed' | 'auth_failed' | 'server_error';
 
 /** Minimal detector contract (ProcessFinder satisfies it) */
 export interface ServerDetector {
@@ -37,9 +44,15 @@ export interface ConnectionDeps<D extends ServerDetector> {
     refreshQuota(): Promise<QuotaRefreshResult>;
     /** Before each detection attempt (0-based attempt of `total`) */
     onAttempt?(attempt: number, total: number): void;
-    /** After a detected server was applied and quota refreshed */
+    /**
+     * After a detected server was applied and quota refreshed. A returned promise is not
+     * awaited: the hook may wait for the user and must not hold up polling
+     */
     onConnected?(detector: D, info: LanguageServerInfo): Promise<void> | void;
-    /** After all attempts failed; `threw` is true when the last attempt threw */
+    /**
+     * After all attempts failed; `threw` is true when the last attempt threw. A returned
+     * promise is not awaited: the hook may wait for the user and must not hold up retries
+     */
     onFailed?(detector: D, threw: boolean): Promise<void> | void;
     /** When automatic fetches start answering HTTP 401/403 (once until a fetch succeeds or a server is applied) */
     onAuthFailed?(): void;
@@ -87,6 +100,8 @@ export class ConnectionService<D extends ServerDetector = ServerDetector> {
     /** Bumped whenever an attempt is superseded; stale attempts compare against it */
     private generation = 0;
     private inFlight: Promise<boolean> | null = null;
+    /** The in-flight attempt is a background single probe (a failed manual refresh supersedes it) */
+    private inFlightBackground = false;
     private connected = false;
     private consecutiveFailures = 0;
     /** The last fetch was answered with HTTP 401/403 and the status shows it */
@@ -123,6 +138,7 @@ export class ConnectionService<D extends ServerDetector = ServerDetector> {
 
         const gen = this.beginGeneration();
         this.connected = false;
+        this.inFlightBackground = options.background === true;
         if (!options.background) this.deps.setStatus('detecting', null);
         return this.track(gen, this.runAttempts(gen, options));
     }
@@ -131,6 +147,7 @@ export class ConnectionService<D extends ServerDetector = ServerDetector> {
     useServerInfo(info: LanguageServerInfo): Promise<boolean> {
         if (this.disposed) return Promise.resolve(false);
         const gen = this.beginGeneration();
+        this.inFlightBackground = false;
         return this.track(gen, this.applyConnection(gen, info).then(() => true));
     }
 
@@ -143,15 +160,16 @@ export class ConnectionService<D extends ServerDetector = ServerDetector> {
     }
 
     /**
-     * Manual refresh: a failure reconnects immediately; 401/403 does not reconnect and
-     * leaves the user message to the caller (onAuthFailed is not called)
+     * Manual refresh: a failure reconnects immediately, superseding a background probe but
+     * joining a foreground attempt; 401/403 does not reconnect and leaves the user message
+     * to the caller (onAuthFailed is not called)
      */
     async refreshNow(): Promise<QuotaRefreshResult> {
         if (this.disposed) return 'failed';
         const gen = this.generation;
         const result = await this.deps.refreshQuota();
         if (result === 'failed') {
-            void this.reconnect();
+            void this.reconnect({ supersede: this.inFlightBackground });
         } else {
             this.recordFetchResult(gen, result, false);
         }
@@ -174,15 +192,26 @@ export class ConnectionService<D extends ServerDetector = ServerDetector> {
     }
 
     private track(gen: number, attempt: Promise<boolean>): Promise<boolean> {
-        const tracked = attempt.finally(() => {
-            if (this.generation === gen) this.inFlight = null;
-        });
+        const tracked = attempt
+            .catch(e => { this.deps.onError?.(e); return false; })
+            .finally(() => {
+                if (this.generation === gen) this.inFlight = null;
+            });
         this.inFlight = tracked;
         return tracked;
     }
 
     private isStale(gen: number): boolean {
         return this.disposed || gen !== this.generation;
+    }
+
+    /** Run a hook without extending the in-flight attempt; a throw or rejection goes to onError */
+    private fireHook(run: () => Promise<void> | void): void {
+        try {
+            Promise.resolve(run()).catch(e => this.deps.onError?.(e));
+        } catch (e) {
+            this.deps.onError?.(e);
+        }
     }
 
     private async runAttempts(gen: number, options: ReconnectOptions): Promise<boolean> {
@@ -216,13 +245,7 @@ export class ConnectionService<D extends ServerDetector = ServerDetector> {
 
         this.deps.setStatus('failed', threw ? null : detector?.failureReason ?? null);
         this.scheduleBackoff();
-        if (detector) {
-            try {
-                await this.deps.onFailed?.(detector, threw);
-            } catch (e) {
-                this.deps.onError?.(e);
-            }
-        }
+        if (detector) this.fireHook(() => this.deps.onFailed?.(detector, threw));
         return false;
     }
 
@@ -239,13 +262,7 @@ export class ConnectionService<D extends ServerDetector = ServerDetector> {
         if (result === 'failed') this.consecutiveFailures = 1;
         else if (result === 'auth_failed') this.recordAuthFailure(true);
 
-        if (detector) {
-            try {
-                await this.deps.onConnected?.(detector, info);
-            } catch (e) {
-                this.deps.onError?.(e);
-            }
-        }
+        if (detector) this.fireHook(() => this.deps.onConnected?.(detector, info));
     }
 
     private recordFetchResult(gen: number, result: QuotaRefreshResult, notifyAuth: boolean): void {
@@ -263,19 +280,23 @@ export class ConnectionService<D extends ServerDetector = ServerDetector> {
             }
             return;
         }
+        if (result === 'server_error') {
+            this.markServerAnswered();
+            return;
+        }
         if (++this.consecutiveFailures >= this.failureThreshold) {
             this.consecutiveFailures = 0;
             void this.reconnect();
         }
     }
 
-    /** HTTP 401/403: the failure counter is left as it is and nothing is rescanned */
+    /** HTTP 401/403: the failure counter is left as it is and nothing is rescanned; notified once per streak */
     private recordAuthFailure(notify: boolean): void {
         this.markServerAnswered();
-        if (this.authFailed) return;
+        const first = !this.authFailed;
         this.authFailed = true;
         this.deps.setStatus('failed', 'auth_failed');
-        if (notify) this.deps.onAuthFailed?.();
+        if (notify && first) this.deps.onAuthFailed?.();
     }
 
     /** Server answered on the known port: stop background retries */

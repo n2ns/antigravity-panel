@@ -1,6 +1,7 @@
 import * as assert from 'assert';
 import {
     ConnectionService,
+    type ConnectionDeps,
     type ConnectionFailureReason,
     type ConnectionState,
     type ConnectionTimers,
@@ -58,15 +59,15 @@ suite('ConnectionService Test Suite', () => {
     let applied: LanguageServerInfo[];
     let detectResults: Array<LanguageServerInfo | null | Error>;
     let detectCalls: number;
-    /** true = data, false = failed fetch, 'auth_failed' = HTTP 401/403 */
-    let refreshResults: Array<boolean | 'auth_failed'>;
+    /** true = data, false = failed fetch, 'auth_failed' = HTTP 401/403, 'server_error' = answered without data */
+    let refreshResults: Array<boolean | 'auth_failed' | 'server_error'>;
     let refreshCalls: number;
     let failedCalls: number;
     let connectedCalls: number;
     let authFailedCalls: number;
     let service: ConnectionService<FakeDetector>;
 
-    function create(): ConnectionService<FakeDetector> {
+    function create(overrides: Partial<ConnectionDeps<FakeDetector>> = {}): ConnectionService<FakeDetector> {
         return new ConnectionService<FakeDetector>({
             createDetector: () => new FakeDetector(async d => {
                 detectCalls++;
@@ -86,6 +87,7 @@ suite('ConnectionService Test Suite', () => {
             onFailed: () => { failedCalls++; },
             onAuthFailed: () => { authFailedCalls++; },
             timers,
+            ...overrides,
         }, { retries: 2, retryDelayMs: 5000, failureThreshold: 2, backoffBaseMs: 30_000, backoffMaxMs: 300_000 });
     }
 
@@ -354,6 +356,59 @@ suite('ConnectionService Test Suite', () => {
         assert.strictEqual(timers.pending.size, 0);
     });
 
+    test('a failed manual refresh joins a foreground reconnect but supersedes a background probe', async () => {
+        const releases: Array<(info: LanguageServerInfo | null) => void> = [];
+        service.dispose();
+        service = create({
+            createDetector: () => new FakeDetector(d => {
+                detectCalls++;
+                d.failureReason = 'no_process';
+                return new Promise(resolve => { releases.push(resolve); });
+            }),
+        });
+
+        // Boot reconnect in flight: the manual refresh joins it
+        const boot = service.reconnect();
+        await flush();
+        refreshResults = [false];
+        assert.strictEqual(await service.refreshNow(), 'failed');
+        await flush();
+        assert.strictEqual(detectCalls, 1, 'No second attempt next to the foreground one');
+        assert.deepStrictEqual(statuses, [['detecting', null]], 'No second detecting');
+
+        releases[0](null);
+        await flush();
+        timers.fireNext();
+        await flush();
+        releases[1](null);
+        await flush();
+        timers.fireNext();
+        await flush();
+        releases[2](null);
+        assert.strictEqual(await boot, false);
+        assert.deepStrictEqual(statuses.at(-1), ['failed', 'no_process']);
+        statuses = [];
+
+        // Background probe in flight: the manual refresh supersedes it with a full foreground reconnect
+        assert.strictEqual(timers.fireNext(), 30_000);
+        await flush();
+        assert.strictEqual(detectCalls, 4);
+        assert.strictEqual(service.isReconnecting, true);
+        refreshResults = [false];
+        assert.strictEqual(await service.refreshNow(), 'failed');
+        await flush();
+        assert.strictEqual(detectCalls, 5, 'A fresh foreground attempt started');
+        assert.deepStrictEqual(statuses, [['detecting', null]]);
+
+        releases[4](SERVER_A);
+        await flush();
+        assert.deepStrictEqual(statuses.at(-1), ['connected', null]);
+        releases[3](SERVER_B);
+        await flush();
+        assert.deepStrictEqual(applied, [SERVER_A], 'The superseded probe result is discarded');
+        assert.strictEqual(service.isReconnecting, false);
+    });
+
     // HTTP 401/403: only connection-type errors count toward the rescan
     // threshold; an auth error neither advances nor resets the counter, never rescans,
     // and polling continues.
@@ -371,8 +426,25 @@ suite('ConnectionService Test Suite', () => {
         assert.strictEqual(service.isConnected, true);
         assert.strictEqual(service.isReconnecting, false);
         assert.strictEqual(timers.pending.size, 0, 'No backoff armed');
-        assert.deepStrictEqual(statuses, [['failed', 'auth_failed']], 'Status set once per auth-failure streak');
+        assert.ok(statuses.every(([s, r]) => s === 'failed' && r === 'auth_failed'), 'Status stays auth_failed');
         assert.strictEqual(authFailedCalls, 1, 'User notified once per streak');
+    });
+
+    test('repeated 401/403 re-asserts the auth_failed status but notifies once', async () => {
+        detectResults = [SERVER_A];
+        await service.reconnect();
+        statuses = [];
+
+        refreshResults = ['auth_failed', 'auth_failed', 'auth_failed'];
+        await service.poll();
+        await service.poll();
+        assert.strictEqual(await service.refreshNow(), 'auth_failed');
+        assert.deepStrictEqual(statuses, [
+            ['failed', 'auth_failed'],
+            ['failed', 'auth_failed'],
+            ['failed', 'auth_failed'],
+        ], 'Every 401/403 writes the status again');
+        assert.strictEqual(authFailedCalls, 1, 'One notification per streak');
     });
 
     test('401/403 does not advance the failure counter', async () => {
@@ -466,6 +538,146 @@ suite('ConnectionService Test Suite', () => {
         assert.strictEqual(service.isConnected, true, 'Polling resumes');
         assert.strictEqual(detectCalls, 3);
         assert.deepStrictEqual(statuses.at(-1), ['failed', 'auth_failed']);
+    });
+
+    // 'server_error' (the server answered 5xx or without usable data) is handled like
+    // 401/403 for the counter and the rescan, but leaves the status alone.
+
+    test('a server error right after connecting keeps the status and the polling', async () => {
+        detectResults = [SERVER_A];
+        refreshResults = ['server_error', 'server_error', 'server_error', true];
+        await service.reconnect();
+        assert.deepStrictEqual(statuses, [['detecting', null], ['connected', null]], 'Status untouched');
+
+        for (let i = 0; i < 3; i++) await service.poll();
+        await flush();
+        assert.strictEqual(refreshCalls, 1 + 3, 'Every poll still fetches');
+        assert.strictEqual(detectCalls, 1, 'No rescan on a server error');
+        assert.deepStrictEqual(statuses, [['detecting', null], ['connected', null]], 'Status still untouched');
+        assert.strictEqual(service.isConnected, true);
+        assert.strictEqual(service.isReconnecting, false);
+        assert.strictEqual(timers.pending.size, 0, 'No backoff armed');
+    });
+
+    test('server errors neither advance nor reset the failure counter', async () => {
+        detectResults = [SERVER_A];
+        await service.reconnect();
+
+        detectResults = [SERVER_B];
+        refreshResults = [false, 'server_error', 'server_error', true, 'server_error', false, 'server_error', false, true];
+        await service.poll();
+        await service.poll();
+        await service.poll();
+        await flush();
+        assert.strictEqual(detectCalls, 1, 'failed, server_error, server_error: still one counted failure');
+
+        await service.poll();
+        await service.poll();
+        await service.poll();
+        await flush();
+        assert.strictEqual(detectCalls, 1, 'ok, server_error, failed: the success reset the counter');
+
+        await service.poll();
+        await service.poll();
+        await flush();
+        assert.strictEqual(detectCalls, 2, 'failed, server_error, failed: two consecutive connection failures reconnect');
+        assert.deepStrictEqual(applied, [SERVER_A, SERVER_B]);
+    });
+
+    // Hooks may wait for the user (notification buttons) and must not hold up the
+    // reconnect loop, the backoff or polling; dependency failures end the attempt.
+
+    test('a pending onFailed hook does not stop the background backoff', async () => {
+        let releaseHook: () => void = () => { };
+        service.dispose();
+        service = create({
+            onFailed: () => { failedCalls++; return new Promise<void>(resolve => { releaseHook = resolve; }); },
+        });
+        detectResults = [null, null, null];
+        const result = service.reconnect();
+        await flush();
+        timers.fireNext();
+        await flush();
+        timers.fireNext();
+        assert.strictEqual(await result, false);
+        assert.strictEqual(failedCalls, 1);
+        assert.strictEqual(service.isReconnecting, false, 'The hook does not extend the attempt');
+
+        detectResults = [null];
+        assert.strictEqual(timers.fireNext(), 30_000);
+        await flush();
+        assert.strictEqual(detectCalls, 4, 'The background probe ran while the hook is pending');
+        assert.strictEqual(timers.scheduled.at(-1), 60_000, 'Next backoff armed');
+        releaseHook();
+    });
+
+    test('a pending onFailed hook does not swallow a failed manual refresh', async () => {
+        service.dispose();
+        service = create({ onFailed: () => new Promise<void>(() => { }) });
+        detectResults = [null, null, null];
+        const result = service.reconnect();
+        await flush();
+        timers.fireNext();
+        await flush();
+        timers.fireNext();
+        assert.strictEqual(await result, false);
+
+        detectResults = [SERVER_A];
+        refreshResults = [false, true];
+        assert.strictEqual(await service.refreshNow(), 'failed');
+        await flush();
+        assert.strictEqual(detectCalls, 4, 'The manual refresh started a new detection');
+        assert.deepStrictEqual(statuses.at(-1), ['connected', null]);
+    });
+
+    test('a rejected onFailed hook is reported through onError', async () => {
+        const errors: unknown[] = [];
+        service.dispose();
+        service = create({
+            onFailed: () => Promise.reject(new Error('hook failed')),
+            onError: e => { errors.push(e); },
+        });
+        detectResults = [null, null, null];
+        const result = service.reconnect();
+        await flush();
+        timers.fireNext();
+        await flush();
+        timers.fireNext();
+        assert.strictEqual(await result, false);
+        await flush();
+        assert.strictEqual((errors[0] as Error).message, 'hook failed');
+        assert.strictEqual(errors.length, 1);
+        assert.strictEqual(service.isReconnecting, false);
+    });
+
+    test('a pending onConnected hook does not stop polling', async () => {
+        service.dispose();
+        service = create({ onConnected: () => { connectedCalls++; return new Promise<void>(() => { }); } });
+        detectResults = [SERVER_A, SERVER_B];
+        refreshResults = [false, false, true];
+        assert.strictEqual(await service.reconnect(), true);
+        assert.strictEqual(connectedCalls, 1);
+        assert.strictEqual(service.isReconnecting, false, 'The hook does not extend the attempt');
+
+        await service.poll();
+        await flush();
+        assert.strictEqual(refreshCalls, 3, 'poll still fetches while the hook is pending');
+        assert.strictEqual(detectCalls, 2, 'The failure threshold still reconnects');
+        assert.deepStrictEqual(applied, [SERVER_A, SERVER_B]);
+    });
+
+    test('a throwing refreshQuota ends the attempt through onError', async () => {
+        const errors: unknown[] = [];
+        service.dispose();
+        service = create({
+            refreshQuota: async () => { throw new Error('fetch exploded'); },
+            onError: e => { errors.push(e); },
+        });
+        detectResults = [SERVER_A];
+        assert.strictEqual(await service.reconnect(), false);
+        assert.strictEqual((errors[0] as Error).message, 'fetch exploded');
+        assert.strictEqual(errors.length, 1);
+        assert.strictEqual(service.isReconnecting, false, 'inFlight is cleared');
     });
 
     test('dispose stops timers and makes reconnect a no-op', async () => {

@@ -37,7 +37,7 @@
     "Found {0} candidates. Duration: {1}s.": "Tìm thấy {0} tiến trình. Thời gian: {1}s.",
     "Generating commit message...": "Đang tạo commit message...",
     "Git repository error": "Lỗi Git repository",
-    "Hands-free Mode: Automatically accept agent suggested edits and terminal commands": "Chế độ tự động: Tự động chấp nhận các chỉnh sửa file và lệnh terminal do agent đề xuất",
+    "Hands-free Mode: Automatically accept agent suggested edits (terminal commands only with tfa.system.autoAcceptTerminal)": "Chế độ tự động: Tự động chấp nhận các chỉnh sửa file do agent đề xuất (lệnh terminal chỉ khi bật tfa.system.autoAcceptTerminal)",
     "Handshake failed (possible login issue).": "Handshake thất bại (có thể do lỗi đăng nhập).",
     "Handshake with server failed (CSRF check failed)": "Handshake với server thất bại (kiểm tra CSRF thất bại)",
     "LLM API error: {0}": "Lỗi LLM API: {0}",
