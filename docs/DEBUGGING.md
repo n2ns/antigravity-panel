@@ -1,5 +1,3 @@
-English | [中文文档](DEBUGGING_zh.md)
-
 # Debugging Antigravity Language Server and Quota Connections
 
 This document covers interactive extension debugging and the local tools that connect to a real Antigravity Language Server.
@@ -85,14 +83,6 @@ Numeric Protobuf fields may use `omitempty`. A zero value can therefore be absen
 
 ## 4. Automated validation
 
-```bash
-npm test
-npm run test:server
-npm run typecheck
-npm run typecheck:debug
-npm run lint
-npm run check:l10n
-npm run build
-```
+The quality checks that must pass before a commit or pull request are listed in [AGENTS.md](../AGENTS.md#quality-checks). `npm run typecheck:debug` additionally typechecks the TypeScript debug entry under `scripts/debug/`.
 
 `npm run test:server` connects to the real local server when available and skips its live checks when no server is running. The four `debug:*` commands are manual diagnostics and are not run in CI.

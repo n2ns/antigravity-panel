@@ -139,7 +139,7 @@ export interface CommunicationAttempt {
  * Process detection options
  */
 export interface DetectOptions {
-  /** Maximum number of attempts (default 3) */
+  /** Maximum number of attempts (default 5) */
   attempts?: number;
   /** Base delay time in ms (default 1500) */
   baseDelay?: number;

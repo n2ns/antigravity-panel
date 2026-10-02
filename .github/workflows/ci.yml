@@ -14,7 +14,7 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
         node-version: [24]
-      fail-fast: false  # 一个平台失败不影响其他平台的测试
+      fail-fast: false  # One platform failing does not cancel the others
 
     steps:
       - name: Checkout code

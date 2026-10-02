@@ -8,44 +8,9 @@ This guide outlines our development workflow, project architecture, coding stand
 
 ## 🏗️ Project Architecture
 
-This extension follows a strict **MVVM (Model-View-ViewModel)** architectural pattern. Keeping these concerns separated ensures that business logic remains independent of the IDE's environment and can be easily unit tested in a pure Node.js runtime.
+The extension follows an **MVVM (Model-View-ViewModel)** pattern. Services in `src/model/` hold the business logic and reach the IDE through injected interfaces rather than importing `vscode`; `AppViewModel` in `src/view-model/` is the single source of truth for application state; `src/view/` hosts the sidebar webview (Lit components), the status bar, and the HTML/CSP builder.
 
-```mermaid
-graph TD
-    subgraph View [View Layer - UI & Presentation]
-        A[Lit Webview Components] -->|HTML/CSS| B[SidebarProvider]
-        C[StatusBarManager]
-    end
-    subgraph ViewModel [ViewModel Layer - State Coordinator]
-        D[AppViewModel]
-    end
-    subgraph Model [Model Layer - Data & Logic]
-        E[QuotaService]
-        F[CacheService]
-        G[StorageService]
-        H[AutomationService]
-    end
-    B <-->|postMessage / events| D
-    C <-->|events| D
-    D <-->|dependency injection| E
-    D <-->|dependency injection| F
-    D <-->|dependency injection| G
-    D <-->|dependency injection| H
-```
-
-### 1. Model (Services)
-Located in `src/model/services/`. These classes perform the actual business logic, file system scans, and HTTP requests:
-*   [QuotaService](src/model/services/quota.service.ts): Communicates with the local Antigravity Language Server via HTTP.
-*   [CacheService](src/model/services/cache.service.ts): Handles directory sizing and file deletion under the `~/.gemini/antigravity-ide/` workspace folders.
-*   [StorageService](src/model/services/storage.service.ts): Stores usage history and user configuration state globally.
-*   [AutomationService](src/model/services/automation.service.ts): Drives the Auto-Accept polling/CDP injection fallback engine.
-
-### 2. ViewModel
-Located in [app.vm.ts](src/view-model/app.vm.ts). The `AppViewModel` acts as the single source of truth for the application state (`AppState`). It translates model data into formats optimized for display and broadcasts updates through events (`onStateChange`, `onQuotaChange`, etc.).
-
-### 3. View (Presentation)
-*   **IDE Integration:** [SidebarProvider](src/view/sidebar-provider.ts) hosts the webview, while [StatusBarManager](src/view/status-bar.ts) handles status bar entries.
-*   **Lit Components:** The webview frontend in `src/view/webview/components/` is built using the **Lit** library. Communication between the webview (browser environment) and the extension (Node.js environment) occurs via standard Extension API webview messages.
+The layer-by-layer description, directory map, build pipeline, connection lifecycle, and test layout are in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md). Read it before changing service boundaries or the webview message protocol.
 
 ---
 
@@ -105,7 +70,7 @@ We enforce automated test checks. Ensure that your contributions do not break ex
 > The live Language Server tests are expected to run in Antigravity IDE development environments. If they cannot find a local Antigravity Language Server, the environment is incomplete for full project validation.
 
 > [!IMPORTANT]
-> `husky` and `lint-staged` run lint checks before commits. Run `npm run typecheck`, `npm run check:l10n`, `npm test`, and `npm run test:server` manually before opening a Pull Request.
+> `husky` runs `lint-staged` (ESLint with auto-fix on staged `.ts` files) and `npm test` before every commit. Before opening a Pull Request, run the full set of quality checks listed in [AGENTS.md](AGENTS.md#quality-checks): `npm run lint`, `npm run typecheck`, `npm run check:l10n`, `npm test`, `npm run test:server`, and `npm run build`.
 
 ---
 
@@ -145,20 +110,19 @@ We use `eslint` and `typescript` strict mode to maintain code quality.
     *   Always write comprehensive types for views and messages.
 
 ### 🌐 Localization & Translation Policy
-The extension supports 15 languages. To maintain technical consistency across all locales, we enforce the **UI Label Strategy** defined in [LOCALIZATION_RULES.md](docs/LOCALIZATION_RULES.md):
-1.  **UI Buttons, Section Headers, and Command Titles** must remain in **English** (e.g., `Rules`, `MCP`, `Auto-Accept`, `Reset Status`). Do not translate these.
-2.  **Tooltips, Descriptions, Explanations, and Warnings** must be fully **localized** in NLS files (e.g. `package.nls.zh-cn.json`, `bundle.l10n.zh-cn.json`).
+The extension ships 15 locales. UI labels and command titles stay in English; tooltips, descriptions, and notifications are localized. New keys go into every `package.nls.*.json` and `l10n/bundle.l10n.*.json` file at the same time, and `npm run check:l10n` enforces this. The rules are defined in [docs/LOCALIZATION_RULES.md](docs/LOCALIZATION_RULES.md).
 
 ---
 
 ## 🚀 Pull Request (PR) Workflow
 
-1.  **Create a Branch:** Create a branch named `feature/your-feature-name` or `bugfix/your-fix-name`.
+1.  **Create a Branch:** Create a branch named `feature/your-feature-name` or `fix/your-fix-name`.
 2.  **Make Code Changes:** Keep your commits clean and focused. Use descriptive conventional commits titles (e.g., `feat: ...`, `fix: ...`).
 3.  **Run Quality Checks:**
     *   Format and lint: `npm run lint`
     *   Validate production types and localization: `npm run typecheck` and `npm run check:l10n`
     *   Ensure all tests pass: `npm test` and `npm run test:server`
+    *   Verify the production build: `npm run build`
 4.  **Create a Pull Request:**
     *   Push your branch and open a PR against the `main` branch.
     *   Provide a clear summary of your changes and reference any related issues (e.g., `Fixes #123`).

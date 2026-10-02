@@ -1,5 +1,3 @@
-English | [中文文档](docs/README_zh.md)
-
 <p align="center">
   <img src="./assets/icon.png" width="128" alt="Antigravity Panel">
 </p>
@@ -161,6 +159,8 @@ A workaround for when the built-in "Generate commit message" feature is unavaila
 **Multi-language UI**
 - English, 简体中文, 繁體中文, 日本語, Français, Deutsch, Español, Português (Brasil), Bahasa Indonesia, Italiano, 한국어, Русский, Polski, Türkçe, Tiếng Việt
 
+UI labels and technical terms stay in English in every locale; tooltips and descriptions are localized. See [LOCALIZATION_RULES.md](docs/LOCALIZATION_RULES.md).
+
 ## 📦 Installation
 
 ### Install from Extension Marketplace
@@ -231,56 +231,9 @@ Open Command Palette (`Ctrl+Shift+P` / `Cmd+Shift+P`) and search for:
 
 ## ⚙️ Configuration
 
-Open Settings (`Ctrl+,` / `Cmd+,`) in Antigravity IDE and search for `tfa` to customize:
+Open Settings (`Ctrl+,` / `Cmd+,`) in Antigravity IDE and search for `tfa` to customize quota polling, status bar thresholds, cache cleaning, Auto-Accept, and the commit message generator.
 
-### 📊 Quota Settings
-
-| Setting | Default | Description |
-|---------|---------|-------------|
-| **Polling Interval** | `90s` | How often to refresh quota (min: 30s) |
-| **Show Quota** | `✓` | Display quota in status bar |
-| **Quota Style** | `semi-arc` | Visualization style: `semi-arc` or `classic-donut` |
-| **Visualization Mode** | `groups` | Show dashboard by `groups` or `models` |
-| **UI Scale** | `1.0` | Global scale factor for panel elements (0.8 to 2.0) |
-| **Show User Info Card** | `✓` | Show the user email and subscription tier in the sidebar |
-| **Show Prompt/Flow Credits** | `✗` | Show the static Prompt/Flow rows; Google One AI remains visible |
-| **Show GPT Quota** | `✗` | Whether to display GPT family models in the panel |
-| **History Range** | `90 min` | Time range for usage chart (10-120 minutes) |
-| **Warning Threshold** | `40%` | Status bar turns warning color at this level |
-| **Critical Threshold** | `20%` | Status bar turns critical color at this level |
-
-### 💾 Cache Settings
-
-| Setting | Default | Description |
-|---------|---------|-------------|
-| **Show Cache Size** | `✓` | Display cache size in status bar |
-| **Check Interval** | `120s` | How often to check cache size (30-600s) |
-| **Warning Threshold** | `500 MB` | Status bar color warning when exceeded |
-| **Hide Empty Folders** | `✗` | Hide empty folders in Brain and Code Tracker trees |
-| **Auto Clean** | `✗` | Automatically clean cache when exceeded |
-| **Auto Clean Keep Count** | `5` | Number of most recently active tasks to keep during auto-clean and Clean Cache (integer, 1-50) |
-
-### 🔧 Advanced Settings
-
-| Setting | Default | Description |
-|---------|---------|-------------|
-| **Server Host** | `127.0.0.1` | Address of Antigravity Language Server |
-| **API Path** | `/exa...` | gRPC-Web path for User Status |
-| **Auto-Accept** | `✗` | Enable hands-free acceptance of Agent steps and file edits |
-| **Auto-Accept Interval** | `800ms` | Polling interval for Auto-Accept (200-5000ms) |
-| **Auto-Accept Terminal** | `✗` | Also approve terminal commands via CDP Run clicks (requires `--remote-debugging-port=9222`) |
-| **Debug Mode** | `✗` | Enable verbose logging in Output panel |
-
-
-
-### 🤖 Commit Message Settings
-
-| Setting | Default | Description |
-|---------|---------|-------------|
-| **Endpoint** | `http://localhost...` | API URL (Ollama, Anthropic, OpenAI compatible) |
-| **Model** | `llama3.2` | Model name (e.g. `llama3.2`, `claude-3-haiku`) |
-| **Max Diff Size** | `80000` | Max characters of diff to send to LLM |
-| **Format** | `conventional` | Message format (`conventional` or `simple`) |
+The complete list of settings with their defaults is in [FEATURES.md](docs/FEATURES.md#-configuration-options).
 
 ## 🔒 Privacy & Safety Disclaimer
 
@@ -293,9 +246,7 @@ The *Smart Quota Monitoring* feature relies on internal metrics exposed by the l
 
 ## 🤝 Contributing
 
-We welcome contributions. Development, debugging, and testing must be done in **Antigravity IDE** with the local Antigravity Language Server available. Use Node.js 24+ and npm for local builds.
-
-See [CONTRIBUTING.md](CONTRIBUTING.md) for setup, Extension Host debugging, test commands, coding standards, localization rules, packaging, and PR workflow.
+We welcome contributions. See [CONTRIBUTING.md](CONTRIBUTING.md) for environment setup, Extension Host debugging, quality checks, packaging, and the PR workflow.
 
 If you find Antigravity Panel helpful, please give us a **Star** 🌟 on GitHub. It's the best way to support our work and help others discover it.
 
@@ -317,19 +268,17 @@ Special thanks to our community contributors:
 *   [**@chonkydonkers**](https://github.com/chonkydonkers) - Display user tier available credits in status bar and sidebar.
 *   [**@vincenzofabiano92**](https://github.com/vincenzofabiano92) - Synchronous command registration, connection stability optimization, Italian NLS localization, and server integration test runner (v2.6.0).
 
-## 🌐 Localization Policy
-
-To ensure technical consistency and professional standard across all 15 supported languages:
-- **UI Labels & Technical Terms**: Remain in **English** (e.g., `Rules`, `MCP`, `Auto-Accept`, `Reset Status`).
-- **Tooltips & Descriptions**: Fully **localized** to provide detailed explanations in the user's native language.
-
-For more details, see [LOCALIZATION_RULES.md](docs/LOCALIZATION_RULES.md).
-
 ## 📚 Project Docs
 
-- [Features](docs/FEATURES.md)
+- [Features and settings](docs/FEATURES.md)
 - [Changelog](CHANGELOG.md)
 - [TODO](TODO.md)
+- [Contributing](CONTRIBUTING.md)
+- [Architecture](docs/ARCHITECTURE.md)
+- [Quota data model](docs/QUOTA_DATA_MODEL.md)
+- [Debugging](docs/DEBUGGING.md)
+- [Localization rules](docs/LOCALIZATION_RULES.md)
+- [Disclaimer](docs/DISCLAIMER.md)
 
 ## 📄 License
 

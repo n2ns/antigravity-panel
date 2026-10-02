@@ -2,7 +2,7 @@
  * WebviewHtmlBuilder: Generates Webview HTML skeleton
  *
  * Architecture: No VS Code dependency - accepts plain strings
- * External CSS for CSP compliance (no 'unsafe-inline')
+ * External CSS bundle; CSP allows 'unsafe-inline' only for style-src (see note in build())
  */
 
 import * as crypto from "crypto";
@@ -34,7 +34,7 @@ export function generateNonce(): string {
  * WebviewHtmlBuilder: Generates Webview HTML
  *
  * No VS Code dependency - accepts plain string URIs
- * Uses external CSS for CSP compliance (no 'unsafe-inline')
+ * External CSS bundle; CSP allows 'unsafe-inline' only for style-src (see note in build())
  */
 export class WebviewHtmlBuilder {
     private config: WebviewHtmlConfig | null = null;

@@ -1,8 +1,8 @@
 /**
- * Logger: 统一的日志输出管理
+ * Logger: centralized log output
  *
- * 使用 VS Code Output Channel 输出日志，
- * 受 debugMode 配置控制
+ * Writes to a VS Code Output Channel;
+ * verbosity is controlled by the debugMode setting
  */
 
 import * as vscode from 'vscode';
@@ -11,7 +11,7 @@ let outputChannel: vscode.OutputChannel | null = null;
 let isDebugMode = false;
 
 /**
- * 初始化 Logger
+ * Initialize the logger
  */
 export function initLogger(context: vscode.ExtensionContext): vscode.OutputChannel {
   outputChannel = vscode.window.createOutputChannel("Antigravity Panel");
@@ -20,21 +20,21 @@ export function initLogger(context: vscode.ExtensionContext): vscode.OutputChann
 }
 
 /**
- * 获取 Logger 实例
+ * Get the logger instance
  */
 export function getLogger(): vscode.OutputChannel | null {
   return outputChannel;
 }
 
 /**
- * 设置调试模式
+ * Set debug mode
  */
 export function setDebugMode(enabled: boolean): void {
   isDebugMode = enabled;
 }
 
 /**
- * 输出调试日志（仅在 debugMode 开启时输出）
+ * Debug log (only written when debugMode is enabled)
  */
 export function debugLog(message: string, data?: unknown): void {
   if (!isDebugMode || !outputChannel) return;
@@ -52,7 +52,7 @@ export function debugLog(message: string, data?: unknown): void {
 }
 
 /**
- * 输出信息日志（始终输出）
+ * Info log (always written)
  */
 export function infoLog(message: string): void {
   if (!outputChannel) return;
@@ -62,7 +62,7 @@ export function infoLog(message: string): void {
 }
 
 /**
- * 输出警告日志（始终输出）
+ * Warning log (always written)
  */
 export function warnLog(message: string): void {
   if (!outputChannel) return;
@@ -72,7 +72,7 @@ export function warnLog(message: string): void {
 }
 
 /**
- * 输出错误日志（始终输出）
+ * Error log (always written)
  */
 export function errorLog(message: string, error?: unknown): void {
   if (!outputChannel) return;
@@ -107,7 +107,7 @@ function formatCreditsForLog(value?: number): string {
 }
 
 /**
- * 输出 Quota 快照日志（仅在 debugMode 开启时输出）
+ * Log a quota snapshot (only when debugMode is enabled)
  */
 export function logQuotaSnapshot(snapshot: QuotaSnapshot): void {
   if (!isDebugMode || !outputChannel) return;
@@ -160,7 +160,7 @@ export function logQuotaSnapshot(snapshot: QuotaSnapshot): void {
 }
 
 /**
- * 输出 Quota 解析错误日志（含原始数据）
+ * Log a quota parsing error (includes the raw data)
  */
 export function logQuotaParseError(error: string, rawData?: unknown): void {
   if (!isDebugMode || !outputChannel) return;

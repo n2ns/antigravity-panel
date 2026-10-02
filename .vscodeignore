@@ -15,7 +15,11 @@ src/test/**
 scripts/**
 local_bak/**
 docs/**
-!docs/DISCLAIMER*.md
+!docs/DISCLAIMER.md
+AGENTS.md
+CLAUDE.md
+TODO.md
+.out-*/**
 .husky/**
 .husky/**/*
 **/.husky/**
@@ -24,8 +28,6 @@ docs/**
 tsconfig.json
 tsconfig.test.json
 tsconfig.debug.json
-.eslintrc.json
-.eslintignore
 eslint.config.mjs
 .gitignore
 .gitattributes
@@ -48,5 +50,3 @@ assets/preview*.png
 *.log
 .editorconfig
 .npmrc
-.agent/**
-.cursor/**

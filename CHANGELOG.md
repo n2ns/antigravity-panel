@@ -1,6 +1,11 @@
-English | [中文文档](docs/CHANGELOG_zh.md)
-
 # Change Log
+
+## [Unreleased]
+
+### Changed
+
+- **About Command**: `Antigravity Panel: About` now always opens the English `docs/DISCLAIMER.md`; the Chinese disclaimer copy is no longer shipped.
+- **Documentation Reorganization**: Project documentation is English only. Added `AGENTS.md` (rules and document index for AI coding agents, replacing `docs/RULES.md`) with a `CLAUDE.md` that imports it, `docs/ARCHITECTURE.md` (layers, lifecycle, connection, tests), and `docs/QUOTA_DATA_MODEL.md` (English translation of the former `quota-data-model.md`). Removed the `*_zh.md` copies and `docs/KNOWLEDGE_GRAPH.md`. `docs/FEATURES.md` is now the single settings reference and `README.md` links to it instead of repeating the table; `CONTRIBUTING.md` and `docs/DEBUGGING.md` link to `docs/ARCHITECTURE.md` and `AGENTS.md` instead of repeating the architecture and command lists.
 
 ## [2.7.4] - 2026-10-02
 
@@ -112,7 +117,7 @@ English | [中文文档](docs/CHANGELOG_zh.md)
 
 ### Changed
 
-- **TODO Roadmap Refresh**: Updated [TODO.md](TODO.md) and [TODO_zh.md](docs/TODO_zh.md) to remove completed reliability work and record the remaining P2/P3/P4 code quality tasks from the project review.
+- **TODO Roadmap Refresh**: Updated [TODO.md](TODO.md) and `TODO_zh.md` to remove completed reliability work and record the remaining P2/P3/P4 code quality tasks from the project review.
 - **README / Contributing Split**: Moved contributor workflow details into [CONTRIBUTING.md](CONTRIBUTING.md), kept the contributor list visible in the README files, and clarified that development, debugging, and live Language Server testing target Antigravity IDE.
 - **Documentation Accuracy Refresh**: Updated features, disclaimer, localization rules, knowledge graph, and README documentation links to match current thresholds, paths, supported languages, privacy behavior, and test strategy.
 

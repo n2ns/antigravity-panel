@@ -3,6 +3,7 @@ node_modules/
 
 # Build output
 out/
+.out-*/
 dist/
 
 # VS Code test environment

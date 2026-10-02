@@ -1,8 +1,6 @@
-English | [中文文档](FEATURES_zh.md)
-
 # Features
 
-> This document lists all implemented features in Antigravity Panel.
+> This document lists all implemented features in Antigravity Panel and is the single reference for its settings. Internal design is documented in [ARCHITECTURE.md](ARCHITECTURE.md).
 
 ---
 
@@ -49,6 +47,18 @@ English | [中文文档](FEATURES_zh.md)
 ### User Info Card
 - Display the user email and subscription tier currently reported by Antigravity
 - Toggle visibility via `tfa.dashboard.showUserInfoCard` setting
+
+### Connection and Automatic Reconnection
+- The local Antigravity Language Server is discovered automatically; the panel reconnects after the connection is lost (two consecutive polls without an answer), after **Restart Agent Service**, and after a failed manual refresh
+- A reconnect retries a bounded number of times (7 extra attempts, 5 seconds apart), then keeps retrying in the background with a backoff that starts at 30 seconds and doubles up to 5 minutes
+- HTTP 401/403 is reported as an authentication failure; it does not trigger a rescan and polling continues
+- Server errors (HTTP 5xx) and unparseable responses are not treated as a lost connection
+- While the connection is failed, the status bar shows a warning state instead of stale quota data
+
+### Cache-First Startup
+- The sidebar renders immediately from the last stored quota snapshot and cache sizes, then refreshes with live data
+- Total, Brain, and conversation cache sizes and the cache tree metadata are restored across panel instances
+- Local UI state such as collapsed sections survives refreshes and panel recreation
 
 ---
 
@@ -135,48 +145,6 @@ In WSL remote sessions the shortcuts follow where Antigravity actually reads eac
 - Side-by-side buttons in footer for **Report Issue** (GitHub Issues) and **Project Home**
 - Full localization support for all UI elements and feedback instructions
 
-## 🏗️ Architecture & Performance
-
-### Cache-First Startup
-- UI renders immediately from cached data
-- Total, Brain, and conversation cache sizes are restored across panel instances
-- Asynchronous refresh with latest data
-- Webview state persistence using `vscode.setState()`/`getState()` preserves local UI state across backend updates
-
-### MVVM Architecture
-- `AppViewModel` as unified state coordination and data aggregation layer
-- Clean separation of concerns between UI and business logic
-- Dependency injection for testability
-
-### Retry Mechanism
-- Configurable retry with multiple backoff strategies:
-  - Fixed: constant delay between retries
-  - Linear: delay increases linearly
-  - Exponential: delay doubles each retry
-- Customizable retry conditions and callbacks
-
-### HTTP Client
-- Automatic HTTPS → HTTP fallback
-- Protocol caching for subsequent requests
-- Configurable timeout
-
-### Task Scheduler
-- Register multiple independent polling tasks
-- Dynamic interval updates
-- Start/stop named tasks and stop all running tasks during disposal
-
-### Process Detection
-- Cross-platform Antigravity Language Server detection
-- Windows: PowerShell + netstat
-- macOS/Linux: pgrep + lsof/ss
-
-### Automatic Reconnection
-- Reconnects to the Language Server automatically after the connection is lost (2 consecutive failed polls by default), after **Restart Agent Service**, and after a failed manual refresh
-- A single re-entrant reconnect: concurrent triggers join the attempt in flight
-- Bounded retries (7 extra detection attempts, 5s apart), then background retries with backoff (30s, doubling, capped at 5 min) while the connection stays failed
-- HTTP 401/403 is reported as an authentication failure: it neither triggers a rescan nor counts toward the reconnect threshold, and polling continues
-- HTTP 5xx and unparseable responses are not treated as a lost connection and never trigger a rescan
-
 ---
 
 ## 🌐 Internationalization
@@ -205,24 +173,9 @@ In WSL remote sessions the shortcuts follow where Antigravity actually reads eac
 
 ### Content Security Policy
 - Strict CSP for Webview security
-- External CSS (no `'unsafe-inline'`)
-- Nonce-based script loading
+- Styles come from the external CSS bundle; `style-src` additionally allows `'unsafe-inline'` because the gauges render dynamic gradients
+- No inline scripts: `script-src` accepts only the per-render nonce
 - Restricted resource loading (`default-src 'none'`)
-
----
-
-## 🧪 Testing
-
-### Unit and Local Integration Test Coverage
-- 311 unit tests across 29 pure-Node test files
-- 2 dedicated integration tests against the local Antigravity Language Server
-- Full validation is expected to run inside Antigravity IDE with its local Language Server available
-- Core modules fully tested:
-  - ConfigManager, CacheService, QuotaService, StorageService
-  - AppViewModel, QuotaStrategyManager
-  - Scheduler, Retry, HttpClient
-  - ProcessFinder, PlatformStrategies
-  - HtmlBuilder, Format utilities, AutomationService
 
 ---
 

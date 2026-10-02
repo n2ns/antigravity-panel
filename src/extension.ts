@@ -158,10 +158,8 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
       }
     }),
     vscode.commands.registerCommand("tfa.showDisclaimer", async () => {
-      const isZh = vscode.env.language.startsWith('zh');
-      const fileName = isZh ? "DISCLAIMER_zh.md" : "DISCLAIMER.md";
-      const disclaimerUri = vscode.Uri.joinPath(context.extensionUri, "docs", fileName);
-      // 使用 Markdown 预览模式打开（只读，更好的阅读体验）
+      const disclaimerUri = vscode.Uri.joinPath(context.extensionUri, "docs", "DISCLAIMER.md");
+      // Open in Markdown preview mode (read-only, better reading experience)
       await vscode.commands.executeCommand('markdown.showPreview', disclaimerUri);
     }),
     vscode.commands.registerCommand("tfa.toggleAutoAccept", async () => {

@@ -1,5 +1,3 @@
-English | [中文文档](docs/TODO_zh.md)
-
 # TODO List
 
 > Last Updated: 2026-10-02
