@@ -4,7 +4,7 @@ Guidance for AI coding agents, and for humans, working in this repository. Every
 
 ## What this project is
 
-Antigravity Panel is an extension for Google Antigravity IDE, built on the VS Code extension API (`engines.vscode` in `package.json`). It polls the local Antigravity Language Server over HTTP for AI quota data, manages the IDE's conversation and code-context caches under `~/.gemini/antigravity-ide/`, and offers an opt-in Auto-Accept automation. Stack: TypeScript, Lit webview, esbuild bundling, Mocha + Sinon tests, Node.js 24+. Published as `n2ns.antigravity-panel` on the VS Code Marketplace and Open VSX.
+Antigravity Panel is an extension for Google Antigravity IDE, built on the VS Code extension API (`engines.vscode` in `package.json`). It polls the local Antigravity Language Server over HTTP for AI quota data, manages the IDE's conversation and code-context caches under `~/.gemini/antigravity-ide/`, and offers an opt-in Auto-Accept automation. Stack: TypeScript, Lit webview, esbuild bundling, Mocha + Sinon tests, Node.js 24 (the version used in `.github/workflows/`). Published as `n2ns.antigravity-panel` on the VS Code Marketplace and Open VSX.
 
 ## Repository map
 
@@ -18,7 +18,7 @@ Antigravity Panel is an extension for Google Antigravity IDE, built on the VS Co
 | `src/shared/` | Config manager, platform and process detection, utilities (scheduler, retry, http client, logger, wsl) |
 | `src/commitMessageClaude.ts` | Standalone commit message generator; the only feature that may send data off-machine |
 | `src/test/` | Mocha tests: `suite/` unit tests, `suite/integration/` live-server tests, `mocks/` vscode mock |
-| `l10n/`, `package.nls*.json` | Runtime and manifest strings for 15 locales |
+| `l10n/`, `package.nls*.json` | Runtime and manifest strings, one file per locale |
 | `scripts/` | `check_l10n.js`, `sync-build.js`, and `debug/` real-server diagnostics |
 | `docs/` | Project documentation; see the index at the end |
 
@@ -45,8 +45,8 @@ Other commands: `npm run watch` (development build with sourcemaps), `npm run pa
 
 ### Architecture
 
-- `src/model/` and `src/shared/` are meant to run in plain Node. Reach the IDE through interfaces injected from `extension.ts` (`IConfigReader`, `IQuotaService`, `ICacheService`, `IStorageService`, `IAutomationService`), not by importing `vscode`.
-- Files that legitimately import `vscode`: `extension.ts`, everything under `src/view/`, and the standalone `src/commitMessageClaude.ts`. Imports elsewhere are legacy exceptions: `automation.service.ts`, `storage.service.ts` (type only), `app.vm.ts`, `logger.ts`, `feedback_manager.ts`, `workspace_id.ts`. Do not add new ones; wrap new IDE access behind an injected interface.
+- `src/model/` and `src/shared/` are meant to run in plain Node. Reach the IDE through interfaces injected from `extension.ts` (`IConfigReader` in `src/shared/config/config_manager.ts`; `IQuotaService`, `ICacheService`, `IStorageService`, `IAutomationService` in `src/model/services/interfaces.ts`), not by importing `vscode`.
+- Files that legitimately import `vscode`: `extension.ts`, everything under `src/view/`, and the standalone `src/commitMessageClaude.ts`. The remaining imports are legacy exceptions, listed once under [Dependency rule](docs/ARCHITECTURE.md#dependency-rule) in `docs/ARCHITECTURE.md`. Do not add new ones; wrap new IDE access behind an injected interface.
 - Keep the MVVM boundaries: services know nothing about the webview, the webview talks to the extension host only through messages, and `AppViewModel` is the only state owner.
 - New behavior and bug fixes come with unit tests in `src/test/suite/` that run without an IDE or a live server.
 
@@ -72,8 +72,8 @@ Other commands: `npm run watch` (development build with sourcemaps), `npm run pa
 
 ### Git
 
-- Commit messages follow Conventional Commits: `<type>: <description>` with `feat`, `fix`, `refactor`, `docs`, `chore`.
-- Branch names, when a branch is used: `<type>/<short-description>`, for example `feature/quota-prediction`, `fix/statusbar-display`, `docs/update-readme`.
+- Commit messages follow Conventional Commits: `<type>: <description>` with `feat`, `fix`, `refactor`, `docs`, `test`, `ci`, `chore`.
+- Branch names, when a branch is used: `<type>/<short-description>`, for example `feat/quota-prediction`, `fix/statusbar-display`, `docs/update-readme`.
 - Only manage files tracked by git. Never delete untracked files you did not create yourself.
 
 ### Documentation
@@ -101,7 +101,14 @@ Other commands: `npm run watch` (development build with sourcemaps), `npm run pa
 
 - Extension Host debugging (F5) and `npm run test:server` need Antigravity IDE with its local Language Server, not plain VS Code. Without a server the live tests skip, so a green `test:server` does not prove the connection path.
 - The CDP fallback of Auto-Accept needs the IDE started with `--remote-debugging-port=9222`; terminal command approval works only through CDP.
-- `npm test` compiles into `out/`; concurrent test runs in one checkout overwrite each other. Use a separate `--outDir` directly under the project root (see `CLAUDE.md`).
+- `npm test` compiles into `out/`; concurrent test runs in one checkout overwrite each other. When several agents run unit tests at the same time, each compiles into its own directory directly under the project root and removes it afterwards:
+
+  ```bash
+  npx tsc -p tsconfig.test.json --outDir .out-<agent-name> && node .out-<agent-name>/test/runUnitTests.js
+  rm -rf .out-<agent-name>
+  ```
+
+  The directory must sit directly under the project root: the NLS and l10n tests locate project files with `../../../` relative paths. `.out-*/` is ignored by git and excluded from the VSIX; delete it anyway when the run is done. The pre-commit hook always runs `npm test` into the shared `out/`, so only one agent commits at a time.
 - `docs/DISCLAIMER.md` is shipped inside the VSIX and opened by the About command. Keep its name and location.
 - Server numeric fields may be omitted when zero (protobuf `omitempty`). Map missing optional numbers to explicit defaults.
 - Mocha runs with the TDD interface: `suite` and `test`, not `describe` and `it`.

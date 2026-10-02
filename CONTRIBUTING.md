@@ -70,7 +70,7 @@ We enforce automated test checks. Ensure that your contributions do not break ex
 > The live Language Server tests are expected to run in Antigravity IDE development environments. If they cannot find a local Antigravity Language Server, the environment is incomplete for full project validation.
 
 > [!IMPORTANT]
-> `husky` runs `lint-staged` (ESLint with auto-fix on staged `.ts` files) and `npm test` before every commit. Before opening a Pull Request, run the full set of quality checks listed in [AGENTS.md](AGENTS.md#quality-checks): `npm run lint`, `npm run typecheck`, `npm run check:l10n`, `npm test`, `npm run test:server`, and `npm run build`.
+> `husky` runs `lint-staged` (ESLint with auto-fix on staged `.ts` files) and `npm test` before every commit. Before opening a Pull Request, run the full set of quality checks listed in [AGENTS.md](AGENTS.md#quality-checks).
 
 ---
 
@@ -110,19 +110,15 @@ We use `eslint` and `typescript` strict mode to maintain code quality.
     *   Always write comprehensive types for views and messages.
 
 ### 🌐 Localization & Translation Policy
-The extension ships 15 locales. UI labels and command titles stay in English; tooltips, descriptions, and notifications are localized. New keys go into every `package.nls.*.json` and `l10n/bundle.l10n.*.json` file at the same time, and `npm run check:l10n` enforces this. The rules are defined in [docs/LOCALIZATION_RULES.md](docs/LOCALIZATION_RULES.md).
+The extension ships a manifest and a runtime string file for every supported locale. UI labels and command titles stay in English; tooltips, descriptions, and notifications are localized. New keys go into every `package.nls.*.json` and `l10n/bundle.l10n.*.json` file at the same time, and `npm run check:l10n` enforces this. The rules are defined in [docs/LOCALIZATION_RULES.md](docs/LOCALIZATION_RULES.md).
 
 ---
 
 ## 🚀 Pull Request (PR) Workflow
 
-1.  **Create a Branch:** Create a branch named `feature/your-feature-name` or `fix/your-fix-name`.
+1.  **Create a Branch:** Create a branch named `feat/your-feature-name` or `fix/your-fix-name`.
 2.  **Make Code Changes:** Keep your commits clean and focused. Use descriptive conventional commits titles (e.g., `feat: ...`, `fix: ...`).
-3.  **Run Quality Checks:**
-    *   Format and lint: `npm run lint`
-    *   Validate production types and localization: `npm run typecheck` and `npm run check:l10n`
-    *   Ensure all tests pass: `npm test` and `npm run test:server`
-    *   Verify the production build: `npm run build`
+3.  **Run Quality Checks:** Run every command listed in [AGENTS.md](AGENTS.md#quality-checks); all of them must pass.
 4.  **Create a Pull Request:**
     *   Push your branch and open a PR against the `main` branch.
     *   Provide a clear summary of your changes and reference any related issues (e.g., `Fixes #123`).
