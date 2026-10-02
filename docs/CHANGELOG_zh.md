@@ -2,23 +2,29 @@
 
 # 更新日志
 
-## [未发布]
+## [2.7.4] - 2026-10-02
 
-### 修复
+### 新增
 
-- **自动接受的终端命令批准**：危险检查现在覆盖整张终端命令提示卡片（从按钮行向上爬到卡片边界），不再只看固定的四层祖先；卡片里看不到命令文本时不会点击 Run。"Allow this conversation" 属于持久授权，不再自动点击。按钮内部的子元素不再被单独点击。危险模式新增：`/`、`~`、`$HOME` 下的 `find … -delete`，带 `+refspec` 或组合 `-f` 参数的 `git push`，PowerShell 的 `rm`/`ri`/`rd` 配合 `-Recurse` 操作盘符路径，盘符路径上的 `rm -rf`，以及 `cd ~ && rm -rf *` 这类链式命令。`tfa.system.autoAcceptTerminal` 与自动接受间隔的变更现在先于配置处理器的配额和缓存刷新生效，刷新失败也不会跳过它们。无人值守模式的提示文案改为说明终端命令仅在启用 `tfa.system.autoAcceptTerminal` 时才会批准。
-- **语言服务器重连**：等待通知的连接钩子不再阻塞重连循环：启动失败后即使警告通知未关闭，后台重试仍会继续；连接后首次刷新报告解析错误时，配额轮询仍会继续。服务器错误（HTTP 5xx、结构异常或无法解析的响应）不再视为连接丢失，因此不会每个轮询周期都重新扫描进程。重复的 401/403 会重新写入认证失败状态；后台探测期间手动刷新失败会发起完整重连；刷新抛出的异常改为记入错误日志而不是产生未处理的 rejection；配置变更处理中的错误会被记录。
-- **缓存清理**：任务活跃度现在包含会话的 `.db`、`.db-wal`、`.db-shm` 文件，正在使用的 Antigravity 2.0 会话不会被排成最不活跃。名称不合法的目录不再进入清理计划，也不占用保留名额；计划中的非法条目按失败上报而不是静默跳过。确认后才消失的任务目录不再阻止其计划内 `.pb` 文件的删除。`tfa.cache.autoCleanKeepCount` 按整数读取并钳制在 1–50。
-
-## [2.7.4] - 2026-09-21
+- **终端命令自动接受开关**：新增 `tfa.system.autoAcceptTerminal` 设置（默认关闭），允许 Auto-Accept 同时批准 AI Agent 的终端命令。终端命令只会通过 CDP 回退在 Agent 面板的终端命令提示卡片上点击 Run 来批准，需要以 `--remote-debugging-port=9222` 启动 IDE；IDE accept 命令从不用于终端命令。只有当 Run 与 Reject 位于同一提示的同一操作组、卡片中可见命令文本、且整张卡片通过危险检查时才会点击 Run，否则留给用户手动审核。
+- **缓存清理确认**：`tfa.cleanCache` 现在先计算一份试运行（dry-run）清理计划，并以模态对话框确认，列出将删除的任务数和会话文件数、总大小，以及保留的最近活跃任务数。只删除已确认计划中的条目，结果会报告删除的任务数、会话文件数、释放空间以及未能删除的条目数。在缓存树中删除单个文件同样需要模态确认。定时自动清理仍不弹窗，并采用相同的选择规则。
+- **语言服务器自动重连**：连续两次配额轮询未得到服务器应答时，会发起重连并重新扫描语言服务器。同一时间只运行一个重连，重试次数有上限（额外 7 次，间隔 5 秒）；用尽后转入后台重试，退避间隔从 30 秒开始翻倍，最长 5 分钟。手动刷新失败会发起完整重连（并取代正在进行的后台探测），`tfa.restartLanguageServer` 会在等待服务器重启后重连，诊断命令找到的服务器会被直接使用。HTTP 401/403 不视为连接丢失：既不触发重新扫描，也不计入重连阈值，轮询继续，重复的拒绝会保持认证失败状态。服务器错误（HTTP 5xx、结构异常或无法解析的响应）同样不会触发重新扫描。连接失败或解析错误后未关闭的通知不会阻塞后台重试和配额轮询，刷新抛出的异常会记入错误日志。
 
 ### 变更
 
 - **IDE 诊断身份信息**：启动日志和诊断报告新增宿主名称、产品身份、Antigravity 产品版本及远程环境信息。
+- **终端命令需单独开启**：仅启用 `tfa.system.autoAccept` 不再批准终端命令。此前 Auto-Accept 还会调用 IDE 的终端 accept 命令，并点击 Run / Always run 按钮。现在 IDE accept 命令从不用于终端命令：命令策略只调用 `antigravity.prioritized.agentAcceptAllInFile`，可能连带批准待执行终端命令的命令（`antigravity.terminalCommand.accept`、`antigravity.command.accept`、`antigravity.terminal.accept`、`antigravity.agent.acceptAgentStep`、`antigravity.agent.acceptAllAgentSteps`）不再调用；其他 Agent 步骤通过 CDP 回退的按钮点击接受。如需继续自动批准终端命令，请启用 `tfa.system.autoAcceptTerminal` 并以 `--remote-debugging-port=9222` 启动 IDE。设置说明和无人值守模式（Hands-free Mode）的提示文案已同步说明这一点。
+- **Auto-Accept 安全边界**：`tfa.system.autoAccept` 与 `tfa.system.autoAcceptTerminal` 改为应用级（application）作用域，工作区设置无法开启它们。CDP 只扫描调试 socket 位于本机回环地址的工作台页面和 webview。持久授权（"Always allow"、"Always run"、"Allow this conversation"）从不点击，按钮内部的子元素也不会被单独点击。
+- **Auto-Accept 危险检查**：每个操作会用其自身文本及向上最多四层祖先的文本逐一检查，不再只取一段截断的上下文；点击 Run 前会检查整张终端命令提示卡片。危险模式新增：`/`、`~`、`$HOME` 或盘符根路径上带任意顺序或长格式（`--recursive`、`--force`）`-r`/`-f` 参数的 `rm`，`cd ~ && rm -rf *` 这类链式命令，`/`、`~`、`$HOME` 下的 `find … -delete`，带 `+refspec` 或组合 `-f` 参数的 `git push`，`git reset --hard` 与 `git clean -f`（包括带 `-C <dir>` 等全局参数的写法），PowerShell 的 `Remove-Item -Recurse` 以及 `rm`/`ri`/`rd` 配合 `-Recurse` 操作盘符路径，以及 cmd 的 `del`/`erase`/`rmdir`/`rd` 配合 `/s`。
+- **缓存清理的选择规则**：清理现在保留 `tfa.cache.autoCleanKeepCount` 个最近活跃的任务，而不是最近创建的任务。活跃度取任务目录内文件及其会话 `.pb`、`.db`、`.db-wal`、`.db-shm` 文件中最新的修改时间，正在使用的 Antigravity 2.0 会话不会被排成最不活跃。只删除真正的孤立 `.pb` 文件（没有对应任务目录），最新的孤立文件按保留数量保留，被保留任务的 `.pb` 从不删除。每项删除相互隔离：失败会记入日志并计数，其余条目继续处理，计划中的非法条目按失败上报。名称不合法的目录不进入清理计划，也不占用保留名额；确认后才消失的任务目录不会阻止其计划内 `.pb` 文件的删除。
+- **Delete 按钮标签**：缓存删除确认中的 Delete 按钮在所有语言下保持英文，并受 `check_l10n` 保护。
 
 ### 修复
 
 - **测试可靠性**：修正 HTTP 请求失败和真实服务器响应断言，核对缓存清理保留的任务及调度间隔变化，实际验证模型 ID 规范化并精确检查 SVG 圆弧标志。隔离状态栏测试数据，确保存储测试失败后恢复模拟时间，移除平台测试对 Linux 发行版名称的限制。
+- **配置变更处理**：`tfa.system.autoAccept`、`tfa.system.autoAcceptTerminal` 与自动接受间隔的变更现在先于配置处理器的配额和缓存刷新生效，刷新失败也不会跳过它们。配置变更处理中的错误会记入日志，而不是成为未处理的 rejection。
+- **Auto-Accept 底栏开关**：底栏复选框现在始终跟随扩展宿主报告的 Auto-Accept 状态，不再在点击时先行本地翻转。
+- **缓存保留数量校验**：`tfa.cache.autoCleanKeepCount` 声明并按整数读取，钳制在 1–50。
 
 ## [2.7.3] - 2026-07-25
 

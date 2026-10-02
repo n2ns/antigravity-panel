@@ -9,8 +9,8 @@
 - **Type**: `PROJECT`
 - **Observations**:
   - An Antigravity IDE extension for quota monitoring, cache management, Auto-Accept automation, and system visualization.
-  - Current source version is 2.7.2.
-  - Includes 'Auto-Accept' (Hands-free Mode) feature for automatically approving agent steps and terminal commands.
+  - Current source version is 2.7.4.
+  - Includes 'Auto-Accept' (Hands-free Mode) feature for automatically approving agent steps and file edits; terminal commands additionally require tfa.system.autoAcceptTerminal and are approved only by clicking Run in the Agent panel through CDP.
 
 ### Brain Directory
 
@@ -25,7 +25,7 @@
 - **Type**: `FUNCTIONALITY`
 - **Observations**:
   - Focuses on managing the ~/.gemini/antigravity-ide/brain/ directory.
-  - Includes automated cleaning of old tasks based on size or count.
+  - Cleans the least recently active tasks beyond a keep count (tfa.cache.autoCleanKeepCount); manual cleaning shows a dry-run plan and requires modal confirmation, auto-clean runs when cache size exceeds the warning threshold.
   - Synchronizes deletions in brain/ with corresponding files in conversations/ directory.
 
 ### LocalizationStrategy

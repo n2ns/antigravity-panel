@@ -13,7 +13,7 @@
     "command.showLogs.title": "Günlükleri Göster",
     "command.toggleAutoAccept.title": "Toggle Agent Auto-Accept",
     "config.cache.autoClean.description": "⚠️ Önbellek boyutu uyarı eşiğini aştığında Brain dizinindeki en eski görevleri otomatik olarak temizle (Not: Bu, fiziksel dosyaları silecektir)",
-    "config.cache.autoCleanKeepCount.description": "Otomatik temizleme sırasında tutulacak en yeni görev sayısı (varsayılan: 5)",
+    "config.cache.autoCleanKeepCount.description": "Önbellek temizlenirken tutulacak en son etkin görev sayısı; otomatik temizleme ve Clean Cache komutu için geçerlidir (varsayılan: 5)",
     "config.cache.hideEmptyFolders.description": "Brain ve Code Tracker ağaç görünümlerinde boş klasörleri gizle",
     "config.cache.scanInterval.description": "Saniye cinsinden önbellek kontrol aralığı (minimum: 30s, varsayılan: 120s)",
     "config.cache.warningSize.description": "Önbellek boyutu bu değeri (MB cinsinden) aştığında uyarı göster",

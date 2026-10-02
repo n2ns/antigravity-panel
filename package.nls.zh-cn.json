@@ -13,7 +13,7 @@
     "command.showLogs.title": "显示日志",
     "command.toggleAutoAccept.title": "切换自动接受",
     "config.cache.autoClean.description": "⚠️ 自动清理：当缓存超过警告阈值时，自动从 Brain 目录清理最旧的任务（注意：这会物理删除本地文件）",
-    "config.cache.autoCleanKeepCount.description": "自动清理时保留的最新任务数量（默认：5）",
+    "config.cache.autoCleanKeepCount.description": "清理缓存时保留的最近活跃任务数量，自动清理和 Clean Cache 命令均适用（默认：5）",
     "config.cache.hideEmptyFolders.description": "在数据缓存树视图中隐藏没有内容的空目录",
     "config.cache.scanInterval.description": "后台扫描缓存目录大小的频率（秒）",
     "config.cache.warningSize.description": "缓存大小超过此值（MB）时显示警告（默认：500MB）",

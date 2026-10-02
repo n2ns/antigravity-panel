@@ -13,7 +13,7 @@
     "command.showLogs.title": "Показать журналы",
     "command.toggleAutoAccept.title": "Toggle Agent Auto-Accept",
     "config.cache.autoClean.description": "⚠️ Автоматически удалять старые задачи из Brain при превышении порога кеша (Внимание: физические файлы будут удалены)",
-    "config.cache.autoCleanKeepCount.description": "Количество новейших задач для сохранения при автоматической очистке (по умолчанию: 5)",
+    "config.cache.autoCleanKeepCount.description": "Количество недавно активных задач, сохраняемых при очистке кэша — автоматической или командой Clean Cache (по умолчанию: 5)",
     "config.cache.hideEmptyFolders.description": "Скрывать пустые папки в древовидных представлениях Brain и Code Tracker",
     "config.cache.scanInterval.description": "Интервал проверки кеша в секундах (минимум: 30с, по умолчанию: 120с)",
     "config.cache.warningSize.description": "Показывать предупреждение, когда размер кеша превышает это значение в МБ",

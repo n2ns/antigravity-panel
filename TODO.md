@@ -34,11 +34,6 @@ English | [中文文档](docs/TODO_zh.md)
   - The IDE's temporary media directory is currently listed as a Brain task and can take a keep slot or be deleted by cleaning
   - Options: only treat UUID-named directories as tasks, or exclude `tempmediaStorage` by name
 
-### Documentation
-
-- [ ] **Update the README Auto-Accept section**
-  - The CDP setup note says the remote debugging port is only needed when the command API is unavailable, and the limitation note says the command-API path is not covered by the danger check; terminal commands are now approved only through CDP Run clicks, never through the command API
-
 ---
 
 ## 🔵 Optional Improvements (P4)

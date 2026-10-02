@@ -13,7 +13,7 @@
     "command.showLogs.title": "로그 보기",
     "command.toggleAutoAccept.title": "Toggle Agent Auto-Accept",
     "config.cache.autoClean.description": "⚠️ 캐시 크기가 경고 임계값을 초과하면 Brain에서 가장 오래된 작업을 자동 삭제 (주의: 물리적 파일이 삭제됩니다)",
-    "config.cache.autoCleanKeepCount.description": "자동 정리 시 유지할 최신 작업 수 (기본값: 5)",
+    "config.cache.autoCleanKeepCount.description": "캐시 정리 시 유지할 최근 활성 작업 수. 자동 정리와 Clean Cache 명령 모두에 적용 (기본값: 5)",
     "config.cache.hideEmptyFolders.description": "Brain 및 Code Tracker 트리 뷰에서 빈 폴더 숨기기",
     "config.cache.scanInterval.description": "캐시 확인 간격(초) (최소: 30초, 기본값: 120초)",
     "config.cache.warningSize.description": "캐시 크기가 이 값(MB)을 초과하면 경고 표시",

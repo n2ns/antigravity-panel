@@ -13,7 +13,7 @@
     "command.showLogs.title": "Lihat Log",
     "command.toggleAutoAccept.title": "Aktif/Nonaktifkan Auto-Accept",
     "config.cache.autoClean.description": "⚠️ Bersihkan otomatis tugas terlama dari Brain saat ukuran cache melebihi ambang peringatan (Catatan: Ini akan menghapus file fisik)",
-    "config.cache.autoCleanKeepCount.description": "Jumlah tugas terbaru yang dipertahankan saat pembersihan otomatis (default: 5)",
+    "config.cache.autoCleanKeepCount.description": "Jumlah tugas yang paling baru aktif yang dipertahankan saat membersihkan cache, baik oleh pembersihan otomatis maupun perintah Clean Cache (default: 5)",
     "config.cache.hideEmptyFolders.description": "Sembunyikan folder kosong di tampilan pohon Brain dan Code Tracker",
     "config.cache.scanInterval.description": "Interval pemeriksaan cache dalam detik (minimum: 30s, default: 120s)",
     "config.cache.warningSize.description": "Tampilkan peringatan saat ukuran cache melebihi nilai ini (MB)",

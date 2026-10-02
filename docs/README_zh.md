@@ -31,7 +31,7 @@
 - 🎨 **原生集成** - 适配 IDE 主题的 UI 组件设计
 - 🌍 **多语言支持** - 支持 15 种语言，包括界面和运行时通知
 - 🛠️ **连接诊断** - 内置连接检查和错误报告工具
-- 🤖 **无人值守模式** - 自动接受 Agent 命令，加速繁重的工作流
+- 🤖 **无人值守模式** - 自动接受 Agent 步骤和文件修改，终端命令需单独开启
 - ✍️ **智能提交** - 使用本地 LLM 或 Claude 自动生成提交信息
 - ⚙️ **配置快捷访问** - 一键编辑 Rules、MCP 和浏览器白名单
 - 🔄 **服务恢复** - 内置重启、重置与刷新工具，确保 Antigravity IDE 稳定运行
@@ -51,7 +51,7 @@
 
 **一眼掌握 AI 使用情况**
 - 默认按服务商定义的配额池显示；模型视图仍保留单模型身份
-- 状态栏显示剩余配额、Emoji 状态指示器（🟢🟡🔴）和缓存大小，并在配额连接失败时切换为警告状态
+- 状态栏显示剩余配额、Emoji 状态指示器（🟢🟡🔴）和缓存大小，并在配额连接失败时切换为警告状态；面板会自动重连语言服务器
 - 悬停提示显示所有模型配额和重置时间
 - 可配置的警告阈值（≤40%）和严重阈值（≤20%）
 
@@ -77,22 +77,25 @@
 - **Brain 任务**: 浏览和删除 AI 对话缓存
   - 查看任务大小、文件数和创建日期
   - 预览图片、Markdown 和代码文件
-  - 一键删除并自动清理
+  - 删除任务、上下文和单个文件前均需在模态对话框中确认
 - **代码上下文**: 按项目管理代码分析缓存
+- **Clean Cache**: 先生成清理计划（dry-run），在模态对话框中确认后才删除；保留最近活跃的任务（活跃度包含该任务会话的 `.pb`、`.db`、`.db-wal`、`.db-shm` 文件）；孤儿 `.pb` 会话文件（没有对应任务）同样保留最新的若干个，其余删除
 - **智能清理**: 自动关闭相关编辑器标签页
 
 ### 🤖 自动接受 (Hands-free Mode)
 
 **简化你的工作流程**
-- 自动接受 Agent 建议的终端命令和文件修改
-- 优先使用 IDE 已注册命令；扩展 API 无法触及的面板控件则由限定作用域的 CDP 路径处理
+- 自动接受 Agent 步骤和文件修改（`tfa.system.autoAccept`）
+- 步骤和文件修改优先使用 IDE 已注册命令；扩展 API 无法触及的面板控件则由限定作用域的 CDP 路径处理
+- 终端命令需另外开启 `tfa.system.autoAcceptTerminal`（默认关闭），且只通过 CDP 回退点击 Agent 面板中终端命令提示卡片的 Run 按钮批准；IDE accept 命令从不用于终端命令
 - 运行时命令发现：根据当前 IDE 实际注册的命令匹配 Antigravity 1.x/2.x 的不同命令 ID，IDE 升级后仍能使用命令策略
 - 按配置的间隔执行检查；每轮 CDP 都重新定位并扫描当前 Agent Panel 一次，不在页面中保留观察器或定时器，仅以短期 DOM 节点时间戳避免立即重复点击
-- CDP 交互会把疑似破坏性操作留给用户手动检查。**限制：**命令 API 无法读取待执行命令文本，因此不受此检查保护。Auto-Accept 仍是信任 Agent 的功能；处理不可信或可能遭受 prompt injection 的任务时应保持关闭
-- 通过侧边栏 "小火箭" 开关开启/关闭
+- CDP 交互会把疑似破坏性操作留给用户手动检查。对终端命令，危险检查覆盖整张提示卡片；卡片中看不到命令文本时不点击 Run。"Allow this conversation" 等持久授权从不点击。CDP 只连接 workbench 目标。Auto-Accept 仍是信任 Agent 的功能；处理不可信或可能遭受 prompt injection 的任务时应保持关闭
+- `tfa.system.autoAccept` 和 `tfa.system.autoAcceptTerminal` 为 application 作用域，对所有窗口和工作区生效
+- 通过侧边栏 "小火箭" 开关开启/关闭；开关始终显示扩展当前的 Auto-Accept 状态
 
 > [!IMPORTANT]
-> **CDP 回退设置：** 当命令 API 因 Webview 沙箱化不可用时，需要使用 `--remote-debugging-port=9222` 启动 Antigravity。
+> **CDP 回退设置：** CDP 回退需要使用 `--remote-debugging-port=9222` 启动 Antigravity。终端命令批准（`tfa.system.autoAcceptTerminal`）始终需要此端口，因为终端命令只通过 CDP 点击 Run 批准。对步骤和文件修改，仅在命令 API 因 Webview 沙箱化不可用时才需要此端口。
 
 **推荐设置（专用启动器）：**
 创建脚本以在启动前清理后台实例。
@@ -202,7 +205,7 @@ pkill -f "Antigravity"
 ### 第三步：管理缓存
 
 - 展开 **Brain** 或 **Code Tracker** 部分
-- 点击 🗑️ 删除任务或缓存
+- 点击 🗑️ 删除任务或缓存，并在对话框中确认
 - 相关编辑器标签页自动关闭
 
 > ⚠️ **注意**：删除任务将永久移除对话历史和相关文件。
@@ -216,14 +219,14 @@ pkill -f "Antigravity"
 | `Antigravity Panel: Open Panel` | 打开侧边栏面板 |
 | `Antigravity Panel: Refresh Quota` | 手动刷新配额数据 |
 | `Antigravity Panel: Show Cache Size` | 显示缓存总大小通知 |
-| `Antigravity Panel: Clean Cache` | 删除所有缓存数据（谨慎使用！）|
+| `Antigravity Panel: Clean Cache` | 先展示清理计划，确认后再删除；保留最近活跃的任务（谨慎使用！）|
 | `Antigravity Panel: Open Settings` | 打开扩展设置 |
 | `Antigravity Panel: About` | 查看隐私与安全免责声明 |
 | `Antigravity Panel: Restart Agent Service` | 重启 Antigravity 代理服务 |
 | `Antigravity Panel: Reset Status` | 重置状态更新器 |
 | `Antigravity Panel: Connectivity Diagnostics` | 运行连接诊断 |
 | `Antigravity Panel: Show Logs` | 打开输出面板日志 |
-| `Antigravity Panel: Toggle Agent Auto-Accept` | 开启/关闭自动接受命令模式 |
+| `Antigravity Panel: Toggle Agent Auto-Accept` | 开启/关闭 Auto-Accept（Hands-free Mode） |
 | `Antigravity Panel: Generate Commit Message (Local & Claude)` | 使用本地 LLM 或 Claude 生成提交信息 |
 | `Antigravity Panel: Set Anthropic API Key` | 设置 Anthropic API 密钥 |
 
@@ -256,7 +259,7 @@ pkill -f "Antigravity"
 | **警告阈值** | `500 MB` | 缓存超过此大小时状态栏显示警告颜色 |
 | **隐藏空目录** | `✗` | 在 Brain 和 Code Tracker 树中隐藏空目录 |
 | **自动清理** | `✗` | 是否在缓存过大时执行静默清理 |
-| **保留任务数** | `5` | 自动清理时保留最新任务的数量（1-50） |
+| **保留任务数** | `5` | 自动清理和 Clean Cache 时保留最近活跃任务的数量（整数，1-50） |
 
 ### 🔧 高级设置
 
@@ -264,8 +267,9 @@ pkill -f "Antigravity"
 |--------|--------|------|
 | **服务器主机** | `127.0.0.1` | Antigravity 语言服务器的地址 |
 | **API 路径** | `/exa...` | 获取用户状态的 gRPC-Web 路径 |
-| **Auto-Accept** | `✗` | 开启无人值守的 Agent 操作自动接受 |
+| **Auto-Accept** | `✗` | 开启无人值守的 Agent 步骤和文件修改自动接受 |
 | **Auto-Accept 间隔** | `800ms` | Auto-Accept 轮询间隔（200-5000ms） |
+| **Auto-Accept Terminal** | `✗` | 同时通过 CDP 点击 Run 批准终端命令（需要 `--remote-debugging-port=9222`） |
 | **调试模式** | `✗` | 开启后在输出面板显示详细的调试日志 |
 
 

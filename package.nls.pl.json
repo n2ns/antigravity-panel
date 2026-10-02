@@ -13,7 +13,7 @@
     "command.showLogs.title": "Pokaż logi",
     "command.toggleAutoAccept.title": "Toggle Agent Auto-Accept",
     "config.cache.autoClean.description": "⚠️ Automatycznie usuwaj najstarsze zadania z katalogu Brain, gdy rozmiar pamięci podręcznej przekroczy próg ostrzegawczy (Uwaga: spowoduje to usunięcie fizycznych plików)",
-    "config.cache.autoCleanKeepCount.description": "Liczba najnowszych zadań do zachowania podczas automatycznego czyszczenia (domyślnie: 5)",
+    "config.cache.autoCleanKeepCount.description": "Liczba ostatnio aktywnych zadań do zachowania podczas czyszczenia pamięci podręcznej — automatycznego lub poleceniem Clean Cache (domyślnie: 5)",
     "config.cache.hideEmptyFolders.description": "Ukryj puste foldery w widokach drzewa Brain i Code Tracker",
     "config.cache.scanInterval.description": "Interwał sprawdzania pamięci podręcznej w sekundach (minimum: 30s, domyślnie: 120s)",
     "config.cache.warningSize.description": "Pokaż ostrzeżenie, gdy rozmiar pamięci podręcznej przekroczy tę wartość w MB",

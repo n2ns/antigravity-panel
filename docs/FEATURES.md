@@ -59,12 +59,16 @@ English | [中文文档](FEATURES_zh.md)
 - Display task metadata: size, file count, creation date
 - Preview files: images, markdown, and code files
 - One-click deletion with confirmation dialog
-- Smart cleanup: keeps newest 5 tasks to prevent interrupting active work
+- **Clean Cache** first builds a dry-run clean plan and deletes exactly that plan only after modal confirmation
+- Smart cleanup: keeps the most recently active tasks (default 5, `tfa.cache.autoCleanKeepCount`) to prevent interrupting active work; activity includes the task's files and its conversation `.pb`, `.db`, `.db-wal` and `.db-shm` files
+- Conversation `.pb` files are deleted only with their cleaned task or as true orphans (no matching Brain task directory)
+- Each task is cleaned independently: a failure is logged and counted, and the remaining entries are still processed
+- Auto-clean (`tfa.cache.autoClean`) uses the same selection without a prompt
 
 ### Code Tracker Management
 - Browse code analysis caches per project
 - Folder tree view with expand/collapse
-- Delete individual files or entire directories
+- Delete individual files or entire directories; single-file deletion (also in Brain) asks for modal confirmation
 - Automatic tab closing when deleting open files
 
 ### Cache Notifications
@@ -102,6 +106,25 @@ English | [中文文档](FEATURES_zh.md)
 - Open extension settings
 
 In WSL remote sessions the shortcuts follow where Antigravity actually reads each file: Rules and MCP config target the WSL-side `~/.gemini`, while the Browser Allowlist targets the Windows-side profile (the browser runs on the Windows host). If the counterpart side cannot be located, the shortcut falls back to the local path.
+
+---
+
+## 🤖 Auto-Accept (Hands-free Mode)
+
+### Agent Action Acceptance
+- Toggle via the **Auto-Accept** switch in the sidebar footer, the **Toggle Agent Auto-Accept** command, or `tfa.system.autoAccept`
+- Accepts AI agent steps and file edits: registered Agent-scoped IDE accept commands first, then a CDP fallback that clicks accept buttons in the Agent panel
+- The CDP fallback requires starting the IDE with `--remote-debugging-port=9222` and connects only to workbench targets
+- Persistent grants (e.g. "Always allow", "Allow this conversation") are never clicked
+- Action cards that look destructive are left for manual review
+- Polling interval configurable via `tfa.system.autoAcceptInterval` (default 800ms)
+- `tfa.system.autoAccept` and `tfa.system.autoAcceptTerminal` are application-scoped (user settings, not per workspace)
+
+### Terminal Commands
+- Off by default; additionally requires `tfa.system.autoAcceptTerminal`
+- Approved only by clicking the **Run** button of a terminal command prompt card in the Agent panel through the CDP fallback; IDE accept commands are never used for terminal commands
+- The danger check covers the whole prompt card; Run is not clicked when no command text is visible in the card
+- Commands that look destructive (e.g. `rm -rf` on `/` or `~`, `git push --force`, `git reset --hard`, `Remove-Item -Recurse`, `DROP TABLE`) are left for manual review
 
 ---
 
@@ -146,6 +169,13 @@ In WSL remote sessions the shortcuts follow where Antigravity actually reads eac
 - Cross-platform Antigravity Language Server detection
 - Windows: PowerShell + netstat
 - macOS/Linux: pgrep + lsof/ss
+
+### Automatic Reconnection
+- Reconnects to the Language Server automatically after the connection is lost (2 consecutive failed polls by default), after **Restart Agent Service**, and after a failed manual refresh
+- A single re-entrant reconnect: concurrent triggers join the attempt in flight
+- Bounded retries (7 extra detection attempts, 5s apart), then background retries with backoff (30s, doubling, capped at 5 min) while the connection stays failed
+- HTTP 401/403 is reported as an authentication failure: it neither triggers a rescan nor counts toward the reconnect threshold, and polling continues
+- HTTP 5xx and unparseable responses are not treated as a lost connection and never trigger a rescan
 
 ---
 
@@ -212,14 +242,21 @@ In WSL remote sessions the shortcuts follow where Antigravity actually reads eac
 | `tfa.dashboard.historyRange` | `90` | Usage chart time range (10-120 min) |
 | `tfa.dashboard.showUserInfoCard` | `true` | Show user info card in sidebar |
 | `tfa.dashboard.showCreditsCard` | `false` | Show static Prompt/Flow rows; Google One AI remains visible |
+| `tfa.dashboard.uiScale` | `1` | Sidebar text and UI scale (0.8-2) |
+| `tfa.dashboard.showWeeklyCard` | `true` | Show the 7-day local usage estimate card |
 | `tfa.cache.scanInterval` | `120` | Cache check interval (seconds, min 30) |
 | `tfa.cache.warningSize` | `500` | Cache warning threshold (MB) |
 | `tfa.cache.hideEmptyFolders` | `false` | Hide empty folders in tree views |
 | `tfa.cache.autoClean` | `false` | Auto-clean cache |
-| `tfa.cache.autoCleanKeepCount` | `5` | Number of newest tasks to keep during auto-clean |
+| `tfa.cache.autoCleanKeepCount` | `5` | Number of most recently active tasks to keep when cleaning (integer, 1-50) |
+| `tfa.system.serverHost` | `127.0.0.1` | ⚠️ Advanced: Language Server hostname for quota metrics |
+| `tfa.system.apiPath` | `/exa.language_server_pb.LanguageServerService/GetUserStatus` | ⚠️ Advanced: API path for quota metrics |
 | `tfa.system.debugMode` | `false` | Enable debug logging |
-| `tfa.system.autoAccept` | `false` | Enable hands-free acceptance of Agent actions |
+| `tfa.system.autoAccept` | `false` | Enable hands-free acceptance of Agent steps and file edits (application scope) |
+| `tfa.system.autoAcceptTerminal` | `false` | Also approve terminal commands, only via CDP Run clicks (application scope) |
 | `tfa.system.autoAcceptInterval` | `800` | Auto-Accept polling interval in milliseconds |
+| `tfa.system.notifyOnQuotaReset` | `true` | Notify when a quota reset is detected |
+| `tfa.system.notifyOnAbnormalDrain` | `true` | Warn when quota drains while the IDE is closed or the window is unfocused with no editor activity |
 | `tfa.commitMessageClaude.endpoint` | `http://localhost:11434/api/generate` | Commit message LLM endpoint |
 | `tfa.commitMessageClaude.model` | `llama3.2` | Commit message model name |
 | `tfa.commitMessageClaude.maxDiffChars` | `80000` | Max staged diff characters sent to the LLM endpoint |

@@ -13,7 +13,7 @@
     "command.showLogs.title": "Xem Nhật ký",
     "command.toggleAutoAccept.title": "Bật/Tắt Auto-Accept",
     "config.cache.autoClean.description": "⚠️ Tự động dọn dẹp: Xóa các tác vụ cũ nhất trong Brain khi cache vượt ngưỡng cảnh báo (Lưu ý: Thao tác này sẽ xóa file vật lý)",
-    "config.cache.autoCleanKeepCount.description": "Số tác vụ mới nhất giữ lại khi tự động dọn dẹp (mặc định: 5)",
+    "config.cache.autoCleanKeepCount.description": "Số tác vụ hoạt động gần đây nhất giữ lại khi dọn bộ nhớ đệm, áp dụng cho tự động dọn dẹp và lệnh Clean Cache (mặc định: 5)",
     "config.cache.hideEmptyFolders.description": "Ẩn thư mục trống trong Brain và Code Tracker",
     "config.cache.scanInterval.description": "Chu kỳ kiểm tra kích thước cache (giây, tối thiểu: 30s, mặc định: 120s)",
     "config.cache.warningSize.description": "Hiển thị cảnh báo khi kích thước cache vượt giá trị này (MB)",

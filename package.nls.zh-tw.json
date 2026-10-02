@@ -13,7 +13,7 @@
     "command.showLogs.title": "顯示日誌",
     "command.toggleAutoAccept.title": "切換自動接受",
     "config.cache.autoClean.description": "⚠️ 當快取超過警告閾值時，自動從 Brain 清理最舊的任務（注意：這會刪除實體檔案）",
-    "config.cache.autoCleanKeepCount.description": "自動清理時保留的最新任務數量（預設：5）",
+    "config.cache.autoCleanKeepCount.description": "清理快取時保留的最近活躍任務數量，自動清理和 Clean Cache 命令皆適用（預設：5）",
     "config.cache.hideEmptyFolders.description": "在 Brain 和 Code Tracker 樹狀檢視中隱藏空資料夾",
     "config.cache.scanInterval.description": "快取檢查間隔（秒）（最小：30秒，預設：120秒）",
     "config.cache.warningSize.description": "快取大小超過此值（MB）時顯示警告",

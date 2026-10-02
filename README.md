@@ -31,7 +31,7 @@ English | [中文文档](docs/README_zh.md)
 - 🎨 **Native Integration** - UI components adapted to IDE themes
 - 🌍 **Localization** - Support for 15 languages including runtime notifications
 - 🛠️ **Diagnostics** - Built-in connection check and error reporting
-- 🤖 **Hands-free Mode** - Auto-accept agent commands for heavy workflows
+- 🤖 **Hands-free Mode** - Auto-accept agent steps and file edits, with opt-in terminal command approval
 - ✍️ **AI Commit** - Generate commit messages via Local LLM or Claude
 - ⚙️ **Quick Config Access** - One-click editing for Rules, MCP, and Allowlist
 - 🔄 **Service Recovery** - Restart, Reset, and Reload tools for Antigravity IDE stability
@@ -51,7 +51,7 @@ English | [中文文档](docs/README_zh.md)
 
 **See your AI usage at a glance**
 - Visual quota display grouped by provider-defined quota pools; model view keeps individual model identities
-- Status bar shows remaining quota with emoji indicators (🟢🟡🔴), cache size, and a warning state when the quota connection fails
+- Status bar shows remaining quota with emoji indicators (🟢🟡🔴), cache size, and a warning state when the quota connection fails; the panel reconnects to the Language Server automatically
 - Hover tooltip showing all model quotas and reset times
 - Configurable warning (≤40%) and critical (≤20%) thresholds
 
@@ -77,22 +77,25 @@ English | [中文文档](docs/README_zh.md)
 - **Brain Tasks**: Browse and delete AI conversation caches
   - See task size, file count, and creation date
   - Preview images, markdown, and code files
-  - One-click deletion with automatic cleanup
+  - Deletion of tasks, contexts, and single files asks for modal confirmation
 - **Code Context**: Manage code analysis caches per project
+- **Clean Cache**: Builds a dry-run plan first and deletes only after you confirm it in a modal dialog; the most recently active tasks are kept (activity includes the task's conversation `.pb`, `.db`, `.db-wal`, and `.db-shm` files); among orphan `.pb` conversation files (no matching task), the newest ones are kept and the rest are removed
 - **Smart Cleanup**: Automatically closes related editor tabs
 
 ### 🤖 Auto-Accept (Hands-free Mode)
 
 **Streamline your workflow**
-- Automatically accepts Agent-suggested terminal commands and file edits
-- Uses registered IDE commands first, with a panel-scoped CDP fallback for controls that are unavailable through the extension API
+- Automatically accepts Agent steps and file edits (`tfa.system.autoAccept`)
+- Steps and file edits use registered IDE commands first, with a panel-scoped CDP fallback for controls that are unavailable through the extension API
+- Terminal commands are approved only when `tfa.system.autoAcceptTerminal` is also enabled (off by default), and only by clicking the Run button of a terminal command prompt card in the Agent panel through the CDP fallback; IDE accept commands are never used for terminal commands
 - Runtime command discovery: accept commands are matched against what the running IDE actually registers (IDs differ between Antigravity 1.x and 2.x), so the command strategy keeps working across IDE upgrades
 - Checks on the configured interval; each CDP pass locates and scans the current Agent Panel once without leaving page-side observers or timers, while a short DOM-node timestamp prevents immediate repeat clicks
-- CDP interactions leave destructive-looking action cards for manual review. **Limitation:** the command-API path cannot inspect pending command text and is therefore not covered by this check. Auto-Accept remains a trust-the-agent feature; keep it off for untrusted or prompt-injection-prone tasks
-- Toggle on/off via the sidebar "Rocket" switch
+- CDP interactions leave destructive-looking action cards for manual review. For terminal commands the danger check covers the whole prompt card, and Run is not clicked when the card shows no command text. Persistent grants such as "Allow this conversation" are never clicked. CDP connects only to workbench targets. Auto-Accept remains a trust-the-agent feature; keep it off for untrusted or prompt-injection-prone tasks
+- `tfa.system.autoAccept` and `tfa.system.autoAcceptTerminal` are application-scoped, so they apply to all windows and workspaces
+- Toggle on/off via the sidebar "Rocket" switch; the switch always shows the extension's current Auto-Accept state
 
 > [!IMPORTANT]
-> **CDP Fallback Setup:** For the CDP fallback to work, Antigravity must be launched with `--remote-debugging-port=9222`. This is only needed when the command API is unavailable due to webview sandboxing.
+> **CDP Fallback Setup:** For the CDP fallback to work, Antigravity must be launched with `--remote-debugging-port=9222`. Terminal command approval (`tfa.system.autoAcceptTerminal`) always requires this port, because terminal commands are approved only through CDP Run clicks. For steps and file edits, the port is only needed when the command API is unavailable due to webview sandboxing.
 
 **Recommended Setup (Dedicated Launcher):**
 Create a script to cleanly kill background instances before launching.
@@ -201,7 +204,7 @@ Click the **Antigravity** icon in the sidebar, or:
 ### Step 3: Manage Cache
 
 - Expand **Brain** or **Code Tracker** sections
-- Click 🗑️ to delete tasks or caches
+- Click 🗑️ to delete tasks or caches, then confirm in the dialog
 - Related editor tabs close automatically
 
 > ⚠️ **Note**: Deleting tasks removes conversation history and artifacts permanently.
@@ -215,14 +218,14 @@ Open Command Palette (`Ctrl+Shift+P` / `Cmd+Shift+P`) and search for:
 | `Antigravity Panel: Open Panel` | Open the sidebar panel |
 | `Antigravity Panel: Refresh Quota` | Manually refresh quota data |
 | `Antigravity Panel: Show Cache Size` | Show total cache size notification |
-| `Antigravity Panel: Clean Cache` | Delete all cache data (use with caution!) |
+| `Antigravity Panel: Clean Cache` | Show a cleanup plan, then delete it after confirmation; the most recently active tasks are kept (use with caution!) |
 | `Antigravity Panel: Open Settings` | Open extension settings |
 | `Antigravity Panel: About` | View privacy and safety disclaimer |
 | `Antigravity Panel: Restart Agent Service` | Restart Antigravity Agent Service |
 | `Antigravity Panel: Reset Status` | Reset the status updater |
 | `Antigravity Panel: Connectivity Diagnostics` | Run connectivity diagnostics |
 | `Antigravity Panel: Show Logs` | Open the Output panel log |
-| `Antigravity Panel: Toggle Agent Auto-Accept` | Enable/Disable automatic command acceptance |
+| `Antigravity Panel: Toggle Agent Auto-Accept` | Enable/Disable Auto-Accept (Hands-free Mode) |
 | `Antigravity Panel: Generate Commit Message (Local & Claude)` | Generate commit message using Local LLM or Claude |
 | `Antigravity Panel: Set Anthropic API Key` | Configure Anthropic API Key |
 
@@ -255,7 +258,7 @@ Open Settings (`Ctrl+,` / `Cmd+,`) in Antigravity IDE and search for `tfa` to cu
 | **Warning Threshold** | `500 MB` | Status bar color warning when exceeded |
 | **Hide Empty Folders** | `✗` | Hide empty folders in Brain and Code Tracker trees |
 | **Auto Clean** | `✗` | Automatically clean cache when exceeded |
-| **Auto Clean Keep Count** | `5` | Number of newest tasks to keep during auto-clean (1-50) |
+| **Auto Clean Keep Count** | `5` | Number of most recently active tasks to keep during auto-clean and Clean Cache (integer, 1-50) |
 
 ### 🔧 Advanced Settings
 
@@ -263,8 +266,9 @@ Open Settings (`Ctrl+,` / `Cmd+,`) in Antigravity IDE and search for `tfa` to cu
 |---------|---------|-------------|
 | **Server Host** | `127.0.0.1` | Address of Antigravity Language Server |
 | **API Path** | `/exa...` | gRPC-Web path for User Status |
-| **Auto-Accept** | `✗` | Enable hands-free acceptance of Agent actions |
+| **Auto-Accept** | `✗` | Enable hands-free acceptance of Agent steps and file edits |
 | **Auto-Accept Interval** | `800ms` | Polling interval for Auto-Accept (200-5000ms) |
+| **Auto-Accept Terminal** | `✗` | Also approve terminal commands via CDP Run clicks (requires `--remote-debugging-port=9222`) |
 | **Debug Mode** | `✗` | Enable verbose logging in Output panel |
 
 

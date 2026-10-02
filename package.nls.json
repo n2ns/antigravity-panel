@@ -13,7 +13,7 @@
     "command.showLogs.title": "Show Logs",
     "command.toggleAutoAccept.title": "Toggle Agent Auto-Accept",
     "config.cache.autoClean.description": "⚠️ Automatically clean oldest tasks from Brain when cache size exceeds warning threshold (Note: This will delete physical files)",
-    "config.cache.autoCleanKeepCount.description": "Number of newest tasks to keep during automatic cleaning (default: 5)",
+    "config.cache.autoCleanKeepCount.description": "Number of most recently active tasks to keep when cleaning the cache, by auto-clean or the Clean Cache command (default: 5)",
     "config.cache.hideEmptyFolders.description": "Hide empty folders in Brain and Code Tracker tree views",
     "config.cache.scanInterval.description": "Cache check interval in seconds (minimum: 30s, default: 120s)",
     "config.cache.warningSize.description": "Show warning when cache size exceeds this value in MB",

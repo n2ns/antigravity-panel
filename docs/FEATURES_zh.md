@@ -59,12 +59,16 @@
 - 显示任务元数据：大小、文件数、创建日期
 - 预览文件：图片、Markdown、代码文件
 - 一键删除，带确认对话框
-- 智能清理：保留最新 5 个任务，避免中断正在进行的工作
+- **Clean Cache** 先生成清理计划（dry-run），模态确认后才按该计划精确删除
+- 智能清理：保留最近活跃的任务（默认 5 个，`tfa.cache.autoCleanKeepCount`），避免中断正在进行的工作；活跃度包含任务自身文件及其会话 `.pb`、`.db`、`.db-wal`、`.db-shm` 文件
+- 会话 `.pb` 文件只随被清理的任务一起删除，或作为真正的孤儿文件（没有对应的 Brain 任务目录）删除
+- 每个任务独立清理：单个失败会被记录并计数，其余条目照常处理
+- 自动清理（`tfa.cache.autoClean`）使用相同的选取规则，但不弹出确认
 
 ### Code Tracker 管理
 - 按项目浏览代码分析缓存
 - 文件夹树形视图，支持展开/折叠
-- 删除单个文件或整个目录
+- 删除单个文件或整个目录；删除单个文件（Brain 中同样适用）需模态确认
 - 删除已打开的文件时自动关闭标签页
 
 ### 缓存通知
@@ -102,6 +106,25 @@
 - 打开扩展设置
 
 在 WSL 远程会话中，快捷入口会跟随 Antigravity 实际读取的位置：规则与 MCP 配置指向 WSL 侧 `~/.gemini`，浏览器白名单指向 Windows 侧用户目录（浏览器运行在 Windows 宿主）。无法定位对侧时回退到本地路径。
+
+---
+
+## 🤖 Auto-Accept（无人值守模式）
+
+### Agent 操作自动接受
+- 通过侧边栏底部的 **Auto-Accept** 开关、**Toggle Agent Auto-Accept** 命令或 `tfa.system.autoAccept` 开启
+- 自动接受 AI agent steps 和文件编辑：先调用已注册的 Agent 范围 IDE accept 命令，再由 CDP fallback 点击 Agent 面板中的接受按钮
+- CDP fallback 需要以 `--remote-debugging-port=9222` 启动 IDE，且只连接 workbench 目标
+- 持久授权（如 "Always allow"、"Allow this conversation"）从不点击
+- 疑似破坏性的操作卡片留给人工处理
+- 轮询间隔可通过 `tfa.system.autoAcceptInterval` 配置（默认 800 毫秒）
+- `tfa.system.autoAccept` 与 `tfa.system.autoAcceptTerminal` 为 application 作用域（在用户设置中配置，不按工作区区分）
+
+### 终端命令
+- 默认关闭；还需另外开启 `tfa.system.autoAcceptTerminal`
+- 只通过 CDP fallback 点击 Agent 面板中终端命令提示卡片的 **Run** 按钮批准；IDE accept 命令从不用于终端命令
+- 危险检查覆盖整张提示卡片；卡片中看不到命令文本时不点 Run
+- 疑似破坏性的命令（如对 `/` 或 `~` 执行 `rm -rf`、`git push --force`、`git reset --hard`、`Remove-Item -Recurse`、`DROP TABLE`）留给人工处理
 
 ---
 
@@ -148,6 +171,13 @@
 - 跨平台 Antigravity Language Server 检测
 - Windows：PowerShell + netstat
 - macOS/Linux：pgrep + lsof/ss
+
+### 自动重连
+- Language Server 断连后自动重连（默认连续 2 次轮询失败）；**Restart Agent Service** 后及手动刷新失败时也会重连
+- 单一可重入重连：并发触发会加入正在进行的尝试
+- 有上限的重试（额外 7 次探测，间隔 5 秒），连接仍失败时转入后台退避重试（30 秒起，逐次翻倍，上限 5 分钟）
+- HTTP 401/403 按认证失败上报：不触发重扫，也不计入重连阈值，轮询照常继续
+- HTTP 5xx 与无法解析的响应不视为断连，也不会触发重扫
 
 ---
 
@@ -214,14 +244,21 @@
 | `tfa.dashboard.historyRange` | `90` | 使用图表时间范围（10-120 分钟） |
 | `tfa.dashboard.showUserInfoCard` | `true` | 侧边栏显示用户信息卡片 |
 | `tfa.dashboard.showCreditsCard` | `false` | 显示静态的 Prompt/Flow 行；Google One AI 始终显示 |
+| `tfa.dashboard.uiScale` | `1` | 侧边栏文字与界面缩放比例（0.8-2） |
+| `tfa.dashboard.showWeeklyCard` | `true` | 显示 7 天本地用量估算卡片 |
 | `tfa.cache.scanInterval` | `120` | 缓存检查间隔（秒，最小 30） |
 | `tfa.cache.warningSize` | `500` | 缓存警告阈值（MB） |
 | `tfa.cache.hideEmptyFolders` | `false` | 树形视图隐藏空文件夹 |
 | `tfa.cache.autoClean` | `false` | 自动清理缓存 |
-| `tfa.cache.autoCleanKeepCount` | `5` | 自动清理时保留的最新任务数量 |
+| `tfa.cache.autoCleanKeepCount` | `5` | 清理时保留的最近活跃任务数量（整数，1-50） |
+| `tfa.system.serverHost` | `127.0.0.1` | ⚠️ 高级：配额数据的语言服务器主机名 |
+| `tfa.system.apiPath` | `/exa.language_server_pb.LanguageServerService/GetUserStatus` | ⚠️ 高级：配额数据的 API 路径 |
 | `tfa.system.debugMode` | `false` | 启用调试日志 |
-| `tfa.system.autoAccept` | `false` | 开启无人值守的 Agent 操作自动接受 |
+| `tfa.system.autoAccept` | `false` | 开启无人值守的 Agent steps 与文件编辑自动接受（application 作用域） |
+| `tfa.system.autoAcceptTerminal` | `false` | 同时批准终端命令，仅通过 CDP 点击 Run（application 作用域） |
 | `tfa.system.autoAcceptInterval` | `800` | Auto-Accept 轮询间隔（毫秒） |
+| `tfa.system.notifyOnQuotaReset` | `true` | 检测到配额重置时通知 |
+| `tfa.system.notifyOnAbnormalDrain` | `true` | IDE 关闭期间或窗口失焦且无编辑活动时配额下降则告警 |
 | `tfa.commitMessageClaude.endpoint` | `http://localhost:11434/api/generate` | 提交信息生成使用的 LLM 端点 |
 | `tfa.commitMessageClaude.model` | `llama3.2` | 提交信息生成模型名称 |
 | `tfa.commitMessageClaude.maxDiffChars` | `80000` | 发送到 LLM 端点的暂存 Diff 最大字符数 |
