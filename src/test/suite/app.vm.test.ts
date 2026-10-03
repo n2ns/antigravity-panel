@@ -1541,7 +1541,7 @@ suite('AppViewModel Test Suite', () => {
     });
 
     test('refreshCache should keep the files of expanded folders', async () => {
-        const tasks = [{ id: 'task-1', label: 'Task One', path: '/brain/task-1', size: 100, fileCount: 2, createdAt: 1000 }];
+        const tasks = [{ id: 'task-1', label: 'Task One', path: '/brain/task-1', size: 100, createdAt: 1000 }];
         const contexts = [{ id: 'ctx-1', name: 'Context One', size: 100, lastModified: 1000 }];
         mockCache.getCacheInfo = async () => ({ totalSize: 200, brainSize: 100, conversationsSize: 100, brainTasks: tasks, codeContexts: contexts });
         let taskLoads = 0;

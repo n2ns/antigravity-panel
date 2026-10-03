@@ -158,7 +158,6 @@ suite('App Initialization & Cache Integration Test', () => {
                     label: 'Task 1',
                     path: '/tmp/task-1',
                     size: 1024,
-                    fileCount: 1,
                     createdAt: 1234
                 }],
                 codeContexts: [{

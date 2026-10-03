@@ -69,11 +69,10 @@ export class CacheService implements ICacheService {
                 if (!entry.isDirectory() || !UUID_PATTERN.test(entry.name)) continue;
 
                 const taskPath = path.join(this.baseBrainDir, entry.name);
-                let size: number, fileCount: number, label: string, stat: fs.Stats;
+                let size: number, label: string, stat: fs.Stats;
                 try {
-                    [size, fileCount, label, stat] = await Promise.all([
+                    [size, label, stat] = await Promise.all([
                         this.getDirectorySize(taskPath),
-                        this.getFileCount(taskPath),
                         this.getTaskLabel(taskPath, entry.name),
                         fs.promises.stat(taskPath),
                     ]);
@@ -86,7 +85,6 @@ export class CacheService implements ICacheService {
                     label,
                     path: taskPath,
                     size,
-                    fileCount,
                     createdAt: stat.birthtimeMs || stat.mtimeMs,
                 });
             }
@@ -431,18 +429,6 @@ export class CacheService implements ICacheService {
             }
 
             return totalSize;
-        } catch {
-            return 0;
-        }
-    }
-
-    /**
-     * Get the number of files in a directory
-     */
-    private async getFileCount(dirPath: string): Promise<number> {
-        try {
-            const entries = await fs.promises.readdir(dirPath, { withFileTypes: true });
-            return entries.filter((e) => e.isFile()).length;
         } catch {
             return 0;
         }

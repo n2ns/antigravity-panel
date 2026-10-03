@@ -222,8 +222,6 @@ export interface BrainTask {
   path: string;
   /** Task size (bytes) */
   size: number;
-  /** File count */
-  fileCount: number;
   /** Creation timestamp (ms) */
   createdAt: number;
 }
