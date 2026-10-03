@@ -15,21 +15,7 @@ Antigravity Panel is an extension for Google Antigravity IDE, built on the VS Co
 
 ## Repository map
 
-| Path | Purpose |
-|---|---|
-| `src/extension.ts` | Entry point: activation phases, dependency wiring, command registration |
-| `src/model/services/` | Business logic: quota, cache, storage, automation, connection; interfaces in `interfaces.ts` |
-| `src/model/strategy.ts`, `src/shared/config/quota_strategy.json` | Mapping from server model rows to quota pools |
-| `src/view-model/app.vm.ts` | `AppViewModel`, the single owner of UI state |
-| `src/view/` | Sidebar webview provider, status bar, HTML/CSP builder; Lit components under `webview/components/` |
-| `src/shared/` | Config manager, platform and process detection, utilities (scheduler, retry, http client, logger, wsl) |
-| `src/commitMessageClaude.ts` | Standalone commit message generator; the only feature that may send data off-machine |
-| `src/test/` | Mocha tests: `suite/` unit tests, `suite/integration/` live-server tests, `mocks/` vscode mock |
-| `l10n/`, `package.nls*.json` | Runtime and manifest strings, one file per locale |
-| `scripts/` | `check_l10n.js`, `sync-build.js`, and `debug/` real-server diagnostics |
-| `docs/` | Project documentation; see the index at the end |
-
-Layer-by-layer description: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+The directory layout and the layer-by-layer description are in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md#repository-layout).
 
 ## Quality checks
 
@@ -122,15 +108,4 @@ Other commands: `npm run watch` (development build with sourcemaps), `npm run pa
 
 ## Documentation index
 
-| File | Audience and responsibility |
-|---|---|
-| `README.md` | Users: what it does, installation, quick start, commands |
-| `docs/FEATURES.md` | Users: full feature behavior and the complete settings table; opened by the sidebar **Docs** button |
-| `CHANGELOG.md` | Version history |
-| `TODO.md` | Pending work only |
-| `CONTRIBUTING.md` | Contributors: environment, debugging, checks, PR workflow |
-| `docs/ARCHITECTURE.md` | Maintainers and agents: layers, lifecycle, connection, tests |
-| `docs/QUOTA_DATA_MODEL.md` | Quota domain model and display logic |
-| `docs/DEBUGGING.md` | Real-server debugging tools |
-| `docs/LOCALIZATION_RULES.md` | Localization rules |
-| `docs/DISCLAIMER.md` | Legal notice shipped in the VSIX |
+Which document covers what, and for whom: [CONTRIBUTING.md](CONTRIBUTING.md#-documentation).

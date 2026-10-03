@@ -114,6 +114,23 @@ The extension ships a manifest and a runtime string file for every supported loc
 
 ---
 
+## 📚 Documentation
+
+| File | Audience and responsibility |
+|---|---|
+| [README.md](README.md) | Users: what it does, installation, quick start, commands |
+| [docs/FEATURES.md](docs/FEATURES.md) | Users: full feature behavior and the complete settings table; opened by the sidebar **Docs** button |
+| [CHANGELOG.md](CHANGELOG.md) | Version history |
+| [TODO.md](TODO.md) | Pending work only |
+| [CONTRIBUTING.md](CONTRIBUTING.md) | Contributors: environment, debugging, checks, PR workflow |
+| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Maintainers and agents: layers, lifecycle, connection, tests |
+| [docs/QUOTA_DATA_MODEL.md](docs/QUOTA_DATA_MODEL.md) | Quota domain model and display logic |
+| [docs/DEBUGGING.md](docs/DEBUGGING.md) | Real-server debugging tools |
+| [docs/LOCALIZATION_RULES.md](docs/LOCALIZATION_RULES.md) | Localization rules |
+| [docs/DISCLAIMER.md](docs/DISCLAIMER.md) | Legal notice shipped in the VSIX |
+
+---
+
 ## 🚀 Pull Request (PR) Workflow
 
 1.  **Create a Branch:** Create a branch named `feat/your-feature-name` or `fix/your-fix-name`.
