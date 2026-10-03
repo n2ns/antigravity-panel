@@ -273,7 +273,7 @@ The **Restart**, **Reset**, and **Reload** buttons in the sidebar footer:
 | `tfa.cache.hideEmptyFolders` | `false` | Hide empty folders in tree views |
 | `tfa.cache.autoClean` | `false` | Auto-clean cache |
 | `tfa.cache.autoCleanKeepCount` | `5` | Number of most recently active tasks to keep when cleaning (integer, 1-50) |
-| `tfa.system.serverHost` | `127.0.0.1` | ⚠️ Advanced: Language Server hostname for quota metrics |
+| `tfa.system.serverHost` | `127.0.0.1` | ⚠️ Advanced: Language Server hostname for quota metrics; in WSL, a server that answers only on the Windows host IP is reached there automatically |
 | `tfa.system.apiPath` | `/exa.language_server_pb.LanguageServerService/GetUserStatus` | ⚠️ Advanced: API path for quota metrics |
 | `tfa.system.debugMode` | `false` | Enable debug logging |
 | `tfa.system.autoAccept` | `false` | Enable hands-free acceptance of Agent steps and file edits (application scope) |

@@ -1,4 +1,6 @@
 import * as assert from "assert";
+import * as sinon from "sinon";
+import * as wsl from "../../shared/utils/wsl";
 import { ProcessFinder } from "../../shared/platform/process_finder";
 
 /**
@@ -237,5 +239,46 @@ suite("Workspace ID Normalization Test Suite", () => {
       const result = normalizeUnixPath("/Users/bob/open source/project");
       assert.strictEqual(result, "file_Users_bob_open_20source_project");
     });
+  });
+});
+
+suite("ProcessFinder WSL host IP", () => {
+  /** Answers only on the hosts listed in `reachable` */
+  class HostProbeFinder extends ProcessFinder {
+    constructor(private reachable: string[]) {
+      super();
+    }
+    protected async testPort(hostname: string) {
+      const success = this.reachable.includes(hostname);
+      return { success, statusCode: success ? 200 : 0, protocol: "http" as const };
+    }
+  }
+
+  const info = { pid: 1, ppid: 0, extensionPort: 4321, csrfToken: "token" };
+
+  function verify(finder: ProcessFinder) {
+    const access = finder as unknown as {
+      getListeningPorts(pid: number): Promise<number[]>;
+      verifyAndConnect(i: typeof info): Promise<{ port: number; csrfToken: string; host?: string } | null>;
+    };
+    access.getListeningPorts = async () => [4321];
+    return access.verifyAndConnect(info);
+  }
+
+  setup(() => {
+    sinon.stub(wsl, "isWsl").returns(true);
+    sinon.stub(wsl, "getWslHostIp").returns("172.28.16.1");
+  });
+
+  teardown(() => sinon.restore());
+
+  test("returns the WSL host IP when only it answers", async () => {
+    const result = await verify(new HostProbeFinder(["172.28.16.1"]));
+    assert.deepStrictEqual(result, { port: 4321, csrfToken: "token", host: "172.28.16.1" });
+  });
+
+  test("returns no host when localhost answers", async () => {
+    const result = await verify(new HostProbeFinder(["127.0.0.1", "172.28.16.1"]));
+    assert.deepStrictEqual(result, { port: 4321, csrfToken: "token" });
   });
 });

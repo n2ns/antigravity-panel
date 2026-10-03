@@ -132,6 +132,8 @@ export interface LanguageServerInfo {
   port: number;
   /** CSRF authentication token */
   csrfToken: string;
+  /** Host that answered during discovery when it is not localhost (WSL NAT host IP) */
+  host?: string;
 }
 
 /**

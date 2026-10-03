@@ -194,7 +194,7 @@ export class AmbientDiscovery {
                 const ip = getWslHostIp();
                 if (ip && ip !== "127.0.0.1") {
                     const authWsl = await verifyServerGateway(ip, port, meta.csrfToken);
-                    if (authWsl.success) return { port, csrfToken: meta.csrfToken };
+                    if (authWsl.success) return { port, csrfToken: meta.csrfToken, host: ip };
                 }
             }
         }

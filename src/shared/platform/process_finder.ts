@@ -552,13 +552,13 @@ export class ProcessFinder {
       this.portsFromCmdline = 1;
     }
 
-    const workingPort = await this.findWorkingPort(
+    const working = await this.findWorkingPort(
       info.pid,
       ports,
       info.csrfToken,
       info.extensionPort,
     );
-    if (!workingPort) {
+    if (!working) {
       const hasAuthFailure = this.attemptDetails.some(
         (a) =>
           a.pid === info.pid && (a.statusCode === 401 || a.statusCode === 403),
@@ -568,8 +568,9 @@ export class ProcessFinder {
     }
 
     return {
-      port: workingPort,
+      port: working.port,
       csrfToken: info.csrfToken,
+      ...(working.host ? { host: working.host } : {}),
     };
   }
 
@@ -613,7 +614,7 @@ export class ProcessFinder {
     ports: number[],
     csrfToken: string,
     cmdlinePort?: number,
-  ): Promise<number | null> {
+  ): Promise<{ port: number; host?: string } | null> {
     for (const port of ports) {
       // 1. Try localhost first (standard for Windows, macOS, and WSL Mirrored)
       let result = await this.testPort("127.0.0.1", port, csrfToken);
@@ -633,7 +634,7 @@ export class ProcessFinder {
 
       if (result.success) {
         this.protocolUsed = result.protocol;
-        return port;
+        return { port };
       }
 
       // 2. If localhost failed and we are in WSL, try the Host IP (for NAT mode)
@@ -658,7 +659,7 @@ export class ProcessFinder {
 
           if (result.success) {
             this.protocolUsed = result.protocol;
-            return port;
+            return { port, host: hostIp };
           }
         }
       }

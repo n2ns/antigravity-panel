@@ -1,4 +1,6 @@
 import * as assert from 'assert';
+import * as sinon from 'sinon';
+import * as httpClient from '../../shared/utils/http_client';
 import { ContextService } from '../../model/services/context.service';
 import { ConfigManager, IConfigReader } from '../../shared/config/config_manager';
 
@@ -159,5 +161,27 @@ suite('ContextService Test Suite', () => {
 
         const thrown = createService({ GetAllCascadeTrajectories: new Error('ECONNREFUSED') });
         assert.strictEqual(await thrown.fetchContext(), null);
+    });
+});
+
+suite('ContextService request host', () => {
+    teardown(() => sinon.restore());
+
+    test('should use the host found during discovery, else the configured host', async () => {
+        const hosts: string[] = [];
+        sinon.stub(httpClient, 'httpRequest').callsFake(async (options) => {
+            hosts.push(options.hostname);
+            return { statusCode: 200, data: {} as never, protocol: 'http' };
+        });
+        const service = new ContextService(new ConfigManager(reader));
+        const request = (s: ContextService) =>
+            (s as unknown as { request(method: string, body: object): Promise<unknown> }).request('M', {});
+
+        service.setServerInfo({ port: 1234, csrfToken: 'token', host: '172.28.16.1' });
+        await request(service);
+        service.setServerInfo({ port: 1234, csrfToken: 'token' });
+        await request(service);
+
+        assert.deepStrictEqual(hosts, ['172.28.16.1', '127.0.0.1']);
     });
 });

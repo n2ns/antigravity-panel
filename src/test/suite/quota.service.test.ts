@@ -16,6 +16,7 @@ class MockConfigReader implements IConfigReader {
 }
 
 import { HttpResponse } from '../../shared/utils/http_client';
+import * as httpClient from '../../shared/utils/http_client';
 
 // Test Subclass to mock protected request method
 class TestQuotaService extends QuotaService {
@@ -428,5 +429,27 @@ suite('QuotaService Test Suite', () => {
                 assert.strictEqual(receivedError, undefined);
             }
         });
+    });
+});
+
+suite('QuotaService request host', () => {
+    teardown(() => sinon.restore());
+
+    test('should use the host found during discovery, else the configured host', async () => {
+        const hosts: string[] = [];
+        sinon.stub(httpClient, 'httpRequest').callsFake(async (options) => {
+            hosts.push(options.hostname);
+            return { statusCode: 200, data: {} as never, protocol: 'http' };
+        });
+        const service = new QuotaService(new ConfigManager(new MockConfigReader()));
+        const request = (s: QuotaService) =>
+            (s as unknown as { request(path: string, body: object): Promise<unknown> }).request('/p', {});
+
+        service.setServerInfo({ port: 1234, csrfToken: 'token', host: '172.28.16.1' });
+        await request(service);
+        service.setServerInfo({ port: 1234, csrfToken: 'token' });
+        await request(service);
+
+        assert.deepStrictEqual(hosts, ['172.28.16.1', '127.0.0.1']);
     });
 });

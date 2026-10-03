@@ -190,7 +190,7 @@ export class QuotaService implements IQuotaService {
         }
 
         const config = this.configManager.getConfig();
-        const host = config["system.serverHost"];
+        const host = this.serverInfo.host || config["system.serverHost"];
 
         const response = await httpRequest<T>({
             hostname: host,

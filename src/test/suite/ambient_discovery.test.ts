@@ -1,4 +1,7 @@
 import * as assert from "assert";
+import * as sinon from "sinon";
+import * as wsl from "../../shared/utils/wsl";
+import * as detection from "../../shared/platform/detection_utils";
 import {
   AmbientDiscovery,
   parseAmbientListeningPorts,
@@ -105,5 +108,37 @@ suite("AmbientDiscovery Test Suite", () => {
       parseAmbientListeningPorts(output, "linux", 1529),
       [42100],
     );
+  });
+});
+
+suite("AmbientDiscovery WSL host IP", () => {
+  const meta: ProcessInfo = { pid: 1, ppid: 0, extensionPort: 0, csrfToken: "token" };
+
+  function probe(reachable: string[]) {
+    sinon.stub(detection, "verifyServerGateway").callsFake(async (host: string) => {
+      const success = reachable.includes(host);
+      return { success, statusCode: success ? 200 : 0, protocol: "http" as const };
+    });
+    const discovery = new AmbientDiscovery() as unknown as {
+      lookupPorts(pid: number): Promise<number[]>;
+      probeAndEstablish(m: ProcessInfo): Promise<unknown>;
+    };
+    discovery.lookupPorts = async () => [4321];
+    return discovery.probeAndEstablish(meta);
+  }
+
+  setup(() => {
+    sinon.stub(wsl, "isWsl").returns(true);
+    sinon.stub(wsl, "getWslHostIp").returns("172.28.16.1");
+  });
+
+  teardown(() => sinon.restore());
+
+  test("returns the WSL host IP when only it answers", async () => {
+    assert.deepStrictEqual(await probe(["172.28.16.1"]), { port: 4321, csrfToken: "token", host: "172.28.16.1" });
+  });
+
+  test("returns no host when localhost answers", async () => {
+    assert.deepStrictEqual(await probe(["127.0.0.1"]), { port: 4321, csrfToken: "token" });
   });
 });

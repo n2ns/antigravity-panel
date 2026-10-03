@@ -155,7 +155,7 @@ export class ContextService implements IContextService {
     protected async request<T>(method: string, body: object) {
         const info = this.serverInfo!;
         return httpRequest<T>({
-            hostname: this.configManager.getConfig()["system.serverHost"],
+            hostname: info.host || this.configManager.getConfig()["system.serverHost"],
             port: info.port,
             path: SERVICE_PATH + method,
             method: 'POST',
