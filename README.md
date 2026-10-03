@@ -18,22 +18,6 @@
 
 > 🚀 **Featured in Google AI Blog:** [Where we're going, we don't need chatbots: introducing the Antigravity IDE](https://dev.to/googleai/where-were-going-we-dont-need-chatbots-introducing-the-antigravity-ide-2c3k)
 
-
-**Antigravity Panel** helps you stay on top of your AI model usage in **Google Antigravity IDE**. Get real-time quota monitoring, usage trends, and cache management—all within an integrated sidebar panel.
-
-## ✨ Features at a Glance
-
-- 🎯 **Quota Monitoring** - Real-time status with visual thresholds
-- 📊 **Usage Analytics** - Interactive charts and history tracking
-- 🧹 **Cache Management** - Manage AI conversation history and files
-- 🎨 **Native Integration** - UI components adapted to IDE themes
-- 🌍 **Localization** - Support for 15 languages including runtime notifications
-- 🛠️ **Diagnostics** - Built-in connection check and error reporting
-- 🤖 **Hands-free Mode** - Auto-accept agent steps and file edits, with opt-in terminal command approval
-- ✍️ **AI Commit** - Generate commit messages via Local LLM or Claude
-- ⚙️ **Quick Config Access** - One-click editing for Rules, MCP, and Allowlist
-- 🔄 **Service Recovery** - Restart, Reset, and Reload tools for Antigravity IDE stability
-
 ## 📸 Screenshots
 
 | | |
@@ -59,7 +43,7 @@ Shows your Google One AI subscription credit; Prompt and Flow credit rows can be
 
 ### 🗂️ Cache Management
 
-Browse, preview, and delete the IDE's conversation (**Brain**) and **Code Tracker** caches, with a confirmation before anything is deleted. **Clean Cache** shows what it will remove first and always keeps your most recently active tasks. [Details →](docs/FEATURES.md#brain-tasks-management)
+Browse, preview, and delete the IDE's conversation (**Brain**) and **Code Tracker** caches, with a confirmation before anything is deleted. **Clean Cache** shows what it will remove first and always keeps your most recently active tasks. Deleted conversation history and artifacts cannot be recovered. [Details →](docs/FEATURES.md#brain-tasks-management)
 
 ### 🤖 Auto-Accept (Hands-free Mode)
 
@@ -74,7 +58,7 @@ Generate a commit message for your staged changes with a local LLM (such as Olla
 
 ### 🔄 Service Recovery
 
-**Restart**, **Reset**, and **Reload** buttons in the sidebar footer for when the Agent stops responding or quota stops updating. [Details →](docs/FEATURES.md#-service-recovery)
+When the Agent stops responding or the panel shows no data, run `Antigravity Panel: Connectivity Diagnostics` or `Antigravity Panel: Show Logs`, or use the **Restart**, **Reset**, and **Reload** buttons in the sidebar footer. [Details →](docs/FEATURES.md#-service-recovery)
 
 ### ⚙️ Quick Configuration Access
 
@@ -110,27 +94,11 @@ For version history and release notes, see the [Changelog](CHANGELOG.md).
 
 ## 🎯 Quick Start
 
-### Step 1: Open the Panel
+1. Make sure Antigravity IDE is running and you are signed in — the panel reads quota from the IDE's local Language Server.
+2. Click the **Antigravity Panel** icon in the activity bar (or run `Antigravity Panel: Open Panel`).
+3. Your quota pools appear within a few seconds; hover the status bar item for every pool at a glance.
 
-Click the **Antigravity** icon in the sidebar, or:
-- Press `Ctrl+Shift+P` (Windows/Linux) or `Cmd+Shift+P` (macOS)
-- Type `Antigravity Panel: Open Panel`
-- Press Enter
-
-### Step 2: Monitor Your Quota
-
-- **Pie charts** show each shared quota pool once; model view keeps individual models
-- **Hover** over charts to see detailed limits
-- **Status bar** displays active model quota and cache size
-- **Usage chart** shows consumption trends
-
-### Step 3: Manage Cache
-
-- Expand **Brain** or **Code Tracker** sections
-- Click 🗑️ to delete tasks or caches, then confirm in the dialog
-- Related editor tabs close automatically
-
-> ⚠️ **Note**: Deleting tasks removes conversation history and artifacts permanently.
+**No data?** Run `Antigravity Panel: Connectivity Diagnostics`, check `Antigravity Panel: Show Logs`, or click **Restart** in the sidebar footer.
 
 ## 🛠️ Available Commands
 
