@@ -4,6 +4,8 @@
 
 ### Added
 
+- **Conversation Context Window**: A `Context` card under the gauges shows how full the current conversation's context window is (tokens of the latest model call against the model's limit, as estimated by the Language Server), with the conversation title and model. The IDE lets a conversation fill its context completely and then compresses it, which can drop most earlier details; the panel now warns once when usage crosses `tfa.context.warningThreshold` (default 80%) and notifies when a compression happens, and the card marks the time of the compression.
+
 - **Auto-Accept Runtime Status**: While Auto-Accept is on, the sidebar footer shows what the automation can actually reach: whether the CDP debugging port answers, an Agent panel target is connected and the Agent panel is found in it, how many IDE accept commands are registered, and the last action it accepted or left for manual review with the reason (destructive command, no visible command text, or terminal approval turned off). When the debugging port does not answer, a `Setup` button opens the instructions for starting the IDE with `--remote-debugging-port=9222`. Only observed state is shown; nothing appears for a check that has not run yet.
 
 ### Fixed

@@ -103,5 +103,10 @@
     "Left for manual review: \"{0}\" at {1} ({2})": "留待手動處理：「{0}」，{1}（{2}）",
     "destructive command": "危險指令",
     "no command text visible": "看不到指令內容",
-    "terminal approval is off": "終端機核准未開啟"
+    "terminal approval is off": "終端機核准未開啟",
+    "Context": "Context",
+    "Context window of the current conversation: tokens of the latest model call, as estimated by the Language Server. When it is full, the IDE compresses the conversation and earlier details may be lost.": "目前對話的上下文視窗：最近一次模型呼叫的 token 數（Language Server 估算值）。用滿後 IDE 會壓縮對話，早期細節可能遺失。",
+    "Compressed at {0}": "壓縮於 {0}",
+    "The conversation context is {0}% full. When it is full, the IDE compresses the conversation and earlier details may be lost. Consider starting a new conversation.": "對話上下文已用 {0}%。用滿後 IDE 會壓縮對話，早期細節可能遺失。建議開啟新對話。",
+    "The IDE compressed the conversation context to {0}% to stay within the limit. Earlier details of the conversation may be lost.": "為了不超出上限，IDE 已將對話上下文壓縮到 {0}%。對話的早期細節可能已遺失。"
 }

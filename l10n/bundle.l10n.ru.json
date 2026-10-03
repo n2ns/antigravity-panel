@@ -103,5 +103,10 @@
     "Left for manual review: \"{0}\" at {1} ({2})": "Оставлено для ручной проверки: «{0}» в {1} ({2})",
     "destructive command": "разрушительная команда",
     "no command text visible": "текст команды не виден",
-    "terminal approval is off": "подтверждение команд терминала выключено"
+    "terminal approval is off": "подтверждение команд терминала выключено",
+    "Context": "Context",
+    "Context window of the current conversation: tokens of the latest model call, as estimated by the Language Server. When it is full, the IDE compresses the conversation and earlier details may be lost.": "Контекстное окно текущего диалога: токены последнего вызова модели по оценке Language Server. Когда оно заполнится, IDE сожмёт диалог, и ранние подробности могут быть потеряны.",
+    "Compressed at {0}": "Сжато в {0}",
+    "The conversation context is {0}% full. When it is full, the IDE compresses the conversation and earlier details may be lost. Consider starting a new conversation.": "Контекст диалога заполнен на {0}%. Когда он заполнится, IDE сожмёт диалог, и ранние подробности могут быть потеряны. Рекомендуется начать новый диалог.",
+    "The IDE compressed the conversation context to {0}% to stay within the limit. Earlier details of the conversation may be lost.": "IDE сжала контекст диалога до {0}%, чтобы уложиться в лимит. Ранние подробности диалога могли быть потеряны."
 }

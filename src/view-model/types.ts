@@ -6,7 +6,7 @@
  */
 
 import type { UserCredit } from '../model/types/entities';
-import type { AutomationStatus } from '../model/services/interfaces';
+import type { AutomationStatus, ConversationContext } from '../model/services/interfaces';
 
 // ==================== Quota View State ====================
 
@@ -43,6 +43,20 @@ export interface QuotaDisplayItem {
     themeColor: string;
     /** Official weekly limit of the pool (pool view only) */
     weekly?: QuotaWeeklyState;
+}
+
+/** Context window of the current conversation, ready for display */
+export interface ContextViewData {
+    title: string;
+    model: string;
+    usedTokens: number;
+    maxTokens: number;
+    /** usedTokens / maxTokens, 0..100 */
+    percent: number;
+    /** tfa.context.warningThreshold */
+    warningThreshold: number;
+    /** When this session observed the latest compression (epoch ms); null when none was observed */
+    compressedAt: number | null;
 }
 
 /** Local 7-day usage estimate across all quota pools */
@@ -192,6 +206,8 @@ export interface SidebarData {
     chart: UsageChartData;
     /** null = card disabled or no data yet (explicit so the webview can clear it) */
     weekly: WeeklyUsageData | null;
+    /** null = no current conversation or no data (explicit so the webview can clear it) */
+    context: ContextViewData | null;
     cache: Pick<CacheViewState, 'formattedBrain' | 'formattedConversations'>;
     user?: UserViewState;
     tokenUsage?: TokenUsageViewState;
@@ -221,6 +237,8 @@ export interface AppState {
     tree: TreeViewState;
     connectionStatus: ConnectionStatus;
     failureReason?: 'no_process' | 'no_port' | 'auth_failed' | 'workspace_mismatch' | null;
+    /** Current conversation as last read from the Language Server */
+    context: ConversationContext | null;
     automation: {
         enabled: boolean;
         status: AutomationStatus;

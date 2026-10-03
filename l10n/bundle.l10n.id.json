@@ -103,5 +103,10 @@
     "Left for manual review: \"{0}\" at {1} ({2})": "Dibiarkan untuk ditinjau manual: \"{0}\" pada {1} ({2})",
     "destructive command": "perintah destruktif",
     "no command text visible": "teks perintah tidak terlihat",
-    "terminal approval is off": "persetujuan terminal nonaktif"
+    "terminal approval is off": "persetujuan terminal nonaktif",
+    "Context": "Context",
+    "Context window of the current conversation: tokens of the latest model call, as estimated by the Language Server. When it is full, the IDE compresses the conversation and earlier details may be lost.": "Jendela konteks percakapan saat ini: token dari panggilan model terakhir, menurut perkiraan Language Server. Saat penuh, IDE memadatkan percakapan dan detail sebelumnya bisa hilang.",
+    "Compressed at {0}": "Dipadatkan pada {0}",
+    "The conversation context is {0}% full. When it is full, the IDE compresses the conversation and earlier details may be lost. Consider starting a new conversation.": "Konteks percakapan sudah terisi {0}%. Saat penuh, IDE akan memadatkan percakapan dan detail sebelumnya bisa hilang. Pertimbangkan untuk memulai percakapan baru.",
+    "The IDE compressed the conversation context to {0}% to stay within the limit. Earlier details of the conversation may be lost.": "IDE memadatkan konteks percakapan menjadi {0}% agar tetap dalam batas. Detail percakapan sebelumnya mungkin hilang."
 }

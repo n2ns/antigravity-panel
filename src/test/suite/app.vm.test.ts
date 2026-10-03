@@ -4,7 +4,7 @@ import * as sinon from 'sinon';
 import { AppViewModel } from '../../view-model/app.vm';
 import { QuotaStrategyManager } from '../../model/strategy';
 import { ConfigManager, IConfigReader } from '../../shared/config/config_manager';
-import type { IQuotaService, ICacheService, IStorageService, IAutomationService, AutomationStatus } from '../../model/services/interfaces';
+import type { IQuotaService, ICacheService, IStorageService, IAutomationService, AutomationStatus, IContextService, ConversationContext } from '../../model/services/interfaces';
 import type { QuotaSnapshot } from '../../model/types/entities';
 
 // Mock Automation Service
@@ -15,6 +15,11 @@ const defaultMockAutomationService: IAutomationService = {
     setAcceptTerminalCommands: () => { },
     getStatus: () => ({ running: false, commandCount: null, cdp: 'unknown', lastAction: null }),
     onStatusChange: () => { }
+};
+
+const defaultMockContextService: IContextService = {
+    setServerInfo: () => { },
+    fetchContext: async () => null
 };
 
 // Mock Config Reader (reused)
@@ -98,7 +103,7 @@ suite('AppViewModel Test Suite', () => {
         mockCache = { ...defaultMockCacheService };
         mockStorage = { ...defaultMockStorageService };
 
-        vm = new AppViewModel(mockQuota, mockCache, mockStorage, configManager, strategyManager, defaultMockAutomationService);
+        vm = new AppViewModel(mockQuota, mockCache, mockStorage, configManager, strategyManager, defaultMockAutomationService, defaultMockContextService);
     });
 
     teardown(() => {
@@ -118,7 +123,7 @@ suite('AppViewModel Test Suite', () => {
             setAcceptTerminalCommands: (enabled: boolean) => { terminalCalls.push(enabled); }
         };
         configReader.set('system.autoAcceptTerminal', true);
-        vm = new AppViewModel(mockQuota, mockCache, mockStorage, configManager, strategyManager, automation);
+        vm = new AppViewModel(mockQuota, mockCache, mockStorage, configManager, strategyManager, automation, defaultMockContextService);
         assert.deepStrictEqual(terminalCalls, [true]);
 
         configReader.set('system.autoAcceptTerminal', false);
@@ -136,7 +141,7 @@ suite('AppViewModel Test Suite', () => {
         // A cache scan that never finishes must not delay the terminal switch
         mockCache.getCacheInfo = () => new Promise(() => { });
         configReader.set('system.autoAcceptTerminal', true);
-        vm = new AppViewModel(mockQuota, mockCache, mockStorage, configManager, strategyManager, automation);
+        vm = new AppViewModel(mockQuota, mockCache, mockStorage, configManager, strategyManager, automation, defaultMockContextService);
 
         configReader.set('system.autoAcceptTerminal', false);
         void vm.onConfigurationChanged();
@@ -153,7 +158,7 @@ suite('AppViewModel Test Suite', () => {
             setAcceptTerminalCommands: (enabled: boolean) => { terminalCalls.push(enabled); }
         };
         mockCache.getCacheInfo = async () => { throw new Error('scan failed'); };
-        vm = new AppViewModel(mockQuota, mockCache, mockStorage, configManager, strategyManager, automation);
+        vm = new AppViewModel(mockQuota, mockCache, mockStorage, configManager, strategyManager, automation, defaultMockContextService);
 
         configReader.set('system.autoAcceptInterval', 1200);
         configReader.set('system.autoAcceptTerminal', true);
@@ -178,7 +183,7 @@ suite('AppViewModel Test Suite', () => {
             reader.set(key, value);
             await vm.onConfigurationChanged();
         };
-        vm = new AppViewModel(mockQuota, mockCache, mockStorage, new ConfigManager(reader), strategyManager, automation);
+        vm = new AppViewModel(mockQuota, mockCache, mockStorage, new ConfigManager(reader), strategyManager, automation, defaultMockContextService);
 
         await vm.toggleAutoAccept();
         assert.strictEqual(vm.getState().automation.enabled, true);
@@ -195,7 +200,7 @@ suite('AppViewModel Test Suite', () => {
             ...defaultMockAutomationService,
             onStatusChange: (callback) => { notify = callback; }
         };
-        vm = new AppViewModel(mockQuota, mockCache, mockStorage, configManager, strategyManager, automation);
+        vm = new AppViewModel(mockQuota, mockCache, mockStorage, configManager, strategyManager, automation, defaultMockContextService);
         let fired = 0;
         vm.onStateChange(() => fired++);
 
@@ -214,6 +219,108 @@ suite('AppViewModel Test Suite', () => {
         vm.dispose();
         notify({ ...status, cdp: 'connected' });
         assert.strictEqual(fired, 1, 'A disposed view model must ignore status changes');
+    });
+
+    suite('conversation context', () => {
+        let current: ConversationContext | null;
+        let warnings: string[];
+        let infos: string[];
+        let stubs: sinon.SinonStub[];
+        const context = (usedTokens: number, overrides: Partial<ConversationContext> = {}): ConversationContext => ({
+            cascadeId: 'c1', title: 'Fix tests', stepCount: usedTokens, running: true,
+            usedTokens, maxTokens: 1000, model: 'gemini-3.8-flash', checkpointIndex: -1, truncated: false,
+            ...overrides
+        });
+
+        setup(() => {
+            vm.dispose();
+            current = null;
+            warnings = [];
+            infos = [];
+            stubs = [
+                sinon.stub(vscode.window, 'showWarningMessage').callsFake((message: string) => { warnings.push(message); return Promise.resolve(undefined); }),
+                sinon.stub(vscode.window, 'showInformationMessage').callsFake((message: string) => { infos.push(message); return Promise.resolve(undefined); }),
+                sinon.stub(vscode.l10n, 't').callsFake(((message: string, ...args: unknown[]) =>
+                    message.replace(/\{(\d+)\}/g, (_, i) => String(args[Number(i)]))) as typeof vscode.l10n.t)
+            ];
+            vm = new AppViewModel(mockQuota, mockCache, mockStorage, configManager, strategyManager, defaultMockAutomationService, {
+                setServerInfo: () => { },
+                fetchContext: async () => current
+            });
+        });
+
+        teardown(() => stubs.forEach(stub => stub.restore()));
+
+        test('should expose the current context to the sidebar and clear it when gone', async () => {
+            let fired = 0;
+            vm.onStateChange(() => fired++);
+            current = context(400);
+            await vm.refreshContext();
+
+            assert.deepStrictEqual(vm.getSidebarData().context, {
+                title: 'Fix tests', model: 'gemini-3.8-flash', usedTokens: 400, maxTokens: 1000,
+                percent: 40, warningThreshold: 80, compressedAt: null
+            });
+            await vm.refreshContext();
+            assert.strictEqual(fired, 1, 'An unchanged context must not refresh the view');
+
+            current = null;
+            await vm.refreshContext();
+            assert.strictEqual(vm.getSidebarData().context, null);
+            assert.strictEqual(fired, 2);
+        });
+
+        test('should warn once when usage crosses the threshold, not on the first observation', async () => {
+            current = context(900);
+            await vm.refreshContext();
+            assert.deepStrictEqual(warnings, [], 'A conversation first seen above the threshold is not announced');
+
+            current = context(500, { cascadeId: 'c2' });
+            await vm.refreshContext();
+            current = context(790, { cascadeId: 'c2' });
+            await vm.refreshContext();
+            assert.deepStrictEqual(warnings, []);
+
+            current = context(800, { cascadeId: 'c2' });
+            await vm.refreshContext();
+            current = context(850, { cascadeId: 'c2' });
+            await vm.refreshContext();
+            assert.strictEqual(warnings.length, 1);
+            assert.match(warnings[0], /80% full/);
+        });
+
+        test('should announce a compression, mark it, and warn again on the next crossing', async () => {
+            current = context(950);
+            await vm.refreshContext();
+            current = context(120, { checkpointIndex: 1 });
+            await vm.refreshContext();
+
+            assert.strictEqual(infos.length, 1);
+            assert.match(infos[0], /compressed the conversation context to 12%/);
+            assert.ok(typeof vm.getSidebarData().context?.compressedAt === 'number');
+
+            current = context(700, { checkpointIndex: 1 });
+            await vm.refreshContext();
+            current = context(810, { checkpointIndex: 1 });
+            await vm.refreshContext();
+            assert.strictEqual(warnings.length, 1, 'Usage climbing back over the threshold warns again');
+            assert.strictEqual(infos.length, 1);
+        });
+
+        test('should use the configured threshold and ignore results after dispose', async () => {
+            configReader.set('context.warningThreshold', 60);
+            current = context(500);
+            await vm.refreshContext();
+            current = context(650);
+            await vm.refreshContext();
+            assert.strictEqual(warnings.length, 1);
+            assert.strictEqual(vm.getSidebarData().context?.warningThreshold, 60);
+
+            vm.dispose();
+            current = context(100, { checkpointIndex: 2 });
+            await vm.refreshContext();
+            assert.strictEqual(infos.length, 0);
+        });
     });
 
     test('refreshQuota should update state from service', async () => {
@@ -904,7 +1011,7 @@ suite('AppViewModel Test Suite', () => {
         });
         try {
             vm.dispose();
-            vm = new AppViewModel(mockQuota, mockCache, mockStorage, configManager, strategyManager, defaultMockAutomationService);
+            vm = new AppViewModel(mockQuota, mockCache, mockStorage, configManager, strategyManager, defaultMockAutomationService, defaultMockContextService);
             const internals = vm as unknown as { _lastActivityTs: number };
 
             internals._lastActivityTs = 0;
@@ -1073,7 +1180,7 @@ suite('AppViewModel Test Suite', () => {
                     mockStorage,
                     configManager,
                     strategyManager,
-                    defaultMockAutomationService
+                    defaultMockAutomationService, defaultMockContextService
                 );
 
                 mockQuota.fetchQuota = async () => makeSnapshot(100);
@@ -1108,7 +1215,7 @@ suite('AppViewModel Test Suite', () => {
             });
             try {
                 vm.dispose();
-                vm = new AppViewModel(mockQuota, mockCache, mockStorage, configManager, strategyManager, defaultMockAutomationService);
+                vm = new AppViewModel(mockQuota, mockCache, mockStorage, configManager, strategyManager, defaultMockAutomationService, defaultMockContextService);
                 mockQuota.fetchQuota = async () => makeSnapshot(60);
                 await vm.refreshQuota();
 
@@ -1136,7 +1243,7 @@ suite('AppViewModel Test Suite', () => {
             });
             try {
                 vm.dispose();
-                vm = new AppViewModel(mockQuota, mockCache, mockStorage, configManager, strategyManager, defaultMockAutomationService);
+                vm = new AppViewModel(mockQuota, mockCache, mockStorage, configManager, strategyManager, defaultMockAutomationService, defaultMockContextService);
                 mockQuota.fetchQuota = async () => makeSnapshot(100);
                 await vm.refreshQuota();
 

@@ -18,6 +18,7 @@ import type {
     CachedTreeState,
     QuotaUpdateCallback,
     ErrorCallback,
+    LanguageServerInfo,
 } from '../types/entities';
 
 // ==================== Quota Service ====================
@@ -236,6 +237,37 @@ export interface IStorageService {
      * Get history count
      */
     readonly count: number;
+}
+
+// ==================== Context Service ====================
+
+/** Context window of the most recently active conversation, as reported by the Language Server */
+export interface ConversationContext {
+    cascadeId: string;
+    /** Conversation title; empty when the server has none yet */
+    title: string;
+    stepCount: number;
+    running: boolean;
+    /** Tokens of the latest model call: the server estimate, at least the prompt actually sent */
+    usedTokens: number;
+    maxTokens: number;
+    /** Model of the latest call, e.g. gemini-3.8-flash; empty when unknown */
+    model: string;
+    /** Compression checkpoint of the latest call; -1 before the first compression */
+    checkpointIndex: number;
+    /** The latest call hit the context limit (truncationReason was set) */
+    truncated: boolean;
+}
+
+/** Context service - reads the conversation context window from the Language Server */
+export interface IContextService {
+    setServerInfo(info: LanguageServerInfo): void;
+
+    /**
+     * Context of the most recently active conversation; null when there is no
+     * conversation, the server is unknown, or the request fails
+     */
+    fetchContext(): Promise<ConversationContext | null>;
 }
 
 // ==================== Automation Service ====================

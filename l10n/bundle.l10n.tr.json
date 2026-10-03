@@ -103,5 +103,10 @@
     "Left for manual review: \"{0}\" at {1} ({2})": "Elle inceleme için bırakıldı: \"{0}\", {1} ({2})",
     "destructive command": "yıkıcı komut",
     "no command text visible": "komut metni görünmüyor",
-    "terminal approval is off": "terminal onayı kapalı"
+    "terminal approval is off": "terminal onayı kapalı",
+    "Context": "Context",
+    "Context window of the current conversation: tokens of the latest model call, as estimated by the Language Server. When it is full, the IDE compresses the conversation and earlier details may be lost.": "Geçerli konuşmanın bağlam penceresi: Language Server tahminine göre son model çağrısının token sayısı. Dolduğunda IDE konuşmayı sıkıştırır ve önceki ayrıntılar kaybolabilir.",
+    "Compressed at {0}": "{0} itibarıyla sıkıştırıldı",
+    "The conversation context is {0}% full. When it is full, the IDE compresses the conversation and earlier details may be lost. Consider starting a new conversation.": "Konuşma bağlamı %{0} dolu. Dolduğunda IDE konuşmayı sıkıştırır ve önceki ayrıntılar kaybolabilir. Yeni bir konuşma başlatmayı düşünün.",
+    "The IDE compressed the conversation context to {0}% to stay within the limit. Earlier details of the conversation may be lost.": "IDE, sınırın içinde kalmak için konuşma bağlamını %{0} seviyesine sıkıştırdı. Konuşmanın önceki ayrıntıları kaybolmuş olabilir."
 }

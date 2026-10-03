@@ -140,11 +140,24 @@ export interface WeeklyUsageData {
   previousTotal: number | null;
 }
 
+/** Context window of the current conversation (mirrors ContextViewData in the view model) */
+export interface ContextViewData {
+  title: string;
+  model: string;
+  usedTokens: number;
+  maxTokens: number;
+  percent: number;
+  warningThreshold: number;
+  compressedAt: number | null;
+}
+
 export interface WebviewStateUpdate {
   quotas?: QuotaDisplayItem[];
   chart?: UsageChartData;
   /** null = card disabled or no data yet */
   weekly?: WeeklyUsageData | null;
+  /** null = no current conversation or no data */
+  context?: ContextViewData | null;
   user?: UserInfoData;
   tokenUsage?: TokenUsageData;
   tasks?: TreeSectionState;

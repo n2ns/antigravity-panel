@@ -9,6 +9,7 @@ import { ConnectionService } from "./model/services/connection.service";
 import { CacheService } from "./model/services/cache.service";
 import { StorageService } from "./model/services/storage.service";
 import { AutomationService } from "./model/services/automation.service";
+import { ContextService } from "./model/services/context.service";
 import { QuotaStrategyManager } from "./model/strategy";
 import { ConfigManager, IConfigReader } from "./shared/config/config_manager";
 import { Scheduler } from "./shared/utils/scheduler";
@@ -277,6 +278,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     storageService = new StorageService(context.globalState);
     cacheService = new CacheService();
     const quotaService = new QuotaService(configManager);
+    const contextService = new ContextService(configManager);
     const automationService = new AutomationService();
     context.subscriptions.push(automationService);
 
@@ -295,7 +297,8 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
       storageService,
       configManager,
       strategyManager,
-      automationService
+      automationService,
+      contextService
     );
     context.subscriptions.push(appViewModel);
 
@@ -303,6 +306,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     let hasShownNotification = false;
 
     const MAX_BOOT_RETRY = 7;
+    const CONTEXT_POLL_INTERVAL_MS = 10_000;
     const BOOT_RETRY_DELAY_MS = 5000;
 
     const commonMetaFor = (processFinder: ProcessFinder) => ({
@@ -321,7 +325,10 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
      */
     const connection = new ConnectionService<ProcessFinder>({
       createDetector: () => new ProcessFinder(),
-      setServerInfo: (info) => quotaService.setServerInfo(info),
+      setServerInfo: (info) => {
+        quotaService.setServerInfo(info);
+        contextService.setServerInfo(info);
+      },
       setStatus: (status, reason) => appViewModel!.setConnectionStatus(status, reason),
       refreshQuota: async () => {
         if (await appViewModel!.refreshQuota()) return 'ok';
@@ -480,6 +487,15 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
       immediate: false, // Already did initial refresh
     });
 
+    // Polling: current conversation context. The conversation list is small;
+    // the per-call metadata is fetched only when the step count changes.
+    scheduler.register({
+      name: "refreshContext",
+      interval: CONTEXT_POLL_INTERVAL_MS,
+      execute: () => appViewModel!.refreshContext(),
+      immediate: true,
+    });
+
     // State for notification cooldown
     let lastAutoCleanNotificationTime = 0;
 
@@ -553,6 +569,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
 
     scheduler.start("refreshQuota");
     scheduler.start("checkCache");
+    scheduler.start("refreshContext");
 
     // Config listener to update scheduler
     configReader.onConfigChange((newConfig) => {

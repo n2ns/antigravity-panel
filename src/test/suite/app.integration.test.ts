@@ -89,7 +89,8 @@ suite('App Initialization & Cache Integration Test', () => {
             storageService,
             configManager,
             strategyManager,
-            mockAutomationService
+            mockAutomationService,
+            { setServerInfo: () => { }, fetchContext: async () => null }
         );
     }
 

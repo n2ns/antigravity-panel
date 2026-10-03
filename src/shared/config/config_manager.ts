@@ -79,6 +79,9 @@ export class ConfigManager {
       "status.criticalThreshold": criticalThreshold,
       "status.scope": this.reader.get<"primary" | "all">("status.scope", "all"),
 
+      // Context Settings
+      "context.warningThreshold": clampNumber(this.reader.get<number>("context.warningThreshold", 80), 80, 50, 99),
+
       // 3. Cache Settings
       "cache.autoClean": this.reader.get<boolean>("cache.autoClean", false),
       "cache.autoCleanKeepCount": autoCleanKeepCount,

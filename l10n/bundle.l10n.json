@@ -103,5 +103,10 @@
     "Left for manual review: \"{0}\" at {1} ({2})": "Left for manual review: \"{0}\" at {1} ({2})",
     "destructive command": "destructive command",
     "no command text visible": "no command text visible",
-    "terminal approval is off": "terminal approval is off"
+    "terminal approval is off": "terminal approval is off",
+    "Context": "Context",
+    "Context window of the current conversation: tokens of the latest model call, as estimated by the Language Server. When it is full, the IDE compresses the conversation and earlier details may be lost.": "Context window of the current conversation: tokens of the latest model call, as estimated by the Language Server. When it is full, the IDE compresses the conversation and earlier details may be lost.",
+    "Compressed at {0}": "Compressed at {0}",
+    "The conversation context is {0}% full. When it is full, the IDE compresses the conversation and earlier details may be lost. Consider starting a new conversation.": "The conversation context is {0}% full. When it is full, the IDE compresses the conversation and earlier details may be lost. Consider starting a new conversation.",
+    "The IDE compressed the conversation context to {0}% to stay within the limit. Earlier details of the conversation may be lost.": "The IDE compressed the conversation context to {0}% to stay within the limit. Earlier details of the conversation may be lost."
 }

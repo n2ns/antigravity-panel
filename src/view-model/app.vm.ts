@@ -3,7 +3,7 @@
  */
 
 import * as vscode from 'vscode';
-import type { IQuotaService, ICacheService, IStorageService, IAutomationService } from '../model/services/interfaces';
+import type { IQuotaService, ICacheService, IStorageService, IAutomationService, IContextService, ConversationContext } from '../model/services/interfaces';
 import type { QuotaSnapshot, BrainTask, CacheInfo, CleanResult, CodeContext, FileItem, ModelQuotaInfo, UsageBucket } from '../model/types/entities';
 import type { TfaConfig } from '../shared/utils/types';
 import type { QuotaStrategyManager, QuotaPoolDefinition } from '../model/strategy';
@@ -24,6 +24,7 @@ import type {
     SidebarData,
     UsageChartData,
     WeeklyUsageData,
+    ContextViewData,
     TokenUsageViewState,
     UserViewState,
     ConnectionStatus,
@@ -36,6 +37,8 @@ export class AppViewModel implements vscode.Disposable {
     private _lastSnapshot: QuotaSnapshot | null = null;
     private _disposables: vscode.Disposable[] = [];
     private _notificationCooldowns = new Map<string, number>();
+    /** Last observed usage and checkpoint per conversation, for crossing and compression detection */
+    private _contextSeen = new Map<string, { percent: number; checkpointIndex: number; compressedAt: number | null }>();
     private readonly NOTIFICATION_COOLDOWN = 30 * 60 * 1000; // 30 minutes
     /** Previous remaining % per group for request detection */
     private _prevGroupRemaining = new Map<string, number>();
@@ -79,7 +82,8 @@ export class AppViewModel implements vscode.Disposable {
         private readonly storageService: IStorageService,
         private readonly configManager: ConfigManager,
         private readonly strategyManager: QuotaStrategyManager,
-        private readonly automationService: IAutomationService
+        private readonly automationService: IAutomationService,
+        private readonly contextService: IContextService
     ) {
         this._state = this.createEmptyState();
 
@@ -160,6 +164,7 @@ export class AppViewModel implements vscode.Disposable {
                 tasks: { expanded: false, folders: [] },
                 contexts: { expanded: false, folders: [] }
             },
+            context: null,
             automation: {
                 enabled: false,
                 status: { running: false, commandCount: null, cdp: 'unknown', lastAction: null }
@@ -200,6 +205,46 @@ export class AppViewModel implements vscode.Disposable {
         return !this._disposed && version === this._quotaRefreshVersion;
     }
 
+
+    /**
+     * Read the current conversation context. Notifies once when usage crosses
+     * tfa.context.warningThreshold and when a compression is observed; the
+     * first observation of a conversation only records it.
+     */
+    async refreshContext(): Promise<void> {
+        if (this._disposed) return;
+        const context = await this.contextService.fetchContext();
+        if (this._disposed) return;
+        if (context && context.maxTokens > 0) this.observeContext(context);
+        const next = context && context.maxTokens > 0 ? context : null;
+        if (JSON.stringify(next) === JSON.stringify(this._state.context)) return;
+        this._state.context = next;
+        this._onStateChange.fire(this._state);
+    }
+
+    private observeContext(context: ConversationContext): void {
+        const percent = context.usedTokens / context.maxTokens * 100;
+        const seen = this._contextSeen.get(context.cascadeId);
+        const compressed = seen !== undefined && seen.checkpointIndex !== context.checkpointIndex;
+        const compressedAt = compressed ? Date.now() : seen?.compressedAt ?? null;
+        this._contextSeen.set(context.cascadeId, { percent, checkpointIndex: context.checkpointIndex, compressedAt });
+        if (!seen) return;
+
+        if (compressed) {
+            vscode.window.showInformationMessage(vscode.l10n.t(
+                "The IDE compressed the conversation context to {0}% to stay within the limit. Earlier details of the conversation may be lost.",
+                Math.round(percent)
+            ));
+            return;
+        }
+        const threshold = this.configManager.getConfig()["context.warningThreshold"];
+        if (seen.percent < threshold && percent >= threshold) {
+            vscode.window.showWarningMessage(vscode.l10n.t(
+                "The conversation context is {0}% full. When it is full, the IDE compresses the conversation and earlier details may be lost. Consider starting a new conversation.",
+                Math.round(percent)
+            ));
+        }
+    }
 
     async refreshCache(): Promise<void> {
         const cache = await this.cacheService.getCacheInfo();
@@ -1283,12 +1328,27 @@ export class AppViewModel implements vscode.Disposable {
         };
     }
 
+    private buildContextView(config: TfaConfig): ContextViewData | null {
+        const context = this._state.context;
+        if (!context) return null;
+        return {
+            title: context.title,
+            model: context.model,
+            usedTokens: context.usedTokens,
+            maxTokens: context.maxTokens,
+            percent: Math.min(100, context.usedTokens / context.maxTokens * 100),
+            warningThreshold: config["context.warningThreshold"],
+            compressedAt: this._contextSeen.get(context.cascadeId)?.compressedAt ?? null
+        };
+    }
+
     getSidebarData(): SidebarData {
         const config = this.configManager.getConfig();
         return {
             quotas: this._state.quota.displayItems,
             chart: this._state.quota.chart,
             weekly: this.buildWeeklyUsage(),
+            context: this.buildContextView(config),
             cache: {
                 formattedBrain: this._state.cache.formattedBrain,
                 formattedConversations: this._state.cache.formattedConversations

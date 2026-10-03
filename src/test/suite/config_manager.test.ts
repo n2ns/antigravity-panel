@@ -151,6 +151,26 @@ suite('ConfigManager Test Suite', () => {
       assert.strictEqual(config["system.notifyOnAbnormalDrain"], true);
     });
 
+    test('context warning threshold should match the manifest and stay within 50..99', () => {
+      const manifest = JSON.parse(fs.readFileSync(path.resolve(process.cwd(), 'package.json'), 'utf8'));
+      const properties = Object.assign(
+        {},
+        ...manifest.contributes.configuration.map(
+          (section: { properties?: Record<string, unknown> }) => section.properties ?? {}
+        )
+      );
+      assert.deepStrictEqual(
+        (({ default: d, minimum, maximum }) => ({ d, minimum, maximum }))(properties['tfa.context.warningThreshold']),
+        { d: 80, minimum: 50, maximum: 99 }
+      );
+
+      assert.strictEqual(configManager.getConfig()["context.warningThreshold"], 80);
+      for (const [value, expected] of [[10, 50], [100, 99], [75, 75], ['x', 80]] as const) {
+        mockReader.set('context.warningThreshold', value);
+        assert.strictEqual(configManager.getConfig()["context.warningThreshold"], expected, `value ${value}`);
+      }
+    });
+
     test('auto-accept settings should be application-scoped and keep terminal accepts off by default', () => {
       const manifest = JSON.parse(fs.readFileSync(path.resolve(process.cwd(), 'package.json'), 'utf8'));
       const section = manifest.contributes.configuration.find(

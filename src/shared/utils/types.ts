@@ -289,6 +289,10 @@ export interface TfaConfig {
   /** Status bar scope */
   "status.scope": "primary" | "all";
 
+  // ===== Context Settings =====
+  /** Context window usage percentage that triggers the once-per-conversation warning */
+  "context.warningThreshold": number;
+
   // ===== 3. Cache Settings =====
   /** Whether to auto-clean cache */
   "cache.autoClean": boolean;

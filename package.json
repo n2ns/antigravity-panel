@@ -310,6 +310,19 @@
         }
       },
       {
+        "title": "%config.title.context%",
+        "properties": {
+          "tfa.context.warningThreshold": {
+            "type": "number",
+            "default": 80,
+            "minimum": 50,
+            "maximum": 99,
+            "order": 10,
+            "description": "%config.context.warningThreshold.description%"
+          }
+        }
+      },
+      {
         "title": "%config.title.cache%",
         "properties": {
           "tfa.cache.autoClean": {

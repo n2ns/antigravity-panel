@@ -124,6 +124,37 @@ sidebar-footer {
     transition: width 0.5s ease;
 }
 
+/* Context window card (reuses the credits bar layout) */
+.context-card .credit-header {
+    justify-content: space-between;
+}
+
+.context-card .context-fill.normal {
+    background: var(--vscode-charts-green, #89d185);
+}
+
+.context-card .context-fill.warning {
+    background: var(--vscode-charts-yellow, #cca700);
+}
+
+.context-card .context-fill.critical {
+    background: var(--vscode-charts-red, #f14c4c);
+}
+
+.context-card .context-details,
+.context-card .context-compressed {
+    width: 100%;
+    font-size: 0.75rem;
+    color: var(--vscode-descriptionForeground);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.context-card .context-compressed {
+    color: var(--vscode-editorWarning-foreground, #cca700);
+}
+
 /* User Info Card Styles */
 .user-info-card {
     padding: 10px 14px;

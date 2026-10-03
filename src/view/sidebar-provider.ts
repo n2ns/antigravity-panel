@@ -37,7 +37,7 @@ export class SidebarProvider implements vscode.WebviewViewProvider, vscode.Dispo
         // Subscribe to configuration changes (for showUserInfoCard, gaugeStyle, etc.)
         this._disposables.push(
             vscode.workspace.onDidChangeConfiguration((e) => {
-                if (e.affectsConfiguration('tfa.dashboard')) {
+                if (e.affectsConfiguration('tfa.dashboard') || e.affectsConfiguration('tfa.context')) {
                     this._postStateUpdate();
                 }
             })
@@ -223,6 +223,9 @@ export class SidebarProvider implements vscode.WebviewViewProvider, vscode.Dispo
                 noReportedQuotaChange: vscode.l10n.t('No reported quota change'),
                 chartLegendTooltip: vscode.l10n.t('Each bar shows quota percentage points consumed per interval. Height = consumption intensity.'),
                 weekly: vscode.l10n.t('Weekly'),
+                context: vscode.l10n.t('Context'),
+                contextTooltip: vscode.l10n.t('Context window of the current conversation: tokens of the latest model call, as estimated by the Language Server. When it is full, the IDE compresses the conversation and earlier details may be lost.'),
+                contextCompressedAt: vscode.l10n.t('Compressed at {0}'),
                 weeklyLimitTooltip: vscode.l10n.t('Official weekly limit reported by Antigravity, shared by all models in this pool.'),
                 weeklyUsageTooltip: vscode.l10n.t('Local 7-day estimate: percentage points consumed across all short-term quota pools. Not an official weekly limit.'),
                 noSamplingData: vscode.l10n.t('No sampling data (IDE was closed)'),

@@ -103,5 +103,10 @@
     "Left for manual review: \"{0}\" at {1} ({2})": "Laissé pour vérification manuelle : « {0} » à {1} ({2})",
     "destructive command": "commande destructrice",
     "no command text visible": "aucun texte de commande visible",
-    "terminal approval is off": "l'approbation du terminal est désactivée"
+    "terminal approval is off": "l'approbation du terminal est désactivée",
+    "Context": "Context",
+    "Context window of the current conversation: tokens of the latest model call, as estimated by the Language Server. When it is full, the IDE compresses the conversation and earlier details may be lost.": "Fenêtre de contexte de la conversation actuelle : tokens du dernier appel au modèle, estimés par le Language Server. Lorsqu'elle est pleine, l'IDE compresse la conversation et des détails antérieurs peuvent être perdus.",
+    "Compressed at {0}": "Compressé à {0}",
+    "The conversation context is {0}% full. When it is full, the IDE compresses the conversation and earlier details may be lost. Consider starting a new conversation.": "Le contexte de la conversation est rempli à {0} %. Lorsqu'il sera plein, l'IDE compressera la conversation et des détails antérieurs pourront être perdus. Envisagez de démarrer une nouvelle conversation.",
+    "The IDE compressed the conversation context to {0}% to stay within the limit. Earlier details of the conversation may be lost.": "L'IDE a compressé le contexte de la conversation à {0} % pour rester dans la limite. Des détails antérieurs de la conversation peuvent avoir été perdus."
 }

@@ -58,6 +58,14 @@
 - Server errors (HTTP 5xx) and unparseable responses are not treated as a lost connection
 - While the connection is failed, the status bar shows a warning state instead of stale quota data
 
+### Conversation Context Window
+- A `Context` card under the gauges shows the context window of the current conversation: tokens used in the latest model call and the model's limit (for example `37.2K / 256K (15%)`), with the conversation title and model
+- The values come from the Language Server's own estimate (`contextWindowMetadata`), which is also what triggers compression, and are never lower than the prompt tokens actually sent in that call (the estimate of a conversation's first call leaves out the system prompt); the current conversation is the most recently modified one of this window
+- The bar turns yellow at `tfa.context.warningThreshold` (default 80%) and red at 95%
+- The IDE does not compress a conversation early: it lets the context fill up to the limit, then compresses it, which can drop most earlier details. When usage crosses the threshold, a warning suggests starting a new conversation; it is shown once per crossing, and not for a conversation that was already above the threshold when the panel first saw it
+- When a compression is observed, a notification says so and the card shows `Compressed at <time>`
+- The conversation list is read every 10 seconds; the per-call data is read only when the conversation has new steps. The card is hidden when there is no conversation or the server does not provide the data. After a window reload the Language Server restarts and lists no conversation until one is continued or started, so the card appears with the next message
+
 ### Cache-First Startup
 - The sidebar renders immediately from the last stored quota snapshot and cache sizes, then refreshes with live data
 - Total, Brain, and conversation cache sizes and the cache tree metadata are restored across panel instances
@@ -258,6 +266,7 @@ The **Restart**, **Reset**, and **Reload** buttons in the sidebar footer:
 | `tfa.dashboard.showCreditsCard` | `false` | Show static Prompt/Flow rows; Google One AI remains visible |
 | `tfa.dashboard.uiScale` | `1` | Sidebar text and UI scale (0.8-2) |
 | `tfa.dashboard.showWeeklyCard` | `true` | Show the 7-day local usage estimate card |
+| `tfa.context.warningThreshold` | `80` | Context window usage (%, 50-99) at which a conversation triggers a warning |
 | `tfa.cache.scanInterval` | `120` | Cache check interval (seconds, 30-600) |
 | `tfa.cache.warningSize` | `500` | Cache warning threshold (MB, min 100) |
 | `tfa.cache.hideEmptyFolders` | `false` | Hide empty folders in tree views |

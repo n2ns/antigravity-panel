@@ -15,12 +15,14 @@ import type {
   UserInfoData,
   TokenUsageData,
   ConnectionStatus,
-  AutoAcceptStatus
+  AutoAcceptStatus,
+  ContextViewData
 } from '../types.js';
 
 import './quota-dashboard.js';
 import './usage-chart.js';
 import './weekly-usage.js';
+import './context-card.js';
 
 // Extend Window interface to include __TRANSLATIONS__
 declare global {
@@ -50,6 +52,9 @@ export class SidebarApp extends LitElement {
 
   @state()
   private _weekly: WeeklyUsageData | null = null;
+
+  @state()
+  private _context: ContextViewData | null = null;
 
   @state()
   private _tasks: TreeSectionState = {
@@ -197,6 +202,9 @@ export class SidebarApp extends LitElement {
   private _applyState(state: WebviewStateUpdate): void {
     if (state.quotas) {
       this._quotas = state.quotas;
+    }
+    if (state.context !== undefined) {
+      this._context = state.context;
     }
     if (state.weekly !== undefined) {
       this._weekly = state.weekly;
@@ -351,6 +359,8 @@ export class SidebarApp extends LitElement {
           .quotas=${this._quotas} 
           .gaugeStyle=${this._gaugeStyle}
         ></quota-dashboard>
+
+        <context-card .data=${this._context}></context-card>
 
         <usage-chart .data=${this._chartData}></usage-chart>
 

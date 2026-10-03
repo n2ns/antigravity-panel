@@ -103,5 +103,10 @@
     "Left for manual review: \"{0}\" at {1} ({2})": "手動確認のため保留: \"{0}\"（{1}、{2}）",
     "destructive command": "破壊的なコマンド",
     "no command text visible": "コマンドのテキストが見えない",
-    "terminal approval is off": "ターミナルの承認がオフ"
+    "terminal approval is off": "ターミナルの承認がオフ",
+    "Context": "Context",
+    "Context window of the current conversation: tokens of the latest model call, as estimated by the Language Server. When it is full, the IDE compresses the conversation and earlier details may be lost.": "現在の会話のコンテキストウィンドウ: 直近のモデル呼び出しのトークン数（Language Server の推定値）。上限に達すると IDE は会話を圧縮し、以前の詳細が失われることがあります。",
+    "Compressed at {0}": "{0} に圧縮",
+    "The conversation context is {0}% full. When it is full, the IDE compresses the conversation and earlier details may be lost. Consider starting a new conversation.": "会話のコンテキストが {0}% に達しました。上限に達すると IDE は会話を圧縮し、以前の詳細が失われることがあります。新しい会話の開始を検討してください。",
+    "The IDE compressed the conversation context to {0}% to stay within the limit. Earlier details of the conversation may be lost.": "上限内に収めるため、IDE が会話のコンテキストを {0}% に圧縮しました。会話の以前の詳細が失われている可能性があります。"
 }
