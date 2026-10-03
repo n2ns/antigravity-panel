@@ -757,6 +757,115 @@ suite('AppViewModel Test Suite', () => {
         assert.match((vscode.window as any).lastWarningMessage || '', /^CRITICAL Quota:/);
     });
 
+    suite('official weekly limits', () => {
+        const inHours = (hours: number) => new Date(Date.now() + hours * 3600000);
+        const geminiModel = {
+            modelId: 'MODEL_PLACEHOLDER_M37',
+            label: 'Gemini 3.1 Pro (High)',
+            remainingPercentage: 91,
+            isExhausted: false,
+            resetTime: inHours(4),
+            timeUntilReset: '4h'
+        };
+
+        test('should attach each pool its weekly bucket for the pool view and status bar', async () => {
+            mockQuota.fetchQuota = async () => ({
+                timestamp: new Date(),
+                models: [geminiModel],
+                weeklyLimits: [
+                    { bucketId: 'gemini-weekly', remainingPercentage: 15.4, resetTime: inHours(99) },
+                    { bucketId: '3p-weekly', remainingPercentage: 100, resetTime: inHours(160) },
+                    { bucketId: 'unknown-weekly', remainingPercentage: 1, resetTime: inHours(1) }
+                ]
+            });
+
+            await vm.refreshQuota();
+
+            const { groups, displayItems } = vm.getState().quota;
+            const gemini = groups.find(g => g.id === 'gemini');
+            assert.strictEqual(gemini?.weekly?.remaining, 15.4);
+            assert.strictEqual(gemini?.weekly?.resetTime, '4d 3h');
+            assert.ok(gemini?.weekly?.resetDate);
+            // A pool without 5-hour rows still carries its weekly limit
+            const claude = groups.find(g => g.id === 'non-google');
+            assert.strictEqual(claude?.hasData, false);
+            assert.strictEqual(claude?.weekly?.remaining, 100);
+
+            assert.strictEqual(displayItems.find(item => item.label === 'Gemini')?.weekly?.remaining, 15.4);
+            const statusGemini = vm.getStatusBarData().allGroups.find(g => g.id === 'gemini');
+            assert.deepStrictEqual(statusGemini?.weekly, { percentage: 15, resetTime: '4d 3h' });
+        });
+
+        test('should leave weekly out when the server sent no quota summary', async () => {
+            mockQuota.fetchQuota = async () => ({ timestamp: new Date(), models: [geminiModel] });
+
+            await vm.refreshQuota();
+
+            assert.ok(vm.getState().quota.groups.every(g => g.weekly === undefined));
+            assert.strictEqual(vm.getStatusBarData().allGroups[0].weekly, undefined);
+        });
+
+        test('models view should not carry weekly limits', async () => {
+            configReader.set('dashboard.viewMode', 'models');
+            mockQuota.fetchQuota = async () => ({
+                timestamp: new Date(),
+                models: [geminiModel],
+                weeklyLimits: [{ bucketId: 'gemini-weekly', remainingPercentage: 15, resetTime: inHours(99) }]
+            });
+
+            await vm.refreshQuota();
+
+            assert.ok(vm.getState().quota.displayItems.every(item => item.weekly === undefined));
+        });
+
+        test('should read weekly reset times from a cached snapshot and recompute the countdown', () => {
+            const resetIso = inHours(30).toISOString();
+            mockStorage.getLastViewState = <T>() => ({ groups: [{ id: 'gemini' }], activeGroupId: 'gemini' }) as T;
+            mockStorage.getLastSnapshot = <T>() => ({
+                timestamp: new Date().toISOString(),
+                models: [{ ...geminiModel, resetTime: inHours(4).toISOString() }],
+                weeklyLimits: [{ bucketId: 'gemini-weekly', remainingPercentage: 40, resetTime: resetIso }]
+            }) as T;
+
+            vm.restoreFromCache();
+
+            const weekly = vm.getState().quota.groups.find(g => g.id === 'gemini')?.weekly;
+            assert.strictEqual(weekly?.resetDate, new Date(resetIso).getTime());
+            assert.strictEqual(weekly?.resetTime, '1d 6h');
+        });
+
+        test('should show N/A and no countdown for a weekly limit without a valid reset time', async () => {
+            mockQuota.fetchQuota = async () => ({
+                timestamp: new Date(),
+                models: [geminiModel],
+                weeklyLimits: [{ bucketId: 'gemini-weekly', remainingPercentage: 30 }]
+            });
+
+            await vm.refreshQuota();
+
+            const weekly = vm.getState().quota.groups.find(g => g.id === 'gemini')?.weekly;
+            assert.deepStrictEqual(weekly, { remaining: 30, resetTime: 'N/A' });
+        });
+
+        test('low weekly limit should notify with its own cooldown', () => {
+            (vscode.window as any).lastInfoMessage = undefined;
+            (vscode.window as any).lastWarningMessage = undefined;
+            const check = (vm as unknown as { checkQuotaNotifications(group: unknown): void });
+            const group = { id: 'non-google', label: 'Claude', hasData: true, remaining: 91, weekly: { remaining: 15, resetTime: '6d' } };
+
+            check.checkQuotaNotifications(group);
+            assert.match((vscode.window as any).lastWarningMessage || '', /^CRITICAL Weekly Quota:/);
+            assert.strictEqual((vscode.window as any).lastInfoMessage, undefined, 'the 5-hour quota is fine');
+
+            (vscode.window as any).lastWarningMessage = undefined;
+            check.checkQuotaNotifications(group);
+            assert.strictEqual((vscode.window as any).lastWarningMessage, undefined, 'weekly cooldown applies');
+
+            check.checkQuotaNotifications({ ...group, remaining: 30 });
+            assert.match((vscode.window as any).lastInfoMessage || '', /^Low Quota Warning:/, '5-hour cooldown is separate');
+        });
+    });
+
     test('output channel changes should not count as editor activity', () => {
         let listener: ((e: { document: { uri: { scheme: string } } }) => void) | undefined;
         const stub = sinon.stub(vscode.workspace, 'onDidChangeTextDocument').callsFake(l => {

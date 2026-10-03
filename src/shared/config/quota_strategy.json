@@ -4,13 +4,15 @@
             "id": "gemini",
             "label": "Gemini",
             "shortLabel": "Gemini",
-            "themeColor": "#40C4FF"
+            "themeColor": "#40C4FF",
+            "weeklyBucketId": "gemini-weekly"
         },
         {
             "id": "non-google",
             "label": "Claude",
             "shortLabel": "Claude",
-            "themeColor": "#FFAB40"
+            "themeColor": "#FFAB40",
+            "weeklyBucketId": "3p-weekly"
         }
     ],
     "groups": [

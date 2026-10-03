@@ -9,6 +9,14 @@ import type { UserCredit } from '../model/types/entities';
 
 // ==================== Quota View State ====================
 
+/** Official weekly limit of a quota pool */
+export interface QuotaWeeklyState {
+    remaining: number;
+    resetTime: string;
+    /** Absolute reset timestamp (epoch ms); absent when unknown or server value was invalid */
+    resetDate?: number;
+}
+
 /** Quota group state (aggregated from models) */
 export interface QuotaGroupState {
     id: string;
@@ -19,6 +27,8 @@ export interface QuotaGroupState {
     resetDate?: number;
     themeColor: string;
     hasData: boolean;
+    /** Official weekly limit; absent when the server does not report one for this pool */
+    weekly?: QuotaWeeklyState;
 }
 
 /** Quota display item for sidebar (either group or model) */
@@ -30,6 +40,8 @@ export interface QuotaDisplayItem {
     resetDate?: number;
     hasData: boolean;
     themeColor: string;
+    /** Official weekly limit of the pool (pool view only) */
+    weekly?: QuotaWeeklyState;
 }
 
 /** Local 7-day usage estimate across all quota pools */
@@ -124,6 +136,8 @@ export interface StatusBarGroupItem {
     shortLabel: string;
     percentage: number;
     resetTime: string;
+    /** Official weekly limit, rounded like `percentage` */
+    weekly?: { percentage: number; resetTime: string };
 }
 
 /** StatusBar display data */

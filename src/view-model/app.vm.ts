@@ -6,15 +6,16 @@ import * as vscode from 'vscode';
 import type { IQuotaService, ICacheService, IStorageService, IAutomationService } from '../model/services/interfaces';
 import type { QuotaSnapshot, BrainTask, CacheInfo, CleanResult, CodeContext, FileItem, ModelQuotaInfo, UsageBucket } from '../model/types/entities';
 import type { TfaConfig } from '../shared/utils/types';
-import type { QuotaStrategyManager } from '../model/strategy';
+import type { QuotaStrategyManager, QuotaPoolDefinition } from '../model/strategy';
 import type { ConfigManager } from '../shared/config/config_manager';
-import { formatBytes } from '../shared/utils/format';
+import { formatBytes, formatTimeUntilReset } from '../shared/utils/format';
 import { errorLog } from '../shared/utils/logger';
 import { QUOTA_RESET_HOURS_FALLBACK } from '../shared/utils/constants';
 import type {
     AppState,
     QuotaViewState,
     QuotaGroupState,
+    QuotaWeeklyState,
     QuotaDisplayItem,
     CacheViewState,
     TreeViewState,
@@ -784,14 +785,19 @@ export class AppViewModel implements vscode.Disposable {
      * Check if notifications should be shown for a quota group
      */
     private checkQuotaNotifications(group?: QuotaGroupState): void {
-        if (!group || !group.hasData) return;
+        if (!group) return;
+        if (group.hasData) this.notifyLowQuota(group, group.id, group.remaining, false);
+        if (group.weekly) this.notifyLowQuota(group, `${group.id}:weekly`, group.weekly.remaining, true);
+    }
 
+    /** Warn once per cooldown when a pool's 5-hour or weekly remaining falls below a threshold */
+    private notifyLowQuota(group: QuotaGroupState, cooldownKey: string, remaining: number, weekly: boolean): void {
         const config = this.configManager.getConfig();
         const warningThreshold = config["status.warningThreshold"] ?? 40;
         const criticalThreshold = config["status.criticalThreshold"] ?? 20;
 
         const now = Date.now();
-        const lastNotify = this._notificationCooldowns.get(group.id) || 0;
+        const lastNotify = this._notificationCooldowns.get(cooldownKey) || 0;
 
         if (now - lastNotify < this.NOTIFICATION_COOLDOWN) {
             return;
@@ -800,17 +806,27 @@ export class AppViewModel implements vscode.Disposable {
         let message: string | undefined;
         let severity: 'warning' | 'critical' | undefined;
 
-        if (group.remaining < criticalThreshold) {
-            message = vscode.l10n.t(
-                "CRITICAL Quota: {0} quota is below {1}% ({2}% remaining). Use with caution!",
-                group.label, criticalThreshold, Math.round(group.remaining)
-            );
+        if (remaining < criticalThreshold) {
+            message = weekly
+                ? vscode.l10n.t(
+                    "CRITICAL Weekly Quota: {0} weekly limit is below {1}% ({2}% remaining). Use with caution!",
+                    group.label, criticalThreshold, Math.round(remaining)
+                )
+                : vscode.l10n.t(
+                    "CRITICAL Quota: {0} quota is below {1}% ({2}% remaining). Use with caution!",
+                    group.label, criticalThreshold, Math.round(remaining)
+                );
             severity = 'critical';
-        } else if (group.remaining < warningThreshold) {
-            message = vscode.l10n.t(
-                "Low Quota Warning: {0} quota is below {1}% ({2}% remaining).",
-                group.label, warningThreshold, Math.round(group.remaining)
-            );
+        } else if (remaining < warningThreshold) {
+            message = weekly
+                ? vscode.l10n.t(
+                    "Low Weekly Quota Warning: {0} weekly limit is below {1}% ({2}% remaining).",
+                    group.label, warningThreshold, Math.round(remaining)
+                )
+                : vscode.l10n.t(
+                    "Low Quota Warning: {0} quota is below {1}% ({2}% remaining).",
+                    group.label, warningThreshold, Math.round(remaining)
+                );
             severity = 'warning';
         }
 
@@ -820,7 +836,7 @@ export class AppViewModel implements vscode.Disposable {
             } else {
                 vscode.window.showInformationMessage(message);
             }
-            this._notificationCooldowns.set(group.id, now);
+            this._notificationCooldowns.set(cooldownKey, now);
         }
     }
 
@@ -863,11 +879,32 @@ export class AppViewModel implements vscode.Disposable {
         return Number.isFinite(timestamp) ? timestamp : undefined;
     }
 
+    /** Official weekly limit of a pool; reset times are recomputed so a cached snapshot is not stale */
+    private getWeeklyForPool(snapshot: QuotaSnapshot, pool: QuotaPoolDefinition): QuotaWeeklyState | undefined {
+        if (!pool.weeklyBucketId) return undefined;
+        const limit = snapshot.weeklyLimits?.find(l => l.bucketId === pool.weeklyBucketId);
+        if (!limit) return undefined;
+
+        // A cached snapshot comes back from JSON with the date as a string
+        const timestamp = limit.resetTime === undefined ? NaN : new Date(limit.resetTime).getTime();
+        if (!Number.isFinite(timestamp)) {
+            return { remaining: limit.remainingPercentage, resetTime: 'N/A' };
+        }
+        const resetTime = formatTimeUntilReset(timestamp - Date.now());
+        return {
+            // Same "Ready" rule as the 5-hour quota: the server may lag behind a passed reset
+            remaining: resetTime === 'Ready' ? 100 : limit.remainingPercentage,
+            resetTime,
+            resetDate: timestamp
+        };
+    }
+
     private aggregateGroups(snapshot: QuotaSnapshot): QuotaGroupState[] {
         const pools = this.strategyManager.getQuotaPools();
 
         return pools.map(pool => {
             const minModel = this.getMinModelForPool(snapshot, pool.id);
+            const weekly = this.getWeeklyForPool(snapshot, pool);
 
             if (!minModel) {
                 return {
@@ -876,7 +913,8 @@ export class AppViewModel implements vscode.Disposable {
                     remaining: 0,
                     resetTime: 'N/A',
                     themeColor: pool.themeColor,
-                    hasData: false
+                    hasData: false,
+                    weekly
                 };
             }
 
@@ -891,7 +929,8 @@ export class AppViewModel implements vscode.Disposable {
                 resetTime: minModel.timeUntilReset,
                 resetDate: this.getResetTimestamp(minModel),
                 themeColor: pool.themeColor,
-                hasData: true
+                hasData: true,
+                weekly
             };
         });
     }
@@ -1084,7 +1123,8 @@ export class AppViewModel implements vscode.Disposable {
             resetTime: g.resetTime,
             resetDate: g.resetDate,
             hasData: g.hasData,
-            themeColor: g.themeColor
+            themeColor: g.themeColor,
+            weekly: g.weekly
         }));
     }
 
@@ -1163,7 +1203,10 @@ export class AppViewModel implements vscode.Disposable {
                     label: g.label,
                     shortLabel: config?.shortLabel || g.label.substring(0, 3),
                     percentage: Math.round(g.remaining),
-                    resetTime: g.resetTime
+                    resetTime: g.resetTime,
+                    weekly: g.weekly
+                        ? { percentage: Math.round(g.weekly.remaining), resetTime: g.weekly.resetTime }
+                        : undefined
                 };
             });
         const primary = allGroups.find(g => g.id === this._state.quota.activeGroupId) || allGroups[0] || {

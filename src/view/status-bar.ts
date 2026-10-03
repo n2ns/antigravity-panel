@@ -101,7 +101,7 @@ export class StatusBarManager implements vscode.Disposable {
                 // Display all visible groups with percentage + reset time combined
                 visibleGroups.forEach(group => {
                     const statusEmoji = this.getStatusEmoji(
-                        group.percentage,
+                        this.getEffectivePercentage(group),
                         warningThreshold,
                         criticalThreshold
                     );
@@ -113,7 +113,7 @@ export class StatusBarManager implements vscode.Disposable {
                 const primary = statusData.primary;
                 if (includeSecondaryModels || primary.id !== 'gpt') {
                     const statusEmoji = this.getStatusEmoji(
-                        primary.percentage,
+                        this.getEffectivePercentage(primary),
                         warningThreshold,
                         criticalThreshold
                     );
@@ -126,6 +126,10 @@ export class StatusBarManager implements vscode.Disposable {
             visibleGroups.forEach(g => {
                 const emoji = this.getStatusEmoji(g.percentage, warningThreshold, criticalThreshold);
                 tooltipRows.push(`| ${emoji} ${g.label} | ${g.percentage}% |  | ⏱ ${g.resetTime} |`);
+                if (g.weekly) {
+                    const weeklyEmoji = this.getStatusEmoji(g.weekly.percentage, warningThreshold, criticalThreshold);
+                    tooltipRows.push(`| ${weeklyEmoji} ${g.label} ${vscode.l10n.t('Weekly')} | ${g.weekly.percentage}% |  | ⏱ ${g.weekly.resetTime} |`);
+                }
             });
         }
 
@@ -173,6 +177,11 @@ export class StatusBarManager implements vscode.Disposable {
      */
     private formatCombinedDisplay(group: StatusBarGroupItem): string {
         return `${group.shortLabel} ${group.percentage}% ${group.resetTime}`;
+    }
+
+    /** The tighter of the 5-hour and weekly limits decides the status color */
+    private getEffectivePercentage(group: StatusBarGroupItem): number {
+        return group.weekly ? Math.min(group.percentage, group.weekly.percentage) : group.percentage;
     }
 
     private getStatusEmoji(

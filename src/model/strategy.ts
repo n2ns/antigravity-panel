@@ -45,6 +45,8 @@ export interface QuotaPoolDefinition {
   label: string;
   shortLabel: string;
   themeColor: string;
+  /** RetrieveUserQuotaSummary bucket holding this pool's official weekly limit */
+  weeklyBucketId?: string;
 }
 
 export interface QuotaStrategyDefinition {

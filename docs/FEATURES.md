@@ -10,6 +10,7 @@
 - Visual quota display grouped by provider-defined quota pools (Gemini, Claude, etc.)
 - Pie charts showing remaining quota percentage per pool
 - Color-coded warnings when quota runs low (warning/critical thresholds)
+- **Official Weekly Limit**: in the pool view, a `Weekly` bar under each gauge shows the pool's weekly limit and a countdown to its reset, as reported by Antigravity (the same values as the IDE's Settings → Models). The gauge keeps showing the 5-hour quota. Hidden when the Language Server does not provide the weekly limit and in the model view
 - Configuration-driven pool membership keeps shared quotas accurate and allows future provider splits without changing the statistics pipeline
 - Model view preserves separate **Gemini Flash** and **Gemini Pro** identities and colors even while they share one pool
 - Models that match no configured group are shown in an **Other** group and counted in the Claude (non-Google) pool, never in the Gemini pool
@@ -100,11 +101,12 @@
 
 ### Quota Display
 - Shows remaining quota percentage for active model group with concise labels (e.g., "Pro", "Flash")
-- Detailed tooltip on hover showing all active groups with full labels and reset times
+- Detailed tooltip on hover showing all active groups with full labels and reset times, plus a `Weekly` row per pool with its official weekly limit
 - Multiple display styles: percentage, reset time, used, remaining
 - Color-coded status: normal (green), warning (yellow), critical (red)
 - Shows a loading indicator until the first quota data arrives
 - Configurable thresholds for warning (default 40%) and critical (default 20%); a group changes color and the low quota notification appears only when its remaining quota falls below a threshold, and a critical threshold above the warning threshold is lowered to it
+- The color follows the lower of the 5-hour and weekly limits, and a weekly limit below a threshold shows its own low quota notification
 - Shows a warning state instead of stale quota data when the Language Server connection fails; cache-only display remains independent
 
 ### Cache Size Display

@@ -12,6 +12,15 @@ export interface QuotaDisplayItem {
   resetDate?: number;
   hasData: boolean;
   themeColor: string;
+  /** Official weekly limit of the pool (pool view only) */
+  weekly?: WeeklyLimitData;
+}
+
+export interface WeeklyLimitData {
+  remaining: number;
+  resetTime: string;
+  /** Absolute reset timestamp (epoch ms); absent when unknown or server value was invalid */
+  resetDate?: number;
 }
 
 // ==================== Chart Types ====================

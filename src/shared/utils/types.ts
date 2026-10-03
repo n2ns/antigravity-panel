@@ -26,6 +26,18 @@ export interface ModelQuotaInfo {
 }
 
 /**
+ * Official weekly limit of one quota pool, from a RetrieveUserQuotaSummary bucket
+ */
+export interface WeeklyLimitInfo {
+  /** Server bucket ID, e.g. "gemini-weekly" */
+  bucketId: string;
+  /** Remaining quota percentage (0-100) */
+  remainingPercentage: number;
+  /** Reset time; absent when the server value was missing or invalid */
+  resetTime?: Date;
+}
+
+/**
  * Prompt Credits information
  */
 export interface PromptCreditsInfo {
@@ -92,6 +104,8 @@ export interface QuotaSnapshot {
   userInfo?: UserInfo;
   /** Quota information for each model */
   models: ModelQuotaInfo[];
+  /** Official weekly limits; absent when the server does not provide the quota summary */
+  weeklyLimits?: WeeklyLimitInfo[];
 }
 
 /**

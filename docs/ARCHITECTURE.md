@@ -11,7 +11,7 @@ src/
   model/
     services/
       interfaces.ts            IQuotaService, ICacheService, IStorageService, IAutomationService
-      quota.service.ts         GetUserStatus request and response parsing
+      quota.service.ts         GetUserStatus and RetrieveUserQuotaSummary requests and response parsing
       cache.service.ts         Scans and cleans ~/.gemini/antigravity-ide/{brain,conversations}
       storage.service.ts       globalState persistence: quota history and cache-first snapshots
       automation.service.ts    Auto-Accept loop (IDE commands, CDP fallback)
@@ -117,7 +117,7 @@ graph TD
 
 | Service | Implements | Responsibility | Collaborators |
 | --- | --- | --- | --- |
-| [QuotaService](../src/model/services/quota.service.ts) | `IQuotaService` | POSTs to `tfa.system.apiPath` on the detected port with the CSRF header, 2 attempts with a fixed 1 s delay, `HTTP_TIMEOUT_MS` = 12000. Parses the response into a `QuotaSnapshot` (models, prompt and flow credits, user info). Records `parsingError` (`AUTH_FAILED_401` / `403`, `HTTP_ERROR_<status>`, `Invalid Response Structure`, `Response Parsing Failed`) for the connection layer. | `ConfigManager`, `http_client`, `retry`, logger |
+| [QuotaService](../src/model/services/quota.service.ts) | `IQuotaService` | POSTs to `tfa.system.apiPath` on the detected port with the CSRF header, 2 attempts with a fixed 1 s delay, `HTTP_TIMEOUT_MS` = 12000. Parses the response into a `QuotaSnapshot` (models, prompt and flow credits, user info), then requests `RetrieveUserQuotaSummary` for the official weekly limits (`weeklyLimits`); that call is optional and its failure never fails the fetch. Records `parsingError` (`AUTH_FAILED_401` / `403`, `HTTP_ERROR_<status>`, `Invalid Response Structure`, `Response Parsing Failed`) for the connection layer. | `ConfigManager`, `http_client`, `retry`, logger |
 | [CacheService](../src/model/services/cache.service.ts) | `ICacheService` | Sizes and lists `brain/` tasks and `conversations/` code contexts (grouped by UUID across `.db`, `.db-shm`, `.db-wal`, `.pb`). Lists only UUID-named `brain/` directories as tasks. Builds a `CleanPlan` (tasks beyond the `keepCount` most recently active with their conversation `.pb` / `.db` / `.db-wal` / `.db-shm`, plus the files of orphan conversations beyond the newest `keepCount`) and executes it; a `.db` that cannot be deleted keeps its `-wal` / `-shm`. Every id passes `isValidId` and every path must stay under its base directory. | `paths`, logger |
 | [StorageService](../src/model/services/storage.service.ts) | `IStorageService` | Wraps `vscode.Memento` (`context.globalState`). Quota history under `tfa.quotaHistory_v2`: 14 local days, raw points for 24 h, older points downsampled to one per 5 minutes, reset markers preserved. Also stores the cache-first snapshots (`tfa.lastViewState`, `tfa.lastTreeState`, `tfa.lastSnapshot`, `tfa.lastUserInfo`, `tfa.lastTokenUsage`, cache sizes, last warning time). | `Memento` only |
 | [AutomationService](../src/model/services/automation.service.ts) | `IAutomationService`, `vscode.Disposable` | Auto-Accept loop on its own `Scheduler` task (`autoAccept`). See [Auto-Accept automation](#auto-accept-automation). | `Scheduler`, `vscode.commands`, `http`, `ws` |
@@ -158,7 +158,7 @@ Webview side ([components/](../src/view/webview/components/)). Every component r
 | --- | --- |
 | [sidebar-app](../src/view/webview/components/sidebar-app.ts) | Root. Calls `acquireVsCodeApi()`, restores `getState().payload`, listens for `update` messages, posts `webviewReady`, translates child events (`folder-toggle`, `folder-delete`, `file-click`, `file-delete`) into host messages, shows connection hints, owns the `TooltipManager` and a `ResizeObserver` for narrow layouts. |
 | [quota-dashboard](../src/view/webview/components/quota-dashboard.ts) | One `quota-pie` per `QuotaDisplayItem`. |
-| [quota-pie](../src/view/webview/components/quota-pie.ts) | Picks the gauge renderer by `gaugeStyle` from [quota/renderers](../src/view/webview/components/quota/renderers/index.ts) (`semi-arc`: SVG arcs via `gauge_math`; `classic-donut`: conic-gradient ring); ticks every 30 s to count down from `resetDate`. |
+| [quota-pie](../src/view/webview/components/quota-pie.ts) | Picks the gauge renderer by `gaugeStyle` from [quota/renderers](../src/view/webview/components/quota/renderers/index.ts) (`semi-arc`: SVG arcs via `gauge_math`; `classic-donut`: conic-gradient ring); ticks every 30 s to count down from `resetDate`; renders the `Weekly` bar under the gauge when the item has `weekly`. |
 | [usage-chart](../src/view/webview/components/usage-chart.ts) | Stacked consumption bars per bucket, usage rate and runway. |
 | [weekly-usage](../src/view/webview/components/weekly-usage.ts) | 7-day stacked bars and the previous-week total. |
 | [credits-bar](../src/view/webview/components/credits-bar.ts) | Prompt and Flow rows (when `showCreditsCard`) and subscription credits. |
@@ -253,7 +253,7 @@ default-src 'none'; style-src ${cspSource} 'unsafe-inline'; script-src 'nonce-${
 
 - `nonce` is `crypto.randomBytes(32)` in base64, regenerated per build, and applied to both scripts: the inline bootstrap that sets `window.__TRANSLATIONS__` and `window.__VERSION__`, and the module script for `dist/webview.js`.
 - Styles come from two external stylesheets (codicons from `node_modules/@vscode/codicons`, kept in the VSIX by `.vscodeignore` exceptions, and `dist/webview.css`), served through `asWebviewUri` with `localResourceRoots: [extensionUri]`.
-- `style-src` includes `'unsafe-inline'` because gauges and charts set inline `style` attributes from runtime data: `conic-gradient` in `classic-donut`, `stroke` and dash offsets in `semi-arc`, bar `height` and `linear-gradient` in `usage-chart` and `weekly-usage`, fill `width` in `credits-bar`. Scripts never use `'unsafe-inline'`.
+- `style-src` includes `'unsafe-inline'` because gauges and charts set inline `style` attributes from runtime data: `conic-gradient` in `classic-donut`, `stroke` and dash offsets in `semi-arc`, bar `height` and `linear-gradient` in `usage-chart` and `weekly-usage`, fill `width` in `credits-bar` and the weekly limit bar of `quota-pie`. Scripts never use `'unsafe-inline'`.
 - No `connect-src` is granted; the webview talks to the host only through `postMessage`. [webview/index.ts](../src/view/webview/index.ts) also disables the context menu.
 
 ## Localization mechanics

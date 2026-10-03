@@ -209,6 +209,8 @@ export class SidebarProvider implements vscode.WebviewViewProvider, vscode.Dispo
                 totalConsumed: vscode.l10n.t('consumed'),
                 noReportedQuotaChange: vscode.l10n.t('No reported quota change'),
                 chartLegendTooltip: vscode.l10n.t('Each bar shows quota percentage points consumed per interval. Height = consumption intensity.'),
+                weekly: vscode.l10n.t('Weekly'),
+                weeklyLimitTooltip: vscode.l10n.t('Official weekly limit reported by Antigravity, shared by all models in this pool.'),
                 weeklyUsageTooltip: vscode.l10n.t('Local 7-day estimate: percentage points consumed across all short-term quota pools. Not an official weekly limit.'),
                 noSamplingData: vscode.l10n.t('No sampling data (IDE was closed)'),
                 last7Days: vscode.l10n.t('Last 7 days'),

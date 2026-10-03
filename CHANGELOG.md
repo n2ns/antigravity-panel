@@ -1,5 +1,11 @@
 # Change Log
 
+## [Unreleased]
+
+### Added
+
+- **Official Weekly Limit** ([#203](https://github.com/n2ns/antigravity-panel/issues/203)): The panel now reads the weekly limit of the Gemini and Claude/GPT pools from the Language Server (the values the IDE shows in Settings → Models). In the pool view, a `Weekly` bar under each gauge shows the remaining percentage and a countdown to the weekly reset; the gauge keeps showing the 5-hour quota. The status bar tooltip adds a `Weekly` row per pool, the status color follows the lower of the 5-hour and weekly limits, and a weekly limit below the warning or critical threshold shows its own notification. On IDE versions that do not provide the weekly limit, nothing changes.
+
 ## [2.7.5] - 2026-10-03
 
 ### Changed

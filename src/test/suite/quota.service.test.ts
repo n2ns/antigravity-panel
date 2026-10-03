@@ -28,7 +28,17 @@ class TestQuotaService extends QuotaService {
         this.requestCount = 0;
     }
 
+    /** Reply to the optional quota summary request; null answers like a server without the RPC */
+    public summaryResponse: { statusCode: number; data: any } | Error | null = null;
+    public summaryRequestCount = 0;
+
     protected async request<T>(path: string, body: object): Promise<HttpResponse<T>> {
+        if (path.endsWith('/RetrieveUserQuotaSummary')) {
+            this.summaryRequestCount++;
+            const summary = this.summaryResponse ?? { statusCode: 404, data: null };
+            if (summary instanceof Error) throw summary;
+            return { statusCode: summary.statusCode, data: summary.data as T, protocol: 'https' };
+        }
         this.requestCount++;
         let response: any | Error;
 
@@ -353,5 +363,70 @@ suite('QuotaService Test Suite', () => {
 
         assert.ok(snapshot, 'Fetch result must survive a throwing callback');
         assert.strictEqual(errorCalled, false);
+    });
+
+    suite('weekly limits from the quota summary', () => {
+        const summary = (buckets: any[]) => ({
+            statusCode: 200,
+            data: { response: { groups: [{ displayName: 'Gemini Models', buckets }] } }
+        });
+
+        test('should attach weekly buckets and skip other windows', async () => {
+            service.mockResponse = validResponse;
+            service.summaryResponse = summary([
+                { bucketId: 'gemini-weekly', window: 'weekly', remainingFraction: 0.89276433, resetTime: '2026-10-07T04:06:06Z' },
+                { bucketId: 'gemini-5h', window: '5h', remainingFraction: 1, resetTime: '2026-10-03T05:52:00Z' }
+            ]);
+
+            const snapshot = await service.fetchQuota();
+
+            assert.ok(snapshot);
+            assert.strictEqual(service.summaryRequestCount, 1);
+            assert.strictEqual(snapshot!.weeklyLimits?.length, 1);
+            const weekly = snapshot!.weeklyLimits![0];
+            assert.strictEqual(weekly.bucketId, 'gemini-weekly');
+            assert.ok(Math.abs(weekly.remainingPercentage - 89.276433) < 1e-9);
+            assert.strictEqual(weekly.resetTime?.toISOString(), '2026-10-07T04:06:06.000Z');
+        });
+
+        test('should treat an omitted fraction as zero and drop invalid reset times', async () => {
+            service.mockResponse = validResponse;
+            service.summaryResponse = summary([
+                { bucketId: '3p-weekly', window: 'weekly', resetTime: 'not-a-date' }
+            ]);
+
+            const snapshot = await service.fetchQuota();
+
+            assert.strictEqual(snapshot!.weeklyLimits![0].remainingPercentage, 0);
+            assert.strictEqual(snapshot!.weeklyLimits![0].resetTime, undefined);
+        });
+
+        test('should skip a bucket that reports only an amount', async () => {
+            service.mockResponse = validResponse;
+            service.summaryResponse = summary([
+                { bucketId: 'gemini-weekly', window: 'weekly', remainingAmount: '120', resetTime: '2026-10-07T04:06:06Z' }
+            ]);
+
+            const snapshot = await service.fetchQuota();
+
+            assert.deepStrictEqual(snapshot!.weeklyLimits, []);
+        });
+
+        test('should keep the quota snapshot when the summary RPC is missing or fails', async () => {
+            for (const reply of [{ statusCode: 404, data: null }, { statusCode: 200, data: {} }, new Error('ECONNRESET')]) {
+                service.mockResponse = validResponse;
+                service.summaryResponse = reply;
+                let receivedError: Error | undefined;
+                service.onError(err => { receivedError = err; });
+
+                const snapshot = await service.fetchQuota();
+
+                assert.ok(snapshot, 'quota fetch must still succeed');
+                assert.strictEqual(snapshot!.weeklyLimits, undefined);
+                assert.strictEqual(snapshot!.models.length, 1);
+                assert.strictEqual(service.parsingError, null);
+                assert.strictEqual(receivedError, undefined);
+            }
+        });
     });
 });

@@ -37,6 +37,7 @@ const PROTECTED_BUNDLE_LABELS = [
     'Show Details',
     'Star',
     'View',
+    'Weekly',
 ];
 
 // package.nls keys whose value must be identical in every language: brand names,

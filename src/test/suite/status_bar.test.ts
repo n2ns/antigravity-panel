@@ -164,6 +164,24 @@ suite('StatusBarManager Test Suite', () => {
         assert.ok(mockStatusBarItem.text.includes('🟢 Fls 75% 2h 30m'));
     });
 
+    test('should color the status by the tighter of the 5-hour and weekly limits', () => {
+        const weeklyGroup: StatusBarGroupItem = { ...mockGroupItem, weekly: { percentage: 5, resetTime: '6d 23h' } };
+        mockViewModel.getStatusBarData = () => ({ primary: weeklyGroup, allGroups: [weeklyGroup] });
+
+        statusBarManager.update();
+
+        assert.ok(mockStatusBarItem.text.includes('🔴 Fls 75% 2h 30m'), 'text stays the 5-hour value');
+        const tooltip: string = mockStatusBarItem.tooltip.value;
+        assert.ok(tooltip.includes('| 🟢 Gemini | 75% |  | ⏱ 2h 30m |'));
+        assert.ok(tooltip.includes('| 🔴 Gemini Weekly | 5% |  | ⏱ 6d 23h |'));
+    });
+
+    test('should keep the 5-hour color and add no weekly row without weekly data', () => {
+        statusBarManager.update();
+        assert.ok(mockStatusBarItem.text.includes('🟢 Fls 75%'));
+        assert.ok(!mockStatusBarItem.tooltip.value.includes('Weekly'));
+    });
+
     test('should show all model groups when scope is all', () => {
         mockConfigManager.getConfig = () => ({
             "status.showQuota": true,

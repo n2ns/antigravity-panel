@@ -8,7 +8,7 @@
 import { retry } from '../../shared/utils/retry';
 import { formatTimeUntilReset } from '../../shared/utils/format';
 import { httpRequest } from '../../shared/utils/http_client';
-import { logQuotaParseError, warnLog } from '../../shared/utils/logger';
+import { debugLog, logQuotaParseError, warnLog } from '../../shared/utils/logger';
 import type { IQuotaService } from './interfaces';
 import type { ConfigManager } from '../../shared/config/config_manager';
 import type {
@@ -17,6 +17,7 @@ import type {
     FlowCreditsInfo,
     TokenUsageInfo,
     QuotaSnapshot,
+    WeeklyLimitInfo,
     QuotaUpdateCallback,
     ErrorCallback,
     LanguageServerInfo,
@@ -26,6 +27,17 @@ import type {
 
 /** HTTP request timeout for Language Server API calls */
 const HTTP_TIMEOUT_MS = 12000;
+
+/** Per-group weekly and 5-hour limits, as shown in the IDE's Settings → Models */
+const QUOTA_SUMMARY_PATH = '/exa.language_server_pb.LanguageServerService/RetrieveUserQuotaSummary';
+
+const REQUEST_METADATA = {
+    metadata: {
+        ideName: 'antigravity',
+        extensionName: 'antigravity',
+        locale: 'en',
+    },
+};
 
 /**
  * QuotaService implementation
@@ -106,16 +118,7 @@ export class QuotaService implements IQuotaService {
         const config = this.configManager.getConfig();
         const apiPath = config["system.apiPath"];
 
-        const response = await this.request<ServerUserStatusResponse>(
-            apiPath,
-            {
-                metadata: {
-                    ideName: 'antigravity',
-                    extensionName: 'antigravity',
-                    locale: 'en',
-                },
-            }
-        );
+        const response = await this.request<ServerUserStatusResponse>(apiPath, REQUEST_METADATA);
 
         if (response.statusCode === 401 || response.statusCode === 403) {
             this.parsingError = `AUTH_FAILED_${response.statusCode}`;
@@ -131,12 +134,50 @@ export class QuotaService implements IQuotaService {
             return null;
         }
 
+        let snapshot: QuotaSnapshot;
         try {
-            return this.parseResponse(data);
+            snapshot = this.parseResponse(data);
         } catch (e) {
             this.parsingError = 'Response Parsing Failed';
             logQuotaParseError(this.parsingError, data);
             throw e;
+        }
+
+        const weeklyLimits = await this.fetchWeeklyLimits();
+        if (weeklyLimits) snapshot.weeklyLimits = weeklyLimits;
+        return snapshot;
+    }
+
+    /**
+     * Fetch the official weekly limits. Optional data: older servers lack this RPC,
+     * so any failure only hides the weekly display and never fails the quota fetch.
+     */
+    private async fetchWeeklyLimits(): Promise<WeeklyLimitInfo[] | undefined> {
+        try {
+            const response = await this.request<ServerQuotaSummaryResponse>(QUOTA_SUMMARY_PATH, REQUEST_METADATA);
+            const groups = response.data?.response?.groups;
+            if (response.statusCode !== 200 || !Array.isArray(groups)) {
+                debugLog(`Quota summary unavailable (HTTP ${response.statusCode})`);
+                return undefined;
+            }
+
+            const limits: WeeklyLimitInfo[] = [];
+            for (const bucket of groups.flatMap(group => group.buckets ?? [])) {
+                if (bucket.window !== 'weekly' || typeof bucket.bucketId !== 'string') continue;
+                // remainingFraction and remainingAmount are alternatives; an amount alone has no percentage
+                if (bucket.remainingFraction === undefined && bucket.remainingAmount !== undefined) continue;
+                const resetTime = new Date(bucket.resetTime ?? '');
+                limits.push({
+                    bucketId: bucket.bucketId,
+                    // The server omits a zero fraction (protobuf omitempty)
+                    remainingPercentage: this.clampUnitFraction(bucket.remainingFraction ?? 0) * 100,
+                    resetTime: Number.isNaN(resetTime.getTime()) ? undefined : resetTime,
+                });
+            }
+            return limits;
+        } catch (e) {
+            debugLog(`Quota summary request failed: ${e instanceof Error ? e.message : String(e)}`);
+            return undefined;
         }
     }
 
@@ -315,6 +356,20 @@ interface RawModelConfig {
     quotaInfo?: {
         remainingFraction?: number;
         resetTime: string;
+    };
+}
+
+interface ServerQuotaSummaryResponse {
+    response?: {
+        groups?: {
+            buckets?: {
+                bucketId?: string;
+                window?: string;
+                remainingFraction?: number;
+                remainingAmount?: unknown;
+                resetTime?: string;
+            }[];
+        }[];
     };
 }
 

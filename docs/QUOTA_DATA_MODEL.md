@@ -10,13 +10,16 @@ The core principle is to separate "model groups" from "backend quota pools": mod
 
 ## 1. Data Sources
 
-### 1.1 Server endpoint
+### 1.1 Server endpoints
 
 Quota data comes from the local Antigravity Language Server:
 
 ```text
 /exa.language_server_pb.LanguageServerService/GetUserStatus
+/exa.language_server_pb.LanguageServerService/RetrieveUserQuotaSummary
 ```
+
+`GetUserStatus` provides the credits and the per-model 5-hour quota rows. `RetrieveUserQuotaSummary` provides the per-group weekly and 5-hour limits that the IDE shows in Settings → Models; the panel reads only its weekly buckets. It is requested after every successful `GetUserStatus` and is optional: a server without it, an error, or an unexpected shape only leaves the weekly limits out and never fails the quota fetch.
 
 ### 1.2 Raw data
 
@@ -36,6 +39,13 @@ The server mainly returns:
 - `quotaInfo.resetTime`: reset time provided by the server
 
 The Language Server may still return multiple model rows for the same quota pool. The number of model rows does not equal the number of independent quota pools.
+
+**Quota summary buckets** (`response.groups[].buckets[]`)
+
+- `bucketId`: for example `gemini-weekly`, `gemini-5h`, `3p-weekly`, `3p-5h`
+- `window`: `weekly` or `5h`
+- `remainingFraction`: remaining fraction (0-1); omitted when zero. A bucket may report `remainingAmount` instead, which has no percentage and is skipped.
+- `resetTime`: reset time provided by the server
 
 ---
 
@@ -67,6 +77,7 @@ Each poll produces one snapshot:
 | `flowCredits` | `FlowCreditsInfo` | Flow Credits (optional) |
 | `tokenUsage` | `TokenUsageInfo` | Credits summary (optional) |
 | `userInfo` | `UserInfo` | User and subscription information (optional) |
+| `weeklyLimits` | `WeeklyLimitInfo[]` | Weekly buckets `{ bucketId, remainingPercentage, resetTime? }` (optional; absent when the summary is unavailable). `resetTime` is absent when the server value was invalid |
 
 ---
 
@@ -79,7 +90,7 @@ Each poll produces one snapshot:
 1. `groups`: responsible for model matching, model names and model-view colors.
 2. `quotaPools`: responsible for gauges, history, bar charts, rates, notifications and status bar statistics.
 
-Each model group points to a quota pool through `quotaPoolId`.
+Each model group points to a quota pool through `quotaPoolId`. A quota pool names the summary bucket that holds its official weekly limit through `weeklyBucketId`.
 
 ### 3.2 Current configuration
 
@@ -90,6 +101,11 @@ Each model group points to a quota pool through `quotaPoolId`.
 | `claude` | `#FFAB40` | `non-google` | Claude (orange) |
 | `gpt` | `#FF5252` | `non-google` | Claude (orange) |
 | `other` | `#FFAB40` | `non-google` | Claude (orange) |
+
+| Quota pool | `weeklyBucketId` |
+|---|---|
+| `gemini` | `gemini-weekly` |
+| `non-google` | `3p-weekly` |
 
 Gemini Flash and Gemini Pro currently share the same Gemini quota pool. The relative consumption cost of Flash and Pro may differ, but usage of either model reduces the remaining quota of the same pool.
 
@@ -138,6 +154,7 @@ This type keeps its historical name, but each entry now represents the state of 
 | `themeColor` | string | Quota pool color |
 | `resetDate` | number | Optional absolute reset timestamp in epoch milliseconds; absent when unknown or the server value was invalid |
 | `hasData` | boolean | Whether the pool contains any model data |
+| `weekly` | `QuotaWeeklyState` | Optional official weekly limit `{ remaining, resetTime, resetDate? }`; present whenever the pool's weekly bucket is, even without model rows |
 
 ### 4.2 Aggregation rules
 
@@ -149,6 +166,8 @@ For all models that belong to the same `quotaPoolId`:
 - When the server reports `Ready`, the UI shows 100% in sync.
 
 The minimum strategy avoids overestimating available quota when server model rows are briefly out of sync.
+
+`weekly` is taken from the summary bucket named by the pool's `weeklyBucketId`. Its `resetTime` is recomputed from the absolute reset time on every aggregation, so a restored cached snapshot does not show a stale countdown, and a passed reset shows 100% like the 5-hour quota. Weekly limits are not written to history and do not affect active pool detection, the bar chart or the prediction.
 
 ### 4.3 Single-record principle
 
@@ -177,6 +196,8 @@ The pool with the largest drop exceeding `0.1` percentage points becomes the act
 
 Because detection happens at the pool level, a simultaneous drop of Flash and Pro produces only one active Gemini pool and one notification cooldown state.
 
+The active pool's weekly limit is checked against the same warning and critical thresholds with its own notification messages and its own cooldown, so a low weekly limit warns even while the 5-hour quota is high.
+
 ---
 
 ## 6. Display Logic
@@ -190,6 +211,8 @@ With `tfa.dashboard.viewMode = groups`, each quota pool shows one gauge:
 
 This avoids presenting a shared quota as multiple independent allowances.
 
+When the pool has a weekly limit, a thin `Weekly` bar under the gauge shows its remaining percentage and a live countdown to its reset; the gauge itself keeps showing the 5-hour quota.
+
 ### 6.2 Model view
 
 With `tfa.dashboard.viewMode = models`, the individual models returned by the Language Server are still shown:
@@ -198,6 +221,7 @@ With `tfa.dashboard.viewMode = models`, the individual models returned by the La
 - Pro models keep green.
 - Claude and GPT keep their own model-group colors.
 - Models in the same pool share the historical consumption rate computed for that pool.
+- Weekly limits are not shown.
 
 ### 6.3 Status bar
 
@@ -210,6 +234,8 @@ The status bar can show the current pool or all visible pools. The format includ
 - Optional cache size and credits
 
 Status bar data is generated from quota pool state, so the same Gemini quota is not output twice for Flash and Pro.
+
+The text keeps showing the 5-hour value, but the emoji follows the lower of the 5-hour and weekly percentages. The tooltip adds a `<pool> Weekly` row with the weekly percentage and reset time for each pool that has one.
 
 When the quota status bar is enabled and the Language Server connection fails, the status bar switches to a warning state instead of continuing to show the old cached quota. When only the cache display is enabled, it does not depend on the quota connection.
 
@@ -267,6 +293,7 @@ On startup, quota, the active pool and the prediction chart are restored from th
 
 ## 9. Limitations
 
-- The extension can only use the model quota rows the Language Server currently exposes; if the server exposes only one effective constraint window, the extension cannot derive other windows that were not returned.
+- The extension can only use the quota windows the Language Server currently exposes; it cannot derive windows that were not returned. Older servers without `RetrieveUserQuotaSummary` show no weekly limit.
+- The 5-hour value comes from the `GetUserStatus` model rows, not from the summary's `5h` buckets; the two can report slightly different reset times.
 - Active pool detection depends on polling and may lag by up to one polling cycle.
 - Quota pool relationships are provider policy; when they change, `quota_strategy.json` must be updated accordingly. Pools must not be merged automatically just because several models currently show the same value.

@@ -219,6 +219,43 @@ quota-pie {
 }
 
 /* Dashboard Container Styles */
+/* Official weekly limit bar under a gauge */
+.weekly-limit {
+    width: 100%;
+    max-width: 6.5rem;
+    margin-top: 0.35rem;
+    font-size: 0.7rem;
+    color: var(--vscode-foreground);
+}
+
+.weekly-limit-header {
+    display: flex;
+    justify-content: space-between;
+    opacity: 0.85;
+}
+
+.weekly-limit-value {
+    font-weight: 600;
+}
+
+.weekly-limit-track {
+    height: 4px;
+    margin: 2px 0;
+    border-radius: 2px;
+    background: var(--vscode-widget-border);
+    overflow: hidden;
+}
+
+.weekly-limit-fill {
+    height: 100%;
+    border-radius: 2px;
+}
+
+.weekly-limit-reset {
+    text-align: center;
+    opacity: 0.7;
+}
+
 .pies-container {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(6.5rem, 1fr));

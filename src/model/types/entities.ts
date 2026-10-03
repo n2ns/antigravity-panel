@@ -16,6 +16,7 @@ export type {
     FlowCreditsInfo,
     TokenUsageInfo,
     QuotaSnapshot,
+    WeeklyLimitInfo,
     UserInfo,
     UserCredit,
 

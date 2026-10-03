@@ -2,12 +2,13 @@
  * QuotaPie - Quota pie chart component (Light DOM)
  */
 
-import { LitElement } from 'lit';
+import { LitElement, html, nothing } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 
 import { formatTimeUntilReset } from '../../../shared/utils/format';
 import { getGaugeRenderer } from './quota/renderers/index';
 import { QuotaData } from './quota/types';
+import type { WeeklyLimitData, WindowWithVsCode } from '../types.js';
 
 /** Re-render cadence for the live countdown (display granularity is 1 minute) */
 const COUNTDOWN_TICK_MS = 30_000;
@@ -30,7 +31,7 @@ export class QuotaPie extends LitElement {
   connectedCallback() {
     super.connectedCallback();
     this._tickTimer = setInterval(() => {
-      if (this.data?.resetDate !== undefined) this.requestUpdate();
+      if (this.data?.resetDate !== undefined || this.data?.weekly?.resetDate !== undefined) this.requestUpdate();
     }, COUNTDOWN_TICK_MS);
   }
 
@@ -50,16 +51,41 @@ export class QuotaPie extends LitElement {
     return this.data?.resetTime ?? '';
   }
 
+  private renderWeekly(weekly: WeeklyLimitData) {
+    const t = (window as unknown as WindowWithVsCode).__TRANSLATIONS__;
+    const remaining = Math.min(100, Math.max(0, weekly.remaining));
+    const resetText = weekly.resetDate !== undefined
+      ? formatTimeUntilReset(weekly.resetDate - Date.now())
+      : weekly.resetTime;
+    return html`
+      <div class="weekly-limit"
+           data-tooltip="${t?.weeklyLimitTooltip || 'Official weekly limit reported by Antigravity, shared by all models in this pool.'}">
+        <div class="weekly-limit-header">
+          <span>${t?.weekly || 'Weekly'}</span>
+          <span class="weekly-limit-value">${remaining.toFixed(0)}%</span>
+        </div>
+        <div class="weekly-limit-track">
+          <div class="weekly-limit-fill" style="width: ${remaining}%; background: ${this.color};"></div>
+        </div>
+        <div class="weekly-limit-reset">↻ ${resetText}</div>
+      </div>
+    `;
+  }
+
   protected render() {
     const renderFunc = getGaugeRenderer(this.gaugeStyle);
-    return renderFunc({
-      data: {
-        hasData: this.data?.hasData ?? false,
-        remaining: this.data?.remaining ?? 0,
-        resetTime: this.resetTimeText
-      },
-      color: this.color,
-      label: this.label
-    });
+    const weekly = this.data?.weekly;
+    return html`
+      ${renderFunc({
+        data: {
+          hasData: this.data?.hasData ?? false,
+          remaining: this.data?.remaining ?? 0,
+          resetTime: this.resetTimeText
+        },
+        color: this.color,
+        label: this.label
+      })}
+      ${weekly ? this.renderWeekly(weekly) : nothing}
+    `;
   }
 }
