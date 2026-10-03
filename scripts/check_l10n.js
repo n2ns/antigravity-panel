@@ -58,8 +58,24 @@ function readJson(file) {
     return JSON.parse(fs.readFileSync(file, 'utf8'));
 }
 
-function placeholders(s) {
-    return (s.match(/\{\d+\}/g) || []).sort().join(',');
+// VS Code accepts either a plain string or { "message", "comment" } as a value.
+function message(v) {
+    return typeof v === 'string' ? v : (v && v.message) || '';
+}
+
+function placeholders(v) {
+    return (message(v).match(/\{\d+\}/g) || []).sort().join(',');
+}
+
+function compareLocales(bundleLocales, nlsLocales) {
+    const mismatches = [];
+    for (const l of bundleLocales) {
+        if (!nlsLocales.includes(l)) mismatches.push(`locale ${JSON.stringify(l)} has a bundle.l10n file but no package.nls file`);
+    }
+    for (const l of nlsLocales) {
+        if (!bundleLocales.includes(l)) mismatches.push(`locale ${JSON.stringify(l)} has a package.nls file but no bundle.l10n file`);
+    }
+    return mismatches;
 }
 
 function checkGroup(defaultFile, pattern, dir, protectedKeys, protectedValueOf) {
@@ -95,43 +111,50 @@ function checkGroup(defaultFile, pattern, dir, protectedKeys, protectedValueOf) 
         }
 
         for (const k of protectedKeys) {
-            if (k in data && data[k] !== protectedValueOf(k, defaults)) {
+            if (k in data && message(data[k]) !== message(protectedValueOf(k, defaults))) {
                 errors.push(
                     `${rel}: protected label ${JSON.stringify(k)} must stay as ` +
-                    `${JSON.stringify(protectedValueOf(k, defaults))}, got ${JSON.stringify(data[k])}`
+                    `${JSON.stringify(message(protectedValueOf(k, defaults)))}, got ${JSON.stringify(message(data[k]))}`
                 );
             }
         }
     }
-    return files.length;
+    return files.map((f) => f.match(pattern)[1]);
 }
 
-const bundleCount = checkGroup(
-    'bundle.l10n.json',
-    /^bundle\.l10n\..+\.json$/,
-    'l10n',
-    PROTECTED_BUNDLE_LABELS,
-    (k) => k
-);
-
-const nlsCount = checkGroup(
-    'package.nls.json',
-    /^package\.nls\..+\.json$/,
-    '.',
-    PROTECTED_NLS_KEYS,
-    (k, defaults) => defaults[k]
-);
-
-if (bundleCount !== nlsCount) {
-    errors.push(
-        `language count mismatch: ${bundleCount} bundle.l10n.*.json vs ${nlsCount} package.nls.*.json`
+function main() {
+    const bundleLocales = checkGroup(
+        'bundle.l10n.json',
+        /^bundle\.l10n\.(.+)\.json$/,
+        'l10n',
+        PROTECTED_BUNDLE_LABELS,
+        (k) => k
     );
+
+    const nlsLocales = checkGroup(
+        'package.nls.json',
+        /^package\.nls\.(.+)\.json$/,
+        '.',
+        PROTECTED_NLS_KEYS,
+        (k, defaults) => defaults[k]
+    );
+
+    errors.push(...compareLocales(bundleLocales, nlsLocales));
+
+    if (errors.length > 0) {
+        console.error(`l10n check FAILED (${errors.length} problem${errors.length > 1 ? 's' : ''}):`);
+        for (const e of errors) console.error('  - ' + e);
+        process.exit(1);
+    }
+
+    console.log(`l10n check OK: ${bundleLocales.length} languages (+ English default), all keys and protected labels consistent.`);
 }
 
-if (errors.length > 0) {
-    console.error(`l10n check FAILED (${errors.length} problem${errors.length > 1 ? 's' : ''}):`);
-    for (const e of errors) console.error('  - ' + e);
-    process.exit(1);
+if (require.main === module) {
+    main();
 }
 
-console.log(`l10n check OK: ${bundleCount} languages (+ English default), all keys and protected labels consistent.`);
+module.exports = {
+    placeholders,
+    compareLocales,
+};

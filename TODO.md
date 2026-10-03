@@ -1,6 +1,6 @@
 # TODO List
 
-> Last Updated: 2026-10-02
+> Last Updated: 2026-10-03
 
 > ⚠️ **Note**: This document should only contain pending tasks. Completed tasks should be removed and documented in [CHANGELOG.md](CHANGELOG.md) or [FEATURES.md](docs/FEATURES.md).
 
@@ -16,12 +16,19 @@
   - Verify boot timer and scheduler cleanup in `deactivate()`, and resource disposal through the host's `context.subscriptions`
   - Validate host-dependent behavior in the Antigravity IDE Extension Development Host
 
-### Configuration Correctness
+### Low-Severity Logic Errors (code review 2026-10-03)
 
-- [ ] **Check Configuration Defaults and Constraints**
-  - Compare defaults and constraints declared in `package.json` with runtime configuration reads
-  - Confirm whether the `dashboard.refreshRate` manifest default of 90 seconds and `ConfigManager` fallback of 120 seconds are intentionally different
-  - Correct unintended differences and extend existing configuration tests where needed
+- [ ] **`retry()` returns a failed result after the last attempt**
+  - `src/shared/utils/retry.ts`: when every attempt returns a non-null value that `shouldRetry` still rejects, the last value is returned instead of `null`, contrary to the JSDoc
+  - No current caller uses a custom `shouldRetry`, so nothing is affected today
+- [ ] **Weekly usage day labels shift across time zones**
+  - `dayStart` is computed in the extension host's time zone and formatted in the Webview's; with Remote-SSH or containers in another zone, every bar label is off by one day (`src/view/webview/components/weekly-usage.ts`)
+- [ ] **Tooltips do not flip below the anchor**
+  - `src/view/webview/utils/tooltip-manager.ts` always places the tooltip above the element, so it is clipped when the anchor is near the top of the scrolled sidebar
+- [ ] **Output panel updates count as editor activity**
+  - `onDidChangeTextDocument` in `app.vm.ts` does not filter by URI scheme, so output channel appends reset the idle-drain timer while the Output panel is visible (not yet reproduced)
+- [ ] **Initial state JSON is not escaped for `<script>`**
+  - `src/view/html-builder.ts` injects `JSON.stringify` output without escaping `</script>` or `<`; no current string contains it, so it cannot be triggered today
 
 ### Cache Cleaning
 
@@ -40,3 +47,4 @@
   - Share the message type between the extension host and Webview
   - Use discriminated unions to associate each message name with its required parameters
   - Keep complete state payloads and partial updates distinct where their semantics differ
+  - Today `WebviewStateUpdate.tasks` / `contexts` are declared as `TreeSectionState` (`collapsed`, `stats`) while the provider sends `{ expanded, folders }`, hidden by a cast in `sidebar-app.ts`; `UsageChartData.displayMinutes` / `interval` are required in the Webview type but optional in the view model

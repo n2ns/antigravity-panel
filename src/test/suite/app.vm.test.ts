@@ -607,6 +607,41 @@ suite('AppViewModel Test Suite', () => {
         disposable.dispose();
     });
 
+    test('toggling a tree section should catch a failed tree state write', async () => {
+        const rejections: unknown[] = [];
+        const onRejection = (reason: unknown) => rejections.push(reason);
+        process.on('unhandledRejection', onRejection);
+        mockStorage.setLastTreeState = async () => { throw new Error('storage failed'); };
+        try {
+            vm.toggleTasksSection();
+            vm.toggleContextsSection();
+            await new Promise(resolve => setImmediate(resolve));
+            assert.deepStrictEqual(rejections, []);
+        } finally {
+            process.off('unhandledRejection', onRejection);
+        }
+    });
+
+    test('reset refresh timer should catch a failed quota refresh', async () => {
+        const clock = sinon.useFakeTimers({ now: Date.now(), toFake: ['setTimeout', 'clearTimeout'] });
+        const rejections: unknown[] = [];
+        const onRejection = (reason: unknown) => rejections.push(reason);
+        process.on('unhandledRejection', onRejection);
+        mockQuota.fetchQuota = async () => { throw new Error('fetch failed'); };
+        try {
+            const internals = vm as unknown as { _resetRefreshTargetMs: number; armResetRefreshTimer(): void };
+            internals._resetRefreshTargetMs = Date.now();
+            internals.armResetRefreshTimer();
+            clock.tick(0);
+            clock.restore();
+            await new Promise(resolve => setImmediate(resolve));
+            assert.deepStrictEqual(rejections, []);
+        } finally {
+            clock.restore();
+            process.off('unhandledRejection', onRejection);
+        }
+    });
+
     test('toggleContextsSection should invert contexts expanded state', () => {
         const initialState = vm.getState().tree.contexts.expanded;
 
@@ -698,6 +733,28 @@ suite('AppViewModel Test Suite', () => {
     test('getSidebarData should allow the credits card to be explicitly enabled', () => {
         configReader.set('dashboard.showCreditsCard', true);
         assert.strictEqual(vm.getSidebarData().showCreditsCard, true);
+    });
+
+    test('low quota notifications should fire only below a threshold', () => {
+        // Default thresholds: warning 40, critical 20
+        const notify = (remaining: number) => {
+            (vscode.window as any).lastInfoMessage = undefined;
+            (vscode.window as any).lastWarningMessage = undefined;
+            (vm as unknown as { _notificationCooldowns: Map<string, number> })._notificationCooldowns.clear();
+            (vm as unknown as { checkQuotaNotifications(group: unknown): void })
+                .checkQuotaNotifications({ id: 'gemini', label: 'Gemini', hasData: true, remaining });
+        };
+
+        notify(40);
+        assert.strictEqual((vscode.window as any).lastInfoMessage, undefined);
+        assert.strictEqual((vscode.window as any).lastWarningMessage, undefined);
+
+        notify(20);
+        assert.match((vscode.window as any).lastInfoMessage || '', /^Low Quota Warning:/);
+        assert.strictEqual((vscode.window as any).lastWarningMessage, undefined);
+
+        notify(19);
+        assert.match((vscode.window as any).lastWarningMessage || '', /^CRITICAL Quota:/);
     });
 
     suite('Quota reset notification', () => {
@@ -998,6 +1055,30 @@ suite('AppViewModel Test Suite', () => {
         assert.deepStrictEqual(weekly.days[5].items.map(item => item.label), ['Gemini', 'Claude']);
         assert.strictEqual(weekly.total, 13);
         assert.strictEqual(weekly.previousTotal, 14);
+    });
+
+    test('restoreFromCache should fire change events when something was restored', () => {
+        mockStorage.getLastViewState = <T>() => vm.getState().quota as T;
+        const fired: string[] = [];
+        const disposables = [
+            vm.onQuotaChange(() => fired.push('quota')),
+            vm.onCacheChange(() => fired.push('cache')),
+            vm.onTreeChange(() => fired.push('tree')),
+            vm.onStateChange(() => fired.push('state'))
+        ];
+
+        assert.strictEqual(vm.restoreFromCache(), true);
+        assert.deepStrictEqual(fired, ['quota', 'cache', 'tree', 'state']);
+        disposables.forEach(d => d.dispose());
+    });
+
+    test('restoreFromCache should fire no events when nothing was cached', () => {
+        let fired = false;
+        const disposable = vm.onStateChange(() => { fired = true; });
+
+        assert.strictEqual(vm.restoreFromCache(), false);
+        assert.strictEqual(fired, false);
+        disposable.dispose();
     });
 
     test('restoreFromCache should normalize reset timestamps serialized as strings', () => {

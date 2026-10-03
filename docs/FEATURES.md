@@ -102,7 +102,7 @@
 - Multiple display styles: percentage, reset time, used, remaining
 - Color-coded status: normal (green), warning (yellow), critical (red)
 - Shows a loading indicator until the first quota data arrives
-- Configurable thresholds for warning (default 40%) and critical (default 20%)
+- Configurable thresholds for warning (default 40%) and critical (default 20%); a group changes color and the low quota notification appears only when its remaining quota falls below a threshold, and a critical threshold above the warning threshold is lowered to it
 - Shows a warning state instead of stale quota data when the Language Server connection fails; cache-only display remains independent
 
 ### Cache Size Display
@@ -191,7 +191,7 @@ In WSL remote sessions the shortcuts follow where Antigravity actually reads eac
 | `tfa.status.showQuota` | `true` | Show quota in status bar |
 | `tfa.status.showCache` | `true` | Show cache size in status bar |
 | `tfa.status.warningThreshold` | `40` | Warning threshold (%, 5-100) |
-| `tfa.status.criticalThreshold` | `20` | Critical threshold (%, 1-50) |
+| `tfa.status.criticalThreshold` | `20` | Critical threshold (%, 1-50, at most the warning threshold) |
 | `tfa.status.scope` | `all` | Show quotas for "all" available model groups or only the "primary" active model |
 | `tfa.dashboard.refreshRate` | `90` | Quota refresh interval (seconds, min 30) |
 | `tfa.dashboard.gaugeStyle` | `semi-arc` | Gauge style: semi-arc or classic-donut |

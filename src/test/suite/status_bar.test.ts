@@ -202,6 +202,16 @@ suite('StatusBarManager Test Suite', () => {
         assert.ok(mockStatusBarItem.text.includes('🔴 Fls 5% 2h 30m'));
     });
 
+    test('should keep the higher color when exactly at a threshold', () => {
+        mockGroupItem.percentage = 30; // warningThreshold is 30
+        statusBarManager.update();
+        assert.ok(mockStatusBarItem.text.includes('🟢 Fls 30% 2h 30m'));
+
+        mockGroupItem.percentage = 10; // criticalThreshold is 10
+        statusBarManager.update();
+        assert.ok(mockStatusBarItem.text.includes('🟡 Fls 10% 2h 30m'));
+    });
+
     test('should show credits when tokenUsage userCredits are available', () => {
         mockConfigManager.getConfig = () => ({
             "status.showQuota": true,

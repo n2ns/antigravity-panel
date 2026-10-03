@@ -54,6 +54,13 @@ export class ConfigManager {
       ? Math.min(Math.max(Math.floor(rawAutoCleanKeepCount), 1), 50)
       : 5;
 
+    const warningThreshold = clampNumber(this.reader.get<number>("status.warningThreshold", 40), 40, 5, 100);
+    // Critical must not exceed warning, otherwise the warning color can never appear
+    const criticalThreshold = Math.min(
+      clampNumber(this.reader.get<number>("status.criticalThreshold", 20), 20, 1, 50),
+      warningThreshold
+    );
+
     return {
       // 1. Dashboard Settings
       "dashboard.gaugeStyle": this.reader.get<"semi-arc" | "classic-donut">("dashboard.gaugeStyle", "semi-arc"),
@@ -68,8 +75,8 @@ export class ConfigManager {
       // 2. Status Bar Settings
       "status.showQuota": this.reader.get<boolean>("status.showQuota", true),
       "status.showCache": this.reader.get<boolean>("status.showCache", true),
-      "status.warningThreshold": clampNumber(this.reader.get<number>("status.warningThreshold", 40), 40, 5, 100),
-      "status.criticalThreshold": clampNumber(this.reader.get<number>("status.criticalThreshold", 20), 20, 1, 50),
+      "status.warningThreshold": warningThreshold,
+      "status.criticalThreshold": criticalThreshold,
       "status.scope": this.reader.get<"primary" | "all">("status.scope", "all"),
 
       // 3. Cache Settings

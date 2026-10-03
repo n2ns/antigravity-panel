@@ -9,6 +9,7 @@ import type { TfaConfig } from '../shared/utils/types';
 import type { QuotaStrategyManager } from '../model/strategy';
 import type { ConfigManager } from '../shared/config/config_manager';
 import { formatBytes } from '../shared/utils/format';
+import { errorLog } from '../shared/utils/logger';
 import { QUOTA_RESET_HOURS_FALLBACK } from '../shared/utils/constants';
 import type {
     AppState,
@@ -360,13 +361,13 @@ export class AppViewModel implements vscode.Disposable {
 
     toggleTasksSection(): void {
         this._state.tree.tasks.expanded = !this._state.tree.tasks.expanded;
-        this.persistTreeState();
+        this.persistTreeState().catch(e => errorLog("Failed to persist tree state", e));
         this._onTreeChange.fire(this._state.tree);
     }
 
     toggleContextsSection(): void {
         this._state.tree.contexts.expanded = !this._state.tree.contexts.expanded;
-        this.persistTreeState();
+        this.persistTreeState().catch(e => errorLog("Failed to persist tree state", e));
         this._onTreeChange.fire(this._state.tree);
     }
 
@@ -770,7 +771,7 @@ export class AppViewModel implements vscode.Disposable {
                 this.armResetRefreshTimer();
                 return;
             }
-            void this.refreshQuota();
+            this.refreshQuota().catch(e => errorLog("Quota refresh after reset failed", e));
         }, delay);
         // Never keep the process alive just for this convenience refresh
         this._resetRefreshTimer.unref?.();
@@ -796,13 +797,13 @@ export class AppViewModel implements vscode.Disposable {
         let message: string | undefined;
         let severity: 'warning' | 'critical' | undefined;
 
-        if (group.remaining <= criticalThreshold) {
+        if (group.remaining < criticalThreshold) {
             message = vscode.l10n.t(
                 "CRITICAL Quota: {0} quota is below {1}% ({2}% remaining). Use with caution!",
                 group.label, criticalThreshold, Math.round(group.remaining)
             );
             severity = 'critical';
-        } else if (group.remaining <= warningThreshold) {
+        } else if (group.remaining < warningThreshold) {
             message = vscode.l10n.t(
                 "Low Quota Warning: {0} quota is below {1}% ({2}% remaining).",
                 group.label, warningThreshold, Math.round(group.remaining)
@@ -1338,7 +1339,15 @@ export class AppViewModel implements vscode.Disposable {
             this._state.tokenUsage = cachedTokenUsage;
         }
 
-        return cachedQuota !== null || cachedTree !== null;
+        const restored = cachedQuota !== null || cachedTree !== null;
+        if (restored) {
+            // Views render from these events; extension.ts skips the loading state on restore
+            this._onQuotaChange.fire(this._state.quota);
+            this._onCacheChange.fire(this._state.cache);
+            this._onTreeChange.fire(this._state.tree);
+            this._onStateChange.fire(this._state);
+        }
+        return restored;
     }
 
     dispose(): void {

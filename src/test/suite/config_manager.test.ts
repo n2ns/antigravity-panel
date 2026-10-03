@@ -274,8 +274,17 @@ suite('ConfigManager Test Suite', () => {
     });
 
     test('should clamp criticalThreshold above 50', () => {
+      mockReader.set('status.warningThreshold', 100);
       mockReader.set('status.criticalThreshold', 60);
       assert.strictEqual(configManager.getConfig()["status.criticalThreshold"], 50);
+    });
+
+    test('should cap criticalThreshold at warningThreshold', () => {
+      mockReader.set('status.warningThreshold', 40);
+      mockReader.set('status.criticalThreshold', 50);
+      const config = configManager.getConfig();
+      assert.strictEqual(config["status.warningThreshold"], 40);
+      assert.strictEqual(config["status.criticalThreshold"], 40);
     });
 
     test('should clamp warningThreshold to [5, 100]', () => {

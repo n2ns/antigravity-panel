@@ -180,9 +180,9 @@ export class StatusBarManager implements vscode.Disposable {
         warningThreshold: number,
         criticalThreshold: number
     ): string {
-        if (percentage <= criticalThreshold) {
+        if (percentage < criticalThreshold) {
             return '🔴';
-        } else if (percentage <= warningThreshold) {
+        } else if (percentage < warningThreshold) {
             return '🟡';
         }
         return '🟢';

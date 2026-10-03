@@ -21,6 +21,8 @@
 - **Idle Drain Warning**: The "quota dropped with no editor activity" warning now counts only drops that happened entirely while the window had been unfocused for at least 10 minutes, so switching away just before a poll no longer reports your own usage.
 - **Usage Rate After a Reset**: The usage rate is computed over the time since the latest reset instead of the whole chart range, so the runway estimate right after a reset is no longer understated as "Stable".
 - **Status Bar While Detecting**: Before any quota data arrives, the status bar shows the loading indicator instead of `🔴 N/A 0% N/A`.
+- **Status Bar Thresholds**: A remaining quota exactly at a threshold keeps the higher color and shows no low quota notification for that threshold, matching the setting descriptions ("falls below") and the notification text ("is below"). A `tfa.status.criticalThreshold` above `tfa.status.warningThreshold` is lowered to the warning threshold, so the warning color can still appear.
+- **Status Bar After Cached Startup**: The status bar renders the cached quota and cache size right at startup instead of staying empty until the first live update.
 - **Sidebar**: The clicked file in the cache tree is highlighted, and multi-line tooltips on the usage charts and credit bars show one item per line.
 - **Commit Message Generator**:
   - Claude requests no longer send `temperature`, which current Claude models reject, and allow up to 4096 output tokens; a response cut off at the token limit is reported as an error instead of a partial message.
