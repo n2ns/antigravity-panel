@@ -88,7 +88,6 @@ Other commands: `npm run watch` (development build with sourcemaps), `npm run pa
 - `TODO.md` holds pending work only. Remove finished items and record them in `CHANGELOG.md` or `docs/FEATURES.md`.
 - Temporary design or analysis documents are deleted once the work is implemented.
 - Do not write volatile numbers (test counts, file counts) into documentation.
-- The Project Docs list at the end of `README.md` links every file in the documentation index below; keep it in sync.
 
 ## When you change X, also update Y
 
