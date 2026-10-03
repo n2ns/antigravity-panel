@@ -10,7 +10,7 @@ import type { AutoAcceptStatus, VsCodeApi, WindowWithVsCode } from '../types.js'
 /** GitHub repository URLs */
 const GITHUB_ISSUES_URL = 'https://github.com/n2ns/antigravity-panel/issues';
 const GITHUB_HOME_URL = 'https://github.com/n2ns/antigravity-panel';
-const GITHUB_DOCS_URL = 'https://github.com/n2ns/antigravity-panel#readme';
+const GITHUB_DOCS_URL = 'https://github.com/n2ns/antigravity-panel/blob/main/docs/FEATURES.md';
 const CDP_SETUP_URL = 'https://github.com/n2ns/antigravity-panel/blob/main/docs/FEATURES.md#enabling-the-cdp-fallback';
 
 @customElement('sidebar-footer')

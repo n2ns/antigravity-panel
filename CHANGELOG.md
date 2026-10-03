@@ -8,6 +8,10 @@
 
 - **Auto-Accept Runtime Status**: While Auto-Accept is on, the sidebar footer shows what the automation can actually reach: whether the CDP debugging port answers, an Agent panel target is connected and the Agent panel is found in it, how many IDE accept commands are registered, and the last action it accepted or left for manual review with the reason (destructive command, no visible command text, or terminal approval turned off). When the debugging port does not answer, a `Setup` button opens the instructions for starting the IDE with `--remote-debugging-port=9222`. Only observed state is shown; nothing appears for a check that has not run yet.
 
+### Changed
+
+- **Docs Button**: The **Docs** button in the sidebar footer now opens the feature reference (`docs/FEATURES.md`) instead of the README.
+
 ### Fixed
 
 - **Auto-Accept CDP Fallback Found No Agent Panel**: Current Antigravity IDE builds render the Agent panel as `.antigravity-agent-side-panel` in the workbench page, which none of the panel selectors matched, so the CDP fallback scanned nothing: terminal commands were never approved and panel-only actions were never accepted. The selector is now included.

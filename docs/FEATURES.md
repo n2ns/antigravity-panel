@@ -11,10 +11,10 @@
 - Pie charts showing remaining quota percentage per pool
 - Color-coded warnings when quota runs low (warning/critical thresholds)
 - **Official Weekly Limit**: in the pool view, a `Weekly` bar under each gauge shows the pool's weekly limit and a countdown to its reset, as reported by Antigravity (the same values as the IDE's Settings → Models). The gauge keeps showing the 5-hour quota. Hidden when the Language Server does not provide the weekly limit and in the model view
-- Configuration-driven pool membership keeps shared quotas accurate and allows future provider splits without changing the statistics pipeline
+- Models that share a quota pool are counted together, so each gauge shows the quota its models actually share
 - Model view preserves separate **Gemini Flash** and **Gemini Pro** identities and colors even while they share one pool
 - Models that match no configured group are shown in an **Other** group and counted in the Claude (non-Google) pool, never in the Gemini pool
-- **Customizable Gauge Styles**: Refactored the visualization engine to support multiple rendering strategies. Users can choose between:
+- **Gauge Styles** (`tfa.dashboard.gaugeStyle`):
   - **Semi-Arc**: A modern, 210-degree industrial precision instrument style (Default).
   - **Classic Donut**: The historical full-circle gauge style.
 - Automatic refresh with configurable polling interval (default 90s, minimum 30s)
@@ -27,7 +27,7 @@
 ### Usage History & Analytics
 - Interactive bar charts showing reported quota changes over time; hidden until the first positive change is recorded
 - Configurable display range (10-120 minutes), adaptively grouped into at most about 24 readable intervals
-- 14-day history tracking with persistent storage; the latest 24 hours keep raw samples, while older data is downsampled to 5-minute intervals
+- Usage history is kept for 14 days; data older than a day is kept at a lower resolution
 - Color-coded visualization by quota pool, with interval and per-pool details on hover
 
 ### Usage Prediction
@@ -52,24 +52,24 @@
 - Toggle visibility via `tfa.dashboard.showUserInfoCard` setting
 
 ### Connection and Automatic Reconnection
-- The local Antigravity Language Server is discovered automatically; the panel reconnects after the connection is lost (two consecutive polls without an answer), after **Restart Agent Service**, and after a failed manual refresh
-- A reconnect retries a bounded number of times (7 extra attempts, 5 seconds apart), then keeps retrying in the background with a backoff that starts at 30 seconds and doubles up to 5 minutes
-- HTTP 401/403 is reported as an authentication failure; it does not trigger a rescan and polling continues
-- Server errors (HTTP 5xx) and unparseable responses are not treated as a lost connection
-- While the connection is failed, the status bar shows a warning state instead of stale quota data
+- The local Antigravity Language Server is found automatically
+- When the connection is lost, after **Restart Agent Service**, or after a failed manual refresh, the panel reconnects by itself: a few quick retries first, then retries in the background at growing intervals
+- If the server rejects the request because you are not signed in, the panel tells you so instead of reconnecting
+- A temporary server error does not count as a lost connection
+- While the connection is failed, the status bar shows a warning state instead of outdated quota data
 
 ### Conversation Context Window
 - A `Context` card under the gauges shows the context window of the current conversation: tokens used in the latest model call and the model's limit (for example `37.2K / 256K (15%)`), with the conversation title and model
-- The values come from the Language Server's own estimate (`contextWindowMetadata`), which is also what triggers compression, and are never lower than the prompt tokens actually sent in that call (the estimate of a conversation's first call leaves out the system prompt); the current conversation is the most recently modified one of this window
+- The values are the Language Server's own estimate, the same figure that decides when the IDE compresses, and are never lower than the tokens actually sent; the current conversation is the most recently active one in this window
 - The bar turns yellow at `tfa.context.warningThreshold` (default 80%) and red at 95%
 - The IDE does not compress a conversation early: it lets the context fill up to the limit, then compresses it, which can drop most earlier details. When usage crosses the threshold, a warning suggests starting a new conversation; it is shown once per crossing, and not for a conversation that was already above the threshold when the panel first saw it
 - When a compression is observed, a notification says so and the card shows `Compressed at <time>`
-- The conversation list is read every 10 seconds; the per-call data is read only when the conversation has new steps. The card is hidden when there is no conversation or the server does not provide the data. After a window reload the Language Server restarts and lists no conversation until one is continued or started, so the card appears with the next message
+- The card updates about every 10 seconds and is hidden when there is no conversation or the server does not provide the data. After a window reload it reappears with the next message in a conversation
 
 ### Cache-First Startup
-- The sidebar renders immediately from the last stored quota snapshot and cache sizes, then refreshes with live data
-- Total, Brain, and conversation cache sizes and the cache tree metadata are restored across panel instances
-- Changing a setting re-renders the panel from the last snapshot; it does not change the connection state or record quota history
+- The sidebar shows the last known quota and cache sizes immediately, then refreshes with live data
+- Cache sizes and the Brain and Code Tracker lists are remembered when the panel is reopened
+- Changing a setting redraws the panel at once without waiting for the server
 - Local UI state such as collapsed sections survives refreshes and panel recreation
 
 ---
@@ -81,12 +81,12 @@
 - Display task metadata: size, file count, creation date
 - Preview files: images, markdown, and code files
 - One-click deletion with confirmation dialog
-- **Clean Cache** first builds a dry-run clean plan and deletes exactly that plan only after modal confirmation
-- Smart cleanup: keeps the most recently active tasks (default 5, `tfa.cache.autoCleanKeepCount`) to prevent interrupting active work; activity includes the task's files and its conversation `.pb`, `.db`, `.db-wal` and `.db-shm` files
-- Conversation files (`.pb`, `.db`, `.db-wal`, `.db-shm`) are deleted only with their cleaned or deleted task, or as true orphans (no matching Brain task directory); among orphan conversations the newest ones are kept
-- When a conversation `.db` cannot be deleted (for example, locked on Windows), its `.db-wal` and `.db-shm` are kept as well and reported as not deleted
-- Only UUID-named Brain directories are tasks; other directories such as the IDE's `tempmediaStorage` are neither listed nor cleaned
-- Each task is cleaned independently: a failure is logged and counted, and the remaining entries are still processed
+- **Clean Cache** first shows exactly what it will delete, and deletes only that after you confirm
+- Smart cleanup: keeps the most recently active tasks (default 5, `tfa.cache.autoCleanKeepCount`) so active work is not interrupted; a task counts as active when its files or its conversation were recently used
+- A task's conversation history is deleted together with the task; conversation history that belongs to no task is cleaned as well, keeping the newest
+- Files that are in use (for example, locked on Windows) are left in place and reported as not deleted
+- Folders the IDE uses for other purposes are neither listed nor cleaned
+- A task that cannot be deleted does not stop the others; the result reports how many failed
 - Auto-clean (`tfa.cache.autoClean`) uses the same selection without a prompt
 
 ### Code Tracker Management
@@ -143,10 +143,10 @@ In WSL remote sessions the shortcuts follow where Antigravity actually reads eac
 
 ### Agent Action Acceptance
 - Toggle via the **Auto-Accept** switch in the sidebar footer, the **Toggle Agent Auto-Accept** command, or `tfa.system.autoAccept`; the switch always shows the extension's current state
-- Accepts AI agent steps and file edits: registered Agent-scoped IDE accept commands first, then a CDP fallback that clicks accept buttons in the Agent panel when a control is unavailable through the extension API (for example, because of webview sandboxing)
-- Accept commands are matched at runtime against the commands the running IDE registers (IDs differ between Antigravity 1.x and 2.x), so the command strategy keeps working across IDE upgrades
-- The CDP fallback requires starting the IDE with `--remote-debugging-port=9222` and connects only to workbench targets
-- Each CDP pass locates and scans the current Agent panel once without leaving page-side observers or timers; a short per-node timestamp prevents immediate repeat clicks
+- Accepts AI agent steps and file edits: through the IDE's own accept commands first, and, for buttons the IDE does not expose to extensions, through the CDP fallback that clicks them in the Agent panel
+- Works with the accept commands of the installed IDE version, so it keeps working across IDE upgrades
+- The CDP fallback requires starting the IDE with `--remote-debugging-port=9222` and only touches the IDE's own windows
+- A button that was just clicked is not clicked again for a few seconds
 - Persistent grants (e.g. "Always allow", "Allow this conversation") are never clicked
 - Action cards that look destructive are left for manual review
 - Polling interval configurable via `tfa.system.autoAcceptInterval` (default 800ms)
@@ -154,7 +154,7 @@ In WSL remote sessions the shortcuts follow where Antigravity actually reads eac
 
 ### Terminal Commands
 - Off by default; additionally requires `tfa.system.autoAcceptTerminal`
-- Approved only by clicking the **Run** button of a terminal command prompt card in the Agent panel through the CDP fallback; IDE accept commands are never used for terminal commands
+- Approved only by clicking the **Run** button of a terminal command prompt in the Agent panel through the CDP fallback, so the command text is always checked first
 - The danger check covers the whole prompt card; Run is not clicked when no command text is visible in the card
 - Commands that look destructive (e.g. `rm -rf` on `/` or `~`, `git push --force`, `git reset --hard`, `Remove-Item -Recurse`, `DROP TABLE`) are left for manual review
 
@@ -164,7 +164,7 @@ While Auto-Accept is on, the sidebar footer shows what the automation observes, 
 - **IDE accept commands**: how many registered accept commands were found, or that none are registered
 - **Last action**: the last button accepted through CDP, or the last one left for manual review with the reason: destructive command, no command text visible, or terminal approval is off (`tfa.system.autoAcceptTerminal`)
 
-Only observed state is shown: a line appears after its first check, and commands executed through the IDE command API are not listed because their effect cannot be observed. An action still on screen is reported once, not on every pass.
+Only observed state is shown: a line appears after its first check, and accepts made through the IDE's accept commands are not listed because the panel cannot see their effect. An action still on screen is reported once, not repeatedly.
 
 ### Enabling the CDP Fallback
 Terminal command approval always needs the CDP fallback; steps and file edits need it only when the IDE command API is unavailable.
@@ -209,9 +209,9 @@ The **Restart**, **Reset**, and **Reload** buttons in the sidebar footer:
 ## 💬 Community & Feedback
 
 ### Feedback Integration
-- Report bugs via the built-in Intelligent Feedback System (pre-fills diagnostics)
-- Side-by-side buttons in footer for **Report Issue** (GitHub Issues) and **Project Home**
-- Full localization support for all UI elements and feedback instructions
+- The sidebar footer links to **Docs** (this feature reference), **Feedback** (GitHub Issues), and **Star** (the project page)
+- When the Language Server cannot be found or its data cannot be read, the notification offers **Feedback**, which opens a new GitHub issue with the extension, IDE, and operating system versions and the connection diagnostics filled in, and **Run Diagnostics**
+- Feedback instructions are localized like the rest of the UI
 
 ---
 
@@ -233,8 +233,7 @@ The **Restart**, **Reset**, and **Reload** buttons in the sidebar footer:
 - Polski (Polish)
 - Tiếng Việt (Vietnamese)
 - Bahasa Indonesia (Indonesian)
-- Command titles stay in English in every language
-- CI validates locale keys, placeholders, and protected English UI labels and command titles with `npm run check:l10n`
+- Command titles and core labels such as `Auto-Accept` stay in English in every language, so they match documentation and community discussions
 
 ---
 

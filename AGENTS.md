@@ -125,7 +125,7 @@ Other commands: `npm run watch` (development build with sourcemaps), `npm run pa
 | File | Audience and responsibility |
 |---|---|
 | `README.md` | Users: what it does, installation, quick start, commands |
-| `docs/FEATURES.md` | Users: full feature behavior and the complete settings table |
+| `docs/FEATURES.md` | Users: full feature behavior and the complete settings table; opened by the sidebar **Docs** button |
 | `CHANGELOG.md` | Version history |
 | `TODO.md` | Pending work only |
 | `CONTRIBUTING.md` | Contributors: environment, debugging, checks, PR workflow |
