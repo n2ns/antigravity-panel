@@ -268,6 +268,24 @@ suite('QuotaService Test Suite', () => {
         assert.ok(model.resetTime.getTime() > Date.now(), 'Fallback date still sorts into the future');
     });
 
+    test('should flag a null or missing resetTime as fallback instead of Ready', async () => {
+        for (const resetTime of [null, undefined]) {
+            service.mockResponse = {
+                userStatus: {
+                    cascadeModelConfigData: {
+                        clientModelConfigs: [
+                            { label: 'No Reset', modelOrAlias: { model: 'none' }, quotaInfo: { remainingFraction: 0.5, resetTime } }
+                        ]
+                    }
+                }
+            };
+
+            const model = (await service.fetchQuota())!.models[0];
+            assert.strictEqual(model.resetTimeIsFallback, true, `resetTime ${resetTime} should use the fallback`);
+            assert.strictEqual(model.timeUntilReset, 'N/A');
+        }
+    });
+
     test('should not flag valid resetTime as fallback', async () => {
         service.mockResponse = validResponse;
         const snapshot = await service.fetchQuota();

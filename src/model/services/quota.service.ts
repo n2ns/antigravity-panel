@@ -302,7 +302,8 @@ export class QuotaService implements IQuotaService {
             .filter((m: RawModelConfig) => m.quotaInfo)
             .map((m: RawModelConfig) => {
                 const now = new Date();
-                let resetTime = new Date(m.quotaInfo!.resetTime);
+                // null would parse as the 1970 epoch; treat it like a missing value
+                let resetTime = new Date(m.quotaInfo!.resetTime ?? '');
 
                 // Handle invalid resetTime - use 24h from now as fallback, but flag it
                 // so the UI shows N/A instead of a fake countdown and no refresh timer
@@ -355,7 +356,7 @@ interface RawModelConfig {
     modelOrAlias?: { model: string };
     quotaInfo?: {
         remainingFraction?: number;
-        resetTime: string;
+        resetTime?: string | null;
     };
 }
 
