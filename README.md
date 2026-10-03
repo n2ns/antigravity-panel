@@ -47,120 +47,42 @@
 
 ### 📊 Smart Quota Monitoring
 
-**See your AI usage at a glance**
-- Visual quota display grouped by provider-defined quota pools; model view keeps individual model identities
-- Status bar shows remaining quota with emoji indicators (🟢🟡🔴), cache size, and a warning state when the quota connection fails; the panel reconnects to the Language Server automatically
-- Hover tooltip showing all model quotas and reset times
-- Configurable warning (≤40%) and critical (≤20%) thresholds
+See how much quota each model pool has left, its official weekly limit, and when it resets. The status bar turns yellow and then red as quota runs low (thresholds are configurable), and hovering it shows every pool at once. [Details →](docs/FEATURES.md#real-time-quota-display)
 
-### 📈 Usage Trends & Analytics
+### 📈 Usage Trends
 
-**Understand your consumption patterns**
-- Interactive bar charts showing reported quota changes over time (10-120 minutes), adaptively grouped into at most about 24 readable intervals; the card stays hidden until the first positive change is recorded
-- 14-day history tracking with persistent storage; the latest 24 hours keep raw samples, while older data is downsampled to 5-minute intervals
-- Color-coded visualization by quota pool, with interval and per-pool details on hover
-- 🔥 **Usage Rate**: Average consumption speed in percentage points per hour (pp/h)
-- ⏱️ **Runway Prediction**: Estimated time until quota exhaustion
+A chart of recent quota consumption by pool, plus your current usage rate and an estimate of how long the remaining quota will last. History is kept for 14 days. [Details →](docs/FEATURES.md#usage-history--analytics)
 
-### 💳 Token Credits Tracking
+### 💳 Credits
 
-**Monitor your AI usage credits**
-- Prompt Credits: Used for conversation input and result generation (reasoning)
-- Flow Credits: Used for search, modification, and command execution (operations)
-- Static Prompt/Flow rows are hidden by default; Google One AI subscription credit remains visible and the rows can be restored with `tfa.dashboard.showCreditsCard`
+Shows your Google One AI subscription credit; Prompt and Flow credit rows can be turned on in settings. [Details →](docs/FEATURES.md#token-credits-tracking)
 
 ### 🗂️ Cache Management
 
-**Keep your workspace clean**
-- **Brain Tasks**: Browse and delete AI conversation caches
-  - See task size, file count, and creation date
-  - Preview images, markdown, and code files
-  - Deletion of tasks, contexts, and single files asks for modal confirmation
-- **Code Context**: Manage code analysis caches per project
-- **Clean Cache**: Builds a dry-run plan first and deletes only after you confirm it in a modal dialog; the most recently active tasks are kept (activity includes the task's conversation `.pb`, `.db`, `.db-wal`, and `.db-shm` files); among orphan conversations (no matching task), the newest ones are kept and the rest are removed with all their `.pb`, `.db`, `.db-wal`, and `.db-shm` files
-- **Smart Cleanup**: Automatically closes related editor tabs
+Browse, preview, and delete the IDE's conversation (**Brain**) and **Code Tracker** caches, with a confirmation before anything is deleted. **Clean Cache** shows what it will remove first and always keeps your most recently active tasks. [Details →](docs/FEATURES.md#brain-tasks-management)
 
 ### 🤖 Auto-Accept (Hands-free Mode)
 
-**Streamline your workflow**
-- Automatically accepts Agent steps and file edits (`tfa.system.autoAccept`)
-- Steps and file edits use registered IDE commands first, with a panel-scoped CDP fallback for controls that are unavailable through the extension API
-- Terminal commands are approved only when `tfa.system.autoAcceptTerminal` is also enabled (off by default), and only by clicking the Run button of a terminal command prompt card in the Agent panel through the CDP fallback; IDE accept commands are never used for terminal commands
-- Runtime command discovery: accept commands are matched against what the running IDE actually registers (IDs differ between Antigravity 1.x and 2.x), so the command strategy keeps working across IDE upgrades
-- Checks on the configured interval; each CDP pass locates and scans the current Agent Panel once without leaving page-side observers or timers, while a short DOM-node timestamp prevents immediate repeat clicks
-- CDP interactions leave destructive-looking action cards for manual review. For terminal commands the danger check covers the whole prompt card, and Run is not clicked when the card shows no command text. Persistent grants such as "Allow this conversation" are never clicked. CDP connects only to workbench targets. Auto-Accept remains a trust-the-agent feature; keep it off for untrusted or prompt-injection-prone tasks
-- `tfa.system.autoAccept` and `tfa.system.autoAcceptTerminal` are application-scoped, so they apply to all windows and workspaces
-- Toggle on/off via the sidebar "Rocket" switch; the switch always shows the extension's current Auto-Accept state
+Let the agent work through long tasks without clicking "Accept" on every step and file edit. Off by default; turn it on with the **Auto-Accept** switch in the sidebar footer. Approving terminal commands is a separate opt-in and needs the IDE started with `--remote-debugging-port=9222`.
 
-> [!IMPORTANT]
-> **CDP Fallback Setup:** For the CDP fallback to work, Antigravity must be launched with `--remote-debugging-port=9222`. Terminal command approval (`tfa.system.autoAcceptTerminal`) always requires this port, because terminal commands are approved only through CDP Run clicks. For steps and file edits, the port is only needed when the command API is unavailable due to webview sandboxing.
+> [!WARNING]
+> Only use Auto-Accept for tasks you trust. [How it works, setup, and what it never clicks →](docs/FEATURES.md#-auto-accept-hands-free-mode)
 
-**Recommended Setup (Dedicated Launcher):**
-Create a script to cleanly kill background instances before launching.
+### ✍️ Commit Message Generator
 
-**Windows (Save as `Launch_Antigravity.bat`):**
-```bat
-@echo off
-taskkill /F /IM Antigravity.exe /T 2>nul
-start "" "D:\Develop\Antigravity\Antigravity.exe" --remote-debugging-port=9222
-```
+Generate a commit message for your staged changes with a local LLM (such as Ollama) or Claude, as a workaround when the built-in generator is unavailable. Your staged diff is sent to the endpoint you configure. [Setup →](docs/FEATURES.md#choosing-a-model)
 
-**macOS/Linux (Save as `launch_antigravity.sh`):**
-```bash
-#!/bin/bash
-pkill -f "Antigravity"
-/Applications/Antigravity.app/Contents/MacOS/Electron --remote-debugging-port=9222 &
-```
+### 🔄 Service Recovery
 
-### ✨ Commit Message Generator (Local & Claude)
-
-**Generate conventional commit messages using a local LLM or Claude**
-
-A workaround for when the built-in "Generate commit message" feature is unavailable.
-
-**Setup:**
-1. Get an API key from [Anthropic Console](https://console.anthropic.com/) if you use Claude
-2. Run `Antigravity Panel: Set Anthropic API Key`
-3. Enter your API key (stored securely, never in plaintext)
-
-**Usage:**
-1. Stage your changes with `git add`
-2. Run `Antigravity Panel: Generate Commit Message (Local & Claude)`
-3. The commit message auto-populates in the SCM input box
-
-**Configuration:**
-- **Endpoint**: Ollama `/api/generate` or `/api/chat`, Anthropic `/v1/messages`, or any OpenAI-compatible chat endpoint
-- **Model**: Choose a local Ollama model or a Claude/OpenAI-compatible model
-- **Max Diff Size**: Limit characters sent (default: 80,000)
-- **Format**: Conventional commits or simple style
-
-> ⚠️ **Privacy**: Your staged diff is sent to the configured LLM endpoint. Use a local endpoint if you do not want diffs sent to an external provider.
-
-### 🔄 Service Recovery Tools
-
-**Built-in troubleshooting**
-- **Restart**: Reboots the background Language Server if the Agent is unresponsive
-- **Reset**: Clears user status cache to fix stuck quota updates
-- **Reload**: Refreshes the Antigravity IDE window to resolve UI glitches
+**Restart**, **Reset**, and **Reload** buttons in the sidebar footer for when the Agent stops responding or quota stops updating. [Details →](docs/FEATURES.md#-service-recovery)
 
 ### ⚙️ Quick Configuration Access
 
-**One-click shortcuts to important settings**
-- Edit Global Rules
-- Configure MCP settings
-- Manage Browser Allowlist
+One click from the sidebar footer to your global Rules, MCP settings, and Browser Allowlist. [Details →](docs/FEATURES.md#one-click-shortcuts)
 
 ### 🌐 Works Everywhere
 
-**Cross-platform support**
-- ✅ Windows
-- ✅ macOS
-- ✅ Linux
-
-**Multi-language UI**
-- English, 简体中文, 繁體中文, 日本語, Français, Deutsch, Español, Português (Brasil), Bahasa Indonesia, Italiano, 한국어, Русский, Polski, Türkçe, Tiếng Việt
-
-UI labels and technical terms stay in English in every locale; tooltips and descriptions are localized. See [LOCALIZATION_RULES.md](docs/LOCALIZATION_RULES.md).
+Windows, macOS, and Linux, in 15 languages: English, 简体中文, 繁體中文, 日本語, Français, Deutsch, Español, Português (Brasil), Bahasa Indonesia, Italiano, 한국어, Русский, Polski, Türkçe, Tiếng Việt. UI labels and technical terms stay in English in every locale.
 
 ## 📦 Installation
 
@@ -245,6 +167,8 @@ Antigravity Panel does not collect or store analytics data. Quota, cache, diagno
 **Experimental Feature Notice:**
 The *Smart Quota Monitoring* feature relies on internal metrics exposed by the local Antigravity environment. This functionality is experimental and provided "as-is" to help users better understand their personal usage. It is not an official Google product and may be subject to changes in future IDE updates.
 
+See the full [Disclaimer](docs/DISCLAIMER.md).
+
 ## 🤝 Contributing
 
 We welcome contributions. See [CONTRIBUTING.md](CONTRIBUTING.md) for environment setup, Extension Host debugging, quality checks, packaging, and the PR workflow.
@@ -268,18 +192,6 @@ Special thanks to our community contributors:
 *   [**@AMDphreak**](https://github.com/AMDphreak) - Sidebar title fix, Gemini Flash/Pro grouping, quota reset window alignment with API cycles, and Claude+GPT shared pool display.
 *   [**@chonkydonkers**](https://github.com/chonkydonkers) - Display user tier available credits in status bar and sidebar.
 *   [**@vincenzofabiano92**](https://github.com/vincenzofabiano92) - Synchronous command registration, connection stability optimization, Italian NLS localization, and server integration test runner (v2.6.0).
-
-## 📚 Project Docs
-
-- [Features and settings](docs/FEATURES.md)
-- [Changelog](CHANGELOG.md)
-- [TODO](TODO.md)
-- [Contributing](CONTRIBUTING.md)
-- [Architecture](docs/ARCHITECTURE.md)
-- [Quota data model](docs/QUOTA_DATA_MODEL.md)
-- [Debugging](docs/DEBUGGING.md)
-- [Localization rules](docs/LOCALIZATION_RULES.md)
-- [Disclaimer](docs/DISCLAIMER.md)
 
 ## 📄 License
 

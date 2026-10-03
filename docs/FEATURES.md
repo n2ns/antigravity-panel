@@ -26,9 +26,9 @@
 
 ### Usage History & Analytics
 - Interactive bar charts showing reported quota changes over time; hidden until the first positive change is recorded
-- Configurable display range (10-120 minutes)
+- Configurable display range (10-120 minutes), adaptively grouped into at most about 24 readable intervals
 - 14-day history tracking with persistent storage; the latest 24 hours keep raw samples, while older data is downsampled to 5-minute intervals
-- Color-coded visualization by quota pool
+- Color-coded visualization by quota pool, with interval and per-pool details on hover
 
 ### Usage Prediction
 - 🔥 **Usage Rate**: Average consumption speed in percentage points per hour (pp/h) based on recent activity
@@ -118,6 +118,7 @@
 ## ⚙️ Quick Configuration Access
 
 ### One-click Shortcuts
+The **Rules**, **MCP**, and **Allowlist** buttons in the sidebar footer open:
 - Edit Global Rules (opens the first existing of `~/.gemini/config/AGENTS.md`, legacy `~/.gemini/GEMINI.md`, cross-tool `~/.gemini/AGENTS.md`)
 - Configure MCP settings (`~/.gemini/config/mcp_config.json`)
 - Manage Browser Allowlist (`~/.gemini/config/browserAllowlist.txt`)
@@ -129,10 +130,15 @@ In WSL remote sessions the shortcuts follow where Antigravity actually reads eac
 
 ## 🤖 Auto-Accept (Hands-free Mode)
 
+> [!WARNING]
+> Auto-Accept is a trust-the-agent feature. Keep it off for untrusted or prompt-injection-prone tasks.
+
 ### Agent Action Acceptance
-- Toggle via the **Auto-Accept** switch in the sidebar footer, the **Toggle Agent Auto-Accept** command, or `tfa.system.autoAccept`
-- Accepts AI agent steps and file edits: registered Agent-scoped IDE accept commands first, then a CDP fallback that clicks accept buttons in the Agent panel
+- Toggle via the **Auto-Accept** switch in the sidebar footer, the **Toggle Agent Auto-Accept** command, or `tfa.system.autoAccept`; the switch always shows the extension's current state
+- Accepts AI agent steps and file edits: registered Agent-scoped IDE accept commands first, then a CDP fallback that clicks accept buttons in the Agent panel when a control is unavailable through the extension API (for example, because of webview sandboxing)
+- Accept commands are matched at runtime against the commands the running IDE registers (IDs differ between Antigravity 1.x and 2.x), so the command strategy keeps working across IDE upgrades
 - The CDP fallback requires starting the IDE with `--remote-debugging-port=9222` and connects only to workbench targets
+- Each CDP pass locates and scans the current Agent panel once without leaving page-side observers or timers; a short per-node timestamp prevents immediate repeat clicks
 - Persistent grants (e.g. "Always allow", "Allow this conversation") are never clicked
 - Action cards that look destructive are left for manual review
 - Polling interval configurable via `tfa.system.autoAcceptInterval` (default 800ms)
@@ -143,6 +149,44 @@ In WSL remote sessions the shortcuts follow where Antigravity actually reads eac
 - Approved only by clicking the **Run** button of a terminal command prompt card in the Agent panel through the CDP fallback; IDE accept commands are never used for terminal commands
 - The danger check covers the whole prompt card; Run is not clicked when no command text is visible in the card
 - Commands that look destructive (e.g. `rm -rf` on `/` or `~`, `git push --force`, `git reset --hard`, `Remove-Item -Recurse`, `DROP TABLE`) are left for manual review
+
+### Enabling the CDP Fallback
+Terminal command approval always needs the CDP fallback; steps and file edits need it only when the IDE command API is unavailable.
+
+1. Save your work and quit Antigravity completely. If an instance is still running, a new launch reuses it and the flag has no effect.
+2. Start Antigravity with the remote debugging port, adjusting the path to your installation:
+   - Windows: `"C:\path\to\Antigravity\Antigravity.exe" --remote-debugging-port=9222`
+   - macOS: `/Applications/Antigravity.app/Contents/MacOS/Electron --remote-debugging-port=9222`
+   - Linux: run the Antigravity executable from your installation with `--remote-debugging-port=9222`
+
+---
+
+## ✍️ Commit Message Generator
+
+A workaround for when the built-in "Generate commit message" feature is unavailable.
+
+### Generating a Commit Message
+1. Stage your changes
+2. Run **Generate Commit Message (Local & Claude)**
+3. The message is written into the Source Control input box
+
+### Choosing a Model
+- `tfa.commitMessageClaude.endpoint` selects the request format by its path: Ollama `/api/generate` or `/api/chat` (the default is a local Ollama), Anthropic `/v1/messages`, otherwise an OpenAI-compatible chat endpoint
+- `tfa.commitMessageClaude.model` names the model on that endpoint
+- Remote endpoints need an API key: run **Set Anthropic API Key** (for Claude, get one from the [Anthropic Console](https://console.anthropic.com/)). The key is kept in the IDE's secret storage, never in settings files; local endpoints need no key
+- `tfa.commitMessageClaude.maxDiffChars` limits how much of the staged diff is sent (default 80,000 characters)
+- `tfa.commitMessageClaude.format` picks Conventional Commits or a simple style
+
+> ⚠️ **Privacy**: The staged diff is sent to the configured endpoint. Use a local endpoint if you do not want diffs sent to an external provider.
+
+---
+
+## 🔄 Service Recovery
+
+The **Restart**, **Reset**, and **Reload** buttons in the sidebar footer:
+- **Restart**: restarts the background Language Server when the Agent is unresponsive (also the **Restart Agent Service** command)
+- **Reset**: resets the user status updater to fix stuck quota updates (also the **Reset Status** command)
+- **Reload**: reloads the IDE window to resolve UI glitches
 
 ---
 
