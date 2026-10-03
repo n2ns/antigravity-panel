@@ -108,7 +108,7 @@ export class SidebarProvider implements vscode.WebviewViewProvider, vscode.Dispo
                         preview: true,
                         preserveFocus: true
                     }).then(undefined, (err) => {
-                        vscode.window.showErrorMessage(`Failed to open file: ${err}`);
+                        vscode.window.showErrorMessage(vscode.l10n.t("Failed to open file: {0}", String(err)));
                     });
                 }
                 break;
@@ -274,7 +274,7 @@ export class SidebarProvider implements vscode.WebviewViewProvider, vscode.Dispo
                 await fs.promises.mkdir(path.dirname(filePath), { recursive: true });
                 await fs.promises.writeFile(filePath, defaultContent, 'utf-8');
             } catch (err) {
-                vscode.window.showErrorMessage(`Failed to create configuration file: ${err}`);
+                vscode.window.showErrorMessage(vscode.l10n.t("Failed to create configuration file: {0}", String(err)));
                 throw err;
             }
         }

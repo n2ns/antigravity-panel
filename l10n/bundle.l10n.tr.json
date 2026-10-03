@@ -108,5 +108,16 @@
     "Context window of the current conversation: tokens of the latest model call, as estimated by the Language Server. When it is full, the IDE compresses the conversation and earlier details may be lost.": "Geçerli konuşmanın bağlam penceresi: Language Server tahminine göre son model çağrısının token sayısı. Dolduğunda IDE konuşmayı sıkıştırır ve önceki ayrıntılar kaybolabilir.",
     "Compressed at {0}": "{0} itibarıyla sıkıştırıldı",
     "The conversation context is {0}% full. When it is full, the IDE compresses the conversation and earlier details may be lost. Consider starting a new conversation.": "Konuşma bağlamı %{0} dolu. Dolduğunda IDE konuşmayı sıkıştırır ve önceki ayrıntılar kaybolabilir. Yeni bir konuşma başlatmayı düşünün.",
-    "The IDE compressed the conversation context to {0}% to stay within the limit. Earlier details of the conversation may be lost.": "IDE, sınırın içinde kalmak için konuşma bağlamını %{0} seviyesine sıkıştırdı. Konuşmanın önceki ayrıntıları kaybolmuş olabilir."
+    "The IDE compressed the conversation context to {0}% to stay within the limit. Earlier details of the conversation may be lost.": "IDE, sınırın içinde kalmak için konuşma bağlamını %{0} seviyesine sıkıştırdı. Konuşmanın önceki ayrıntıları kaybolmuş olabilir.",
+    "Are you sure you want to delete task {0}?": "{0} görevini silmek istediğinizden emin misiniz?",
+    "Are you sure you want to delete context {0}?": "{0} bağlamını silmek istediğinizden emin misiniz?",
+    "Antigravity Panel: Data Updated.": "Antigravity Panel: Veriler güncellendi.",
+    "Antigravity Panel: Agent Service restarted.": "Antigravity Panel: Ajan hizmeti yeniden başlatıldı.",
+    "Failed to restart Antigravity Agent Service.": "Antigravity Ajan hizmeti yeniden başlatılamadı.",
+    "Antigravity Panel: User status updater reset.": "Antigravity Panel: Kullanıcı durumu güncelleyicisi sıfırlandı.",
+    "Failed to reset Antigravity status updater.": "Antigravity durum güncelleyicisi sıfırlanamadı.",
+    "Cache size: {0}": "Önbellek boyutu: {0}",
+    "Antigravity Panel: Output channel not initialized.": "Antigravity Panel: Çıktı kanalı başlatılmadı.",
+    "Failed to open file: {0}": "Dosya açılamadı: {0}",
+    "Failed to create configuration file: {0}": "Yapılandırma dosyası oluşturulamadı: {0}"
 }

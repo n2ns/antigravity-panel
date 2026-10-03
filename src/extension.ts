@@ -102,7 +102,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
         ? await connectionService.refreshNow()
         : (await appViewModel.refreshQuota() ? 'ok' : 'failed');
       if (result === 'ok') {
-        vscode.window.showInformationMessage("Antigravity Panel: Data Updated.");
+        vscode.window.showInformationMessage(vscode.l10n.t("Antigravity Panel: Data Updated."));
       } else if (result === 'auth_failed') {
         vscode.window.showErrorMessage(
           vscode.l10n.t("Please ensure you are logged into Antigravity IDE (Authentication failed).")
@@ -121,21 +121,21 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     vscode.commands.registerCommand("tfa.restartLanguageServer", async () => {
       try {
         await vscode.commands.executeCommand("antigravity.restartLanguageServer");
-        vscode.window.showInformationMessage("Antigravity Panel: Agent Service restarted.");
+        vscode.window.showInformationMessage(vscode.l10n.t("Antigravity Panel: Agent Service restarted."));
         // The server needs time to come back: bounded retries, first probe delayed
         void connectionService?.reconnect({ supersede: true, delayFirstAttempt: true });
       } catch (e) {
         errorLog("Failed to restart Language Server", e);
-        vscode.window.showErrorMessage("Failed to restart Antigravity Agent Service.");
+        vscode.window.showErrorMessage(vscode.l10n.t("Failed to restart Antigravity Agent Service."));
       }
     }),
     vscode.commands.registerCommand("tfa.restartUserStatusUpdater", async () => {
       try {
         await vscode.commands.executeCommand("antigravity.restartUserStatusUpdater");
-        vscode.window.showInformationMessage("Antigravity Panel: User status updater reset.");
+        vscode.window.showInformationMessage(vscode.l10n.t("Antigravity Panel: User status updater reset."));
       } catch (e) {
         errorLog("Failed to reset Status Updater", e);
-        vscode.window.showErrorMessage("Failed to reset Antigravity status updater.");
+        vscode.window.showErrorMessage(vscode.l10n.t("Failed to reset Antigravity status updater."));
       }
     }),
     vscode.commands.registerCommand("tfa.cleanCache", async () => {
@@ -145,7 +145,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     vscode.commands.registerCommand("tfa.showCacheSize", () => {
       if (!appViewModel) return;
       const state = appViewModel.getState();
-      vscode.window.showInformationMessage(`Cache size: ${state.cache.formattedTotal}`);
+      vscode.window.showInformationMessage(vscode.l10n.t("Cache size: {0}", state.cache.formattedTotal));
     }),
     vscode.commands.registerCommand("tfa.openSettings", () => {
       vscode.commands.executeCommand("workbench.action.openSettings", "@ext:n2ns.antigravity-panel");
@@ -155,7 +155,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
       if (logger) {
         logger.show(true); // Focus output panel
       } else {
-        vscode.window.showWarningMessage("Antigravity Panel: Output channel not initialized.");
+        vscode.window.showWarningMessage(vscode.l10n.t("Antigravity Panel: Output channel not initialized."));
       }
     }),
     vscode.commands.registerCommand("tfa.showDisclaimer", async () => {

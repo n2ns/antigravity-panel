@@ -108,5 +108,16 @@
     "Context window of the current conversation: tokens of the latest model call, as estimated by the Language Server. When it is full, the IDE compresses the conversation and earlier details may be lost.": "Fenêtre de contexte de la conversation actuelle : tokens du dernier appel au modèle, estimés par le Language Server. Lorsqu'elle est pleine, l'IDE compresse la conversation et des détails antérieurs peuvent être perdus.",
     "Compressed at {0}": "Compressé à {0}",
     "The conversation context is {0}% full. When it is full, the IDE compresses the conversation and earlier details may be lost. Consider starting a new conversation.": "Le contexte de la conversation est rempli à {0} %. Lorsqu'il sera plein, l'IDE compressera la conversation et des détails antérieurs pourront être perdus. Envisagez de démarrer une nouvelle conversation.",
-    "The IDE compressed the conversation context to {0}% to stay within the limit. Earlier details of the conversation may be lost.": "L'IDE a compressé le contexte de la conversation à {0} % pour rester dans la limite. Des détails antérieurs de la conversation peuvent avoir été perdus."
+    "The IDE compressed the conversation context to {0}% to stay within the limit. Earlier details of the conversation may be lost.": "L'IDE a compressé le contexte de la conversation à {0} % pour rester dans la limite. Des détails antérieurs de la conversation peuvent avoir été perdus.",
+    "Are you sure you want to delete task {0}?": "Voulez-vous vraiment supprimer la tâche {0} ?",
+    "Are you sure you want to delete context {0}?": "Voulez-vous vraiment supprimer le contexte {0} ?",
+    "Antigravity Panel: Data Updated.": "Antigravity Panel : données mises à jour.",
+    "Antigravity Panel: Agent Service restarted.": "Antigravity Panel : service de l'agent redémarré.",
+    "Failed to restart Antigravity Agent Service.": "Impossible de redémarrer le service de l'agent Antigravity.",
+    "Antigravity Panel: User status updater reset.": "Antigravity Panel : mise à jour du statut utilisateur réinitialisée.",
+    "Failed to reset Antigravity status updater.": "Impossible de réinitialiser la mise à jour du statut Antigravity.",
+    "Cache size: {0}": "Taille du cache : {0}",
+    "Antigravity Panel: Output channel not initialized.": "Antigravity Panel : canal de sortie non initialisé.",
+    "Failed to open file: {0}": "Impossible d'ouvrir le fichier : {0}",
+    "Failed to create configuration file: {0}": "Impossible de créer le fichier de configuration : {0}"
 }

@@ -108,5 +108,16 @@
     "Context window of the current conversation: tokens of the latest model call, as estimated by the Language Server. When it is full, the IDE compresses the conversation and earlier details may be lost.": "Cửa sổ ngữ cảnh của cuộc trò chuyện hiện tại: số token của lần gọi mô hình gần nhất theo ước tính của Language Server. Khi đầy, IDE sẽ nén cuộc trò chuyện và các chi tiết trước đó có thể bị mất.",
     "Compressed at {0}": "Đã nén lúc {0}",
     "The conversation context is {0}% full. When it is full, the IDE compresses the conversation and earlier details may be lost. Consider starting a new conversation.": "Ngữ cảnh cuộc trò chuyện đã đầy {0}%. Khi đầy, IDE sẽ nén cuộc trò chuyện và các chi tiết trước đó có thể bị mất. Hãy cân nhắc bắt đầu cuộc trò chuyện mới.",
-    "The IDE compressed the conversation context to {0}% to stay within the limit. Earlier details of the conversation may be lost.": "IDE đã nén ngữ cảnh cuộc trò chuyện xuống {0}% để không vượt giới hạn. Các chi tiết trước đó của cuộc trò chuyện có thể đã bị mất."
+    "The IDE compressed the conversation context to {0}% to stay within the limit. Earlier details of the conversation may be lost.": "IDE đã nén ngữ cảnh cuộc trò chuyện xuống {0}% để không vượt giới hạn. Các chi tiết trước đó của cuộc trò chuyện có thể đã bị mất.",
+    "Are you sure you want to delete task {0}?": "Bạn có chắc muốn xóa tác vụ {0}?",
+    "Are you sure you want to delete context {0}?": "Bạn có chắc muốn xóa ngữ cảnh {0}?",
+    "Antigravity Panel: Data Updated.": "Antigravity Panel: Đã cập nhật dữ liệu.",
+    "Antigravity Panel: Agent Service restarted.": "Antigravity Panel: Đã khởi động lại dịch vụ Agent.",
+    "Failed to restart Antigravity Agent Service.": "Không thể khởi động lại dịch vụ Agent của Antigravity.",
+    "Antigravity Panel: User status updater reset.": "Antigravity Panel: Đã đặt lại trình cập nhật trạng thái người dùng.",
+    "Failed to reset Antigravity status updater.": "Không thể đặt lại trình cập nhật trạng thái của Antigravity.",
+    "Cache size: {0}": "Kích thước bộ nhớ đệm: {0}",
+    "Antigravity Panel: Output channel not initialized.": "Antigravity Panel: Kênh đầu ra chưa được khởi tạo.",
+    "Failed to open file: {0}": "Không thể mở tệp: {0}",
+    "Failed to create configuration file: {0}": "Không thể tạo tệp cấu hình: {0}"
 }

@@ -611,6 +611,26 @@ suite('AppViewModel Test Suite', () => {
         assert.strictEqual(refreshed, true);
     });
 
+    test('task and context delete confirmations should be localized', async () => {
+        const l10nSpy = sinon.spy(vscode.l10n as any, 't');
+        let deletedContext = '';
+        mockCache.deleteContext = async (id) => { deletedContext = id; };
+        (vscode.window as any).nextMessageSelection = 'Delete';
+        try {
+            await vm.deleteTask('task-1');
+            await vm.deleteContext('ctx-1');
+        } finally {
+            (vscode.window as any).nextMessageSelection = undefined;
+            l10nSpy.restore();
+        }
+
+        const calls = l10nSpy.getCalls().map(c => c.args);
+        assert.ok(calls.some(a => a[0] === 'Are you sure you want to delete task {0}?' && a[1] === 'task-1'));
+        assert.ok(calls.some(a => a[0] === 'Are you sure you want to delete context {0}?' && a[1] === 'ctx-1'));
+        assert.ok(calls.some(a => a[0] === 'Delete'), 'The Delete button label should go through l10n');
+        assert.strictEqual(deletedContext, 'ctx-1');
+    });
+
     suite('Cache cleaning confirmations', () => {
         const plan = {
             keepCount: 3,

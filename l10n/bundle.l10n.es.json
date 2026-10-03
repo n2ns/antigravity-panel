@@ -108,5 +108,16 @@
     "Context window of the current conversation: tokens of the latest model call, as estimated by the Language Server. When it is full, the IDE compresses the conversation and earlier details may be lost.": "Ventana de contexto de la conversación actual: tokens de la última llamada al modelo, según la estimación del Language Server. Cuando se llena, el IDE comprime la conversación y pueden perderse detalles anteriores.",
     "Compressed at {0}": "Comprimido a las {0}",
     "The conversation context is {0}% full. When it is full, the IDE compresses the conversation and earlier details may be lost. Consider starting a new conversation.": "El contexto de la conversación está al {0}%. Cuando se llene, el IDE comprimirá la conversación y pueden perderse detalles anteriores. Considera iniciar una conversación nueva.",
-    "The IDE compressed the conversation context to {0}% to stay within the limit. Earlier details of the conversation may be lost.": "El IDE comprimió el contexto de la conversación al {0}% para no superar el límite. Pueden haberse perdido detalles anteriores de la conversación."
+    "The IDE compressed the conversation context to {0}% to stay within the limit. Earlier details of the conversation may be lost.": "El IDE comprimió el contexto de la conversación al {0}% para no superar el límite. Pueden haberse perdido detalles anteriores de la conversación.",
+    "Are you sure you want to delete task {0}?": "¿Seguro que quieres eliminar la tarea {0}?",
+    "Are you sure you want to delete context {0}?": "¿Seguro que quieres eliminar el contexto {0}?",
+    "Antigravity Panel: Data Updated.": "Antigravity Panel: datos actualizados.",
+    "Antigravity Panel: Agent Service restarted.": "Antigravity Panel: servicio del agente reiniciado.",
+    "Failed to restart Antigravity Agent Service.": "No se pudo reiniciar el servicio del agente de Antigravity.",
+    "Antigravity Panel: User status updater reset.": "Antigravity Panel: actualizador del estado del usuario restablecido.",
+    "Failed to reset Antigravity status updater.": "No se pudo restablecer el actualizador de estado de Antigravity.",
+    "Cache size: {0}": "Tamaño de la caché: {0}",
+    "Antigravity Panel: Output channel not initialized.": "Antigravity Panel: el canal de salida no está inicializado.",
+    "Failed to open file: {0}": "No se pudo abrir el archivo: {0}",
+    "Failed to create configuration file: {0}": "No se pudo crear el archivo de configuración: {0}"
 }

@@ -108,5 +108,16 @@
     "Context window of the current conversation: tokens of the latest model call, as estimated by the Language Server. When it is full, the IDE compresses the conversation and earlier details may be lost.": "Контекстное окно текущего диалога: токены последнего вызова модели по оценке Language Server. Когда оно заполнится, IDE сожмёт диалог, и ранние подробности могут быть потеряны.",
     "Compressed at {0}": "Сжато в {0}",
     "The conversation context is {0}% full. When it is full, the IDE compresses the conversation and earlier details may be lost. Consider starting a new conversation.": "Контекст диалога заполнен на {0}%. Когда он заполнится, IDE сожмёт диалог, и ранние подробности могут быть потеряны. Рекомендуется начать новый диалог.",
-    "The IDE compressed the conversation context to {0}% to stay within the limit. Earlier details of the conversation may be lost.": "IDE сжала контекст диалога до {0}%, чтобы уложиться в лимит. Ранние подробности диалога могли быть потеряны."
+    "The IDE compressed the conversation context to {0}% to stay within the limit. Earlier details of the conversation may be lost.": "IDE сжала контекст диалога до {0}%, чтобы уложиться в лимит. Ранние подробности диалога могли быть потеряны.",
+    "Are you sure you want to delete task {0}?": "Удалить задачу {0}?",
+    "Are you sure you want to delete context {0}?": "Удалить контекст {0}?",
+    "Antigravity Panel: Data Updated.": "Antigravity Panel: данные обновлены.",
+    "Antigravity Panel: Agent Service restarted.": "Antigravity Panel: служба агента перезапущена.",
+    "Failed to restart Antigravity Agent Service.": "Не удалось перезапустить службу агента Antigravity.",
+    "Antigravity Panel: User status updater reset.": "Antigravity Panel: обновление статуса пользователя сброшено.",
+    "Failed to reset Antigravity status updater.": "Не удалось сбросить обновление статуса Antigravity.",
+    "Cache size: {0}": "Размер кэша: {0}",
+    "Antigravity Panel: Output channel not initialized.": "Antigravity Panel: канал вывода не инициализирован.",
+    "Failed to open file: {0}": "Не удалось открыть файл: {0}",
+    "Failed to create configuration file: {0}": "Не удалось создать файл конфигурации: {0}"
 }

@@ -5,6 +5,7 @@
 ### Fixed
 
 - **Commit Message in Multi-Root Workspaces**: The commit message generator always read the staged diff from, and wrote the message into, the first workspace folder. It now uses the folder of the active editor and falls back to the first folder only when no editor is open in a workspace folder.
+- **Untranslated Messages**: The task and context delete confirmations, the refresh, restart, reset, cache size and output channel notifications, and the sidebar's file open and configuration file errors were always shown in English. They are now translated in every supported language.
 
 ## [2.8.0] - 2026-10-03
 

@@ -108,5 +108,16 @@
     "Context window of the current conversation: tokens of the latest model call, as estimated by the Language Server. When it is full, the IDE compresses the conversation and earlier details may be lost.": "현재 대화의 컨텍스트 창: 가장 최근 모델 호출의 토큰 수(Language Server 추정치). 가득 차면 IDE가 대화를 압축하며 이전 세부 정보가 사라질 수 있습니다.",
     "Compressed at {0}": "{0}에 압축됨",
     "The conversation context is {0}% full. When it is full, the IDE compresses the conversation and earlier details may be lost. Consider starting a new conversation.": "대화 컨텍스트가 {0}% 찼습니다. 가득 차면 IDE가 대화를 압축하며 이전 세부 정보가 사라질 수 있습니다. 새 대화를 시작하는 것을 고려하세요.",
-    "The IDE compressed the conversation context to {0}% to stay within the limit. Earlier details of the conversation may be lost.": "한도를 넘지 않도록 IDE가 대화 컨텍스트를 {0}%로 압축했습니다. 대화의 이전 세부 정보가 사라졌을 수 있습니다."
+    "The IDE compressed the conversation context to {0}% to stay within the limit. Earlier details of the conversation may be lost.": "한도를 넘지 않도록 IDE가 대화 컨텍스트를 {0}%로 압축했습니다. 대화의 이전 세부 정보가 사라졌을 수 있습니다.",
+    "Are you sure you want to delete task {0}?": "작업 {0}을(를) 삭제하시겠습니까?",
+    "Are you sure you want to delete context {0}?": "컨텍스트 {0}을(를) 삭제하시겠습니까?",
+    "Antigravity Panel: Data Updated.": "Antigravity Panel: 데이터를 업데이트했습니다.",
+    "Antigravity Panel: Agent Service restarted.": "Antigravity Panel: 에이전트 서비스를 다시 시작했습니다.",
+    "Failed to restart Antigravity Agent Service.": "Antigravity 에이전트 서비스를 다시 시작하지 못했습니다.",
+    "Antigravity Panel: User status updater reset.": "Antigravity Panel: 사용자 상태 업데이트를 재설정했습니다.",
+    "Failed to reset Antigravity status updater.": "Antigravity 상태 업데이트를 재설정하지 못했습니다.",
+    "Cache size: {0}": "캐시 크기: {0}",
+    "Antigravity Panel: Output channel not initialized.": "Antigravity Panel: 출력 채널이 초기화되지 않았습니다.",
+    "Failed to open file: {0}": "파일을 열지 못했습니다: {0}",
+    "Failed to create configuration file: {0}": "구성 파일을 만들지 못했습니다: {0}"
 }

@@ -315,12 +315,13 @@ export class AppViewModel implements vscode.Disposable {
     }
 
     async deleteTask(taskId: string): Promise<void> {
+        const deleteLabel = vscode.l10n.t("Delete");
         const confirm = await vscode.window.showWarningMessage(
-            `Are you sure you want to delete task ${taskId}?`,
+            vscode.l10n.t("Are you sure you want to delete task {0}?", taskId),
             { modal: true },
-            'Delete'
+            deleteLabel
         );
-        if (confirm === 'Delete') {
+        if (confirm === deleteLabel) {
             await this.cacheService.deleteTask(taskId);
             this._expandedTasks.delete(taskId);
             this._taskFilesCache.delete(taskId); // Clear file cache
@@ -329,12 +330,13 @@ export class AppViewModel implements vscode.Disposable {
     }
 
     async deleteContext(contextId: string): Promise<void> {
+        const deleteLabel = vscode.l10n.t("Delete");
         const confirm = await vscode.window.showWarningMessage(
-            `Are you sure you want to delete context ${contextId}?`,
+            vscode.l10n.t("Are you sure you want to delete context {0}?", contextId),
             { modal: true },
-            'Delete'
+            deleteLabel
         );
-        if (confirm === 'Delete') {
+        if (confirm === deleteLabel) {
             await this.cacheService.deleteContext(contextId);
             this._expandedContexts.delete(contextId);
             this._contextFilesCache.delete(contextId); // Clear file cache

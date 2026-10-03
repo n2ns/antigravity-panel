@@ -108,5 +108,16 @@
     "Context window of the current conversation: tokens of the latest model call, as estimated by the Language Server. When it is full, the IDE compresses the conversation and earlier details may be lost.": "当前对话的上下文窗口：最近一次模型调用的 token 数（Language Server 估算值）。用满后 IDE 会压缩对话，早期细节可能丢失。",
     "Compressed at {0}": "压缩于 {0}",
     "The conversation context is {0}% full. When it is full, the IDE compresses the conversation and earlier details may be lost. Consider starting a new conversation.": "对话上下文已用 {0}%。用满后 IDE 会压缩对话，早期细节可能丢失。建议开启新对话。",
-    "The IDE compressed the conversation context to {0}% to stay within the limit. Earlier details of the conversation may be lost.": "为了不超出上限，IDE 已将对话上下文压缩到 {0}%。对话的早期细节可能已丢失。"
+    "The IDE compressed the conversation context to {0}% to stay within the limit. Earlier details of the conversation may be lost.": "为了不超出上限，IDE 已将对话上下文压缩到 {0}%。对话的早期细节可能已丢失。",
+    "Are you sure you want to delete task {0}?": "确定要删除任务 {0} 吗？",
+    "Are you sure you want to delete context {0}?": "确定要删除上下文 {0} 吗？",
+    "Antigravity Panel: Data Updated.": "Antigravity Panel：数据已更新。",
+    "Antigravity Panel: Agent Service restarted.": "Antigravity Panel：Agent 服务已重启。",
+    "Failed to restart Antigravity Agent Service.": "重启 Antigravity Agent 服务失败。",
+    "Antigravity Panel: User status updater reset.": "Antigravity Panel：用户状态更新程序已重置。",
+    "Failed to reset Antigravity status updater.": "重置 Antigravity 状态更新程序失败。",
+    "Cache size: {0}": "缓存大小：{0}",
+    "Antigravity Panel: Output channel not initialized.": "Antigravity Panel：输出通道尚未初始化。",
+    "Failed to open file: {0}": "打开文件失败：{0}",
+    "Failed to create configuration file: {0}": "创建配置文件失败：{0}"
 }
