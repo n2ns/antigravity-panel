@@ -236,7 +236,7 @@ export class AutomationService implements IAutomationService, vscode.Disposable 
                 // Re-locate the Agent Panel on every scheduled pass.
                 const PANEL_SELECTOR = [
                     '.react-app-container', '.agent-panel', '#react-app-container',
-                    '.antigravity-agent-panel', '[data-testid="agent-panel"]'
+                    '.antigravity-agent-panel', '.antigravity-agent-side-panel', '[data-testid="agent-panel"]'
                 ].join(',');
                 const getAgentRoots = () => {
                     const containers = new Set();

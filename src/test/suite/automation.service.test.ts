@@ -786,6 +786,23 @@ suite('AutomationService Test Suite', () => {
         }
     });
 
+    test('the scan should find the Antigravity Agent side panel', () => {
+        service.setAcceptTerminalCommands(true);
+        const html = new ClickerElement('HTML');
+        const panel = new ClickerElement('DIV', '', 'antigravity-agent-side-panel');
+        const card = new ClickerElement('DIV', 'npm test');
+        const run = new ClickerElement('BUTTON', 'Run');
+        card.append(run, new ClickerElement('BUTTON', 'Reject'));
+        panel.append(card);
+        html.append(panel);
+        const document = new ClickerDocument(html);
+        const window: any = { getComputedStyle: document.defaultView.getComputedStyle };
+        new Function('window', 'document', 'NodeFilter', 'MouseEvent', service['getClickerScript']())(
+            window, document, { SHOW_ELEMENT: 1 }, class { });
+
+        assert.strictEqual(run.clickCount, 1);
+    });
+
     test('dispose() should clean up connections', () => {
         // @ts-ignore: access private for testing
         const connections = service['connections'];

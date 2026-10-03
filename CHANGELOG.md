@@ -1,5 +1,11 @@
 # Change Log
 
+## [Unreleased]
+
+### Fixed
+
+- **Auto-Accept CDP Fallback Found No Agent Panel**: Current Antigravity IDE builds render the Agent panel as `.antigravity-agent-side-panel` in the workbench page, which none of the panel selectors matched, so the CDP fallback scanned nothing: terminal commands were never approved and panel-only actions were never accepted. The selector is now included.
+
 ## [2.7.6] - 2026-10-03
 
 ### Added
