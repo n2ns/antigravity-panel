@@ -57,7 +57,7 @@
     "config.visualizationMode.groups": "Modelleri kategoriye göre gruplandır (Gemini, Claude, GPT vb.)",
     "config.visualizationMode.models": "Tüm bireysel modelleri ayrı ayrı göster",
     "extension.category": "Antigravity Panel",
-    "extension.description": "Google Antigravity IDE kullanıcıları için temel araç kutusu. Kotaları izleyin, önbellekleri yönetin ve sistem metriklerini görselleştirin.",
+    "extension.description": "Google Antigravity IDE kullanıcıları için temel araç kutusu. Kotaları ve konuşma bağlam penceresini izleyin, önbellekleri yönetin ve sistem metriklerini görselleştirin.",
     "views.tfa.sidebar.name": "Antigravity Panel",
     "viewsContainers.tfa-sidebar.title": "Antigravity Panel",
     "config.dashboard.showWeeklyCard.description": "Kenar çubuğunda 7 günlük yerel kullanım tahmini kartını göster",

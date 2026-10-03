@@ -57,7 +57,7 @@
     "config.visualizationMode.groups": "Agrupar modelos por categoría (Gemini, Claude, GPT, etc.)",
     "config.visualizationMode.models": "Mostrar todos los modelos individualmente",
     "extension.category": "Antigravity Panel",
-    "extension.description": "Una utilidad complementaria para Google Antigravity IDE con visualización de cuota local, gestión de caché y herramientas de mejora del flujo de trabajo",
+    "extension.description": "Una utilidad complementaria para Google Antigravity IDE con visualización de cuota local, monitor de la ventana de contexto de las conversaciones, gestión de caché y herramientas de mejora del flujo de trabajo",
     "views.tfa.sidebar.name": "Antigravity Panel",
     "viewsContainers.tfa-sidebar.title": "Antigravity Panel",
     "config.dashboard.showWeeklyCard.description": "Mostrar la tarjeta de estimación local de uso de 7 días en la barra lateral",

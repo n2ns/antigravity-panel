@@ -57,7 +57,7 @@
     "config.visualizationMode.groups": "Nhóm model theo danh mục (Gemini, Claude, GPT, v.v.)",
     "config.visualizationMode.models": "Hiển thị tất cả model riêng lẻ",
     "extension.category": "Antigravity Panel",
-    "extension.description": "Công cụ giám sát quota và quản lý cache cho Google Antigravity IDE. Theo dõi thời gian thực Gemini / Claude / GPT, dashboard quota AI, phân tích lịch sử sử dụng, chế độ auto-accept và tạo commit message bằng AI.",
+    "extension.description": "Công cụ giám sát quota và quản lý cache cho Google Antigravity IDE. Theo dõi thời gian thực Gemini / Claude / GPT, dashboard quota AI, phân tích lịch sử sử dụng, theo dõi cửa sổ ngữ cảnh hội thoại, chế độ auto-accept và tạo commit message bằng AI.",
     "views.tfa.sidebar.name": "Antigravity Panel",
     "viewsContainers.tfa-sidebar.title": "Antigravity Panel",
     "config.dashboard.showWeeklyCard.description": "Hiển thị thẻ ước tính mức sử dụng cục bộ 7 ngày trong thanh bên",

@@ -57,7 +57,7 @@
     "config.visualizationMode.groups": "Группировать модели по категориям (Gemini, Claude, GPT и др.)",
     "config.visualizationMode.models": "Показывать все модели отдельно",
     "extension.category": "Antigravity Panel",
-    "extension.description": "Вспомогательная утилита для Google Antigravity IDE с локальной визуализацией квот, управлением кешем и инструментами рабочего процесса",
+    "extension.description": "Вспомогательная утилита для Google Antigravity IDE с локальной визуализацией квот, мониторингом контекстного окна диалогов, управлением кешем и инструментами рабочего процесса",
     "views.tfa.sidebar.name": "Antigravity Panel",
     "viewsContainers.tfa-sidebar.title": "Antigravity Panel",
     "config.dashboard.showWeeklyCard.description": "Показывать на боковой панели карточку локальной оценки использования за 7 дней",

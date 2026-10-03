@@ -57,7 +57,7 @@
     "config.visualizationMode.groups": "Grupuj modele według kategorii (Gemini, Claude, GPT itp.)",
     "config.visualizationMode.models": "Pokaż wszystkie poszczególne modele oddzielnie",
     "extension.category": "Antigravity Panel",
-    "extension.description": "Niezbędny przybornik dla użytkowników Google Antigravity IDE. Monitoruj limity, zarządzaj pamięcią podręczną i wizualizuj metryki systemowe.",
+    "extension.description": "Niezbędny przybornik dla użytkowników Google Antigravity IDE. Monitoruj limity i okno kontekstu rozmów, zarządzaj pamięcią podręczną i wizualizuj metryki systemowe.",
     "views.tfa.sidebar.name": "Antigravity Panel",
     "viewsContainers.tfa-sidebar.title": "Antigravity Panel",
     "config.dashboard.showWeeklyCard.description": "Pokaż na pasku bocznym kartę lokalnego oszacowania zużycia z 7 dni",

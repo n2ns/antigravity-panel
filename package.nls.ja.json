@@ -57,7 +57,7 @@
     "config.visualizationMode.groups": "モデルをカテゴリ別にグループ化 (Gemini, Claude, GPT など)",
     "config.visualizationMode.models": "すべてのモデルを個別に表示",
     "extension.category": "Antigravity Panel",
-    "extension.description": "Google Antigravity IDE 用のローカル使用量可視化、キャッシュ管理、ワークフロー強化のためのコンパニオンユーティリティ",
+    "extension.description": "Google Antigravity IDE 用のローカル使用量可視化、会話のコンテキストウィンドウ監視、キャッシュ管理、ワークフロー強化のためのコンパニオンユーティリティ",
     "views.tfa.sidebar.name": "Antigravity Panel",
     "viewsContainers.tfa-sidebar.title": "Antigravity Panel",
     "config.dashboard.showWeeklyCard.description": "サイドバーに 7 日間のローカル使用量推定カードを表示します",

@@ -57,7 +57,7 @@
     "config.visualizationMode.groups": "Kelompokkan model per kategori (Gemini, Claude, GPT, dll.)",
     "config.visualizationMode.models": "Tampilkan semua model secara terpisah",
     "extension.category": "Antigravity Panel",
-    "extension.description": "Monitor quota & pengelola cache untuk Google Antigravity IDE. Pelacakan penggunaan Gemini / Claude / GPT real-time, dashboard quota AI, analitik penggunaan, mode auto-accept agent, dan pembuat commit message AI.",
+    "extension.description": "Monitor quota & pengelola cache untuk Google Antigravity IDE. Pelacakan penggunaan Gemini / Claude / GPT real-time, dashboard quota AI, analitik penggunaan, pemantau jendela konteks percakapan, mode auto-accept agent, dan pembuat commit message AI.",
     "views.tfa.sidebar.name": "Antigravity Panel",
     "viewsContainers.tfa-sidebar.title": "Antigravity Panel",
     "config.dashboard.showWeeklyCard.description": "Tampilkan kartu estimasi penggunaan lokal 7 hari di sidebar",

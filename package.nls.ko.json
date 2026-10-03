@@ -57,7 +57,7 @@
     "config.visualizationMode.groups": "카테고리별로 모델 그룹화 (Gemini, Claude, GPT 등)",
     "config.visualizationMode.models": "모든 모델을 개별적으로 표시",
     "extension.category": "Antigravity Panel",
-    "extension.description": "로컬 할당량 시각화, 캐시 관리 및 워크플로우 향상 기능을 갖춘 Google Antigravity IDE용 보조 유틸리티",
+    "extension.description": "로컬 할당량 시각화, 대화 컨텍스트 창 모니터링, 캐시 관리 및 워크플로우 향상 기능을 갖춘 Google Antigravity IDE용 보조 유틸리티",
     "views.tfa.sidebar.name": "Antigravity Panel",
     "viewsContainers.tfa-sidebar.title": "Antigravity Panel",
     "config.dashboard.showWeeklyCard.description": "사이드바에 7일 로컬 사용량 추정 카드를 표시합니다",

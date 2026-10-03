@@ -57,7 +57,7 @@
     "config.visualizationMode.groups": "按类别分组显示模型（Gemini、Claude、GPT 等）",
     "config.visualizationMode.models": "单独显示所有模型",
     "extension.category": "Antigravity Panel",
-    "extension.description": "Google Antigravity IDE 用户的必备工具箱。提供本地配额监控、缓存管理和系统指标可视化。",
+    "extension.description": "Google Antigravity IDE 用户的必备工具箱。提供本地配额监控、对话上下文窗口监控、缓存管理和系统指标可视化。",
     "views.tfa.sidebar.name": "Antigravity Panel",
     "viewsContainers.tfa-sidebar.title": "Antigravity Panel",
     "config.dashboard.showWeeklyCard.description": "在侧边栏显示 7 天本地用量估算卡片",

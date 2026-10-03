@@ -57,7 +57,7 @@
     "config.visualizationMode.groups": "Group models by category (Gemini, Claude, GPT, etc.)",
     "config.visualizationMode.models": "Show all individual models separately",
     "extension.category": "Antigravity Panel",
-    "extension.description": "Quota monitor & cache manager for Google Antigravity IDE. Real-time Gemini / Claude / GPT usage tracking, AI quota dashboard, usage analytics, auto-accept agent mode, and AI commit message generator.",
+    "extension.description": "Quota monitor & cache manager for Google Antigravity IDE. Real-time Gemini / Claude / GPT usage tracking, AI quota dashboard, usage analytics, conversation context window monitor, auto-accept agent mode, and AI commit message generator.",
     "views.tfa.sidebar.name": "Antigravity Panel",
     "viewsContainers.tfa-sidebar.title": "Antigravity Panel",
     "config.dashboard.showWeeklyCard.description": "Show the 7-day local usage estimate card in the sidebar",

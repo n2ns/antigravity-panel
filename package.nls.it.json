@@ -57,7 +57,7 @@
     "config.visualizationMode.groups": "Raggruppa modelli per categoria (Gemini, Claude, GPT, ecc.)",
     "config.visualizationMode.models": "Mostra tutti i modelli singolarmente",
     "extension.category": "Antigravity Panel",
-    "extension.description": "Il toolkit essenziale per gli utenti di Google Antigravity IDE. Monitora le quote, gestisci le cache e visualizza le metriche di sistema.",
+    "extension.description": "Il toolkit essenziale per gli utenti di Google Antigravity IDE. Monitora le quote e la finestra di contesto delle conversazioni, gestisci le cache e visualizza le metriche di sistema.",
     "views.tfa.sidebar.name": "Antigravity Panel",
     "viewsContainers.tfa-sidebar.title": "Antigravity Panel",
     "config.dashboard.showWeeklyCard.description": "Mostra la scheda di stima locale dell'utilizzo su 7 giorni nella barra laterale",
