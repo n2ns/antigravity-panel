@@ -4,6 +4,7 @@
 
 ### Changed
 
+- **Detection Failure Reports**: When the Language Server cannot be found, the diagnostic report now lists the exit code and stderr of each process scan command and of the diagnostic command. On Windows it also runs a CIM probe that shows CIM query errors the detection scripts suppress, and, when the PowerShell process listing is empty, a `tasklist` cross-check of Antigravity-related processes.
 - **About Command**: `Antigravity Panel: About` now always opens the English `docs/DISCLAIMER.md`; the Chinese disclaimer copy is no longer shipped.
 - **Documentation Reorganization**: Project documentation is English only. Added `AGENTS.md` (rules and document index for AI coding agents, replacing `docs/RULES.md`) with a `CLAUDE.md` that imports it, `docs/ARCHITECTURE.md` (layers, lifecycle, connection, tests), and `docs/QUOTA_DATA_MODEL.md` (English translation of the former `quota-data-model.md`). Removed the `*_zh.md` copies and `docs/KNOWLEDGE_GRAPH.md`. `docs/FEATURES.md` is now the single settings reference and `README.md` links to it instead of repeating the table; `CONTRIBUTING.md` and `docs/DEBUGGING.md` link to `docs/ARCHITECTURE.md` and `AGENTS.md` instead of repeating the architecture and command lists.
 

@@ -82,7 +82,7 @@ export class FeedbackManager {
         if (meta.protocolUsed) diagInfo += `- **Protocol Used**: ${meta.protocolUsed}\n`;
         if (meta.retryCount !== undefined) diagInfo += `- **Retry Count**: ${meta.retryCount}\n`;
         if (meta.diagnosticSummary) {
-            diagInfo += `\n**Process Diagnostics**:\n\`\`\`\n${meta.diagnosticSummary.substring(0, 1500)}\n\`\`\`\n`;
+            diagInfo += `\n**Process Diagnostics**:\n\`\`\`\n${meta.diagnosticSummary.substring(0, 2500)}\n\`\`\`\n`;
         }
         if (meta.serverResponse) diagInfo += `\n**Server Response**:\n\`\`\`\n${meta.serverResponse.substring(0, 500)}\n\`\`\`\n`;
 

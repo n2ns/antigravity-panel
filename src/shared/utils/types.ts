@@ -184,6 +184,10 @@ export interface PlatformStrategy {
   getFallbackProcessListCommand?(): string;
   /** Get diagnostic command to list related processes */
   getDiagnosticCommand(): string;
+  /** Get a non-PowerShell process list to cross-check an empty diagnostic result (e.g. tasklist) */
+  getProcessCrossCheckCommand?(): string;
+  /** Get a command that reports whether the process query API itself fails (e.g. CIM errors) */
+  getProcessQueryProbeCommand?(): string;
   /** Get troubleshooting tips for the platform */
   getTroubleshootingTips(): string[];
 }

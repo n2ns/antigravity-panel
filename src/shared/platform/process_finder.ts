@@ -28,6 +28,47 @@ import {
 
 const execAsync = promisify(exec);
 
+type ExecOutcome = { stdout: string; stderr: string };
+
+/**
+ * Summarize a command run for diagnostic reports: exit code, stdout size and stderr.
+ * Pass the result on success, or null and the rejection from exec() on failure.
+ */
+export function formatExecOutcome(
+  label: string,
+  result: ExecOutcome | null,
+  error?: unknown,
+): string {
+  if (result) {
+    const stderr = result.stderr.trim();
+    return (
+      `${label}: exit=0, stdout=${result.stdout.trim().length} chars` +
+      (stderr ? `, stderr: ${stderr.substring(0, 200)}` : "")
+    );
+  }
+  const e = (error ?? {}) as {
+    code?: number | string;
+    killed?: boolean;
+    signal?: string;
+    stderr?: string;
+    message?: string;
+  };
+  const exit = e.killed
+    ? `killed${e.signal ? ` (${e.signal})` : ""}`
+    : String(e.code ?? "unknown");
+  // exec() messages start with "Command failed: <full command>", which only repeats what we ran
+  const detail = (
+    e.stderr ||
+    (e.message ?? String(error)).replace(/^Command failed:.*(\r?\n|$)/, "")
+  ).trim();
+  return `${label}: exit=${exit}` + (detail ? `, error: ${detail.substring(0, 200)}` : "");
+}
+
+// Hide csrf_token values so diagnostic output is safe to paste into a public issue
+function sanitizeDiagnostics(text: string): string {
+  return text.replace(/(--csrf_token[=\s]+)([a-f0-9-]+)/gi, "$1***REDACTED***");
+}
+
 export class ProcessFinder {
   private strategy: PlatformStrategy;
   private processName: string;
@@ -52,6 +93,8 @@ export class ProcessFinder {
   public retryCount: number = 0; // Number of retry attempts
   public protocolUsed: "https" | "http" | "none" = "none"; // Final protocol used
   public diagnosticSummary: string = "";
+  // Outcome of each process scan command in the last detection attempt
+  private scanSteps: string[] = [];
   private powershellTimeoutRetried: boolean = false;
 
   constructor() {
@@ -151,33 +194,29 @@ export class ProcessFinder {
       tips.forEach((tip, i) => infoLog(`  ${i + 1}. ${tip}`));
     }
 
+    const parts: string[] = [];
+    if (this.scanSteps.length > 0) {
+      parts.push("Scan steps:", ...this.scanSteps);
+    }
+
     // Try to list related processes
+    let relatedOutputEmpty = true;
     try {
       const diagCmd = this.strategy.getDiagnosticCommand();
       debugLog(`Diagnostic command: ${diagCmd}`);
 
-      const { stdout, stderr } = await this.execute(diagCmd);
-
-      // Sanitize output: hide csrf_token to prevent leaking sensitive info
-      const sanitize = (text: string) =>
-        text.replace(/(--csrf_token[=\s]+)([a-f0-9-]+)/gi, "$1***REDACTED***");
+      const result = await this.execute(diagCmd);
+      const { stdout, stderr } = result;
+      parts.push(formatExecOutcome("Diagnostic command", result));
 
       if (stdout && stdout.trim()) {
-        this.diagnosticSummary = [
-          "Diagnostic command: success",
-          "Related process output:",
-          sanitize(stdout).substring(0, 1200),
-          stderr && stderr.trim() ? `stderr: ${sanitize(stderr).substring(0, 300)}` : "",
-        ].filter(Boolean).join("\n");
+        relatedOutputEmpty = false;
+        parts.push("Related process output:", stdout.trim().substring(0, 800));
         infoLog(
-          `📋 Related processes found:\n${sanitize(stdout).substring(0, 2000)}`,
+          `📋 Related processes found:\n${sanitizeDiagnostics(stdout).substring(0, 2000)}`,
         );
       } else {
-        this.diagnosticSummary = [
-          "Diagnostic command: success",
-          "Related process output: none",
-          stderr && stderr.trim() ? `stderr: ${sanitize(stderr).substring(0, 300)}` : "",
-        ].filter(Boolean).join("\n");
+        parts.push("Related process output: none");
         warnLog("❌ No related processes found (language_server/antigravity)");
         infoLog(
           "💡 This usually means Antigravity IDE is not running or the process name has changed.",
@@ -185,11 +224,11 @@ export class ProcessFinder {
       }
 
       if (stderr && stderr.trim()) {
-        warnLog(`Diagnostic stderr: ${sanitize(stderr).substring(0, 500)}`);
+        warnLog(`Diagnostic stderr: ${sanitizeDiagnostics(stderr).substring(0, 500)}`);
       }
     } catch (e) {
       const error = e instanceof Error ? e : new Error(String(e));
-      this.diagnosticSummary = `Diagnostic command: failed\nError: ${error.message.substring(0, 500)}`;
+      parts.push(formatExecOutcome("Diagnostic command", null, e));
       debugLog(`Diagnostic command failed: ${error.message}`);
 
       // Provide manual commands for the user to try
@@ -203,6 +242,45 @@ export class ProcessFinder {
         infoLog('   ps aux | grep -E "language|antigravity"');
       }
     }
+
+    // The IDE itself is always running here, so an empty PowerShell listing points at
+    // PowerShell/WMI rather than a missing process; confirm with a different tool
+    if (relatedOutputEmpty && this.strategy.getProcessCrossCheckCommand) {
+      parts.push(await this.runProcessCrossCheck(this.strategy.getProcessCrossCheckCommand()));
+    }
+    if (this.strategy.getProcessQueryProbeCommand) {
+      parts.push(await this.runProcessQueryProbe(this.strategy.getProcessQueryProbeCommand()));
+    }
+
+    this.diagnosticSummary = sanitizeDiagnostics(parts.join("\n"));
+    infoLog(`📋 Diagnostic summary:\n${this.diagnosticSummary}`);
+  }
+
+  private async runProcessCrossCheck(cmd: string): Promise<string> {
+    const label = "Cross-check (tasklist)";
+    try {
+      const { stdout } = await this.execute(cmd);
+      const lines = stdout.split(/\r?\n/).filter((l) => l.trim());
+      const related = lines.filter((l) => /language|antigravity/i.test(l));
+      return [
+        `${label}: ${related.length} related of ${lines.length} processes`,
+        ...related.slice(0, 10).map((l) => l.substring(0, 150)),
+      ].join("\n");
+    } catch (e) {
+      return formatExecOutcome(label, null, e);
+    }
+  }
+
+  private async runProcessQueryProbe(cmd: string): Promise<string> {
+    const label = "Process query probe";
+    try {
+      const { stdout, stderr } = await this.execute(cmd);
+      const out = stdout.trim().substring(0, 300) || "no output";
+      const err = stderr.trim();
+      return `${label}: ${out}` + (err ? `, stderr: ${err.substring(0, 200)}` : "");
+    } catch (e) {
+      return formatExecOutcome(label, null, e);
+    }
   }
 
   /**
@@ -213,6 +291,7 @@ export class ProcessFinder {
     this.candidateCount = 0; // Reset candidate count
     this.skippedForWorkspace = 0; // Reset workspace mismatch counter
     this.attemptDetails = []; // Reset attempts
+    this.scanSteps = []; // Reset scan step outcomes
     this.tokenPreview = ""; // Reset token preview
     this.portsFromCmdline = 0; // Reset port counts
     this.portsFromNetstat = 0;
@@ -230,7 +309,9 @@ export class ProcessFinder {
       );
 
       const cmd = this.strategy.getProcessListCommand(this.processName);
-      const { stdout } = await this.executeWithPowershellWarmup(cmd);
+      const { stdout } = await this.runScanStep("Process name scan", () =>
+        this.executeWithPowershellWarmup(cmd),
+      );
 
       let infos: ProcessInfo[] | null = this.strategy.parseProcessInfo(stdout);
 
@@ -243,8 +324,9 @@ export class ProcessFinder {
           const keywordCmd =
             this.strategy.getProcessListByKeywordCommand("csrf_token");
           // Use standard execute for keyword search to avoid double warm-up delay if first failed
-          const { stdout: keywordStdout } = await this.execute(
-            keywordCmd,
+          const { stdout: keywordStdout } = await this.runScanStep(
+            "Keyword scan",
+            () => this.execute(keywordCmd),
           ).catch(() => ({ stdout: "", stderr: "" }));
           infos = this.strategy.parseProcessInfo(keywordStdout);
         }
@@ -255,8 +337,9 @@ export class ProcessFinder {
             "ProcessFinder: Keyword scan failed, trying platform fallback (wmic)...",
           );
           const fallbackCmd = this.strategy.getFallbackProcessListCommand();
-          const { stdout: fallbackStdout } = await this.execute(
-            fallbackCmd,
+          const { stdout: fallbackStdout } = await this.runScanStep(
+            "Fallback scan",
+            () => this.execute(fallbackCmd),
           ).catch(() => ({ stdout: "", stderr: "" }));
           infos = this.strategy.parseProcessInfo(fallbackStdout);
         }
@@ -430,6 +513,23 @@ export class ProcessFinder {
         e instanceof Error ? e : String(e),
       );
       return null;
+    }
+  }
+
+  /**
+   * Run one process scan command and record its outcome for the diagnostic report
+   */
+  private async runScanStep(
+    label: string,
+    run: () => Promise<ExecOutcome>,
+  ): Promise<ExecOutcome> {
+    try {
+      const result = await run();
+      this.scanSteps.push(formatExecOutcome(label, result));
+      return result;
+    } catch (e) {
+      this.scanSteps.push(formatExecOutcome(label, null, e));
+      throw e;
     }
   }
 

@@ -220,6 +220,24 @@ export class WindowsStrategy implements PlatformStrategy {
     return `chcp 65001 >nul && powershell -NoProfile -Command "${utf8Header}Get-Process | Where-Object { $_.ProcessName -match 'language|antigravity' } | Select-Object Id,ProcessName,Path | Format-Table -AutoSize"`;
   }
 
+  getProcessCrossCheckCommand(): string {
+    // tasklist does not depend on PowerShell or WMI, so it shows whether those are the failing layer
+    return "tasklist /FO CSV /NH";
+  }
+
+  getProcessQueryProbeCommand(): string {
+    // The detection scripts use -ErrorAction SilentlyContinue, which hides CIM failures; surface them here
+    const script = `
+      [Console]::OutputEncoding = [System.Text.Encoding]::UTF8;
+      try { $c = @(Get-CimInstance Win32_Process -ErrorAction Stop).Count; 'CIM ok, processes: ' + $c }
+      catch { 'CIM error: ' + $_.Exception.Message }
+    `
+      .replace(/\n\s+/g, " ")
+      .trim();
+
+    return `chcp 65001 >nul && powershell -ExecutionPolicy Bypass -NoProfile -Command "${script}"`;
+  }
+
   /**
    * Get troubleshooting tips for Windows
    */

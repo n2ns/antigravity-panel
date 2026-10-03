@@ -5,6 +5,19 @@ suite('Platform Strategies Test Suite', () => {
     suite('WindowsStrategy', () => {
         const strategy = new WindowsStrategy();
 
+        test('should cross-check processes with tasklist, which does not use PowerShell', () => {
+            const cmd = strategy.getProcessCrossCheckCommand();
+            assert.ok(cmd.startsWith('tasklist'));
+            assert.ok(!cmd.includes('powershell'));
+        });
+
+        test('should probe CIM with errors surfaced instead of silenced', () => {
+            const cmd = strategy.getProcessQueryProbeCommand();
+            assert.ok(cmd.includes('Get-CimInstance Win32_Process -ErrorAction Stop'));
+            assert.ok(cmd.includes("'CIM error: ' + $_.Exception.Message"));
+            assert.ok(!cmd.includes('\n'), 'Script must be collapsed onto one line');
+        });
+
         test('should parse single process JSON output with workspace ID', () => {
             const jsonOutput = JSON.stringify({
                 ProcessId: 12345,
