@@ -136,6 +136,16 @@ suite('WebviewHtmlBuilder Test Suite', () => {
       assert.ok(html.includes('window.__TRANSLATIONS__ = {"key1":"Value 1","key2":"Value 2"};'), 'Should serialize translations');
     });
 
+    test('should escape "<" so a translation cannot close the script tag', () => {
+      const html = new WebviewHtmlBuilder()
+        .setHead(testCspSource, testCodiconsUri, testStylesUri, testWebviewUri)
+        .setTranslations({ key: '</script><script>alert(1)</script>' })
+        .build();
+
+      assert.ok(!html.includes('</script><script>alert(1)'), 'Should not contain a raw closing tag');
+      assert.ok(html.includes('"\\u003c/script>\\u003cscript>alert(1)\\u003c/script>"'), 'Should escape "<" as \\u003c');
+    });
+
     test('should handle empty translations', () => {
       const html = new WebviewHtmlBuilder()
         .setHead(testCspSource, testCodiconsUri, testStylesUri, testWebviewUri)

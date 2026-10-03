@@ -24,6 +24,13 @@ export interface WebviewHtmlConfig {
 }
 
 /**
+ * JSON for an inline <script>: escapes "<" so a value cannot close the tag
+ */
+function toScriptJson(value: unknown): string {
+  return JSON.stringify(value).replace(/</g, '\\u003c');
+}
+
+/**
  * Generates a cryptographically secure nonce for CSP
  */
 export function generateNonce(): string {
@@ -86,8 +93,8 @@ export class WebviewHtmlBuilder {
 </head>
 <body>
   <script nonce="${nonce}">
-    window.__TRANSLATIONS__ = ${JSON.stringify(this.translations)};
-    window.__VERSION__ = ${JSON.stringify(this.version)};
+    window.__TRANSLATIONS__ = ${toScriptJson(this.translations)};
+    window.__VERSION__ = ${toScriptJson(this.version)};
   </script>
   <sidebar-app></sidebar-app>
   <script nonce="${nonce}" type="module" src="${webviewUri}"></script>

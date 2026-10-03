@@ -96,21 +96,19 @@ export async function retry<T>(
     onRetry,
   } = config;
 
-  let lastResult: T | null = null;
   let lastError: Error | undefined;
 
   for (let attempt = 1; attempt <= attempts; attempt++) {
     try {
-      lastResult = await fn();
+      const result = await fn();
       lastError = undefined;
 
       // Check if retry is needed
-      if (!shouldRetry(lastResult, undefined)) {
-        return lastResult;
+      if (!shouldRetry(result, undefined)) {
+        return result;
       }
     } catch (error) {
       lastError = error instanceof Error ? error : new Error(String(error));
-      lastResult = null;
 
       // If custom condition explicitly says no retry, exit early
       if (!shouldRetry(null, lastError)) {
@@ -131,5 +129,5 @@ export async function retry<T>(
     throw lastError;
   }
 
-  return lastResult;
+  return null;
 }

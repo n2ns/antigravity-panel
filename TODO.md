@@ -18,17 +18,12 @@
 
 ### Low-Severity Logic Errors (code review 2026-10-03)
 
-- [ ] **`retry()` returns a failed result after the last attempt**
-  - `src/shared/utils/retry.ts`: when every attempt returns a non-null value that `shouldRetry` still rejects, the last value is returned instead of `null`, contrary to the JSDoc
-  - No current caller uses a custom `shouldRetry`, so nothing is affected today
 - [ ] **Weekly usage day labels shift across time zones**
   - `dayStart` is computed in the extension host's time zone and formatted in the Webview's; with Remote-SSH or containers in another zone, every bar label is off by one day (`src/view/webview/components/weekly-usage.ts`)
 - [ ] **Tooltips do not flip below the anchor**
   - `src/view/webview/utils/tooltip-manager.ts` always places the tooltip above the element, so it is clipped when the anchor is near the top of the scrolled sidebar
 - [ ] **Output panel updates count as editor activity**
   - `onDidChangeTextDocument` in `app.vm.ts` does not filter by URI scheme, so output channel appends reset the idle-drain timer while the Output panel is visible (not yet reproduced)
-- [ ] **Initial state JSON is not escaped for `<script>`**
-  - `src/view/html-builder.ts` injects `JSON.stringify` output without escaping `</script>` or `<`; no current string contains it, so it cannot be triggered today
 
 ### Cache Cleaning
 

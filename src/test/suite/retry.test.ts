@@ -155,6 +155,21 @@ suite('Retry Utils Test Suite', () => {
         assert.deepStrictEqual(result, { value: 10 });
     });
 
+    test('should return null when shouldRetry rejects every result', async () => {
+        let attempts = 0;
+        const result = await retry(async () => {
+            attempts++;
+            return { value: 0 };
+        }, {
+            attempts: 3,
+            baseDelay: 1,
+            shouldRetry: (result) => result === null || result.value < 5
+        });
+
+        assert.strictEqual(attempts, 3);
+        assert.strictEqual(result, null);
+    });
+
     test('should call onRetry callback', async () => {
         const retryLog: Array<{ attempt: number; delay: number }> = [];
         await retry(async () => null, {
