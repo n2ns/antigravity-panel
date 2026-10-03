@@ -46,12 +46,20 @@ interface LLMResponse {
 }
 
 /**
- * Get the workspace root folder
+ * Get the workspace root folder: the folder of the active editor, else the first folder
+ * Exported for testing
  */
-function getWorkspaceRoot(): string | undefined {
+export function getWorkspaceRoot(): string | undefined {
     const folders = vscode.workspace.workspaceFolders;
     if (!folders || folders.length === 0) {
         return undefined;
+    }
+    const activeUri = vscode.window.activeTextEditor?.document.uri;
+    if (activeUri) {
+        const folder = vscode.workspace.getWorkspaceFolder(activeUri);
+        if (folder) {
+            return folder.uri.fsPath;
+        }
     }
     return folders[0].uri.fsPath;
 }

@@ -11,10 +11,53 @@ import { execFileSync } from 'child_process';
 import * as vscode from 'vscode';
 import {
     truncateDiff, buildClaudePrompt, parseLLMResponse, detectApiFormat, callLLMApi, getStagedDiff,
-    applyCommitMessageToScm
+    applyCommitMessageToScm, getWorkspaceRoot
 } from '../../commitMessageClaude';
 
 suite('Commit Message Claude Test Suite', () => {
+
+    suite('getWorkspaceRoot', () => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const mock = vscode as any;
+        const folderA = { uri: { fsPath: '/work/a' } };
+        const folderB = { uri: { fsPath: '/work/b' } };
+
+        function installWorkspace(folders: object[] | undefined, activePath?: string): void {
+            mock.workspace.workspaceFolders = folders;
+            mock.workspace.getWorkspaceFolder = (uri: { fsPath: string }) =>
+                (folders as { uri: { fsPath: string } }[] | undefined)
+                    ?.find(f => uri.fsPath.startsWith(f.uri.fsPath + '/'));
+            mock.window.activeTextEditor = activePath
+                ? { document: { uri: { fsPath: activePath } } }
+                : undefined;
+        }
+
+        teardown(() => {
+            delete mock.workspace.workspaceFolders;
+            delete mock.workspace.getWorkspaceFolder;
+            delete mock.window.activeTextEditor;
+        });
+
+        test('should return undefined without workspace folders', () => {
+            installWorkspace(undefined);
+            assert.strictEqual(getWorkspaceRoot(), undefined);
+        });
+
+        test('should use the folder of the active editor in a multi-root workspace', () => {
+            installWorkspace([folderA, folderB], '/work/b/src/index.ts');
+            assert.strictEqual(getWorkspaceRoot(), '/work/b');
+        });
+
+        test('should fall back to the first folder without an active editor', () => {
+            installWorkspace([folderA, folderB]);
+            assert.strictEqual(getWorkspaceRoot(), '/work/a');
+        });
+
+        test('should fall back to the first folder when the active file is outside the workspace', () => {
+            installWorkspace([folderA, folderB], '/tmp/notes.md');
+            assert.strictEqual(getWorkspaceRoot(), '/work/a');
+        });
+    });
 
     suite('truncateDiff', () => {
         test('should not truncate diff smaller than limit', () => {

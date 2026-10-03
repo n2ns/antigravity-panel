@@ -186,6 +186,8 @@ A workaround for when the built-in "Generate commit message" feature is unavaila
 2. Run **Generate Commit Message (Local & Claude)**
 3. The message is written into the Source Control input box
 
+In a multi-root workspace the repository is taken from the folder of the active editor; without an active editor in a workspace folder, the first folder is used.
+
 ### Choosing a Model
 - `tfa.commitMessageClaude.endpoint` selects the request format by its path: Ollama `/api/generate` or `/api/chat` (the default is a local Ollama), Anthropic `/v1/messages`, otherwise an OpenAI-compatible chat endpoint
 - `tfa.commitMessageClaude.model` names the model on that endpoint
