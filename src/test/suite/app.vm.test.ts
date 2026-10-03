@@ -4,7 +4,7 @@ import * as sinon from 'sinon';
 import { AppViewModel } from '../../view-model/app.vm';
 import { QuotaStrategyManager } from '../../model/strategy';
 import { ConfigManager, IConfigReader } from '../../shared/config/config_manager';
-import type { IQuotaService, ICacheService, IStorageService, IAutomationService } from '../../model/services/interfaces';
+import type { IQuotaService, ICacheService, IStorageService, IAutomationService, AutomationStatus } from '../../model/services/interfaces';
 import type { QuotaSnapshot } from '../../model/types/entities';
 
 // Mock Automation Service
@@ -12,7 +12,9 @@ const defaultMockAutomationService: IAutomationService = {
     start: () => { },
     stop: () => { },
     updateInterval: () => { },
-    setAcceptTerminalCommands: () => { }
+    setAcceptTerminalCommands: () => { },
+    getStatus: () => ({ running: false, commandCount: null, cdp: 'unknown', lastAction: null }),
+    onStatusChange: () => { }
 };
 
 // Mock Config Reader (reused)
@@ -184,6 +186,34 @@ suite('AppViewModel Test Suite', () => {
         assert.strictEqual(vm.getState().automation.enabled, false);
         assert.deepStrictEqual(writes, [['system.autoAccept', true], ['system.autoAccept', false]]);
         assert.deepStrictEqual(calls, ['start', 'stop']);
+    });
+
+    test('automation status changes should reach state and sidebar data', () => {
+        vm.dispose();
+        let notify!: (status: AutomationStatus) => void;
+        const automation: IAutomationService = {
+            ...defaultMockAutomationService,
+            onStatusChange: (callback) => { notify = callback; }
+        };
+        vm = new AppViewModel(mockQuota, mockCache, mockStorage, configManager, strategyManager, automation);
+        let fired = 0;
+        vm.onStateChange(() => fired++);
+
+        const status: AutomationStatus = {
+            running: true,
+            commandCount: 1,
+            cdp: 'unavailable',
+            lastAction: { outcome: 'skipped', label: 'run', reason: 'terminalDisabled', at: 1 }
+        };
+        notify(status);
+
+        assert.strictEqual(fired, 1);
+        assert.deepStrictEqual(vm.getState().automation.status, status);
+        assert.deepStrictEqual(vm.getSidebarData().autoAcceptStatus, status);
+
+        vm.dispose();
+        notify({ ...status, cdp: 'connected' });
+        assert.strictEqual(fired, 1, 'A disposed view model must ignore status changes');
     });
 
     test('refreshQuota should update state from service', async () => {

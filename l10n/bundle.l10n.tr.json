@@ -90,5 +90,18 @@
     "No previous-week data": "Önceki haftaya ait veri yok",
     "No sampling data (IDE was closed)": "Örnekleme verisi yok (IDE kapalıydı)",
     "Previous 7 days": "Önceki 7 gün",
-    "Last {0} min": "Son {0} dk"
+    "Last {0} min": "Son {0} dk",
+    "CDP: connected": "CDP: bağlı",
+    "CDP: port open, no Agent panel target": "CDP: port açık, Agent paneli hedefi yok",
+    "CDP: connected, but the Agent panel was not found": "CDP: bağlı, ancak Agent paneli bulunamadı",
+    "CDP: not available (required for terminal commands)": "CDP: kullanılamıyor (terminal komutları için gerekli)",
+    "Setup": "Setup",
+    "Open instructions for starting the IDE with --remote-debugging-port=9222": "IDE'yi --remote-debugging-port=9222 ile başlatma talimatlarını aç",
+    "IDE accept commands: none registered": "IDE kabul komutları: kayıtlı komut yok",
+    "IDE accept commands: {0} available": "IDE kabul komutları: {0} kullanılabilir",
+    "Last accepted: \"{0}\" at {1}": "Son kabul: \"{0}\", {1}",
+    "Left for manual review: \"{0}\" at {1} ({2})": "Elle inceleme için bırakıldı: \"{0}\", {1} ({2})",
+    "destructive command": "yıkıcı komut",
+    "no command text visible": "komut metni görünmüyor",
+    "terminal approval is off": "terminal onayı kapalı"
 }

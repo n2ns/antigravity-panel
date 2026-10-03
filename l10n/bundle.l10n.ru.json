@@ -90,5 +90,18 @@
     "No previous-week data": "Нет данных за предыдущую неделю",
     "No sampling data (IDE was closed)": "Нет данных выборки (IDE была закрыта)",
     "Previous 7 days": "Предыдущие 7 дней",
-    "Last {0} min": "Последние {0} мин"
+    "Last {0} min": "Последние {0} мин",
+    "CDP: connected": "CDP: подключено",
+    "CDP: port open, no Agent panel target": "CDP: порт открыт, нет цели панели Agent",
+    "CDP: connected, but the Agent panel was not found": "CDP: подключено, но панель Agent не найдена",
+    "CDP: not available (required for terminal commands)": "CDP: недоступно (требуется для команд терминала)",
+    "Setup": "Setup",
+    "Open instructions for starting the IDE with --remote-debugging-port=9222": "Открыть инструкцию по запуску IDE с --remote-debugging-port=9222",
+    "IDE accept commands: none registered": "Команды принятия IDE: не зарегистрированы",
+    "IDE accept commands: {0} available": "Команды принятия IDE: доступно {0}",
+    "Last accepted: \"{0}\" at {1}": "Последнее принятие: «{0}» в {1}",
+    "Left for manual review: \"{0}\" at {1} ({2})": "Оставлено для ручной проверки: «{0}» в {1} ({2})",
+    "destructive command": "разрушительная команда",
+    "no command text visible": "текст команды не виден",
+    "terminal approval is off": "подтверждение команд терминала выключено"
 }

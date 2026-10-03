@@ -208,3 +208,50 @@
 .link-btn .codicon {
     font-size: 1.1em;
 }
+
+/* Auto-Accept runtime status (stays visible when the card is collapsed) */
+.action-row.auto-accept-status {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-top: 6px;
+    padding: 0 4px;
+    font-size: 0.8rem;
+    color: var(--vscode-descriptionForeground);
+}
+
+.aa-status-line {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+}
+
+.aa-status-line > span {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.aa-status-line.ok .codicon {
+    color: var(--vscode-testing-iconPassed, #73c991);
+}
+
+.aa-status-line.warn .codicon {
+    color: var(--vscode-editorWarning-foreground, #cca700);
+}
+
+.aa-setup-btn {
+    flex-shrink: 0;
+    padding: 1px 8px;
+    border: none;
+    border-radius: 3px;
+    background: var(--vscode-button-secondaryBackground);
+    color: var(--vscode-button-secondaryForeground);
+    font-size: inherit;
+    cursor: pointer;
+}
+
+.aa-setup-btn:hover {
+    background: var(--vscode-button-secondaryHoverBackground);
+}

@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { IAutomationService } from './interfaces';
+import { IAutomationService, AutomationStatus, AutomationActionEvent } from './interfaces';
 import { Scheduler } from '../../shared/utils/scheduler';
 import { infoLog, errorLog } from '../../shared/utils/logger';
 import * as http from 'http';
@@ -90,6 +90,14 @@ export class AutomationService implements IAutomationService, vscode.Disposable 
     private connections = new Map<string, WebSocket>();
     private static readonly CDP_PORT = 9222;
     private static readonly CDP_CONNECT_TIMEOUT_MS = 1000;
+    private static readonly CDP_EVALUATE_TIMEOUT_MS = 1000;
+
+    // Runtime status, observed only. A skipped action already reported by the
+    // previous pass is not reported again, so a card left on screen does not
+    // refresh the status on every pass.
+    private status: AutomationStatus = AutomationService.initialStatus(false);
+    private statusListeners: ((status: AutomationStatus) => void)[] = [];
+    private previousSkipKeys = new Set<string>();
 
     constructor() {
         this.scheduler = new Scheduler({
@@ -137,6 +145,7 @@ export class AutomationService implements IAutomationService, vscode.Disposable 
             if (!this.isRunActive(generation)) return [];
             this.availableCommands = this.availableCommands ?? [];
         }
+        this.updateStatus({ commandCount: this.availableCommands.length });
         this.commandsCheckedAt = now; // also on failure, so a broken getCommands isn't re-polled every tick
         return this.availableCommands;
     }
@@ -160,6 +169,13 @@ export class AutomationService implements IAutomationService, vscode.Disposable 
     private async performCdpAutoAccept(generation: number) {
         const pages = await this.getPages(AutomationService.CDP_PORT);
         if (!this.isRunActive(generation)) return;
+        if (pages === null) {
+            this.updateStatus({ cdp: 'unavailable' });
+            return;
+        }
+        const events: Omit<AutomationActionEvent, 'at'>[] = [];
+        let scanned = false;
+        let panelFound = false;
         for (const page of pages) {
             if (!this.isRunActive(generation)) return;
             if (page.type !== 'page' && page.type !== 'webview') continue;
@@ -187,9 +203,75 @@ export class AutomationService implements IAutomationService, vscode.Disposable 
 
             const ws = this.connections.get(id);
             if (this.isRunActive(generation) && ws && ws.readyState === WebSocket.OPEN as number) {
-                await this.evaluate(ws, this.getClickerScript());
+                const result = AutomationService.parseScanResult(await this.evaluate(ws, this.getClickerScript()));
+                if (result) {
+                    scanned = true;
+                    panelFound ||= result.panel;
+                    events.push(...result.events);
+                }
             }
         }
+        if (!this.isRunActive(generation)) return;
+        const cdp = this.connections.size === 0 ? 'noTarget'
+            : scanned && !panelFound ? 'noPanel'
+            : 'connected';
+        this.recordPass(cdp, events);
+    }
+
+    /**
+     * Read the injected scan result; null when none was received. Malformed
+     * events are dropped.
+     */
+    private static parseScanResult(value: unknown): { panel: boolean; events: Omit<AutomationActionEvent, 'at'>[] } | null {
+        if (!value || typeof value !== 'object') return null;
+        const { panel, events } = value as Record<string, unknown>;
+        if (typeof panel !== 'boolean' || !Array.isArray(events)) return null;
+        const reasons = ['dangerous', 'noCommandText', 'terminalDisabled'];
+        return { panel, events: events.flatMap(item => {
+            if (!item || typeof item !== 'object') return [];
+            const { outcome, label, reason } = item as Record<string, unknown>;
+            if ((outcome !== 'accepted' && outcome !== 'skipped') || typeof label !== 'string') return [];
+            if (outcome === 'skipped' && !reasons.includes(reason as string)) return [];
+            return [outcome === 'skipped'
+                ? { outcome, label, reason: reason as AutomationActionEvent['reason'] }
+                : { outcome, label }];
+        }) };
+    }
+
+    private recordPass(cdp: AutomationStatus['cdp'], events: Omit<AutomationActionEvent, 'at'>[]): void {
+        const skipKeys = new Set<string>();
+        let lastAction = this.status.lastAction;
+        for (const event of events) {
+            if (event.outcome === 'skipped') {
+                const key = `${event.reason}:${event.label}`;
+                skipKeys.add(key);
+                if (this.previousSkipKeys.has(key)) continue;
+            }
+            lastAction = { ...event, at: Date.now() };
+        }
+        this.previousSkipKeys = skipKeys;
+        this.updateStatus({ cdp, lastAction });
+    }
+
+    private static initialStatus(running: boolean): AutomationStatus {
+        return { running, commandCount: null, cdp: 'unknown', lastAction: null };
+    }
+
+    private updateStatus(patch: Partial<AutomationStatus>): void {
+        const next = { ...this.status, ...patch };
+        if (JSON.stringify(next) === JSON.stringify(this.status)) return;
+        this.status = next;
+        for (const listener of this.statusListeners) {
+            try { listener(next); } catch (err) { errorLog('Automation status listener failed', err); }
+        }
+    }
+
+    getStatus(): AutomationStatus {
+        return this.status;
+    }
+
+    onStatusChange(callback: (status: AutomationStatus) => void): void {
+        this.statusListeners.push(callback);
     }
 
     /**
@@ -256,8 +338,14 @@ export class AutomationService implements IAutomationService, vscode.Disposable 
                     return Array.from(roots, ([root, panel]) => ({ root, panel }));
                 };
 
+                // Observed actions returned to the extension host for its status display.
+                const events = [];
+                const report = (outcome, rawText, reason) => {
+                    events.push(reason ? { outcome, label: rawText.slice(0, 40), reason } : { outcome, label: rawText.slice(0, 40) });
+                };
+
                 const agentRoots = getAgentRoots();
-                if (agentRoots.length === 0) return;
+                if (agentRoots.length === 0) return { panel: false, events };
 
                 const CLICK_TTL_MS = 5000;
                 const EXPANDER_TTL_MS = 2000;
@@ -414,6 +502,9 @@ export class AutomationService implements IAutomationService, vscode.Disposable 
                             if (!isMatch && ACCEPT_TERMINAL && isRunAction(rawText)) {
                                 terminalPrompt = findTerminalPrompt(el, panel);
                                 isMatch = terminalPrompt !== null;
+                            } else if (!isMatch && isRunAction(rawText) && findTerminalPrompt(el, panel)) {
+                                report('skipped', rawText, 'terminalDisabled');
+                                continue;
                             }
                             let isExpander = false;
 
@@ -440,40 +531,60 @@ export class AutomationService implements IAutomationService, vscode.Disposable 
                                     if (win.getComputedStyle(el).cursor === 'pointer') interactive = true;
                                 } catch (e) { }
                                 if (!interactive || el.closest('pre') || el.closest('code')) continue;
-                                if (containerIsDangerous(el, rawText, panel)) continue;
+                                if (containerIsDangerous(el, rawText, panel)) {
+                                    report('skipped', rawText, 'dangerous');
+                                    continue;
+                                }
                                 if (terminalPrompt) {
                                     const promptText = normalize(terminalPrompt.innerText || terminalPrompt.textContent);
-                                    if (DANGER_PATTERNS.some(re => re.test(promptText))) continue;
+                                    if (DANGER_PATTERNS.some(re => re.test(promptText))) {
+                                        report('skipped', rawText, 'dangerous');
+                                        continue;
+                                    }
                                     // Check the whole prompt card, and fail closed when
                                     // no command text is visible in it.
                                     try {
                                         const card = findPromptCard(terminalPrompt, panel);
-                                        if (DANGER_PATTERNS.some(re => re.test(labelOf(card)))) continue;
-                                        if (!commandTextOf(card, terminalPrompt, el)) continue;
+                                        if (DANGER_PATTERNS.some(re => re.test(labelOf(card)))) {
+                                            report('skipped', rawText, 'dangerous');
+                                            continue;
+                                        }
+                                        if (!commandTextOf(card, terminalPrompt, el)) {
+                                            report('skipped', rawText, 'noCommandText');
+                                            continue;
+                                        }
                                     } catch (e) { continue; }
                                 }
                             }
 
                             el.dataset.aaTs = String(now);
                             clickElement(el);
+                            if (!isExpander) report('accepted', rawText);
                         }
                     } catch (e) { }
                 });
+                return { panel: true, events };
             })()
         `;
     }
 
-    private async getPages(port: number): Promise<CdpPage[]> {
+    /**
+     * List debugging targets; null when the debugging port does not answer.
+     */
+    private async getPages(port: number): Promise<CdpPage[] | null> {
         return new Promise((resolve) => {
             const req = http.get({ hostname: '127.0.0.1', port, path: '/json/list', timeout: 500 }, (res) => {
                 let body = '';
                 res.on('data', chunk => body += chunk);
                 res.on('end', () => {
-                    try { resolve(JSON.parse(body)); } catch { resolve([]); }
+                    try {
+                        const pages: unknown = JSON.parse(body);
+                        resolve(Array.isArray(pages) ? pages as CdpPage[] : null);
+                    } catch { resolve(null); }
                 });
             });
-            req.on('error', () => resolve([]));
-            req.on('timeout', () => { req.destroy(); resolve([]); });
+            req.on('error', () => resolve(null));
+            req.on('timeout', () => { req.destroy(); resolve(null); });
         });
     }
 
@@ -507,14 +618,38 @@ export class AutomationService implements IAutomationService, vscode.Disposable 
         });
     }
 
-    private async evaluate(ws: WebSocket, expression: string): Promise<void> {
+    /**
+     * Evaluate in the page and return the result value; undefined on error,
+     * close, or timeout.
+     */
+    private async evaluate(ws: WebSocket, expression: string): Promise<unknown> {
+        const id = this.msgId++;
         return new Promise((resolve) => {
-            ws.send(JSON.stringify({
-                id: this.msgId++,
-                method: 'Runtime.evaluate',
-                params: { expression, userGesture: true, awaitPromise: true }
-            }));
-            resolve();
+            const finish = (value: unknown) => {
+                clearTimeout(timer);
+                ws.off('message', onMessage);
+                ws.off('close', onClose);
+                resolve(value);
+            };
+            const onMessage = (data: WebSocket.RawData) => {
+                try {
+                    const message = JSON.parse(data.toString());
+                    if (message.id === id) finish(message.result?.result?.value);
+                } catch { /* ignore unrelated or malformed messages */ }
+            };
+            const onClose = () => finish(undefined);
+            const timer = setTimeout(() => finish(undefined), AutomationService.CDP_EVALUATE_TIMEOUT_MS);
+            ws.on('message', onMessage);
+            ws.on('close', onClose);
+            try {
+                ws.send(JSON.stringify({
+                    id,
+                    method: 'Runtime.evaluate',
+                    params: { expression, userGesture: true, awaitPromise: true, returnByValue: true }
+                }));
+            } catch {
+                finish(undefined);
+            }
         });
     }
 
@@ -523,6 +658,8 @@ export class AutomationService implements IAutomationService, vscode.Disposable 
         this._enabled = true;
         this.runGeneration++;
         this.availableCommands = null; // rediscover commands on each start
+        this.previousSkipKeys.clear();
+        this.updateStatus(AutomationService.initialStatus(true));
         this.scheduler.start(this.taskName);
         infoLog("Automation: Auto-accept enabled (command API + CDP fallback)");
     }
@@ -533,6 +670,7 @@ export class AutomationService implements IAutomationService, vscode.Disposable 
         this.runGeneration++;
         this.scheduler.stop(this.taskName);
         this.closeConnections();
+        this.updateStatus(AutomationService.initialStatus(false));
         infoLog("Automation: Auto-accept disabled");
     }
 

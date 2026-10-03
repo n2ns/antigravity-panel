@@ -90,5 +90,18 @@
     "No previous-week data": "无前一周数据",
     "No sampling data (IDE was closed)": "无采样数据（IDE 未运行）",
     "Previous 7 days": "前 7 天",
-    "Last {0} min": "最近 {0} 分钟"
+    "Last {0} min": "最近 {0} 分钟",
+    "CDP: connected": "CDP：已连接",
+    "CDP: port open, no Agent panel target": "CDP：端口已开启，但没有 Agent 面板目标",
+    "CDP: connected, but the Agent panel was not found": "CDP：已连接，但未找到 Agent 面板",
+    "CDP: not available (required for terminal commands)": "CDP：不可用（终端命令批准需要它）",
+    "Setup": "Setup",
+    "Open instructions for starting the IDE with --remote-debugging-port=9222": "打开以 --remote-debugging-port=9222 启动 IDE 的说明",
+    "IDE accept commands: none registered": "IDE 接受命令：未注册",
+    "IDE accept commands: {0} available": "IDE 接受命令：{0} 个可用",
+    "Last accepted: \"{0}\" at {1}": "最近接受：“{0}”，{1}",
+    "Left for manual review: \"{0}\" at {1} ({2})": "留待手动处理：“{0}”，{1}（{2}）",
+    "destructive command": "危险命令",
+    "no command text visible": "看不到命令内容",
+    "terminal approval is off": "终端批准未开启"
 }

@@ -150,6 +150,14 @@ In WSL remote sessions the shortcuts follow where Antigravity actually reads eac
 - The danger check covers the whole prompt card; Run is not clicked when no command text is visible in the card
 - Commands that look destructive (e.g. `rm -rf` on `/` or `~`, `git push --force`, `git reset --hard`, `Remove-Item -Recurse`, `DROP TABLE`) are left for manual review
 
+### Runtime Status
+While Auto-Accept is on, the sidebar footer shows what the automation observes, below the switch (also when the footer is collapsed):
+- **CDP**: connected, connected but the Agent panel was not found (for example after an IDE update changes the panel), port open without an Agent panel target, or not available. When the debugging port does not answer, a **Setup** button opens the instructions below
+- **IDE accept commands**: how many registered accept commands were found, or that none are registered
+- **Last action**: the last button accepted through CDP, or the last one left for manual review with the reason: destructive command, no command text visible, or terminal approval is off (`tfa.system.autoAcceptTerminal`)
+
+Only observed state is shown: a line appears after its first check, and commands executed through the IDE command API are not listed because their effect cannot be observed. An action still on screen is reported once, not on every pass.
+
 ### Enabling the CDP Fallback
 Terminal command approval always needs the CDP fallback; steps and file edits need it only when the IDE command API is unavailable.
 

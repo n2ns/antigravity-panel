@@ -6,6 +6,7 @@
  */
 
 import type { UserCredit } from '../model/types/entities';
+import type { AutomationStatus } from '../model/services/interfaces';
 
 // ==================== Quota View State ====================
 
@@ -202,6 +203,7 @@ export interface SidebarData {
     showUserInfoCard?: boolean;
     showCreditsCard?: boolean;
     autoAcceptEnabled?: boolean;
+    autoAcceptStatus?: AutomationStatus;
     uiScale?: number;
 }
 
@@ -221,6 +223,7 @@ export interface AppState {
     failureReason?: 'no_process' | 'no_port' | 'auth_failed' | 'workspace_mismatch' | null;
     automation: {
         enabled: boolean;
+        status: AutomationStatus;
     };
 }
 

@@ -34,6 +34,7 @@ const PROTECTED_BUNDLE_LABELS = [
     'Rules',
     'Run Diagnostics',
     'Settings',
+    'Setup',
     'Show Details',
     'Star',
     'View',

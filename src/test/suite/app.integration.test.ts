@@ -12,7 +12,9 @@ const mockAutomationService: IAutomationService = {
     start: () => { },
     stop: () => { },
     updateInterval: () => { },
-    setAcceptTerminalCommands: () => { }
+    setAcceptTerminalCommands: () => { },
+    getStatus: () => ({ running: false, commandCount: null, cdp: 'unknown', lastAction: null }),
+    onStatusChange: () => { }
 };
 
 // Mock Config Reader

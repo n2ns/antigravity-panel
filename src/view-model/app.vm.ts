@@ -94,6 +94,12 @@ export class AppViewModel implements vscode.Disposable {
             this.automationService.start();
         }
         this._state.automation.enabled = initialAutoAccept;
+        this._state.automation.status = this.automationService.getStatus();
+        this.automationService.onStatusChange(status => {
+            if (this._disposed) return;
+            this._state.automation.status = status;
+            this._onStateChange.fire(this._state);
+        });
         this._prevConfig = this.configManager.getConfig();
         this._idleSinceTs = vscode.window.state.focused ? null : Date.now();
 
@@ -155,7 +161,8 @@ export class AppViewModel implements vscode.Disposable {
                 contexts: { expanded: false, folders: [] }
             },
             automation: {
-                enabled: false
+                enabled: false,
+                status: { running: false, commandCount: null, cdp: 'unknown', lastAction: null }
             },
             connectionStatus: 'detecting'
         };
@@ -1293,6 +1300,7 @@ export class AppViewModel implements vscode.Disposable {
             connectionStatus: this._state.connectionStatus,
             failureReason: this._state.failureReason,
             autoAcceptEnabled: this._state.automation.enabled,
+            autoAcceptStatus: this._state.automation.status,
             gaugeStyle: config["dashboard.gaugeStyle"],
             showUserInfoCard: this.configManager.get('dashboard.showUserInfoCard', true),
             showCreditsCard: config["dashboard.showCreditsCard"],

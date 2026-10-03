@@ -90,5 +90,18 @@
     "No previous-week data": "Tidak ada data minggu sebelumnya",
     "No sampling data (IDE was closed)": "Tidak ada data sampling (IDE tertutup)",
     "Previous 7 days": "7 hari sebelumnya",
-    "Last {0} min": "{0} menit terakhir"
+    "Last {0} min": "{0} menit terakhir",
+    "CDP: connected": "CDP: terhubung",
+    "CDP: port open, no Agent panel target": "CDP: port terbuka, tidak ada target panel Agent",
+    "CDP: connected, but the Agent panel was not found": "CDP: terhubung, tetapi panel Agent tidak ditemukan",
+    "CDP: not available (required for terminal commands)": "CDP: tidak tersedia (diperlukan untuk perintah terminal)",
+    "Setup": "Setup",
+    "Open instructions for starting the IDE with --remote-debugging-port=9222": "Buka petunjuk untuk menjalankan IDE dengan --remote-debugging-port=9222",
+    "IDE accept commands: none registered": "Perintah terima IDE: tidak ada yang terdaftar",
+    "IDE accept commands: {0} available": "Perintah terima IDE: {0} tersedia",
+    "Last accepted: \"{0}\" at {1}": "Terakhir diterima: \"{0}\" pada {1}",
+    "Left for manual review: \"{0}\" at {1} ({2})": "Dibiarkan untuk ditinjau manual: \"{0}\" pada {1} ({2})",
+    "destructive command": "perintah destruktif",
+    "no command text visible": "teks perintah tidak terlihat",
+    "terminal approval is off": "persetujuan terminal nonaktif"
 }

@@ -159,7 +159,21 @@ export interface WebviewStateUpdate {
     formattedConversations: string;
   };
   autoAcceptEnabled?: boolean;
+  autoAcceptStatus?: AutoAcceptStatus;
   uiScale?: number;
+}
+
+/** Auto-Accept runtime status (mirrors AutomationStatus in the model layer) */
+export interface AutoAcceptStatus {
+  running: boolean;
+  commandCount: number | null;
+  cdp: 'unknown' | 'unavailable' | 'noTarget' | 'noPanel' | 'connected';
+  lastAction: {
+    outcome: 'accepted' | 'skipped';
+    label: string;
+    reason?: 'dangerous' | 'noCommandText' | 'terminalDisabled';
+    at: number;
+  } | null;
 }
 
 // ==================== VS Code API ====================

@@ -90,5 +90,18 @@
     "No previous-week data": "Sem dados da semana anterior",
     "No sampling data (IDE was closed)": "Sem dados de amostragem (o IDE estava fechado)",
     "Previous 7 days": "7 dias anteriores",
-    "Last {0} min": "Últimos {0} min"
+    "Last {0} min": "Últimos {0} min",
+    "CDP: connected": "CDP: conectado",
+    "CDP: port open, no Agent panel target": "CDP: porta aberta, nenhum destino do painel Agent",
+    "CDP: connected, but the Agent panel was not found": "CDP: conectado, mas o painel Agent não foi encontrado",
+    "CDP: not available (required for terminal commands)": "CDP: indisponível (necessário para comandos de terminal)",
+    "Setup": "Setup",
+    "Open instructions for starting the IDE with --remote-debugging-port=9222": "Abrir instruções para iniciar o IDE com --remote-debugging-port=9222",
+    "IDE accept commands: none registered": "Comandos de aceitação do IDE: nenhum registrado",
+    "IDE accept commands: {0} available": "Comandos de aceitação do IDE: {0} disponíveis",
+    "Last accepted: \"{0}\" at {1}": "Última aceitação: \"{0}\" às {1}",
+    "Left for manual review: \"{0}\" at {1} ({2})": "Deixado para revisão manual: \"{0}\" às {1} ({2})",
+    "destructive command": "comando destrutivo",
+    "no command text visible": "nenhum texto de comando visível",
+    "terminal approval is off": "a aprovação de terminal está desativada"
 }

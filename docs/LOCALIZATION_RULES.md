@@ -13,7 +13,7 @@ All primary UI labels, technical terms, and command titles on the panel must rem
 - **Core Features**: `Rules`, `MCP`, `Allowlist`, `Brain`, `Code Tracker`, `Auto-Accept`.
 - **Panel Actions**: `Restart`, `Reset`, `Reload`.
 - **Command Titles**: `Restart Agent Service`, `Reset Status`, `Connectivity Diagnostics`, `Show Logs`.
-- **Navigation/UI**: `Docs`, `Feedback`, `Star`, `Prompt`, `Flow`, `Settings`, `View`, `Weekly`.
+- **Navigation/UI**: `Docs`, `Feedback`, `Star`, `Prompt`, `Flow`, `Settings`, `Setup`, `View`, `Weekly`.
 
 Every command title (each `command.*.title` key in `package.nls.json`) is protected: `npm run check:l10n` requires it to be identical to the English value in every `package.nls.*.json`.
 

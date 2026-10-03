@@ -31,7 +31,7 @@ function collectTemplates(value: unknown, output: LitTemplate[] = []): LitTempla
 }
 
 suite('Webview Footer Test Suite', () => {
-    test('Auto-Accept checkbox should always follow host state', async () => {
+    test('Auto-Accept checkbox should always follow host state and status should show observed state', async () => {
         const footerPath = path.resolve(process.cwd(), 'src/view/webview/components/sidebar-footer.ts');
         const result = await build({
             stdin: {
@@ -74,6 +74,8 @@ suite('Webview Footer Test Suite', () => {
             const render = (enabled: boolean) => {
                 const host = {
                     autoAcceptEnabled: enabled,
+                    autoAcceptStatus: null,
+                    _renderAutoAcceptStatus: SidebarFooter.prototype._renderAutoAcceptStatus,
                     _isCollapsed: false,
                     _t: {},
                     _vscode: vscodeApi,
@@ -122,6 +124,44 @@ suite('Webview Footer Test Suite', () => {
             assert.strictEqual(input.checked, true);
             commit(render(false).binding);
             assert.strictEqual(input.checked, false);
+
+            // Runtime status: only observed state is shown, and only while running.
+            const opened: string[] = [];
+            const renderStatus = (enabled: boolean, status: Record<string, unknown>) => collectTemplates(
+                SidebarFooter.prototype._renderAutoAcceptStatus.call({
+                    autoAcceptEnabled: enabled,
+                    autoAcceptStatus: status,
+                    _t: {},
+                    _openUrl: (url: string) => opened.push(url)
+                })
+            );
+            const textOf = (templates: LitTemplate[]) => templates
+                .flatMap(item => item.values.filter((value): value is string => typeof value === 'string'))
+                .join('\n');
+            const status = {
+                running: true,
+                commandCount: 1,
+                cdp: 'unavailable',
+                lastAction: { outcome: 'skipped', label: 'run', reason: 'terminalDisabled', at: 0 }
+            };
+            assert.strictEqual(renderStatus(false, status).length, 0, 'No status while Auto-Accept is off');
+
+            const templates = renderStatus(true, status);
+            const text = textOf(templates);
+            assert.match(text, /CDP: not available/);
+            assert.match(text, /IDE accept commands: 1 available/);
+            assert.match(text, /Left for manual review: "run" at .+ \(terminal approval is off\)/);
+            const setup = templates.find(item => item.strings.some(part => part.includes('aa-setup-btn')));
+            assert.ok(setup, 'Unavailable CDP should offer the setup instructions');
+            (setup.values[setup.strings.findIndex(part => /@click=$/.test(part))] as () => void)();
+            assert.deepStrictEqual(opened, ['https://github.com/n2ns/antigravity-panel/blob/main/docs/FEATURES.md#enabling-the-cdp-fallback']);
+
+            const unknown = textOf(renderStatus(true, { running: true, commandCount: null, cdp: 'unknown', lastAction: null }));
+            assert.doesNotMatch(unknown, /CDP|IDE accept commands/, 'Unobserved state must not be shown');
+            const connected = renderStatus(true, { ...status, cdp: 'connected' });
+            assert.match(textOf(connected), /CDP: connected/);
+            assert.ok(!connected.some(item => item.strings.some(part => part.includes('aa-setup-btn'))));
+            assert.match(textOf(renderStatus(true, { ...status, cdp: 'noPanel' })), /CDP: connected, but the Agent panel was not found/);
         } finally {
             if (originalWindow) Object.defineProperty(globalThis, 'window', originalWindow);
             else delete (globalThis as { window?: unknown }).window;

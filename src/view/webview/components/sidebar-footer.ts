@@ -5,17 +5,21 @@
 import { LitElement, html, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { live } from 'lit/directives/live.js';
-import type { VsCodeApi, WindowWithVsCode } from '../types.js';
+import type { AutoAcceptStatus, VsCodeApi, WindowWithVsCode } from '../types.js';
 
 /** GitHub repository URLs */
 const GITHUB_ISSUES_URL = 'https://github.com/n2ns/antigravity-panel/issues';
 const GITHUB_HOME_URL = 'https://github.com/n2ns/antigravity-panel';
 const GITHUB_DOCS_URL = 'https://github.com/n2ns/antigravity-panel#readme';
+const CDP_SETUP_URL = 'https://github.com/n2ns/antigravity-panel/blob/main/docs/FEATURES.md#enabling-the-cdp-fallback';
 
 @customElement('sidebar-footer')
 export class SidebarFooter extends LitElement {
   @property({ type: Boolean })
   autoAcceptEnabled = false;
+
+  @property({ attribute: false })
+  autoAcceptStatus: AutoAcceptStatus | null = null;
 
   @state()
   private _isCollapsed = false;
@@ -65,6 +69,72 @@ export class SidebarFooter extends LitElement {
     this._vscode?.postMessage({ type: 'openUrl', path: url });
   }
 
+  /** Observed Auto-Accept state; lines whose state is not yet known are omitted */
+  private _renderAutoAcceptStatus() {
+    const status = this.autoAcceptStatus;
+    if (!this.autoAcceptEnabled || !status?.running) return nothing;
+    const t = this._t;
+
+    const cdpLine = {
+      unknown: null,
+      connected: { icon: 'pass', text: t.cdpConnected || 'CDP: connected' },
+      noTarget: { icon: 'warning', text: t.cdpNoTarget || 'CDP: port open, no Agent panel target' },
+      noPanel: { icon: 'warning', text: t.cdpNoPanel || 'CDP: connected, but the Agent panel was not found' },
+      unavailable: { icon: 'warning', text: t.cdpUnavailable || 'CDP: not available (required for terminal commands)' }
+    }[status.cdp];
+
+    const commandText = status.commandCount === null ? null
+      : status.commandCount === 0 ? (t.acceptCommandsNone || 'IDE accept commands: none registered')
+      : (t.acceptCommandsAvailable || 'IDE accept commands: {0} available').replace('{0}', String(status.commandCount));
+
+    let actionText: string | null = null;
+    const action = status.lastAction;
+    if (action) {
+      const time = new Date(action.at).toLocaleTimeString();
+      if (action.outcome === 'accepted') {
+        actionText = (t.lastAccepted || 'Last accepted: "{0}" at {1}')
+          .replace('{0}', action.label).replace('{1}', time);
+      } else {
+        const reason = {
+          dangerous: t.skipReasonDangerous || 'destructive command',
+          noCommandText: t.skipReasonNoCommandText || 'no command text visible',
+          terminalDisabled: t.skipReasonTerminalDisabled || 'terminal approval is off'
+        }[action.reason ?? 'dangerous'];
+        actionText = (t.lastSkipped || 'Left for manual review: "{0}" at {1} ({2})')
+          .replace('{0}', action.label).replace('{1}', time).replace('{2}', reason);
+      }
+    }
+
+    return html`
+      <div class="action-row auto-accept-status">
+        ${cdpLine ? html`
+          <div class="aa-status-line ${status.cdp === 'connected' ? 'ok' : 'warn'}">
+            <i class="codicon codicon-${cdpLine.icon}"></i>
+            <span>${cdpLine.text}</span>
+            ${status.cdp === 'unavailable' ? html`
+              <button class="aa-setup-btn" @click=${() => this._openUrl(CDP_SETUP_URL)}
+                      data-tooltip="${t.cdpSetupTooltip || 'Open instructions for starting the IDE with --remote-debugging-port=9222'}">
+                ${t.cdpSetup || 'Setup'}
+              </button>
+            ` : nothing}
+          </div>
+        ` : nothing}
+        ${commandText ? html`
+          <div class="aa-status-line ${status.commandCount ? 'ok' : 'warn'}">
+            <i class="codicon codicon-${status.commandCount ? 'pass' : 'warning'}"></i>
+            <span>${commandText}</span>
+          </div>
+        ` : nothing}
+        ${actionText ? html`
+          <div class="aa-status-line">
+            <i class="codicon codicon-${action?.outcome === 'accepted' ? 'check' : 'circle-slash'}"></i>
+            <span>${actionText}</span>
+          </div>
+        ` : nothing}
+      </div>
+    `;
+  }
+
   protected render() {
     return html`
       <!-- Main Action Card -->
@@ -85,6 +155,8 @@ export class SidebarFooter extends LitElement {
             <i class="codicon codicon-chevron-${this._isCollapsed ? 'down' : 'up'} collapse-icon"></i>
           </div>
         </div>
+
+        ${this._renderAutoAcceptStatus()}
 
         <div class="collapsible-wrapper ${this._isCollapsed ? 'collapsed' : ''}">
           <div class="collapsible-content">

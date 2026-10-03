@@ -241,9 +241,47 @@ export interface IStorageService {
 // ==================== Automation Service ====================
 
 /**
+ * CDP connection state observed by the last Auto-Accept pass.
+ * unknown: no pass has finished since start; unavailable: the debugging port did not answer;
+ * noTarget: the port answered but no workbench target is connected; noPanel: targets are connected but
+ * no scan found the Agent panel; connected: a scan found the Agent panel (or no scan result was received).
+ */
+export type AutomationCdpState = 'unknown' | 'unavailable' | 'noTarget' | 'noPanel' | 'connected';
+
+/** An action observed in the Agent panel by a CDP pass */
+export interface AutomationActionEvent {
+    outcome: 'accepted' | 'skipped';
+    /** Button text, lower-cased and truncated */
+    label: string;
+    /** Why a skipped action was left for manual handling */
+    reason?: 'dangerous' | 'noCommandText' | 'terminalDisabled';
+    /** Epoch ms when the host received the event */
+    at: number;
+}
+
+/** Runtime status of Auto-Accept; observed state only, never inferred */
+export interface AutomationStatus {
+    running: boolean;
+    /** Registered IDE accept commands; null before discovery */
+    commandCount: number | null;
+    cdp: AutomationCdpState;
+    lastAction: AutomationActionEvent | null;
+}
+
+/**
  * Automation service - handles hands-free features like auto-accepting steps
  */
 export interface IAutomationService {
+    /**
+     * Current runtime status
+     */
+    getStatus(): AutomationStatus;
+
+    /**
+     * Register a callback fired when the runtime status changes
+     */
+    onStatusChange(callback: (status: AutomationStatus) => void): void;
+
     /**
      * Start the auto-accept loop
      */

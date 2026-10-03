@@ -14,7 +14,8 @@ import type {
   WindowWithVsCode,
   UserInfoData,
   TokenUsageData,
-  ConnectionStatus
+  ConnectionStatus,
+  AutoAcceptStatus
 } from '../types.js';
 
 import './quota-dashboard.js';
@@ -86,6 +87,9 @@ export class SidebarApp extends LitElement {
 
   @state()
   private _autoAcceptEnabled: boolean = false;
+
+  @state()
+  private _autoAcceptStatus: AutoAcceptStatus | null = null;
 
   @state()
   private _connectionStatus: ConnectionStatus = 'detecting';
@@ -241,6 +245,9 @@ export class SidebarApp extends LitElement {
     if (state.autoAcceptEnabled !== undefined) {
       this._autoAcceptEnabled = state.autoAcceptEnabled;
     }
+    if (state.autoAcceptStatus !== undefined) {
+      this._autoAcceptStatus = state.autoAcceptStatus;
+    }
     if (state.connectionStatus) {
       this._connectionStatus = state.connectionStatus;
     }
@@ -385,6 +392,7 @@ export class SidebarApp extends LitElement {
 
       <sidebar-footer 
         .autoAcceptEnabled=${this._autoAcceptEnabled}
+        .autoAcceptStatus=${this._autoAcceptStatus}
         style="flex-shrink: 0; position: relative; z-index: 10;"
       ></sidebar-footer>
 

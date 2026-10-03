@@ -4,6 +4,7 @@ import * as sinon from 'sinon';
 import * as vscode from 'vscode';
 import { WebSocketServer } from 'ws';
 import { AutomationService } from '../../model/services/automation.service';
+import type { AutomationStatus } from '../../model/services/interfaces';
 import { Scheduler } from '../../shared/utils/scheduler';
 
 class ClickerElement {
@@ -157,9 +158,10 @@ function createClickerHarness(commandText = 'npm test') {
     html.append(panel);
     const document = new ClickerDocument(html);
     const window: any = { getComputedStyle: document.defaultView.getComputedStyle };
+    // Returns the scan result, as Runtime.evaluate would with returnByValue
     const execute = (script: string) => {
-        const run = new Function('window', 'document', 'NodeFilter', 'MouseEvent', script);
-        run(window, document, { SHOW_ELEMENT: 1 }, class { });
+        const run = new Function('window', 'document', 'NodeFilter', 'MouseEvent', `return (${script})`);
+        return run(window, document, { SHOW_ELEMENT: 1 }, class { });
     };
     return { window, document, html, panel, card, button, reject, execute };
 }
@@ -786,7 +788,164 @@ suite('AutomationService Test Suite', () => {
         }
     });
 
-    test('the scan should find the Antigravity Agent side panel', () => {
+    test('status should follow start and stop and notify listeners', () => {
+        const seen: AutomationStatus[] = [];
+        service.onStatusChange(status => seen.push(status));
+        assert.deepStrictEqual(service.getStatus(), { running: false, commandCount: null, cdp: 'unknown', lastAction: null });
+
+        service.start();
+        assert.deepStrictEqual(service.getStatus(), { running: true, commandCount: null, cdp: 'unknown', lastAction: null });
+        service.stop();
+        assert.deepStrictEqual(service.getStatus(), { running: false, commandCount: null, cdp: 'unknown', lastAction: null });
+        assert.deepStrictEqual(seen.map(status => status.running), [true, false]);
+    });
+
+    test('command discovery should report the registered command count', async () => {
+        service.dispose();
+        const schedulerStub = sandbox.stub(Scheduler.prototype, 'register');
+        sandbox.stub(AutomationService.prototype as any, 'performCdpAutoAccept').resolves();
+        sandbox.stub(vscode.commands, 'getCommands').resolves(['antigravity.prioritized.agentAcceptAllInFile']);
+        service = new AutomationService();
+        service.start();
+
+        await schedulerStub.firstCall.args[0].execute();
+
+        assert.strictEqual(service.getStatus().commandCount, 1);
+    });
+
+    test('an unanswered debugging port should report CDP unavailable', async () => {
+        sandbox.stub(service as any, 'getPages').resolves(null);
+        service.start();
+
+        await service['performCdpAutoAccept'](service['runGeneration']);
+
+        assert.strictEqual(service.getStatus().cdp, 'unavailable');
+    });
+
+    test('getPages should resolve null when nothing listens on the port', async () => {
+        const server = net.createServer();
+        await new Promise<void>(resolve => server.listen(0, '127.0.0.1', resolve));
+        const address = server.address();
+        assert.ok(address && typeof address !== 'string');
+        await new Promise<void>(resolve => server.close(() => resolve()));
+
+        assert.strictEqual(await service['getPages'](address.port), null);
+    });
+
+    test('CDP state and the observed action should come from the pass', async () => {
+        const getPages = sandbox.stub(service as any, 'getPages').resolves([]);
+        sandbox.stub(service as any, 'connectToPage').resolves({ close: sandbox.stub(), readyState: 1 });
+        const evaluate = sandbox.stub(service as any, 'evaluate').resolves({ panel: true, events: [{ outcome: 'accepted', label: 'accept all' }] });
+        service.start();
+
+        await service['performCdpAutoAccept'](service['runGeneration']);
+        assert.strictEqual(service.getStatus().cdp, 'noTarget', 'An answering port without workbench targets');
+
+        getPages.resolves([{
+            type: 'page',
+            id: 'agent',
+            url: 'vscode-file://vscode-app/workbench/workbench.html',
+            webSocketDebuggerUrl: 'ws://127.0.0.1:9222/devtools/page/agent'
+        }]);
+        await service['performCdpAutoAccept'](service['runGeneration']);
+
+        const status = service.getStatus();
+        assert.strictEqual(status.cdp, 'connected');
+        assert.strictEqual(status.lastAction?.outcome, 'accepted');
+        assert.strictEqual(status.lastAction?.label, 'accept all');
+
+        evaluate.resolves({ panel: false, events: [] });
+        await service['performCdpAutoAccept'](service['runGeneration']);
+        assert.strictEqual(service.getStatus().cdp, 'noPanel', 'A connected target whose scan finds no Agent panel');
+
+        evaluate.resolves(undefined);
+        await service['performCdpAutoAccept'](service['runGeneration']);
+        assert.strictEqual(service.getStatus().cdp, 'connected', 'No scan result is not evidence of a missing panel');
+    });
+
+    test('a skipped action still on screen should not refresh the status on every pass', async () => {
+        const clock = sandbox.useFakeTimers({ now: 10_000 });
+        sandbox.stub(service as any, 'getPages').resolves([{
+            type: 'page',
+            id: 'agent',
+            url: 'vscode-file://vscode-app/workbench/workbench.html',
+            webSocketDebuggerUrl: 'ws://127.0.0.1:9222/devtools/page/agent'
+        }]);
+        sandbox.stub(service as any, 'connectToPage').resolves({ close: sandbox.stub(), readyState: 1 });
+        const skipped = { panel: true, events: [{ outcome: 'skipped', label: 'accept', reason: 'dangerous' }] };
+        const evaluate = sandbox.stub(service as any, 'evaluate').resolves(skipped);
+        service.start();
+        const pass = () => service['performCdpAutoAccept'](service['runGeneration']);
+
+        await pass();
+        const first = service.getStatus().lastAction;
+        assert.strictEqual(first?.reason, 'dangerous');
+        let changes = 0;
+        service.onStatusChange(() => changes++);
+
+        await pass();
+        await pass();
+        assert.strictEqual(changes, 0, 'The same card on the next passes is not a new observation');
+        assert.strictEqual(service.getStatus().lastAction, first);
+
+        evaluate.resolves({ panel: true, events: [] });
+        await pass();
+        clock.setSystemTime(11_000);
+        evaluate.resolves(skipped);
+        await pass();
+        assert.strictEqual(changes, 1, 'A card that reappears is reported again');
+    });
+
+    test('malformed scan results should be ignored', async () => {
+        sandbox.stub(service as any, 'getPages').resolves([{
+            type: 'page',
+            id: 'agent',
+            url: 'vscode-file://vscode-app/workbench/workbench.html',
+            webSocketDebuggerUrl: 'ws://127.0.0.1:9222/devtools/page/agent'
+        }]);
+        sandbox.stub(service as any, 'connectToPage').resolves({ close: sandbox.stub(), readyState: 1 });
+        const evaluate = sandbox.stub(service as any, 'evaluate').resolves({ panel: true, events: [
+            null,
+            { outcome: 'clicked', label: 'accept' },
+            { outcome: 'accepted', label: 7 },
+            { outcome: 'skipped', label: 'accept', reason: 'other' }
+        ] });
+        service.start();
+
+        await service['performCdpAutoAccept'](service['runGeneration']);
+
+        assert.strictEqual(service.getStatus().cdp, 'connected');
+        assert.strictEqual(service.getStatus().lastAction, null);
+
+        // A result without a boolean panel flag counts as no result, not as a missing panel
+        evaluate.resolves([{ outcome: 'accepted', label: 'accept' }]);
+        await service['performCdpAutoAccept'](service['runGeneration']);
+        assert.strictEqual(service.getStatus().cdp, 'connected');
+        assert.strictEqual(service.getStatus().lastAction, null);
+    });
+
+    test('the scan should report accepted actions and why others were left alone', () => {
+        const off = createClickerHarness('npm test');
+        assert.deepStrictEqual(off.execute(service['getClickerScript']()),
+            { panel: true, events: [{ outcome: 'skipped', label: 'run', reason: 'terminalDisabled' }] });
+        assert.strictEqual(off.button.clickCount, 0);
+
+        service.setAcceptTerminalCommands(true);
+        const on = createClickerHarness('npm test');
+        assert.deepStrictEqual(on.execute(service['getClickerScript']()),
+            { panel: true, events: [{ outcome: 'accepted', label: 'run' }] });
+
+        const dangerous = createClickerHarness('rm -rf /');
+        assert.deepStrictEqual(dangerous.execute(service['getClickerScript']()),
+            { panel: true, events: [{ outcome: 'skipped', label: 'run', reason: 'dangerous' }] });
+
+        const { harness, run } = buildDeepPromptCard('');
+        assert.deepStrictEqual(harness.execute(service['getClickerScript']()),
+            { panel: true, events: [{ outcome: 'skipped', label: 'run', reason: 'noCommandText' }] });
+        assert.strictEqual(run.clickCount, 0);
+    });
+
+    test('the scan should find the Antigravity Agent side panel and report a missing panel', () => {
         service.setAcceptTerminalCommands(true);
         const html = new ClickerElement('HTML');
         const panel = new ClickerElement('DIV', '', 'antigravity-agent-side-panel');
@@ -797,10 +956,41 @@ suite('AutomationService Test Suite', () => {
         html.append(panel);
         const document = new ClickerDocument(html);
         const window: any = { getComputedStyle: document.defaultView.getComputedStyle };
-        new Function('window', 'document', 'NodeFilter', 'MouseEvent', service['getClickerScript']())(
+        const execute = () => new Function('window', 'document', 'NodeFilter', 'MouseEvent', `return (${service['getClickerScript']()})`)(
             window, document, { SHOW_ELEMENT: 1 }, class { });
 
+        assert.deepStrictEqual(execute(), { panel: true, events: [{ outcome: 'accepted', label: 'run' }] });
         assert.strictEqual(run.clickCount, 1);
+
+        html.removeChild(panel);
+        assert.deepStrictEqual(execute(), { panel: false, events: [] });
+    });
+
+    test('evaluate should return the value of its own response and settle on close', async () => {
+        const server = new WebSocketServer({ host: '127.0.0.1', port: 0 });
+        await new Promise<void>(resolve => server.once('listening', () => resolve()));
+        const address = server.address();
+        assert.ok(address && typeof address !== 'string');
+        server.on('connection', socket => socket.on('message', data => {
+            const request = JSON.parse(data.toString());
+            if (request.method !== 'Runtime.evaluate') return;
+            if (request.params.expression === 'close') {
+                socket.close();
+                return;
+            }
+            socket.send(JSON.stringify({ id: request.id + 1000, result: { result: { value: 'other' } } }));
+            socket.send(JSON.stringify({ id: request.id, result: { result: { value: [1, 2] } } }));
+        }));
+
+        try {
+            const ws = await service['connectToPage']('eval', `ws://127.0.0.1:${address.port}`);
+            assert.ok(ws);
+            assert.deepStrictEqual(await service['evaluate'](ws, 'scan'), [1, 2]);
+            assert.strictEqual(ws.listenerCount('message'), 0, 'evaluate must remove its listeners');
+            assert.strictEqual(await service['evaluate'](ws, 'close'), undefined);
+        } finally {
+            await new Promise<void>(resolve => server.close(() => resolve()));
+        }
     });
 
     test('dispose() should clean up connections', () => {

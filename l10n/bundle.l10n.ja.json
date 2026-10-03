@@ -90,5 +90,18 @@
     "No previous-week data": "前週のデータなし",
     "No sampling data (IDE was closed)": "サンプリングデータなし（IDE が起動していませんでした）",
     "Previous 7 days": "その前の 7 日間",
-    "Last {0} min": "過去 {0} 分間"
+    "Last {0} min": "過去 {0} 分間",
+    "CDP: connected": "CDP: 接続済み",
+    "CDP: port open, no Agent panel target": "CDP: ポートは開いていますが Agent パネルの対象がありません",
+    "CDP: connected, but the Agent panel was not found": "CDP: 接続済みですが Agent パネルが見つかりません",
+    "CDP: not available (required for terminal commands)": "CDP: 利用不可（ターミナルコマンドに必要）",
+    "Setup": "Setup",
+    "Open instructions for starting the IDE with --remote-debugging-port=9222": "--remote-debugging-port=9222 付きで IDE を起動する手順を開く",
+    "IDE accept commands: none registered": "IDE の承認コマンド: 登録なし",
+    "IDE accept commands: {0} available": "IDE の承認コマンド: {0} 個利用可能",
+    "Last accepted: \"{0}\" at {1}": "最後の承認: \"{0}\"（{1}）",
+    "Left for manual review: \"{0}\" at {1} ({2})": "手動確認のため保留: \"{0}\"（{1}、{2}）",
+    "destructive command": "破壊的なコマンド",
+    "no command text visible": "コマンドのテキストが見えない",
+    "terminal approval is off": "ターミナルの承認がオフ"
 }

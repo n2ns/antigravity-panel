@@ -90,5 +90,18 @@
     "No previous-week data": "Không có dữ liệu tuần trước",
     "No sampling data (IDE was closed)": "Không có dữ liệu lấy mẫu (IDE đã đóng)",
     "Previous 7 days": "7 ngày trước đó",
-    "Last {0} min": "{0} phút qua"
+    "Last {0} min": "{0} phút qua",
+    "CDP: connected": "CDP: đã kết nối",
+    "CDP: port open, no Agent panel target": "CDP: cổng đang mở, không có mục tiêu bảng Agent",
+    "CDP: connected, but the Agent panel was not found": "CDP: đã kết nối nhưng không tìm thấy bảng Agent",
+    "CDP: not available (required for terminal commands)": "CDP: không khả dụng (cần cho lệnh terminal)",
+    "Setup": "Setup",
+    "Open instructions for starting the IDE with --remote-debugging-port=9222": "Mở hướng dẫn khởi động IDE với --remote-debugging-port=9222",
+    "IDE accept commands: none registered": "Lệnh chấp nhận của IDE: chưa có lệnh nào được đăng ký",
+    "IDE accept commands: {0} available": "Lệnh chấp nhận của IDE: có {0} lệnh",
+    "Last accepted: \"{0}\" at {1}": "Chấp nhận gần nhất: \"{0}\" lúc {1}",
+    "Left for manual review: \"{0}\" at {1} ({2})": "Để lại cho bạn xem xét: \"{0}\" lúc {1} ({2})",
+    "destructive command": "lệnh phá hủy",
+    "no command text visible": "không thấy nội dung lệnh",
+    "terminal approval is off": "phê duyệt terminal đang tắt"
 }
