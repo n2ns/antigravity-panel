@@ -20,12 +20,13 @@
 
 ## 📸 Screenshots
 
-| | |
-|:---:|:---:|
-| ![Quota Dashboard](assets/preview1.png) | ![Usage Analytics](assets/preview2.png) |
-| ![Cache Management](assets/preview3.png) | ![Settings & Config](assets/preview4.png) |
+![Antigravity Panel in the sidebar, next to the editor and the Agent panel](assets/preview-window.png)
 
-*Real-time quota monitoring, usage trends, and cache management in one place*
+| Quota pools, context window, and usage trends | Quota of each model |
+|:---:|:---:|
+| ![Quota pools, context window, and usage trends](assets/preview1.png) | ![Quota of each model](assets/preview2.png) |
+
+*Real-time quota monitoring, conversation context, usage trends, and cache management in one place*
 
 ## 🚀 Key Features
 
