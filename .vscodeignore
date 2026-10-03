@@ -18,6 +18,7 @@ docs/**
 !docs/DISCLAIMER.md
 AGENTS.md
 CLAUDE.md
+.claude/**
 TODO.md
 .out-*/**
 .husky/**

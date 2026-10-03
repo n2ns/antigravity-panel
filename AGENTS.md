@@ -7,6 +7,7 @@ Guidance for AI coding agents, and for humans, working in this repository. Every
 - The current development workspace is running inside the real Antigravity IDE. Use its local Language Server for relevant runtime validation; do not assume this is plain VS Code or an environment without a live server.
 - For connection or response-parsing changes, run `npm run debug:server` and `npm run test:server` against the local Language Server, following [docs/DEBUGGING.md](docs/DEBUGGING.md).
 - If server detection or connection fails, investigate and report the observed blocker. Report actual live-server passes separately from skipped or unrun checks; being inside the IDE alone does not prove a working connection.
+- To check a change in the F5 Extension Development Host (sidebar DOM and screenshots, extension host logpoints, Auto-Accept dry runs), use the `devhost-debug` skill: [.claude/skills/devhost-debug/SKILL.md](.claude/skills/devhost-debug/SKILL.md). Its script also runs without Claude Code.
 
 ## What this project is
 
