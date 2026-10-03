@@ -37,6 +37,10 @@ See how much quota each model pool has left, its official weekly limit, and when
 
 A chart of recent quota consumption by pool, plus your current usage rate and an estimate of how long the remaining quota will last. History is kept for 14 days. [Details →](docs/FEATURES.md#usage-history--analytics)
 
+### 🧠 Conversation Context
+
+See how full the current conversation's context window is. The IDE lets a conversation fill up and then compresses it, which can drop earlier details, so the panel warns you before that point (80% by default) and tells you when a compression happened. [Details →](docs/FEATURES.md#conversation-context-window)
+
 ### 💳 Credits
 
 Shows your Google One AI subscription credit; Prompt and Flow credit rows can be turned on in settings. [Details →](docs/FEATURES.md#token-credits-tracking)
@@ -122,7 +126,7 @@ Open Command Palette (`Ctrl+Shift+P` / `Cmd+Shift+P`) and search for:
 
 ## ⚙️ Configuration
 
-Open Settings (`Ctrl+,` / `Cmd+,`) in Antigravity IDE and search for `tfa` to customize quota polling, status bar thresholds, cache cleaning, Auto-Accept, and the commit message generator.
+Open Settings (`Ctrl+,` / `Cmd+,`) in Antigravity IDE and search for `tfa` to customize quota polling, status bar thresholds, the context warning threshold, cache cleaning, Auto-Accept, and the commit message generator.
 
 The complete list of settings with their defaults is in [FEATURES.md](docs/FEATURES.md#-configuration-options).
 
