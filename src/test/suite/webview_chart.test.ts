@@ -104,6 +104,7 @@ suite('Webview Usage Chart Test Suite', () => {
             const weeklyData = {
                 days: Array.from({ length: 7 }, (_, index) => ({
                     dayStart: index * 24 * 60 * 60 * 1000,
+                    labelDate: Date.UTC(2026, 0, index + 1),
                     hasData: index !== 0,
                     items: index === 0 ? [] : [
                         { usage: index, color: '#40C4FF', label: 'Gemini Flash' },
@@ -254,6 +255,8 @@ suite('Webview Usage Chart Test Suite', () => {
                 return template.values[index] as string;
             });
             assert.ok(weeklyTooltips[0].includes('无采样数据'), 'Unsampled days must not render as zero usage');
+            const expectedLabel = new Date(Date.UTC(2026, 0, 7)).toLocaleDateString([], { month: 'numeric', day: 'numeric', timeZone: 'UTC' });
+            assert.ok(weeklyTooltips[6].startsWith(`${expectedLabel}\n`), 'Day labels must come from labelDate in UTC, not dayStart');
             assert.ok(
                 weeklyTooltips[6].includes('Gemini Flash: -6.0 pp') && weeklyTooltips[6].includes('Claude: -3.0 pp'),
                 'Multi-pool days must list every pool in the tooltip'

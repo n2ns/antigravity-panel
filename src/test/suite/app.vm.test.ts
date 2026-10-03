@@ -757,6 +757,28 @@ suite('AppViewModel Test Suite', () => {
         assert.match((vscode.window as any).lastWarningMessage || '', /^CRITICAL Quota:/);
     });
 
+    test('output channel changes should not count as editor activity', () => {
+        let listener: ((e: { document: { uri: { scheme: string } } }) => void) | undefined;
+        const stub = sinon.stub(vscode.workspace, 'onDidChangeTextDocument').callsFake(l => {
+            listener = l as typeof listener;
+            return { dispose: () => { } };
+        });
+        try {
+            vm.dispose();
+            vm = new AppViewModel(mockQuota, mockCache, mockStorage, configManager, strategyManager, defaultMockAutomationService);
+            const internals = vm as unknown as { _lastActivityTs: number };
+
+            internals._lastActivityTs = 0;
+            listener?.({ document: { uri: { scheme: 'output' } } });
+            assert.strictEqual(internals._lastActivityTs, 0);
+
+            listener?.({ document: { uri: { scheme: 'vscode-remote' } } });
+            assert.ok(internals._lastActivityTs > 0);
+        } finally {
+            stub.restore();
+        }
+    });
+
     suite('Quota reset notification', () => {
         const makeSnapshot = (remainingPercentage: number): QuotaSnapshot => ({
             timestamp: new Date(),
@@ -1051,6 +1073,11 @@ suite('AppViewModel Test Suite', () => {
 
         assert.ok(weekly);
         assert.strictEqual(weekly.days[6].dayStart, todayStart.getTime());
+        // The label date is the host's calendar date, independent of the Webview's time zone
+        assert.strictEqual(
+            new Date(weekly.days[6].labelDate).toISOString().slice(0, 10),
+            `${todayStart.getFullYear()}-${String(todayStart.getMonth() + 1).padStart(2, '0')}-${String(todayStart.getDate()).padStart(2, '0')}`
+        );
         assert.deepStrictEqual(weekly.days[6].items.map(item => item.label), ['Gemini']);
         assert.deepStrictEqual(weekly.days[5].items.map(item => item.label), ['Gemini', 'Claude']);
         assert.strictEqual(weekly.total, 13);

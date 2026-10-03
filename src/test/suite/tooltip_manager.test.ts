@@ -33,6 +33,7 @@ suite('TooltipManager Test Suite', () => {
             style = createMockStyle();
             className = '';
             textContent = '';
+            offsetHeight = 0;
             removed = false;
 
             closest(selector: string) {
@@ -126,6 +127,30 @@ suite('TooltipManager Test Suite', () => {
 
         // Max-width should be viewport (1024) - 20 = 1004px
         assert.strictEqual(tooltipEl.style.maxWidth, '1004px');
+    });
+
+    test('should place tooltip above the element when it fits', () => {
+        new TooltipManager();
+        const tooltipEl = createdElements[0];
+        tooltipEl.offsetHeight = 100; // rect.top (200) - 8 - 100 >= 0
+
+        eventListeners.get('mouseover')!({ target: mockElement });
+
+        assert.strictEqual(tooltipEl.style.top, '192px');
+        assert.strictEqual(tooltipEl.style.transform, 'translateY(-100%)');
+    });
+
+    test('should flip tooltip below the element when there is no room above', () => {
+        new TooltipManager();
+        const tooltipEl = createdElements[0];
+        tooltipEl.offsetHeight = 50;
+        mockElement.getBoundingClientRect = () => ({ top: 20, bottom: 50, left: 100, right: 150, width: 50, height: 30 });
+
+        eventListeners.get('mouseover')!({ target: mockElement });
+
+        // Below: rect.bottom (50) + 8 = 58
+        assert.strictEqual(tooltipEl.style.top, '58px');
+        assert.strictEqual(tooltipEl.style.transform, 'none');
     });
 
     test('should hide tooltip on mouseout', () => {

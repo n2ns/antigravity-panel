@@ -90,19 +90,25 @@ export class TooltipManager {
         // Use document.documentElement for viewport width (ignoring scrollbars if possible)
         const viewportWidth = document.documentElement.clientWidth || document.body.clientWidth;
 
-        // 1. Vertical Positioning: Above the element + gap
-        // Use transform to shift up by own height
-        const top = rect.top - 8;
-        this._tooltipEl.style.top = `${top}px`;
-
-        // 2. Horizontal Positioning: Always left-aligned with panel, full width allowed
+        // 1. Horizontal Positioning: Always left-aligned with panel, full width allowed
+        // (set first: the width decides the wrapped height measured below)
         this._tooltipEl.style.left = '10px';
         this._tooltipEl.style.right = 'auto'; // Reset right
         this._tooltipEl.style.width = 'auto';  // Reset width
         this._tooltipEl.style.boxSizing = 'border-box';
         // Max width = viewport width - 20px (10px margin on each side)
         this._tooltipEl.style.maxWidth = `${viewportWidth - 20}px`;
-        this._tooltipEl.style.transform = 'translateY(-100%)';
+
+        // 2. Vertical Positioning: Above the element + gap, shifted up by own height via transform;
+        // below the element when there is no room above (e.g. near the top of the sidebar)
+        const gap = 8;
+        if (rect.top - gap - this._tooltipEl.offsetHeight >= 0) {
+            this._tooltipEl.style.top = `${rect.top - gap}px`;
+            this._tooltipEl.style.transform = 'translateY(-100%)';
+        } else {
+            this._tooltipEl.style.top = `${rect.bottom + gap}px`;
+            this._tooltipEl.style.transform = 'none';
+        }
     }
 
     private _hideTooltip(): void {

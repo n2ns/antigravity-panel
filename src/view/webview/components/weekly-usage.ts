@@ -42,9 +42,10 @@ export class WeeklyUsage extends LitElement {
         </div>
         <div class="usage-chart-bars">
           ${data.days.map((day, index) => {
-            const dayLabel = new Date(day.dayStart).toLocaleDateString([], {
+            const dayLabel = new Date(day.labelDate).toLocaleDateString([], {
               month: 'numeric',
-              day: 'numeric'
+              day: 'numeric',
+              timeZone: 'UTC'
             });
             const dayTotal = dayTotals[index];
             let currentUsage = 0;

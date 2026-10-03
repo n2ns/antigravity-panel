@@ -99,7 +99,10 @@ export class AppViewModel implements vscode.Disposable {
         // Editor activity feeds idle-drain detection: quota dropping while the
         // user is verifiably away is worth a warning, normal usage is not.
         this._disposables.push(
-            vscode.workspace.onDidChangeTextDocument(() => this.recordUserActivity()),
+            // Output channel appends (including this extension's own log) are not user activity
+            vscode.workspace.onDidChangeTextDocument(e => {
+                if (e.document.uri.scheme !== 'output') this.recordUserActivity();
+            }),
             vscode.window.onDidChangeWindowState(e => {
                 if (e.focused) {
                     this.recordUserActivity();
@@ -1210,7 +1213,9 @@ export class AppViewModel implements vscode.Disposable {
                     items.push({ usage: day.usage, color: pool.themeColor, label: pool.label });
                 }
             }
-            return { dayStart, hasData, items };
+            const date = new Date(dayStart);
+            const labelDate = Date.UTC(date.getFullYear(), date.getMonth(), date.getDate());
+            return { dayStart, labelDate, hasData, items };
         });
         const previousDays = mergedDays.slice(0, 7);
         const days = mergedDays.slice(7);

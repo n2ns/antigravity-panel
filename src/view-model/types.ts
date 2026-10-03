@@ -37,6 +37,8 @@ export interface WeeklyUsageData {
     /** Chronological days, today last; each day stacks per-pool consumption */
     days: {
         dayStart: number;
+        /** UTC midnight of the extension host's local date; format with timeZone 'UTC' so the Webview's zone cannot shift it */
+        labelDate: number;
         hasData: boolean;
         items: { usage: number; color: string; label: string }[];
     }[];
