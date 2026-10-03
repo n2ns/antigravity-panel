@@ -2,6 +2,12 @@
 
 Guidance for AI coding agents, and for humans, working in this repository. Every rule here is mandatory. When a task conflicts with a rule, stop and report the conflict instead of working around it. Facts that change often (test counts, component lists, version numbers) are deliberately not repeated here; follow the links.
 
+## First rule: use the real IDE environment
+
+- The current development workspace is running inside the real Antigravity IDE. Use its local Language Server for relevant runtime validation; do not assume this is plain VS Code or an environment without a live server.
+- For connection or response-parsing changes, run `npm run debug:server` and `npm run test:server` against the local Language Server, following [docs/DEBUGGING.md](docs/DEBUGGING.md).
+- If server detection or connection fails, investigate and report the observed blocker. Report actual live-server passes separately from skipped or unrun checks; being inside the IDE alone does not prove a working connection.
+
 ## What this project is
 
 Antigravity Panel is an extension for Google Antigravity IDE, built on the VS Code extension API (`engines.vscode` in `package.json`). It polls the local Antigravity Language Server over HTTP for AI quota data, manages the IDE's conversation and code-context caches under `~/.gemini/antigravity-ide/`, and offers an opt-in Auto-Accept automation. Stack: TypeScript, Lit webview, esbuild bundling, Mocha + Sinon tests, Node.js 24 (the version used in `.github/workflows/`). Published as `n2ns.antigravity-panel` on the VS Code Marketplace and Open VSX.
