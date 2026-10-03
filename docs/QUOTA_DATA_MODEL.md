@@ -89,10 +89,13 @@ Each model group points to a quota pool through `quotaPoolId`.
 | `gemini-pro` | `#69F0AE` | `gemini` | Gemini (blue) |
 | `claude` | `#FFAB40` | `non-google` | Claude (orange) |
 | `gpt` | `#FF5252` | `non-google` | Claude (orange) |
+| `other` | `#FFAB40` | `non-google` | Claude (orange) |
 
 Gemini Flash and Gemini Pro currently share the same Gemini quota pool. The relative consumption cost of Flash and Pro may differ, but usage of either model reduces the remaining quota of the same pool.
 
 Claude and GPT are also currently treated as the same backend pool; the default group view uses the `Claude` label for compatibility with the original UI.
+
+The `other` group has no models or prefixes; it only receives models that nothing else matches, so an unrecognized non-Google model is not counted against the Gemini pool.
 
 ### 3.3 Model matching order
 
@@ -100,9 +103,10 @@ Models are matched to `groups` in this order:
 
 1. Exact match on a model ID from the configuration.
 2. Exact match on the normalized model ID.
-3. `modelName` in the label is matched only as a whole token; a server model ID is matched against `modelName` only exactly.
-4. When no specific model matches, the longest match on the configured group prefix/keyword wins.
-5. Unrecognized models fall back to `other` or the first available group.
+3. Exact, case-insensitive match of the server model ID against `modelName`, with or without a label.
+4. `modelName` in the label is matched only as a whole token.
+5. When no specific model matches, the longest match on the configured group prefix/keyword wins.
+6. Unrecognized models fall back to the `other` group (pool `non-google`); the first group is used only if a configuration has no `other` group.
 
 The exact-match and token-boundary rules prevent server IDs that share a numeric prefix from being mistaken for each other; for example, Gemini 3.6 Flash's `MODEL_PLACEHOLDER_M264/M265/M266` do not match Claude Opus's `MODEL_PLACEHOLDER_M26`.
 

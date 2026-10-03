@@ -1,4 +1,5 @@
 import * as assert from 'assert';
+import * as sinon from 'sinon';
 import { QuotaService } from '../../model/services/quota.service';
 import { ConfigManager, IConfigReader } from '../../shared/config/config_manager';
 
@@ -48,6 +49,17 @@ class TestQuotaService extends QuotaService {
             data: response as T,
             protocol: 'https'
         };
+    }
+}
+
+// Test Subclass that returns scripted HTTP status codes
+class StatusQuotaService extends QuotaService {
+    public responses: { statusCode: number; data: any }[] = [];
+
+    protected async request<T>(_path: string, _body: object): Promise<HttpResponse<T>> {
+        const next = this.responses.shift();
+        if (!next) throw new Error('No mock response configured');
+        return { statusCode: next.statusCode, data: next.data as T, protocol: 'https' };
     }
 }
 
@@ -253,5 +265,93 @@ suite('QuotaService Test Suite', () => {
         const model = snapshot!.models[0];
         assert.strictEqual(model.resetTimeIsFallback, false);
         assert.notStrictEqual(model.timeUntilReset, 'N/A');
+    });
+
+    test('should treat omitted available credits as zero like an explicit zero', async () => {
+        const build = (planStatus: object) => ({
+            userStatus: { planStatus, cascadeModelConfigData: { clientModelConfigs: [] } }
+        });
+        const expected = { available: 0, monthly: 100, usedPercentage: 100, remainingPercentage: 0 };
+        const expectedFlow = { available: 0, monthly: 50, usedPercentage: 100, remainingPercentage: 0 };
+
+        service.mockResponse = build({ planInfo: { monthlyPromptCredits: 100, monthlyFlowCredits: 50 } });
+        const omitted = await service.fetchQuota();
+
+        service.mockResponse = build({
+            planInfo: { monthlyPromptCredits: 100, monthlyFlowCredits: 50 },
+            availablePromptCredits: 0,
+            availableFlowCredits: 0
+        });
+        const explicit = await service.fetchQuota();
+
+        assert.deepStrictEqual(omitted!.promptCredits, expected);
+        assert.deepStrictEqual(explicit!.promptCredits, expected);
+        assert.deepStrictEqual(omitted!.flowCredits, expectedFlow);
+        assert.deepStrictEqual(explicit!.flowCredits, expectedFlow);
+    });
+
+    test('should not report flow credits when the plan has no monthly flow credits', async () => {
+        service.mockResponse = {
+            userStatus: { planStatus: { planInfo: { monthlyPromptCredits: 100 } } }
+        };
+        const snapshot = await service.fetchQuota();
+
+        assert.strictEqual(snapshot!.flowCredits, undefined);
+        assert.strictEqual(snapshot!.promptCredits!.available, 0);
+    });
+
+    suite('parsingError across retries', () => {
+        let clock: sinon.SinonFakeTimers;
+        let statusService: StatusQuotaService;
+
+        setup(() => {
+            clock = sinon.useFakeTimers();
+            statusService = new StatusQuotaService(configManager);
+            statusService.setServerInfo({ port: 1234, csrfToken: 'token', pid: 100 } as any);
+        });
+
+        teardown(() => {
+            clock.restore();
+        });
+
+        test('should clear the first attempt error when the retry succeeds', async () => {
+            statusService.responses = [
+                { statusCode: 503, data: null },
+                { statusCode: 200, data: validResponse }
+            ];
+
+            const pending = statusService.fetchQuota();
+            await clock.tickAsync(1000);
+            const snapshot = await pending;
+
+            assert.ok(snapshot);
+            assert.strictEqual(statusService.parsingError, null);
+        });
+
+        test('should keep the final attempt error when every attempt fails', async () => {
+            statusService.responses = [
+                { statusCode: 503, data: null },
+                { statusCode: 502, data: null }
+            ];
+
+            const pending = statusService.fetchQuota();
+            await clock.tickAsync(1000);
+            const snapshot = await pending;
+
+            assert.strictEqual(snapshot, null);
+            assert.strictEqual(statusService.parsingError, 'HTTP_ERROR_502');
+        });
+    });
+
+    test('should return the snapshot and not report an error when the update callback throws', async () => {
+        service.mockResponse = validResponse;
+        let errorCalled = false;
+        service.onError(() => { errorCalled = true; });
+        service.onUpdate(() => { throw new Error('consumer failure'); });
+
+        const snapshot = await service.fetchQuota();
+
+        assert.ok(snapshot, 'Fetch result must survive a throwing callback');
+        assert.strictEqual(errorCalled, false);
     });
 });

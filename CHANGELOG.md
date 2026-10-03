@@ -7,6 +7,28 @@
 - **About Command**: `Antigravity Panel: About` now always opens the English `docs/DISCLAIMER.md`; the Chinese disclaimer copy is no longer shipped.
 - **Documentation Reorganization**: Project documentation is English only. Added `AGENTS.md` (rules and document index for AI coding agents, replacing `docs/RULES.md`) with a `CLAUDE.md` that imports it, `docs/ARCHITECTURE.md` (layers, lifecycle, connection, tests), and `docs/QUOTA_DATA_MODEL.md` (English translation of the former `quota-data-model.md`). Removed the `*_zh.md` copies and `docs/KNOWLEDGE_GRAPH.md`. `docs/FEATURES.md` is now the single settings reference and `README.md` links to it instead of repeating the table; `CONTRIBUTING.md` and `docs/DEBUGGING.md` link to `docs/ARCHITECTURE.md` and `AGENTS.md` instead of repeating the architecture and command lists.
 
+### Fixed
+
+- **Quota Polling Stall**: A quota request whose connection dropped after the response headers but before the body finished never completed, which blocked every later scheduled refresh until the window was reloaded. The request now fails as soon as the response is aborted. Responses are also decoded as UTF-8 across network chunks, so names with non-ASCII characters are no longer corrupted.
+- **Settings Ranges**: Numeric settings are clamped to the ranges declared in the settings schema (`historyRange`, `warningThreshold`, `criticalThreshold`, `scanInterval`, `warningSize`, `autoAcceptInterval`), and invalid values fall back to the defaults. The fallback for `tfa.dashboard.refreshRate` now matches its declared default of 90 seconds. Polling intervals longer than about 24.8 days no longer turn into a 1 ms loop, and changing an unrelated setting no longer restarts the quota and cache timers.
+- **Exhausted Credits**: When the server omits the available Prompt or Flow credits (it omits zero values), the panel now shows 0 available instead of hiding the credits.
+- **Unknown Models**: Model rows that match no configured group now go to a new `Other` group in the Claude (non-Google) pool instead of the Gemini pool, so an unrecognized model can no longer drag the Gemini gauge, history and reset time down. Models identified only by their server ID, without a label, now resolve to their configured name and group.
+- **False Parsing Error Notification**: A quota fetch that failed once and succeeded on retry no longer leaves a stale error that later showed a "Server data parsing error" notification. An error thrown while applying a fetched snapshot no longer counts the fetch as failed.
+- **Cache Scan Robustness**: A task directory or file that disappears during a cache scan is skipped instead of emptying the task list or reporting the directory size as 0.
+- **Settings Changes Rewriting Quota Data**: Changing a setting re-renders the panel from the last snapshot without touching quota data. It no longer marks a failed connection as connected, records the old snapshot as a new history sample, suppresses the next "drained while the IDE was closed" warning, repeats threshold notifications, or discards a quota fetch that was in progress. The cache is rescanned only when a `tfa.cache.*` setting changes.
+- **Expanded Cache Folders**: A cache folder that is expanded keeps its file list after the cache view refreshes, for example after deleting a file.
+- **Reset Refresh Loop**: A quota reset more than about 24.8 days away no longer causes continuous quota requests.
+- **Idle Drain Warning**: The "quota dropped with no editor activity" warning now counts only drops that happened entirely while the window had been unfocused for at least 10 minutes, so switching away just before a poll no longer reports your own usage.
+- **Usage Rate After a Reset**: The usage rate is computed over the time since the latest reset instead of the whole chart range, so the runway estimate right after a reset is no longer understated as "Stable".
+- **Status Bar While Detecting**: Before any quota data arrives, the status bar shows the loading indicator instead of `🔴 N/A 0% N/A`.
+- **Sidebar**: The clicked file in the cache tree is highlighted, and multi-line tooltips on the usage charts and credit bars show one item per line.
+- **Commit Message Generator**:
+  - Claude requests no longer send `temperature`, which current Claude models reject, and allow up to 4096 output tokens; a response cut off at the token limit is reported as an error instead of a partial message.
+  - The request format is chosen from the endpoint path: Ollama `/api/generate` and `/api/chat`, Anthropic `/v1/messages`, and OpenAI-compatible endpoints such as Ollama's `/v1/chat/completions`.
+  - Staged diffs larger than 10 MB are truncated instead of failing.
+  - In a multi-root workspace, the message is written into the repository the diff was taken from.
+- **Command Titles in English**: Command titles are now English in every language, as the localization rules require, and `npm run check:l10n` enforces it.
+
 ## [2.7.4] - 2026-10-02
 
 ### Added

@@ -451,4 +451,50 @@ suite('CacheService Test Suite', () => {
             assert.strictEqual(plan.totalBytes, 0);
         });
     });
+
+    suite('per-entry stat failures', () => {
+        let statStub: sinon.SinonStub | undefined;
+
+        teardown(() => {
+            statStub?.restore();
+            statStub = undefined;
+        });
+
+        function failStatFor(failingPath: string): void {
+            const realStat = fs.promises.stat.bind(fs.promises);
+            statStub = sinon.stub(fs.promises, 'stat').callsFake(((p: fs.PathLike, ...rest: unknown[]) => {
+                if (path.resolve(String(p)) === path.resolve(failingPath)) {
+                    const err: NodeJS.ErrnoException = new Error(`ENOENT: no such file or directory, stat '${String(p)}'`);
+                    err.code = 'ENOENT';
+                    return Promise.reject(err);
+                }
+                return (realStat as (...args: unknown[]) => Promise<fs.Stats>)(p, ...rest);
+            }) as typeof fs.promises.stat);
+        }
+
+        test('should skip a brain task whose directory vanishes and keep the others', async () => {
+            const keptDir = path.join(brainDir, 'task-kept');
+            const goneDir = path.join(brainDir, 'task-gone');
+            await fs.promises.mkdir(keptDir);
+            await fs.promises.mkdir(goneDir);
+            await fs.promises.writeFile(path.join(keptDir, 'task.md'), '# Kept');
+            await fs.promises.writeFile(path.join(goneDir, 'task.md'), '# Gone');
+
+            failStatFor(goneDir);
+            const tasks = await cacheService.getBrainTasks();
+
+            assert.deepStrictEqual(tasks.map(t => t.id), ['task-kept']);
+            assert.strictEqual(tasks[0].label, 'Kept');
+        });
+
+        test('should skip a file whose stat fails instead of zeroing the directory size', async () => {
+            await fs.promises.writeFile(path.join(conversationsDir, 'a.pb'), 'hello'); // 5 bytes
+            await fs.promises.writeFile(path.join(conversationsDir, 'b.pb'), 'world!!'); // 7 bytes
+
+            failStatFor(path.join(conversationsDir, 'b.pb'));
+            const info = await cacheService.getCacheInfo();
+
+            assert.strictEqual(info.conversationsSize, 5);
+        });
+    });
 });

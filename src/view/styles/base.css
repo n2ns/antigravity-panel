@@ -65,7 +65,7 @@ sidebar-app {
   border-radius: 3px;
   font-size: 0.8rem;
   line-height: 1.4;
-  white-space: normal;
+  white-space: pre-line;
   word-wrap: break-word;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
   text-align: left;

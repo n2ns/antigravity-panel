@@ -92,6 +92,15 @@
                     "displayName": "GPT-OSS 120B"
                 }
             ]
+        },
+        {
+            "id": "other",
+            "quotaPoolId": "non-google",
+            "label": "Other",
+            "shortLabel": "Other",
+            "themeColor": "#FFAB40",
+            "prefixes": [],
+            "models": []
         }
     ]
 }

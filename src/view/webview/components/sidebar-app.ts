@@ -289,7 +289,7 @@ export class SidebarApp extends LitElement {
     // Update selection state
     this.querySelectorAll('.file').forEach(el => el.classList.remove('selected'));
     const target = e.target as HTMLElement;
-    const fileEl = target.closest('.file');
+    const fileEl = target.matches?.('.file') ? target : target.querySelector('.file');
     fileEl?.classList.add('selected');
   };
 

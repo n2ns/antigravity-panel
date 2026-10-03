@@ -96,10 +96,32 @@ suite('QuotaStrategyManager Test Suite', () => {
         assert.strictEqual(byId.id, 'gemini-flash');
     });
 
-    test('should return first group for unknown models', () => {
+    test('should return the other group for unknown models', () => {
         const group = manager.getGroupForModel('completely-unknown-model');
         assert.ok(group, 'Should return a fallback group');
-        assert.strictEqual(group.id, 'gemini-flash'); // Based on current order in json
+        assert.strictEqual(group.id, 'other');
+        assert.strictEqual(group.quotaPoolId, 'non-google');
+    });
+
+    test('should classify an unknown non-Google model as other, not Gemini', () => {
+        const group = manager.getGroupForModel('MODEL_PLACEHOLDER_M300', 'Kimi K2');
+        assert.strictEqual(group.id, 'other');
+        assert.strictEqual(group.quotaPoolId, 'non-google');
+    });
+
+    test('should resolve every server-ID modelName without a label', () => {
+        for (const group of manager.getGroups()) {
+            for (const model of group.models) {
+                for (const label of [undefined, '']) {
+                    assert.strictEqual(manager.getModelDefinition(model.modelName, label), model,
+                        `${model.modelName} with label ${JSON.stringify(label)}`);
+                    assert.strictEqual(manager.getModelDefinition(model.modelName.toLowerCase(), label), model,
+                        `${model.modelName} lowercased with label ${JSON.stringify(label)}`);
+                    assert.strictEqual(manager.getGroupForModel(model.modelName, label).id, group.id,
+                        `${model.modelName} group with label ${JSON.stringify(label)}`);
+                }
+            }
+        }
     });
 
     test('should get model display name by exact ID', () => {

@@ -4,7 +4,15 @@
  * Tests core logic for diff truncation, prompt building, and response parsing
  */
 import * as assert from 'assert';
-import { truncateDiff, buildClaudePrompt, parseLLMResponse } from '../../commitMessageClaude';
+import * as fs from 'fs';
+import * as os from 'os';
+import * as path from 'path';
+import { execFileSync } from 'child_process';
+import * as vscode from 'vscode';
+import {
+    truncateDiff, buildClaudePrompt, parseLLMResponse, detectApiFormat, callLLMApi, getStagedDiff,
+    applyCommitMessageToScm
+} from '../../commitMessageClaude';
 
 suite('Commit Message Claude Test Suite', () => {
 
@@ -172,6 +180,201 @@ suite('Commit Message Claude Test Suite', () => {
 
             assert.strictEqual(result.success, true);
             assert.strictEqual(result.message, 'feat: the actual response');
+        });
+    });
+
+    suite('parseLLMResponse (A1/A2 additions)', () => {
+        test('should fail when Anthropic output stopped at max_tokens', () => {
+            const result = parseLLMResponse({
+                stop_reason: 'max_tokens',
+                content: [{ type: 'text', text: 'feat: partial' }]
+            });
+
+            assert.strictEqual(result.success, false);
+            assert.ok(result.error?.includes('cut off (max_tokens)'));
+        });
+
+        test('should parse Ollama /api/chat response { message: { content } }', () => {
+            const result = parseLLMResponse({ message: { content: '  feat: from chat \n' } });
+
+            assert.strictEqual(result.success, true);
+            assert.strictEqual(result.message, 'feat: from chat');
+        });
+    });
+
+    suite('detectApiFormat', () => {
+        test('should detect format from the URL path', () => {
+            assert.strictEqual(detectApiFormat('http://localhost:11434/api/generate'), 'ollama-generate');
+            assert.strictEqual(detectApiFormat('http://localhost:11434/api/chat'), 'ollama-chat');
+            assert.strictEqual(detectApiFormat('http://localhost:11434/v1/chat/completions'), 'openai');
+            assert.strictEqual(detectApiFormat('https://api.anthropic.com/v1/messages'), 'anthropic');
+            assert.strictEqual(detectApiFormat('https://proxy.example.com/v1/messages'), 'anthropic');
+            assert.strictEqual(detectApiFormat('https://api.openai.com/v1/chat/completions'), 'openai');
+        });
+
+        test('should fall back to substring heuristic for unparseable endpoints', () => {
+            assert.strictEqual(detectApiFormat('ollama host 11434'), 'ollama-generate');
+            assert.strictEqual(detectApiFormat('not a url anthropic'), 'anthropic');
+            assert.strictEqual(detectApiFormat('not a url'), 'openai');
+        });
+    });
+
+    suite('callLLMApi request body', () => {
+        const originalFetch = globalThis.fetch;
+        let calls: Array<{ url: string; init: RequestInit }>;
+
+        function stubFetch(data: unknown): void {
+            calls = [];
+            globalThis.fetch = (async (url: string, init: RequestInit) => {
+                calls.push({ url: String(url), init });
+                return { ok: true, status: 200, json: async () => data, text: async () => JSON.stringify(data) };
+            }) as unknown as typeof fetch;
+        }
+
+        teardown(() => {
+            globalThis.fetch = originalFetch;
+        });
+
+        test('Anthropic: no temperature, max_tokens 4096, anthropic-version header', async () => {
+            stubFetch({ content: [{ type: 'text', text: 'feat: x' }], stop_reason: 'end_turn' });
+            const result = await callLLMApi('p', 'claude-x', 'sk-ant-test', 'https://api.anthropic.com/v1/messages');
+
+            assert.strictEqual(result.success, true);
+            const body = JSON.parse(String(calls[0].init.body));
+            assert.ok(!('temperature' in body));
+            assert.strictEqual(body.max_tokens, 4096);
+            const headers = calls[0].init.headers as Record<string, string>;
+            assert.strictEqual(headers['anthropic-version'], '2023-06-01');
+            assert.strictEqual(headers['x-api-key'], 'sk-ant-test');
+        });
+
+        test('Anthropic: max_tokens stop reason is reported as an error', async () => {
+            stubFetch({ content: [{ type: 'text', text: 'feat: par' }], stop_reason: 'max_tokens' });
+            const result = await callLLMApi('p', 'claude-x', 'k', 'https://api.anthropic.com/v1/messages');
+
+            assert.strictEqual(result.success, false);
+            assert.ok(result.error?.includes('max_tokens'));
+        });
+
+        test('OpenAI-compatible: keeps temperature and messages', async () => {
+            stubFetch({ choices: [{ message: { content: 'feat: x' } }] });
+            const result = await callLLMApi('p', 'llama3.2', undefined, 'http://localhost:11434/v1/chat/completions');
+
+            assert.strictEqual(result.success, true);
+            const body = JSON.parse(String(calls[0].init.body));
+            assert.strictEqual(body.temperature, 0.2);
+            assert.strictEqual(body.max_tokens, 300);
+            assert.deepStrictEqual(body.messages, [{ role: 'user', content: 'p' }]);
+            assert.ok(!('prompt' in body));
+        });
+
+        test('Ollama /api/generate: prompt body', async () => {
+            stubFetch({ response: 'feat: g' });
+            const result = await callLLMApi('p', 'llama3.2', undefined, 'http://localhost:11434/api/generate');
+
+            assert.strictEqual(result.message, 'feat: g');
+            assert.deepStrictEqual(JSON.parse(String(calls[0].init.body)), { model: 'llama3.2', prompt: 'p', stream: false });
+        });
+
+        test('Ollama /api/chat: messages body and message.content response', async () => {
+            stubFetch({ message: { role: 'assistant', content: 'feat: c' } });
+            const result = await callLLMApi('p', 'llama3.2', undefined, 'http://localhost:11434/api/chat');
+
+            assert.strictEqual(result.message, 'feat: c');
+            assert.deepStrictEqual(JSON.parse(String(calls[0].init.body)), {
+                model: 'llama3.2', messages: [{ role: 'user', content: 'p' }], stream: false
+            });
+        });
+    });
+
+    suite('getStagedDiff', () => {
+        let repoDir: string;
+
+        setup(() => {
+            repoDir = fs.mkdtempSync(path.join(os.tmpdir(), 'tfa-staged-diff-'));
+            const git = (...args: string[]) => execFileSync('git', args, { cwd: repoDir, stdio: 'ignore' });
+            git('init', '-q');
+            git('config', 'user.name', 'test');
+            git('config', 'user.email', 'test@example.invalid');
+            fs.writeFileSync(path.join(repoDir, 'big.txt'), ('x'.repeat(99) + '\n').repeat(110 * 1024)); // ~11MB
+            git('add', 'big.txt');
+        });
+
+        teardown(() => {
+            fs.rmSync(repoDir, { recursive: true, force: true });
+        });
+
+        test('should read an 11MB staged diff without buffer errors and truncate it', async function () {
+            this.timeout(30000);
+            const maxChars = 80000;
+            const result = await getStagedDiff(repoDir, maxChars);
+
+            assert.strictEqual(result.truncated, true);
+            const marker = '\n\n[diff truncated due to size]';
+            assert.ok(result.diff.endsWith(marker));
+            assert.ok(result.diff.length - marker.length <= maxChars);
+            assert.ok(result.diff.startsWith('diff --git'));
+            assert.ok(result.stat.includes('big.txt'));
+        });
+
+        test('should reject when the directory is not a git repository', async () => {
+            const notRepo = fs.mkdtempSync(path.join(os.tmpdir(), 'tfa-not-repo-'));
+            try {
+                await assert.rejects(getStagedDiff(notRepo, 1000));
+            } finally {
+                fs.rmSync(notRepo, { recursive: true, force: true });
+            }
+        });
+    });
+
+    suite('applyCommitMessageToScm', () => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const mock = vscode as any;
+        const originalExtensions = mock.extensions;
+        let repoA: { rootUri: { fsPath: string }; inputBox: { value: string } };
+        let repoB: { rootUri: { fsPath: string }; inputBox: { value: string } };
+
+        function installGit(api: object): void {
+            mock.extensions = {
+                getExtension: () => ({ isActive: true, exports: { getAPI: () => api } })
+            };
+        }
+
+        setup(() => {
+            repoA = { rootUri: { fsPath: '/work/a' }, inputBox: { value: '' } };
+            repoB = { rootUri: { fsPath: '/work/b' }, inputBox: { value: '' } };
+        });
+
+        teardown(() => {
+            mock.extensions = originalExtensions;
+        });
+
+        test('should use api.getRepository for the workspace root', async () => {
+            installGit({
+                repositories: [repoA, repoB],
+                getRepository: (uri: { fsPath: string }) => (uri.fsPath === '/work/b' ? repoB : null)
+            });
+            const result = await applyCommitMessageToScm('feat: b', '/work/b');
+
+            assert.strictEqual(result.fallbackUsed, false);
+            assert.strictEqual(repoB.inputBox.value, 'feat: b');
+            assert.strictEqual(repoA.inputBox.value, '');
+        });
+
+        test('should match repository root containing the workspace root', async () => {
+            installGit({ repositories: [repoA, repoB], getRepository: () => null });
+            await applyCommitMessageToScm('feat: sub', path.join('/work/b', 'packages', 'x'));
+
+            assert.strictEqual(repoB.inputBox.value, 'feat: sub');
+            assert.strictEqual(repoA.inputBox.value, '');
+        });
+
+        test('should fall back to the first repository when nothing matches', async () => {
+            installGit({ repositories: [repoA, repoB] });
+            await applyCommitMessageToScm('feat: other', '/elsewhere');
+
+            assert.strictEqual(repoA.inputBox.value, 'feat: other');
+            assert.strictEqual(repoB.inputBox.value, '');
         });
     });
 });

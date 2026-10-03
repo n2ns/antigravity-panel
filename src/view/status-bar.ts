@@ -91,7 +91,12 @@ export class StatusBarManager implements vscode.Disposable {
             includeSecondaryModels || g.id !== 'gpt'
         );
 
-        if (showQuota) {
+        // No quota data yet (e.g. still detecting): show loading instead of a placeholder
+        const quotaLoading = showQuota && statusData.allGroups.length === 0;
+
+        if (quotaLoading) {
+            parts.push("$(sync~spin) TFA");
+        } else if (showQuota) {
             if (scope === 'all' && visibleGroups.length > 0) {
                 // Display all visible groups with percentage + reset time combined
                 visibleGroups.forEach(group => {
@@ -157,7 +162,7 @@ export class StatusBarManager implements vscode.Disposable {
             md.appendMarkdown(tooltipRows.join('\n'));
             this.item.tooltip = md;
         } else {
-            this.item.tooltip = "Antigravity Panel";
+            this.item.tooltip = quotaLoading ? "Antigravity Panel: Detecting..." : "Antigravity Panel";
         }
         this.item.show();
     }

@@ -155,7 +155,14 @@ export class QuotaStrategyManager {
       if (model) return model;
     }
 
-    // 3. Label Match (Fallback)
+    // 3. Server ID Match: config modelName is the server ID (exact, case-insensitive)
+    const lowerId = modelId.toLowerCase();
+    for (const group of this.groups) {
+      const model = group.models.find(m => m.modelName.toLowerCase() === lowerId);
+      if (model) return model;
+    }
+
+    // 4. Label Match (Fallback)
     if (modelLabel) {
       // Pass modelId as well to allow loose matching if user put ID in modelName
       const model = this.findModelByLabel(modelLabel, modelId);

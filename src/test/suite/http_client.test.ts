@@ -163,6 +163,67 @@ suite('HttpClient Test Suite', function () {
         }
     });
 
+    test('should reject when the server closes the socket before the body ends', async () => {
+        const server = http.createServer((req, res) => {
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            if (req.url === '/ok') {
+                res.end('{"ok":true}');
+                return;
+            }
+            res.write('{"a":');
+            setTimeout(() => res.socket?.destroy(), 20);
+        });
+
+        try {
+            const port = await listen(server);
+            // Warm-up so the protocol cache points at HTTP and the next request is a single HTTP attempt
+            await httpRequest({ hostname: '127.0.0.1', port, path: '/ok', method: 'GET', timeout: 500 });
+
+            const started = Date.now();
+            await assert.rejects(
+                httpRequest({
+                    hostname: '127.0.0.1',
+                    port,
+                    path: '/partial',
+                    method: 'GET',
+                    timeout: 500,
+                    allowFallback: false
+                }),
+                /HTTP response (aborted|failed)/
+            );
+            assert.ok(Date.now() - started < 1000, 'request should settle as soon as the socket closes');
+        } finally {
+            await close(server);
+        }
+    });
+
+    test('should decode multibyte UTF-8 characters split across chunks', async () => {
+        const payload = Buffer.from('{"name":"张三"}');
+        const splitAt = 10;
+        assert.strictEqual(payload[splitAt] & 0xC0, 0x80, 'split index must fall inside a multibyte sequence');
+
+        const server = http.createServer((_req, res) => {
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.write(payload.subarray(0, splitAt));
+            setTimeout(() => res.end(payload.subarray(splitAt)), 20);
+        });
+
+        try {
+            const port = await listen(server);
+            const response = await httpRequest<{ name: string }>({
+                hostname: '127.0.0.1',
+                port,
+                path: '/split',
+                method: 'GET',
+                timeout: 500,
+                allowFallback: true
+            });
+            assert.strictEqual(response.data.name, '张三');
+        } finally {
+            await close(server);
+        }
+    });
+
     test('should connect to real local server if running', async function (this: Mocha.Context) {
         const processFinder = new ProcessFinder();
         const serverInfo = await processFinder.detect({ attempts: 2 });

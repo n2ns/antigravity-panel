@@ -216,4 +216,21 @@ suite('StatusBarManager Test Suite', () => {
         assert.ok(mockStatusBarItem.tooltip.value.includes('$(credit-card) Google One AI'));
         assert.strictEqual(mockStatusBarItem.tooltip.supportThemeIcons, true);
     });
+
+    test('should show loading text instead of N/A placeholder when no quota data yet', () => {
+        mockViewModel.getState = () => ({
+            cache: mockCacheState,
+            tokenUsage: null,
+            connectionStatus: 'detecting'
+        });
+        mockViewModel.getStatusBarData = () => ({
+            primary: { id: 'none', label: 'N/A', shortLabel: 'N/A', percentage: 0, resetTime: 'N/A' },
+            allGroups: []
+        });
+        statusBarManager.update();
+        assert.ok(mockStatusBarItem.text.startsWith('$(sync~spin) TFA'));
+        assert.ok(!mockStatusBarItem.text.includes('N/A'));
+        assert.strictEqual(mockStatusBarItem.tooltip, 'Antigravity Panel: Detecting...');
+        assert.strictEqual(isShown, true);
+    });
 });

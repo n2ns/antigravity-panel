@@ -12,6 +12,7 @@
 - Color-coded warnings when quota runs low (warning/critical thresholds)
 - Configuration-driven pool membership keeps shared quotas accurate and allows future provider splits without changing the statistics pipeline
 - Model view preserves separate **Gemini Flash** and **Gemini Pro** identities and colors even while they share one pool
+- Models that match no configured group are shown in an **Other** group and counted in the Claude (non-Google) pool, never in the Gemini pool
 - **Customizable Gauge Styles**: Refactored the visualization engine to support multiple rendering strategies. Users can choose between:
   - **Semi-Arc**: A modern, 210-degree industrial precision instrument style (Default).
   - **Classic Donut**: The historical full-circle gauge style.
@@ -31,11 +32,12 @@
 ### Usage Prediction
 - 🔥 **Usage Rate**: Average consumption speed in percentage points per hour (pp/h) based on recent activity
 - ⏱️ **Runway**: Estimated time until quota exhaustion (~Xh, ~Xd, or >7d)
+- After a quota reset, the rate covers only the time since the reset
 - Displays "Stable" when no consumption detected
 
 ### Prompt Credits Display
 - Shows available/monthly prompt credits
-- Remaining percentage calculation
+- Remaining percentage calculation; credits the server omits are shown as 0 available
 - Prompt/Flow rows are hidden by default; enable them with `tfa.dashboard.showCreditsCard`
 
 ### Token Credits Tracking
@@ -58,6 +60,7 @@
 ### Cache-First Startup
 - The sidebar renders immediately from the last stored quota snapshot and cache sizes, then refreshes with live data
 - Total, Brain, and conversation cache sizes and the cache tree metadata are restored across panel instances
+- Changing a setting re-renders the panel from the last snapshot; it does not change the connection state or record quota history
 - Local UI state such as collapsed sections survives refreshes and panel recreation
 
 ---
@@ -98,6 +101,7 @@
 - Detailed tooltip on hover showing all active groups with full labels and reset times
 - Multiple display styles: percentage, reset time, used, remaining
 - Color-coded status: normal (green), warning (yellow), critical (red)
+- Shows a loading indicator until the first quota data arrives
 - Configurable thresholds for warning (default 40%) and critical (default 20%)
 - Shows a warning state instead of stale quota data when the Language Server connection fails; cache-only display remains independent
 
@@ -165,7 +169,8 @@ In WSL remote sessions the shortcuts follow where Antigravity actually reads eac
 - Polski (Polish)
 - Tiếng Việt (Vietnamese)
 - Bahasa Indonesia (Indonesian)
-- CI validates locale keys, placeholders, and protected English UI labels with `npm run check:l10n`
+- Command titles stay in English in every language
+- CI validates locale keys, placeholders, and protected English UI labels and command titles with `npm run check:l10n`
 
 ---
 
@@ -185,8 +190,8 @@ In WSL remote sessions the shortcuts follow where Antigravity actually reads eac
 |---------|---------|-------------|
 | `tfa.status.showQuota` | `true` | Show quota in status bar |
 | `tfa.status.showCache` | `true` | Show cache size in status bar |
-| `tfa.status.warningThreshold` | `40` | Warning threshold (%) |
-| `tfa.status.criticalThreshold` | `20` | Critical threshold (%) |
+| `tfa.status.warningThreshold` | `40` | Warning threshold (%, 5-100) |
+| `tfa.status.criticalThreshold` | `20` | Critical threshold (%, 1-50) |
 | `tfa.status.scope` | `all` | Show quotas for "all" available model groups or only the "primary" active model |
 | `tfa.dashboard.refreshRate` | `90` | Quota refresh interval (seconds, min 30) |
 | `tfa.dashboard.gaugeStyle` | `semi-arc` | Gauge style: semi-arc or classic-donut |
@@ -197,8 +202,8 @@ In WSL remote sessions the shortcuts follow where Antigravity actually reads eac
 | `tfa.dashboard.showCreditsCard` | `false` | Show static Prompt/Flow rows; Google One AI remains visible |
 | `tfa.dashboard.uiScale` | `1` | Sidebar text and UI scale (0.8-2) |
 | `tfa.dashboard.showWeeklyCard` | `true` | Show the 7-day local usage estimate card |
-| `tfa.cache.scanInterval` | `120` | Cache check interval (seconds, min 30) |
-| `tfa.cache.warningSize` | `500` | Cache warning threshold (MB) |
+| `tfa.cache.scanInterval` | `120` | Cache check interval (seconds, 30-600) |
+| `tfa.cache.warningSize` | `500` | Cache warning threshold (MB, min 100) |
 | `tfa.cache.hideEmptyFolders` | `false` | Hide empty folders in tree views |
 | `tfa.cache.autoClean` | `false` | Auto-clean cache |
 | `tfa.cache.autoCleanKeepCount` | `5` | Number of most recently active tasks to keep when cleaning (integer, 1-50) |
@@ -207,10 +212,10 @@ In WSL remote sessions the shortcuts follow where Antigravity actually reads eac
 | `tfa.system.debugMode` | `false` | Enable debug logging |
 | `tfa.system.autoAccept` | `false` | Enable hands-free acceptance of Agent steps and file edits (application scope) |
 | `tfa.system.autoAcceptTerminal` | `false` | Also approve terminal commands, only via CDP Run clicks (application scope) |
-| `tfa.system.autoAcceptInterval` | `800` | Auto-Accept polling interval in milliseconds |
+| `tfa.system.autoAcceptInterval` | `800` | Auto-Accept polling interval in milliseconds (200-5000) |
 | `tfa.system.notifyOnQuotaReset` | `true` | Notify when a quota reset is detected |
 | `tfa.system.notifyOnAbnormalDrain` | `true` | Warn when quota drains while the IDE is closed or the window is unfocused with no editor activity |
-| `tfa.commitMessageClaude.endpoint` | `http://localhost:11434/api/generate` | Commit message LLM endpoint |
+| `tfa.commitMessageClaude.endpoint` | `http://localhost:11434/api/generate` | Commit message LLM endpoint; the request format follows the path: Ollama `/api/generate` or `/api/chat`, Anthropic `/v1/messages`, otherwise OpenAI-compatible |
 | `tfa.commitMessageClaude.model` | `llama3.2` | Commit message model name |
 | `tfa.commitMessageClaude.maxDiffChars` | `80000` | Max staged diff characters sent to the LLM endpoint |
 | `tfa.commitMessageClaude.format` | `conventional` | Commit message format |

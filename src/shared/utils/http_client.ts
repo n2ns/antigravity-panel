@@ -100,7 +100,10 @@ async function requestWithProtocolFallback<T>(
 function doRequest<T>(options: HttpRequestOptions, protocol: Protocol): Promise<HttpResponse<T>> {
   const { hostname, port, path, method, headers = {}, body, timeout = 5000 } = options;
 
-  return new Promise((resolve, reject) => {
+  return new Promise((resolveOnce, rejectOnce) => {
+    let settled = false;
+    const resolve = (value: HttpResponse<T>) => { if (!settled) { settled = true; resolveOnce(value); } };
+    const reject = (error: Error) => { if (!settled) { settled = true; rejectOnce(error); } };
     const requestModule = protocol === "https" ? https : http;
 
     const requestOptions: https.RequestOptions | http.RequestOptions = {
@@ -124,7 +127,14 @@ function doRequest<T>(options: HttpRequestOptions, protocol: Protocol): Promise<
 
     const req = requestModule.request(requestOptions, (res) => {
       let responseBody = "";
-      res.on("data", (chunk) => (responseBody += chunk));
+      res.setEncoding("utf8");
+      res.on("data", (chunk: string) => (responseBody += chunk));
+      res.on("error", (err) => {
+        reject(new Error(`${protocol.toUpperCase()} response failed: ${err.message}`));
+      });
+      res.on("close", () => {
+        if (!res.complete) reject(new Error(`${protocol.toUpperCase()} response aborted`));
+      });
       res.on("end", () => {
         const statusCode = res.statusCode || 0;
         try {

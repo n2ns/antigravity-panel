@@ -46,6 +46,10 @@ export class AppViewModel implements vscode.Disposable {
 
     // Abnormal drain detection state
     private _lastActivityTs = Date.now();
+    /** When the window last lost focus (null while focused) */
+    private _idleSinceTs: number | null = null;
+    /** Timestamp of the previous live quota sample */
+    private _prevSampleTs = 0;
     private _idleDrainAccum = new Map<string, number>();
     private _offlineDrainChecked = new Set<string>();
 
@@ -65,6 +69,7 @@ export class AppViewModel implements vscode.Disposable {
     private _expandedContexts = new Set<string>();
     private _taskFilesCache = new Map<string, FileItem[]>();
     private _contextFilesCache = new Map<string, FileItem[]>();
+    private _prevConfig: TfaConfig | null = null;
 
     constructor(
         private readonly quotaService: IQuotaService,
@@ -87,19 +92,28 @@ export class AppViewModel implements vscode.Disposable {
             this.automationService.start();
         }
         this._state.automation.enabled = initialAutoAccept;
+        this._prevConfig = this.configManager.getConfig();
+        this._idleSinceTs = vscode.window.state.focused ? null : Date.now();
 
         // Editor activity feeds idle-drain detection: quota dropping while the
         // user is verifiably away is worth a warning, normal usage is not.
         this._disposables.push(
             vscode.workspace.onDidChangeTextDocument(() => this.recordUserActivity()),
             vscode.window.onDidChangeWindowState(e => {
-                if (e.focused) this.recordUserActivity();
+                if (e.focused) {
+                    this.recordUserActivity();
+                    this._idleSinceTs = null;
+                } else if (this._idleSinceTs === null) {
+                    this._idleSinceTs = Date.now();
+                }
             })
         );
     }
 
     private recordUserActivity(): void {
         this._lastActivityTs = Date.now();
+        // Activity restarts the idle window; it stays open only while unfocused
+        this._idleSinceTs = vscode.window.state.focused ? null : this._lastActivityTs;
         this._idleDrainAccum.clear();
     }
 
@@ -425,10 +439,14 @@ export class AppViewModel implements vscode.Disposable {
             this._onStateChange.fire(this._state);
         }
 
+        const config = this.configManager.getConfig();
+        const prevConfig = this._prevConfig;
+        const cacheConfigChanged = !prevConfig || (Object.keys(config) as (keyof TfaConfig)[])
+            .some(key => key.startsWith('cache.') && config[key] !== prevConfig[key]);
+
         // If we have cached data, re-render UI with new config (e.g. chart time range)
         if (this._lastSnapshot) {
-            const refreshVersion = ++this._quotaRefreshVersion;
-            if (await this.enqueueQuotaUpdate(this._lastSnapshot, refreshVersion)) {
+            if (await this.rerenderQuota()) {
                 this._onQuotaChange.fire(this._state.quota);
             }
         } else {
@@ -436,8 +454,35 @@ export class AppViewModel implements vscode.Disposable {
             await this.refreshQuota();
         }
 
-        // Also refresh cache view in case thresholds changed
-        await this.refreshCache();
+        // Rescan the cache only when a cache setting changed
+        if (cacheConfigChanged) {
+            await this.refreshCache();
+        }
+        this._prevConfig = config;
+    }
+
+    /**
+     * Rebuild the quota view from the last snapshot with the current configuration.
+     * Pure re-render: no connection status change, no storage writes, no drain or
+     * notification checks. Serialized with live updates but never supersedes them.
+     */
+    private async rerenderQuota(): Promise<boolean> {
+        const renderTask = this._quotaUpdateQueue.then(() => {
+            const snapshot = this._lastSnapshot;
+            if (this._disposed || !snapshot) return false;
+            const groups = this.aggregateGroups(snapshot);
+            const activeGroupId = this.detectActiveGroup(this._state.quota, groups);
+            const currentRemaining = groups.find(g => g.id === activeGroupId)?.remaining || 0;
+            this._state.quota = {
+                groups,
+                activeGroupId,
+                chart: this.buildChartData(activeGroupId, currentRemaining),
+                displayItems: this.buildDisplayItems(groups)
+            };
+            return true;
+        });
+        this._quotaUpdateQueue = renderTask.then(() => undefined, () => undefined);
+        return renderTask;
     }
 
     private async updateQuotaState(snapshot: QuotaSnapshot, refreshVersion: number): Promise<boolean> {
@@ -477,6 +522,7 @@ export class AppViewModel implements vscode.Disposable {
             }
             this._prevGroupRemaining.set(group.id, currentObserved);
         }
+        this._prevSampleTs = Date.now();
 
         this.scheduleResetRefresh(newGroups);
 
@@ -497,7 +543,6 @@ export class AppViewModel implements vscode.Disposable {
             chart,
             displayItems
         };
-        this._state.connectionStatus = 'connected';
 
         // Update user info if available
         if (snapshot.userInfo) {
@@ -626,7 +671,15 @@ export class AppViewModel implements vscode.Disposable {
         const IDLE_MS = 10 * 60 * 1000;
         const drop = prevRemaining - currentRemaining;
         if (drop <= 0) return;
-        if (vscode.window.state.focused || Date.now() - this._lastActivityTs < IDLE_MS) {
+        // Count the drop only when the whole interval since the previous sample was idle
+        const now = Date.now();
+        const idleSince = this._idleSinceTs;
+        const idle = !vscode.window.state.focused
+            && idleSince !== null
+            && now - idleSince >= IDLE_MS
+            && now - this._lastActivityTs >= IDLE_MS
+            && this._prevSampleTs >= idleSince;
+        if (!idle) {
             this._idleDrainAccum.delete(group.id);
             return;
         }
@@ -700,10 +753,25 @@ export class AppViewModel implements vscode.Disposable {
 
         if (this._resetRefreshTimer) clearTimeout(this._resetRefreshTimer);
         this._resetRefreshTargetMs = target;
+        this.armResetRefreshTimer();
+    }
+
+    /**
+     * Arm the reset refresh timer for _resetRefreshTargetMs. setTimeout fires after
+     * 1ms for delays above 2^31-1 ms (~24.8 days), so longer waits are split up.
+     */
+    private armResetRefreshTimer(): void {
+        const MAX_TIMEOUT_MS = 2_147_483_647;
+        const delay = Math.min(Math.max(this._resetRefreshTargetMs - Date.now(), 0), MAX_TIMEOUT_MS);
         this._resetRefreshTimer = setTimeout(() => {
             this._resetRefreshTimer = null;
-            if (!this._disposed) void this.refreshQuota();
-        }, target - now);
+            if (this._disposed) return;
+            if (this._resetRefreshTargetMs - Date.now() > 1000) {
+                this.armResetRefreshTimer();
+                return;
+            }
+            void this.refreshQuota();
+        }, delay);
         // Never keep the process alive just for this convenience refresh
         this._resetRefreshTimer.unref?.();
     }
@@ -899,7 +967,7 @@ export class AppViewModel implements vscode.Disposable {
             };
         });
 
-        const prediction = this.calculatePrediction(filteredBuckets, activeGroupId, currentRemaining, config);
+        const prediction = this.calculatePrediction(filteredBuckets, activeGroupId, currentRemaining, config, bucketMinutes);
 
         return {
             buckets: filteredBuckets.map(({ endTime, items }) => ({ endTime, items })),
@@ -934,7 +1002,8 @@ export class AppViewModel implements vscode.Disposable {
         buckets: UsageBucket[],
         activeGroupId: string,
         currentRemaining: number,
-        config: TfaConfig
+        config: TfaConfig,
+        bucketMinutes: number
     ): UsageChartData['prediction'] {
         // Rate restarts at the latest reset: skip buckets that ended before it
         const latestReset = this.storageService.getLatestResetTime(activeGroupId);
@@ -945,8 +1014,13 @@ export class AppViewModel implements vscode.Disposable {
                 if (item.groupId === activeGroupId) totalUsage += item.usage;
             }
         }
+        // Divide by the time the counted buckets cover: the history window, cut at the latest reset
         const historyDisplayMinutes = config["dashboard.historyRange"];
-        const usageRate = (historyDisplayMinutes / 60) > 0 ? totalUsage / (historyDisplayMinutes / 60) : 0;
+        const now = Date.now();
+        const windowStart = now - historyDisplayMinutes * 60_000;
+        const rateStart = latestReset !== null ? Math.max(windowStart, latestReset) : windowStart;
+        const elapsedHours = Math.max(now - rateStart, bucketMinutes * 60_000) / 3_600_000;
+        const usageRate = elapsedHours > 0 ? totalUsage / elapsedHours : 0;
         let runway = 'Stable';
         if (usageRate > 0 && currentRemaining > 0) {
             const hoursUntilReset =
@@ -1029,27 +1103,47 @@ export class AppViewModel implements vscode.Disposable {
     }
 
     private async updateContextTreeState(contexts: CodeContext[]): Promise<void> {
-        this._state.tree.contexts.folders = (contexts || []).map(ctx => ({
-            id: ctx.id,
-            label: ctx.name || ctx.id,
-            size: formatBytes(ctx.size),
-            sizeBytes: ctx.size,
-            lastModified: ctx.lastModified,
-            expanded: this._expandedContexts.has(ctx.id),
-            files: []
+        this._state.tree.contexts.folders = await Promise.all((contexts || []).map(async ctx => {
+            const expanded = this._expandedContexts.has(ctx.id);
+            return {
+                id: ctx.id,
+                label: ctx.name || ctx.id,
+                size: formatBytes(ctx.size),
+                sizeBytes: ctx.size,
+                lastModified: ctx.lastModified,
+                expanded,
+                files: expanded ? await this.getFolderFiles(ctx.id, this._contextFilesCache, id => this.cacheService.getContextFiles(id)) : []
+            };
         }));
     }
 
     private async updateTreeState(tasks: BrainTask[]): Promise<void> {
-        this._state.tree.tasks.folders = tasks.map(task => ({
-            id: task.id,
-            label: task.label || `Task ${task.id.split('-')[0]}`,
-            size: formatBytes(task.size),
-            sizeBytes: task.size,
-            lastModified: task.createdAt,
-            expanded: this._expandedTasks.has(task.id),
-            files: []
+        this._state.tree.tasks.folders = await Promise.all(tasks.map(async task => {
+            const expanded = this._expandedTasks.has(task.id);
+            return {
+                id: task.id,
+                label: task.label || `Task ${task.id.split('-')[0]}`,
+                size: formatBytes(task.size),
+                sizeBytes: task.size,
+                lastModified: task.createdAt,
+                expanded,
+                files: expanded ? await this.getFolderFiles(task.id, this._taskFilesCache, id => this.cacheService.getTaskFiles(id)) : []
+            };
         }));
+    }
+
+    /** Files of an expanded folder, from the file cache or loaded when it was cleared */
+    private async getFolderFiles(
+        id: string,
+        cache: Map<string, FileItem[]>,
+        load: (id: string) => Promise<FileItem[]>
+    ): Promise<{ name: string; path: string }[]> {
+        let files = cache.get(id);
+        if (!files) {
+            files = await load(id);
+            cache.set(id, files);
+        }
+        return files.map(f => ({ name: f.name, path: f.path }));
     }
 
     getState(): AppState { return this._state; }

@@ -10,7 +10,7 @@
     "command.setAnthropicApiKey.title": "Set Anthropic API Key",
     "command.showCacheSize.title": "Show Cache Size",
     "command.showDisclaimer.title": "About",
-    "command.showLogs.title": "Günlükleri Göster",
+    "command.showLogs.title": "Show Logs",
     "command.toggleAutoAccept.title": "Toggle Agent Auto-Accept",
     "config.cache.autoClean.description": "⚠️ Önbellek boyutu uyarı eşiğini aştığında Brain dizinindeki en eski görevleri otomatik olarak temizle (Not: Bu, fiziksel dosyaları silecektir)",
     "config.cache.autoCleanKeepCount.description": "Önbellek temizlenirken tutulacak en son etkin görev sayısı; otomatik temizleme ve Clean Cache komutu için geçerlidir (varsayılan: 5)",

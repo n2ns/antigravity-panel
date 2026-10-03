@@ -13,7 +13,9 @@ All primary UI labels, technical terms, and command titles on the panel must rem
 - **Core Features**: `Rules`, `MCP`, `Allowlist`, `Brain`, `Code Tracker`, `Auto-Accept`.
 - **Panel Actions**: `Restart`, `Reset`, `Reload`.
 - **Command Titles**: `Restart Agent Service`, `Reset Status`, `Connectivity Diagnostics`, `Show Logs`.
-- **Navigation/UI**: `Docs`, `Feedback`, `Star`, `Prompt`, `Flow`, `Usage History`, `Settings`, `View`.
+- **Navigation/UI**: `Docs`, `Feedback`, `Star`, `Prompt`, `Flow`, `Settings`, `View`.
+
+Every command title (each `command.*.title` key in `package.nls.json`) is protected: `npm run check:l10n` requires it to be identical to the English value in every `package.nls.*.json`.
 
 Dynamic account values such as the subscription tier are service data, not localizable UI labels. Removed or unimplemented labels must not be kept in localization bundles solely as placeholders for possible future UI.
 

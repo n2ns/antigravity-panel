@@ -112,4 +112,38 @@ suite('Scheduler Test Suite', () => {
             clock.restore();
         }
     });
+
+    test('should not run as a hot loop when interval exceeds the setInterval limit', async () => {
+        let count = 0;
+        scheduler.register({
+            name: 'huge-interval-task',
+            interval: 2147484000,
+            immediate: false,
+            execute: () => { count++; }
+        });
+        scheduler.start('huge-interval-task');
+        await new Promise((resolve) => setTimeout(resolve, 50));
+        scheduler.stop('huge-interval-task');
+        assert.strictEqual(count, 0);
+    });
+
+    test('should keep the timer phase when updateInterval receives the same interval', async () => {
+        const clock = sinon.useFakeTimers();
+        let count = 0;
+        try {
+            scheduler.register({
+                name: 'same-interval-task',
+                interval: 1000,
+                execute: () => { count++; }
+            });
+            scheduler.start('same-interval-task');
+            await clock.tickAsync(900);
+            assert.strictEqual(scheduler.updateInterval('same-interval-task', 1000), true);
+            await clock.tickAsync(100);
+            assert.strictEqual(count, 1);
+        } finally {
+            scheduler.dispose();
+            clock.restore();
+        }
+    });
 });

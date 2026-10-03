@@ -260,6 +260,64 @@ suite('ConfigManager Test Suite', () => {
     });
   });
 
+  suite('Numeric Range Validation', () => {
+    test('should default refreshRate to the manifest default of 90', () => {
+      const manifest = JSON.parse(fs.readFileSync(path.resolve(process.cwd(), 'package.json'), 'utf8'));
+      const properties = Object.assign(
+        {},
+        ...manifest.contributes.configuration.map(
+          (section: { properties?: Record<string, { default?: unknown }> }) => section.properties ?? {}
+        )
+      );
+      assert.strictEqual(properties['tfa.dashboard.refreshRate'].default, 90);
+      assert.strictEqual(configManager.getConfig()["dashboard.refreshRate"], 90);
+    });
+
+    test('should clamp criticalThreshold above 50', () => {
+      mockReader.set('status.criticalThreshold', 60);
+      assert.strictEqual(configManager.getConfig()["status.criticalThreshold"], 50);
+    });
+
+    test('should clamp warningThreshold to [5, 100]', () => {
+      mockReader.set('status.warningThreshold', 200);
+      assert.strictEqual(configManager.getConfig()["status.warningThreshold"], 100);
+      mockReader.set('status.warningThreshold', 1);
+      assert.strictEqual(configManager.getConfig()["status.warningThreshold"], 5);
+    });
+
+    test('should clamp scanInterval above 600', () => {
+      mockReader.set('cache.scanInterval', 99999);
+      assert.strictEqual(configManager.getConfig()["cache.scanInterval"], 600);
+    });
+
+    test('should clamp autoAcceptInterval above 5000', () => {
+      mockReader.set('system.autoAcceptInterval', 99999);
+      assert.strictEqual(configManager.getConfig()["system.autoAcceptInterval"], 5000);
+    });
+
+    test('should clamp historyRange to [10, 120]', () => {
+      mockReader.set('dashboard.historyRange', -5);
+      assert.strictEqual(configManager.getConfig()["dashboard.historyRange"], 10);
+      mockReader.set('dashboard.historyRange', 500);
+      assert.strictEqual(configManager.getConfig()["dashboard.historyRange"], 120);
+    });
+
+    test('should clamp warningSize below 100', () => {
+      mockReader.set('cache.warningSize', 50);
+      assert.strictEqual(configManager.getConfig()["cache.warningSize"], 100);
+    });
+
+    test('should fall back to defaults for non-numeric or NaN values', () => {
+      mockReader.set('dashboard.historyRange', 'abc');
+      mockReader.set('status.criticalThreshold', NaN);
+      mockReader.set('dashboard.refreshRate', NaN);
+      const config = configManager.getConfig();
+      assert.strictEqual(config["dashboard.historyRange"], 90);
+      assert.strictEqual(config["status.criticalThreshold"], 20);
+      assert.strictEqual(config["dashboard.refreshRate"], 90);
+    });
+  });
+
   suite('get() method', () => {
     test('should return value from reader', () => {
       mockReader.set('testKey', 'testValue');

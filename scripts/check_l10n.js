@@ -36,15 +36,20 @@ const PROTECTED_BUNDLE_LABELS = [
     'Settings',
     'Show Details',
     'Star',
-    'Usage History',
     'View',
 ];
 
-// package.nls keys whose value must be identical in every language (brand names).
-const PROTECTED_NLS_KEYS = [
+// package.nls keys whose value must be identical in every language: brand names,
+// plus every command title (command.*.title) found in the English package.nls.json.
+const PROTECTED_NLS_BRAND_KEYS = [
     'extension.category',
     'views.tfa.sidebar.name',
     'viewsContainers.tfa-sidebar.title',
+];
+const PROTECTED_NLS_KEYS = [
+    ...PROTECTED_NLS_BRAND_KEYS,
+    ...Object.keys(JSON.parse(fs.readFileSync(path.join(ROOT, 'package.nls.json'), 'utf8')))
+        .filter((k) => /^command\..+\.title$/.test(k)),
 ];
 
 const errors = [];
@@ -60,6 +65,12 @@ function placeholders(s) {
 function checkGroup(defaultFile, pattern, dir, protectedKeys, protectedValueOf) {
     const defaults = readJson(path.join(ROOT, dir, defaultFile));
     const defaultKeys = Object.keys(defaults);
+
+    for (const k of protectedKeys) {
+        if (!(k in defaults)) {
+            errors.push(`${path.join(dir, defaultFile)}: protected label ${JSON.stringify(k)} is missing`);
+        }
+    }
 
     const files = fs.readdirSync(path.join(ROOT, dir))
         .filter((f) => pattern.test(f) && f !== defaultFile)

@@ -74,28 +74,35 @@ export class QuotaService implements IQuotaService {
             return null;
         }
 
+        let snapshot: QuotaSnapshot | null;
         try {
-            const snapshot = await retry(() => this.doFetchQuota(), {
+            snapshot = await retry(() => this.doFetchQuota(), {
                 attempts: 2,
                 baseDelay: 1000,
                 backoff: 'fixed',
             });
-
-            if (snapshot) {
-                this.updateCallback?.(snapshot);
-            }
-            return snapshot;
         } catch (error) {
             const err = error instanceof Error ? error : new Error(String(error));
             this.errorCallback?.(err);
             return null;
         }
+
+        // A failing consumer must not turn a successful fetch into a fetch error
+        if (snapshot) {
+            try {
+                this.updateCallback?.(snapshot);
+            } catch (callbackError) {
+                warnLog(`Quota update callback failed: ${callbackError instanceof Error ? callbackError.message : String(callbackError)}`);
+            }
+        }
+        return snapshot;
     }
 
     /**
      * Single quota fetch (no retry)
      */
     private async doFetchQuota(): Promise<QuotaSnapshot | null> {
+        this.parsingError = null; // Each attempt reports only its own error
         const config = this.configManager.getConfig();
         const apiPath = config["system.apiPath"];
 
@@ -164,8 +171,13 @@ export class QuotaService implements IQuotaService {
     private parseResponse(data: ServerUserStatusResponse): QuotaSnapshot {
         const userStatus = data.userStatus;
         const planInfo = userStatus.planStatus?.planInfo;
-        const availableCredits = userStatus.planStatus?.availablePromptCredits;
-        const availableFlowCredits = userStatus.planStatus?.availableFlowCredits;
+        const planStatus = userStatus.planStatus;
+        // The server omits zero numbers (protobuf omitempty): a present plan with
+        // no available credits field means zero credits left.
+        const availableCredits = planStatus ? (planStatus.availablePromptCredits ?? 0) : undefined;
+        const availableFlowCredits = planStatus && planInfo?.monthlyFlowCredits !== undefined
+            ? (planStatus.availableFlowCredits ?? 0)
+            : undefined;
         const userTier = userStatus.userTier;
 
         // Parse Prompt Credits
@@ -327,7 +339,7 @@ interface ServerUserStatusResponse {
                 planName?: string;
                 teamsTier?: string;
             };
-            availablePromptCredits: number;
+            availablePromptCredits?: number;
             availableFlowCredits?: number;
         };
         cascadeModelConfigData?: {

@@ -3,6 +3,9 @@
  * Manages polling tasks, completely decoupled from business logic
  */
 
+/** Largest delay setTimeout/setInterval accept; Node turns anything larger into 1 ms */
+const MAX_TIMER_DELAY_MS = 2_147_483_647;
+
 export interface SchedulerTask {
   /** Task name (for logging and debugging) */
   name: string;
@@ -77,7 +80,7 @@ export class Scheduler {
     }
 
     // Set timer
-    const timer = setInterval(() => this.executeTask(task), task.interval);
+    const timer = setInterval(() => this.executeTask(task), Math.min(task.interval, MAX_TIMER_DELAY_MS));
     this.timers.set(name, timer);
 
     return true;
@@ -112,6 +115,7 @@ export class Scheduler {
     const task = this.tasks.get(name);
     if (!task) return false;
 
+    if (task.interval === interval) return true;
     task.interval = interval;
 
     // If running, restart to apply new interval

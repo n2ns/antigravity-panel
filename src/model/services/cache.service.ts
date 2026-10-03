@@ -61,12 +61,17 @@ export class CacheService implements ICacheService {
                 if (!entry.isDirectory()) continue;
 
                 const taskPath = path.join(this.baseBrainDir, entry.name);
-                const [size, fileCount, label, stat] = await Promise.all([
-                    this.getDirectorySize(taskPath),
-                    this.getFileCount(taskPath),
-                    this.getTaskLabel(taskPath, entry.name),
-                    fs.promises.stat(taskPath),
-                ]);
+                let size: number, fileCount: number, label: string, stat: fs.Stats;
+                try {
+                    [size, fileCount, label, stat] = await Promise.all([
+                        this.getDirectorySize(taskPath),
+                        this.getFileCount(taskPath),
+                        this.getTaskLabel(taskPath, entry.name),
+                        fs.promises.stat(taskPath),
+                    ]);
+                } catch {
+                    continue; // Task vanished or is unreadable: skip it, keep the others
+                }
 
                 tasks.push({
                     id: entry.name,
@@ -387,8 +392,10 @@ export class CacheService implements ICacheService {
                 if (entry.isDirectory()) {
                     totalSize += await this.getDirectorySize(fullPath);
                 } else if (entry.isFile()) {
-                    const fileStat = await fs.promises.stat(fullPath);
-                    totalSize += fileStat.size;
+                    try {
+                        const fileStat = await fs.promises.stat(fullPath);
+                        totalSize += fileStat.size;
+                    } catch { /* skip files that vanish or cannot be read */ }
                 }
             }
 

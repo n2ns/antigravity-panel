@@ -7,7 +7,9 @@
  */
 
 import * as vscode from 'vscode';
-import { execFile } from 'child_process';
+import { execFile, spawn } from 'child_process';
+import * as path from 'path';
+import { StringDecoder } from 'string_decoder';
 import { promisify } from 'util';
 import { infoLog, errorLog } from './shared/utils/logger';
 
@@ -32,8 +34,11 @@ interface DiffResult {
 interface LLMResponse {
     // Anthropic format
     content?: Array<{ type: string; text?: string }>;
+    stop_reason?: string;
     // Ollama format
     response?: string;
+    // Ollama /api/chat format
+    message?: { content?: string };
     // OpenAI format
     choices?: Array<{ message?: { content?: string } }>;
     // Error
@@ -71,28 +76,63 @@ async function verifyGitRepo(workspaceRoot: string): Promise<{ valid: boolean; e
 }
 
 /**
- * Get staged diff from git
+ * Stream `git diff --cached`, stopping once more than maxChars characters are collected
  */
-async function getStagedDiff(workspaceRoot: string, maxChars: number): Promise<DiffResult> {
-    // Get the full diff
-    const { stdout: diff } = await execFileAsync(
-        'git',
-        ['diff', '--cached'],
-        { cwd: workspaceRoot, maxBuffer: 10 * 1024 * 1024 } // 10MB buffer
-    );
+function readStagedDiff(workspaceRoot: string, maxChars: number): Promise<{ text: string; cutOff: boolean }> {
+    return new Promise((resolve, reject) => {
+        const child = spawn('git', ['diff', '--cached'], { cwd: workspaceRoot });
+        const decoder = new StringDecoder('utf8');
+        let text = '';
+        let stderr = '';
+        let cutOff = false;
+
+        child.stdout.on('data', (chunk: Buffer) => {
+            if (cutOff) {
+                return;
+            }
+            text += decoder.write(chunk);
+            if (text.length > maxChars) {
+                cutOff = true;
+                child.kill();
+            }
+        });
+        child.stderr.on('data', (chunk: Buffer) => {
+            stderr += chunk.toString();
+        });
+        child.on('error', reject);
+        child.on('close', (code) => {
+            if (!cutOff) {
+                text += decoder.end();
+            }
+            if (!cutOff && code !== 0 && text.length === 0) {
+                reject(new Error(stderr.trim() || `git diff exited with code ${code}`));
+                return;
+            }
+            resolve({ text, cutOff });
+        });
+    });
+}
+
+/**
+ * Get staged diff from git
+ * Exported for testing
+ */
+export async function getStagedDiff(workspaceRoot: string, maxChars: number): Promise<DiffResult> {
+    // Get the diff, read only up to maxChars
+    const { text: diff, cutOff } = await readStagedDiff(workspaceRoot, maxChars);
 
     // Get the stat summary
     const { stdout: stat } = await execFileAsync(
         'git',
         ['diff', '--cached', '--stat'],
-        { cwd: workspaceRoot }
+        { cwd: workspaceRoot, maxBuffer: 10 * 1024 * 1024 } // 10MB buffer
     );
 
     const truncatedDiff = truncateDiff(diff, maxChars);
     return {
         diff: truncatedDiff.result,
         stat: stat.trim(),
-        truncated: truncatedDiff.truncated
+        truncated: cutOff || truncatedDiff.truncated
     };
 }
 
@@ -204,6 +244,11 @@ export function parseLLMResponse(response: LLMResponse): { success: boolean; mes
         return { success: false, error: errorMsg };
     }
 
+    // Anthropic: output hit the max_tokens limit
+    if (response.stop_reason === 'max_tokens') {
+        return { success: false, error: 'LLM response was cut off (max_tokens)' };
+    }
+
     // Ollama format: { response: "..." }
     if (response.response && typeof response.response === 'string') {
         return { success: true, message: response.response.trim() };
@@ -225,13 +270,51 @@ export function parseLLMResponse(response: LLMResponse): { success: boolean; mes
         }
     }
 
+    // Ollama /api/chat format: { message: { content: "..." } }
+    if (response.message?.content && typeof response.message.content === 'string') {
+        return { success: true, message: response.message.content.trim() };
+    }
+
     return { success: false, error: 'Unable to parse LLM response' };
+}
+
+export type LLMApiFormat = 'ollama-generate' | 'ollama-chat' | 'anthropic' | 'openai';
+
+/**
+ * Decide the request format from the endpoint URL path
+ * Exported for testing
+ */
+export function detectApiFormat(endpoint: string): LLMApiFormat {
+    try {
+        const url = new URL(endpoint);
+        const pathname = url.pathname.replace(/\/+$/, '');
+        if (pathname.endsWith('/api/generate')) {
+            return 'ollama-generate';
+        }
+        if (pathname.endsWith('/api/chat')) {
+            return 'ollama-chat';
+        }
+        if (pathname.endsWith('/v1/messages') || url.hostname.includes('anthropic')) {
+            return 'anthropic';
+        }
+        return 'openai';
+    } catch {
+        // Not a parseable URL: fall back to substring heuristic
+        if (endpoint.includes('ollama') || endpoint.includes('11434')) {
+            return 'ollama-generate';
+        }
+        if (endpoint.includes('anthropic')) {
+            return 'anthropic';
+        }
+        return 'openai';
+    }
 }
 
 /**
  * Call LLM API (supports configurable endpoint)
+ * Exported for testing
  */
-async function callLLMApi(
+export async function callLLMApi(
     prompt: string,
     model: string,
     apiKey: string | undefined,
@@ -239,6 +322,7 @@ async function callLLMApi(
 ): Promise<{ success: boolean; message?: string; error?: string }> {
     try {
         // Build headers based on endpoint type
+        const format = detectApiFormat(endpoint);
         const headers: Record<string, string> = {
             'content-type': 'application/json'
         };
@@ -246,7 +330,7 @@ async function callLLMApi(
         // Add API key if provided (for cloud services)
         if (apiKey) {
             // Detect endpoint type and set appropriate header
-            if (endpoint.includes('anthropic')) {
+            if (format === 'anthropic') {
                 headers['x-api-key'] = apiKey;
                 headers['anthropic-version'] = '2023-06-01';
             } else if (endpoint.includes('openai')) {
@@ -259,19 +343,25 @@ async function callLLMApi(
 
         // Build request body based on endpoint type
         let body: string;
-        if (endpoint.includes('ollama') || endpoint.includes('11434')) {
-            // Ollama format
+        if (format === 'ollama-generate') {
+            // Ollama /api/generate format
             body = JSON.stringify({
                 model: model,
                 prompt: prompt,
                 stream: false
             });
-        } else if (endpoint.includes('anthropic')) {
-            // Anthropic format
+        } else if (format === 'ollama-chat') {
+            // Ollama /api/chat format
             body = JSON.stringify({
                 model: model,
-                max_tokens: 300,
-                temperature: 0.2,
+                messages: [{ role: 'user', content: prompt }],
+                stream: false
+            });
+        } else if (format === 'anthropic') {
+            // Anthropic format (no sampling params; thinking tokens count toward max_tokens)
+            body = JSON.stringify({
+                model: model,
+                max_tokens: 4096,
                 messages: [{ role: 'user', content: [{ type: 'text', text: prompt }] }]
             });
         } else {
@@ -314,10 +404,44 @@ async function callLLMApi(
     }
 }
 
+interface GitRepositoryLike {
+    rootUri?: { fsPath: string };
+    inputBox: { value: string };
+}
+
+/**
+ * Pick the git repository that holds workspaceRoot
+ */
+function findRepository(
+    api: { repositories: GitRepositoryLike[]; getRepository?: (uri: vscode.Uri) => GitRepositoryLike | null },
+    workspaceRoot: string
+): GitRepositoryLike {
+    const byApi = api.getRepository?.(vscode.Uri.file(workspaceRoot));
+    if (byApi) {
+        return byApi;
+    }
+    let best: GitRepositoryLike | undefined;
+    let bestLength = -1;
+    for (const repo of api.repositories) {
+        const repoRoot = repo.rootUri?.fsPath;
+        if (!repoRoot) {
+            continue;
+        }
+        const rel = path.relative(repoRoot, workspaceRoot);
+        const contains = rel === '' || (!rel.startsWith('..') && !path.isAbsolute(rel));
+        if (contains && repoRoot.length > bestLength) {
+            best = repo;
+            bestLength = repoRoot.length;
+        }
+    }
+    return best ?? api.repositories[0];
+}
+
 /**
  * Apply commit message to SCM input box
+ * Exported for testing
  */
-async function applyCommitMessageToScm(message: string): Promise<{ success: boolean; fallbackUsed: boolean }> {
+export async function applyCommitMessageToScm(message: string, workspaceRoot: string): Promise<{ success: boolean; fallbackUsed: boolean }> {
     try {
         // Try to get the Git extension's SCM input
         const gitExtension = vscode.extensions.getExtension('vscode.git');
@@ -326,7 +450,7 @@ async function applyCommitMessageToScm(message: string): Promise<{ success: bool
             const api = git.getAPI(1);
 
             if (api && api.repositories && api.repositories.length > 0) {
-                const repo = api.repositories[0];
+                const repo = findRepository(api, workspaceRoot);
                 repo.inputBox.value = message;
 
                 // Focus the SCM view
@@ -431,7 +555,7 @@ export async function generateCommitMessageCommand(context: vscode.ExtensionCont
             }
 
             // Apply to SCM
-            const applyResult = await applyCommitMessageToScm(result.message!);
+            const applyResult = await applyCommitMessageToScm(result.message!, workspaceRoot);
 
             if (applyResult.fallbackUsed) {
                 vscode.window.showInformationMessage(

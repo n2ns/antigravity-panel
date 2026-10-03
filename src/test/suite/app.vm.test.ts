@@ -840,6 +840,11 @@ suite('AppViewModel Test Suite', () => {
         test('should require an unfocused window before accumulating idle drain', async () => {
             const realNow = Date.now;
             const start = 1_700_000_000_000;
+            let windowListener: ((e: vscode.WindowState) => void) | undefined;
+            const windowStub = sinon.stub(vscode.window, 'onDidChangeWindowState').callsFake(listener => {
+                windowListener = listener;
+                return { dispose: () => { } };
+            });
 
             try {
                 global.Date.now = () => start;
@@ -862,7 +867,8 @@ suite('AppViewModel Test Suite', () => {
                 assert.strictEqual((vscode.window as any).lastWarningMessage, undefined);
 
                 (vscode.window as any).state.focused = false;
-                global.Date.now = () => start + 12 * 60 * 1000;
+                windowListener?.({ focused: false, active: false });
+                global.Date.now = () => start + 22 * 60 * 1000;
                 mockQuota.fetchQuota = async () => makeSnapshot(88);
                 await vm.refreshQuota();
                 assert.match(
@@ -871,6 +877,72 @@ suite('AppViewModel Test Suite', () => {
                 );
             } finally {
                 global.Date.now = realNow;
+                windowStub.restore();
+            }
+        });
+
+        test('should not blame idle drain on a drop that happened while focused', async () => {
+            const clock = sinon.useFakeTimers({ now: Date.now(), toFake: ['Date'] });
+            let windowListener: ((e: vscode.WindowState) => void) | undefined;
+            const windowStub = sinon.stub(vscode.window, 'onDidChangeWindowState').callsFake(listener => {
+                windowListener = listener;
+                return { dispose: () => { } };
+            });
+            try {
+                vm.dispose();
+                vm = new AppViewModel(mockQuota, mockCache, mockStorage, configManager, strategyManager, defaultMockAutomationService);
+                mockQuota.fetchQuota = async () => makeSnapshot(60);
+                await vm.refreshQuota();
+
+                // Focused for 60 minutes, blurred one second before the next poll
+                clock.tick(60 * 60 * 1000);
+                (vscode.window as any).state.focused = false;
+                windowListener?.({ focused: false, active: false });
+                clock.tick(1000);
+                mockQuota.fetchQuota = async () => makeSnapshot(54);
+                await vm.refreshQuota();
+
+                assert.strictEqual((vscode.window as any).lastWarningMessage, undefined);
+            } finally {
+                windowStub.restore();
+                clock.restore();
+            }
+        });
+
+        test('should warn when quota keeps dropping long after the window lost focus', async () => {
+            const clock = sinon.useFakeTimers({ now: Date.now(), toFake: ['Date'] });
+            let windowListener: ((e: vscode.WindowState) => void) | undefined;
+            const windowStub = sinon.stub(vscode.window, 'onDidChangeWindowState').callsFake(listener => {
+                windowListener = listener;
+                return { dispose: () => { } };
+            });
+            try {
+                vm.dispose();
+                vm = new AppViewModel(mockQuota, mockCache, mockStorage, configManager, strategyManager, defaultMockAutomationService);
+                mockQuota.fetchQuota = async () => makeSnapshot(100);
+                await vm.refreshQuota();
+
+                clock.tick(60 * 1000);
+                (vscode.window as any).state.focused = false;
+                windowListener?.({ focused: false, active: false });
+
+                clock.tick(11 * 60 * 1000);
+                await vm.refreshQuota();
+                clock.tick(11 * 60 * 1000);
+                mockQuota.fetchQuota = async () => makeSnapshot(97);
+                await vm.refreshQuota();
+                assert.strictEqual((vscode.window as any).lastWarningMessage, undefined);
+
+                clock.tick(11 * 60 * 1000);
+                mockQuota.fetchQuota = async () => makeSnapshot(94);
+                await vm.refreshQuota();
+                assert.match(
+                    (vscode.window as any).lastWarningMessage || '',
+                    /with no editor activity/
+                );
+            } finally {
+                windowStub.restore();
+                clock.restore();
             }
         });
     });
@@ -998,5 +1070,202 @@ suite('AppViewModel Test Suite', () => {
 
         const gemini = vm.getState().quota.groups.find(group => group.id === 'gemini');
         assert.strictEqual(gemini?.remaining, 40);
+    });
+    suite('Configuration change re-render', () => {
+        const makeSnapshot = (remainingPercentage: number): QuotaSnapshot => ({
+            timestamp: new Date(),
+            models: [{
+                modelId: 'MODEL_PLACEHOLDER_M47',
+                label: 'Gemini 3 Flash',
+                remainingPercentage,
+                isExhausted: false,
+                resetTime: new Date(Date.now() + 60 * 60 * 1000),
+                timeUntilReset: '1h'
+            }]
+        });
+
+        setup(() => {
+            (vscode.window as any).lastWarningMessage = undefined;
+        });
+
+        const restoreSnapshot = (remainingPercentage: number) => {
+            const cachedQuota = vm.getState().quota;
+            const snapshot = makeSnapshot(remainingPercentage);
+            mockStorage.getLastViewState = <T>() => cachedQuota as T;
+            mockStorage.getLastSnapshot = <T>() => snapshot as T;
+            assert.strictEqual(vm.restoreFromCache(), true);
+        };
+
+        test('config change keeps a failed connection status and writes nothing', async () => {
+            restoreSnapshot(70);
+            vm.setConnectionStatus('failed', 'no_process');
+            let records = 0;
+            let snapshotWrites = 0;
+            mockStorage.recordQuotaPoint = async () => { records++; };
+            mockStorage.setLastSnapshot = async () => { snapshotWrites++; };
+            let quotaEvents = 0;
+            const sub = vm.onQuotaChange(() => { quotaEvents++; });
+
+            configReader.set('dashboard.historyRange', 30);
+            await vm.onConfigurationChanged();
+            sub.dispose();
+
+            assert.strictEqual(vm.getState().connectionStatus, 'failed');
+            assert.strictEqual(vm.getState().failureReason, 'no_process');
+            assert.strictEqual(records, 0);
+            assert.strictEqual(snapshotWrites, 0);
+            assert.strictEqual(quotaEvents, 1);
+            assert.strictEqual(vm.getState().quota.groups.find(g => g.id === 'gemini')?.remaining, 70);
+        });
+
+        test('first live refresh after a config change still checks offline drain', async () => {
+            mockStorage.getRecentHistory = () => [{ timestamp: Date.now() - 5 * 60 * 1000, usage: { gemini: 90 } }];
+            restoreSnapshot(90);
+
+            configReader.set('dashboard.historyRange', 30);
+            await vm.onConfigurationChanged();
+            mockQuota.fetchQuota = async () => makeSnapshot(80);
+            await vm.refreshQuota();
+
+            assert.match((vscode.window as any).lastWarningMessage || '', /while the IDE was closed/);
+        });
+
+        test('a refresh in flight during a config change still applies its value', async () => {
+            mockQuota.fetchQuota = async () => makeSnapshot(60);
+            await vm.refreshQuota();
+
+            let resolveFetch!: (snapshot: QuotaSnapshot) => void;
+            mockQuota.fetchQuota = () => new Promise(resolve => { resolveFetch = resolve; });
+            const refresh = vm.refreshQuota();
+            configReader.set('dashboard.historyRange', 30);
+            await vm.onConfigurationChanged();
+            resolveFetch(makeSnapshot(40));
+
+            assert.strictEqual(await refresh, true);
+            assert.strictEqual(vm.getState().quota.groups.find(g => g.id === 'gemini')?.remaining, 40);
+            assert.strictEqual(vm.getState().connectionStatus, 'connected');
+        });
+
+        test('only cache settings trigger a cache rescan', async () => {
+            restoreSnapshot(70);
+            let scans = 0;
+            mockCache.getCacheInfo = async () => {
+                scans++;
+                return { totalSize: 0, brainSize: 0, conversationsSize: 0, brainTasks: [], codeContexts: [] };
+            };
+
+            configReader.set('system.autoAccept', true);
+            await vm.onConfigurationChanged();
+            configReader.set('dashboard.viewMode', 'models');
+            await vm.onConfigurationChanged();
+            assert.strictEqual(scans, 0);
+
+            configReader.set('cache.hideEmptyFolders', true);
+            await vm.onConfigurationChanged();
+            assert.strictEqual(scans, 1);
+        });
+    });
+
+    test('refreshCache should keep the files of expanded folders', async () => {
+        const tasks = [{ id: 'task-1', label: 'Task One', path: '/brain/task-1', size: 100, fileCount: 2, createdAt: 1000 }];
+        const contexts = [{ id: 'ctx-1', name: 'Context One', size: 100, lastModified: 1000 }];
+        mockCache.getCacheInfo = async () => ({ totalSize: 200, brainSize: 100, conversationsSize: 100, brainTasks: tasks, codeContexts: contexts });
+        let taskLoads = 0;
+        mockCache.getTaskFiles = async id => {
+            taskLoads++;
+            return [{ name: 'a.md', path: `/brain/${id}/a.md` }, { name: 'b.md', path: `/brain/${id}/b.md` }];
+        };
+        mockCache.getContextFiles = async id => [{ name: 'c.ts', path: `/ctx/${id}/c.ts` }];
+
+        await vm.refreshCache();
+        await vm.toggleTaskExpansion('task-1');
+        await vm.toggleContextExpansion('ctx-1');
+        await vm.refreshCache();
+
+        const task = vm.getState().tree.tasks.folders.find(f => f.id === 'task-1');
+        const ctx = vm.getState().tree.contexts.folders.find(f => f.id === 'ctx-1');
+        assert.strictEqual(task?.expanded, true);
+        assert.strictEqual(task?.files.length, 2);
+        assert.strictEqual(ctx?.files.length, 1);
+        assert.strictEqual(taskLoads, 1, 'cached files are reused');
+    });
+
+    test('reset refresh timer should not fire early for a reset beyond the setTimeout limit', async () => {
+        const clock = sinon.useFakeTimers({ now: Date.now(), toFake: ['Date', 'setTimeout', 'clearTimeout'] });
+        try {
+            const dayMs = 24 * 60 * 60 * 1000;
+            const resetTime = new Date(Date.now() + 30 * dayMs);
+            let fetches = 0;
+            mockQuota.fetchQuota = async () => {
+                fetches++;
+                return {
+                    timestamp: new Date(),
+                    models: [{
+                        modelId: 'MODEL_PLACEHOLDER_M47',
+                        label: 'Gemini 3 Flash',
+                        remainingPercentage: 50,
+                        isExhausted: false,
+                        resetTime,
+                        timeUntilReset: '30d'
+                    }]
+                };
+            };
+
+            await vm.refreshQuota();
+            await clock.tickAsync(5000);
+            assert.strictEqual(fetches, 1);
+
+            await clock.tickAsync(30 * dayMs - 15_000);
+            assert.strictEqual(fetches, 1, 'no refresh before the reset');
+
+            await clock.tickAsync(60_000);
+            assert.strictEqual(fetches, 2, 'one refresh after the reset');
+        } finally {
+            clock.restore();
+        }
+    });
+
+    suite('Usage prediction', () => {
+        const runPrediction = async (latestReset: number | null) => {
+            const now = Date.now();
+            configReader.set('dashboard.historyRange', 90);
+            mockStorage.getLatestResetTime = groupId => (groupId === 'gemini' ? latestReset : null);
+            mockStorage.calculateUsageBuckets = (displayMinutes, bucketMinutes) => {
+                const bucketMs = bucketMinutes * 60 * 1000;
+                const buckets = [];
+                for (let end = now; end > now - displayMinutes * 60 * 1000; end -= bucketMs) {
+                    buckets.unshift({
+                        startTime: end - bucketMs,
+                        endTime: end,
+                        items: end === now ? [{ groupId: 'gemini', usage: 5, color: '' }] : []
+                    });
+                }
+                return buckets;
+            };
+            mockQuota.fetchQuota = async () => ({
+                timestamp: new Date(),
+                models: [{
+                    modelId: 'MODEL_PLACEHOLDER_M47',
+                    label: 'Gemini 3 Flash',
+                    remainingPercentage: 95,
+                    isExhausted: false,
+                    resetTime: new Date(now + 4.8 * 60 * 60 * 1000),
+                    timeUntilReset: '4h 48m'
+                }]
+            });
+            await vm.refreshQuota();
+            return vm.getState().quota.chart.prediction!;
+        };
+
+        test('rate after a reset is measured over the time since the reset', async () => {
+            const prediction = await runPrediction(Date.now() - 10 * 60 * 1000);
+            assert.ok(Math.abs(prediction.usageRate - 30) < 0.5, `usageRate ${prediction.usageRate}`);
+            assert.notStrictEqual(prediction.runway, 'Stable');
+        });
+
+        test('rate without a reset in the window still uses the whole history range', async () => {
+            const prediction = await runPrediction(null);
+            assert.ok(Math.abs(prediction.usageRate - 5 / 1.5) < 0.01, `usageRate ${prediction.usageRate}`);
+        });
     });
 });

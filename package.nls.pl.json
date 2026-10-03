@@ -10,7 +10,7 @@
     "command.setAnthropicApiKey.title": "Set Anthropic API Key",
     "command.showCacheSize.title": "Show Cache Size",
     "command.showDisclaimer.title": "About",
-    "command.showLogs.title": "Pokaż logi",
+    "command.showLogs.title": "Show Logs",
     "command.toggleAutoAccept.title": "Toggle Agent Auto-Accept",
     "config.cache.autoClean.description": "⚠️ Automatycznie usuwaj najstarsze zadania z katalogu Brain, gdy rozmiar pamięci podręcznej przekroczy próg ostrzegawczy (Uwaga: spowoduje to usunięcie fizycznych plików)",
     "config.cache.autoCleanKeepCount.description": "Liczba ostatnio aktywnych zadań do zachowania podczas czyszczenia pamięci podręcznej — automatycznego lub poleceniem Clean Cache (domyślnie: 5)",

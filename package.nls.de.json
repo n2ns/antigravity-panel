@@ -10,7 +10,7 @@
     "command.setAnthropicApiKey.title": "Set Anthropic API Key",
     "command.showCacheSize.title": "Show Cache Size",
     "command.showDisclaimer.title": "About",
-    "command.showLogs.title": "Protokolle anzeigen",
+    "command.showLogs.title": "Show Logs",
     "command.toggleAutoAccept.title": "Toggle Agent Auto-Accept",
     "config.cache.autoClean.description": "⚠️ Älteste Aufgaben aus Brain automatisch löschen, wenn Cache-Größe Warnschwelle überschreitet (Hinweis: Physische Dateien werden gelöscht)",
     "config.cache.autoCleanKeepCount.description": "Anzahl der zuletzt aktiven Aufgaben, die beim Bereinigen des Caches behalten werden – durch automatische Bereinigung oder den Befehl Clean Cache (Standard: 5)",

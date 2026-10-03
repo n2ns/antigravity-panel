@@ -129,6 +129,7 @@ A workaround for when the built-in "Generate commit message" feature is unavaila
 3. The commit message auto-populates in the SCM input box
 
 **Configuration:**
+- **Endpoint**: Ollama `/api/generate` or `/api/chat`, Anthropic `/v1/messages`, or any OpenAI-compatible chat endpoint
 - **Model**: Choose a local Ollama model or a Claude/OpenAI-compatible model
 - **Max Diff Size**: Limit characters sent (default: 80,000)
 - **Format**: Conventional commits or simple style
