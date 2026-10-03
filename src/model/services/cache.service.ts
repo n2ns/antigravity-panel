@@ -12,6 +12,13 @@ import type { ICacheService } from './interfaces';
 import type { BrainTask, CacheInfo, CleanPlan, CleanPlanFile, CleanPlanTask, CleanResult, CodeContext, FileItem } from '../types/entities';
 import { errorLog } from '../../shared/utils/logger';
 
+/** Files of one conversation; .db precedes its -wal / -shm so they are only deleted after it */
+const CONVERSATION_EXTENSIONS = ['.pb', '.db', '.db-wal', '.db-shm'];
+const CONVERSATION_FILE_PATTERN = /^(.+)(\.pb|\.db|\.db-wal|\.db-shm)$/;
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+type ConversationFile = { path: string; size: number; mtime: number };
+
 /**
  * CacheService implementation
  */
@@ -50,7 +57,8 @@ export class CacheService implements ICacheService {
     }
 
     /**
-     * Get list of brain tasks
+     * Get list of brain tasks. Only UUID-named directories are tasks; others,
+     * such as the IDE's tempmediaStorage, are neither listed nor cleaned.
      */
     async getBrainTasks(): Promise<BrainTask[]> {
         try {
@@ -58,7 +66,7 @@ export class CacheService implements ICacheService {
             const tasks: BrainTask[] = [];
 
             for (const entry of entries) {
-                if (!entry.isDirectory()) continue;
+                if (!entry.isDirectory() || !UUID_PATTERN.test(entry.name)) continue;
 
                 const taskPath = path.join(this.baseBrainDir, entry.name);
                 let size: number, fileCount: number, label: string, stat: fs.Stats;
@@ -164,9 +172,12 @@ export class CacheService implements ICacheService {
         if (!taskPath.startsWith(this.baseBrainDir + path.sep)) return;
         await fs.promises.rm(taskPath, { recursive: true, force: true });
 
-        // Also delete corresponding conversation file
-        const conversationFile = path.join(this.baseConversationsDir, `${taskId}.pb`);
-        await fs.promises.rm(conversationFile, { force: true }).catch(() => { });
+        // Also delete the conversation files; keep -wal / -shm if the .db could not be deleted
+        for (const ext of CONVERSATION_EXTENSIONS) {
+            const deleted = await fs.promises.rm(path.join(this.baseConversationsDir, `${taskId}${ext}`), { force: true })
+                .then(() => true, () => false);
+            if (!deleted && ext === '.db') break;
+        }
     }
 
     /**
@@ -202,8 +213,8 @@ export class CacheService implements ICacheService {
     /**
      * Dry run of cleanCache. Keeps the keepCount most recently active brain tasks
      * (activity = latest file mtime in the task directory or its conversation .pb / .db / .db-wal / .db-shm),
-     * and the keepCount newest orphan conversation files (.pb without a brain task directory).
-     * The .pb of a kept task is never selected.
+     * and the keepCount newest orphan conversations (conversation files without a brain task directory).
+     * The conversation files of a kept task are never selected.
      */
     async getCleanPlan(keepCount: number = 5): Promise<CleanPlan> {
         // Invalid ids are never deletable: exclude them before ranking so they never take a keep slot
@@ -217,22 +228,21 @@ export class CacheService implements ICacheService {
 
         const planTasks: CleanPlanTask[] = [];
         for (const task of byActivity.slice(keepCount)) {
-            const conversation = await this.statFile(path.join(this.baseConversationsDir, `${task.id}.pb`));
-            planTasks.push(conversation ? { id: task.id, size: task.size, conversation } : { id: task.id, size: task.size });
+            const conversations = (await this.getConversationFiles(task.id)).map(f => ({ path: f.path, size: f.size }));
+            planTasks.push(conversations.length > 0 ? { id: task.id, size: task.size, conversations } : { id: task.id, size: task.size });
         }
 
         const orphans = await this.getOrphanConversations();
         orphans.sort((a, b) => b.mtime - a.mtime);
-        const orphanConversations = orphans.slice(keepCount).map(o => ({ path: o.path, size: o.size }));
+        const orphanConversations = orphans.slice(keepCount).flatMap(o => o.files.map(f => ({ path: f.path, size: f.size })));
 
-        const taskConversations = planTasks.filter(t => t.conversation);
+        const sumSizes = (files: CleanPlanFile[] = []) => files.reduce((sum, f) => sum + f.size, 0);
         return {
             keepCount,
             tasks: planTasks,
             orphanConversations,
-            conversationFileCount: taskConversations.length + orphanConversations.length,
-            totalBytes: planTasks.reduce((sum, t) => sum + t.size + (t.conversation?.size ?? 0), 0)
-                + orphanConversations.reduce((sum, f) => sum + f.size, 0),
+            conversationFileCount: planTasks.reduce((sum, t) => sum + (t.conversations?.length ?? 0), 0) + orphanConversations.length,
+            totalBytes: planTasks.reduce((sum, t) => sum + t.size + sumSizes(t.conversations), 0) + sumSizes(orphanConversations),
         };
     }
 
@@ -255,28 +265,26 @@ export class CacheService implements ICacheService {
                 result.deletedCount++;
                 result.freedBytes += task.size;
             } catch (err) {
-                // Already gone: not counted as deleted, but its planned .pb is still deleted (the user confirmed the plan)
+                // Already gone: not counted as deleted, but its planned conversation files are still deleted (the user confirmed the plan)
                 if ((err as NodeJS.ErrnoException).code !== 'ENOENT') {
                     result.failedCount++;
                     errorLog(`Cache clean: failed to delete task ${task.id}`, err);
                     continue;
                 }
             }
-            if (task.conversation) {
-                await this.removeConversationFile(task.conversation, result);
+            if (task.conversations) {
+                await this.removeConversationFiles(task.conversations, result);
             }
         }
 
-        for (const file of plan.orphanConversations) {
-            await this.removeConversationFile(file, result);
-        }
+        await this.removeConversationFiles(plan.orphanConversations, result);
 
         return result;
     }
 
     /**
      * Clean cache by removing the least recently active tasks and old orphan conversation files
-     * @param keepCount Number of most recently active tasks (and newest orphan .pb files) to keep (default: 5)
+     * @param keepCount Number of most recently active tasks (and newest orphan conversations) to keep (default: 5)
      */
     async cleanCache(keepCount: number = 5): Promise<CleanResult> {
         return this.executeCleanPlan(await this.getCleanPlan(keepCount));
@@ -291,10 +299,9 @@ export class CacheService implements ICacheService {
     private async getTaskActivity(task: BrainTask): Promise<number> {
         const [filesMtime, conversationFiles] = await Promise.all([
             this.getLatestFileMtime(path.join(this.baseBrainDir, task.id)),
-            Promise.all(['.pb', '.db', '.db-wal', '.db-shm'].map(ext =>
-                this.statFile(path.join(this.baseConversationsDir, `${task.id}${ext}`)))),
+            this.getConversationFiles(task.id),
         ]);
-        const latest = Math.max(filesMtime, ...conversationFiles.map(f => f?.mtime ?? 0));
+        const latest = Math.max(filesMtime, ...conversationFiles.map(f => f.mtime));
         return latest || task.createdAt;
     }
 
@@ -316,8 +323,15 @@ export class CacheService implements ICacheService {
         return latest;
     }
 
+    /** Existing conversation files of one conversation, in CONVERSATION_EXTENSIONS order */
+    private async getConversationFiles(id: string): Promise<ConversationFile[]> {
+        const files = await Promise.all(CONVERSATION_EXTENSIONS.map(ext =>
+            this.statFile(path.join(this.baseConversationsDir, `${id}${ext}`))));
+        return files.filter((f): f is ConversationFile => f !== undefined);
+    }
+
     /** Regular file size and mtime, or undefined if missing or not a regular file */
-    private async statFile(filePath: string): Promise<{ path: string; size: number; mtime: number } | undefined> {
+    private async statFile(filePath: string): Promise<ConversationFile | undefined> {
         try {
             const stat = await fs.promises.lstat(filePath);
             return stat.isFile() ? { path: filePath, size: stat.size, mtime: stat.mtimeMs } : undefined;
@@ -327,51 +341,68 @@ export class CacheService implements ICacheService {
     }
 
     /**
-     * Conversation .pb files that have no brain/<id> directory.
-     * Only a confirmed ENOENT counts as missing, so a brain read error never turns a task's .pb into an orphan.
+     * Conversations (UUID-named conversation files) that have no brain/<id> directory, with their files
+     * and newest mtime. Only a confirmed ENOENT counts as missing, so a brain read error never turns a
+     * task's conversation into an orphan.
      */
-    private async getOrphanConversations(): Promise<{ path: string; size: number; mtime: number }[]> {
+    private async getOrphanConversations(): Promise<{ files: ConversationFile[]; mtime: number }[]> {
         let entries: fs.Dirent[];
         try {
             entries = await fs.promises.readdir(this.baseConversationsDir, { withFileTypes: true });
         } catch {
             return [];
         }
-        const orphans: { path: string; size: number; mtime: number }[] = [];
+        const ids = new Set<string>();
         for (const entry of entries) {
-            if (!entry.isFile() || !entry.name.endsWith('.pb')) continue;
-            const id = entry.name.slice(0, -'.pb'.length);
-            if (!this.isValidId(id)) continue;
+            const id = entry.isFile() ? CONVERSATION_FILE_PATTERN.exec(entry.name)?.[1] : undefined;
+            if (id && UUID_PATTERN.test(id)) ids.add(id);
+        }
+        const orphans: { files: ConversationFile[]; mtime: number }[] = [];
+        for (const id of ids) {
             try {
                 await fs.promises.stat(path.join(this.baseBrainDir, id));
                 continue; // brain task exists (or a non-directory entry of that name): not an orphan
             } catch (err) {
                 if ((err as NodeJS.ErrnoException).code !== 'ENOENT') continue;
             }
-            const file = await this.statFile(path.join(this.baseConversationsDir, entry.name));
-            if (file) orphans.push(file);
+            const files = await this.getConversationFiles(id);
+            if (files.length > 0) orphans.push({ files, mtime: Math.max(...files.map(f => f.mtime)) });
         }
         return orphans;
     }
 
-    /** Delete one planned conversation file, recording the outcome in result */
-    private async removeConversationFile(file: CleanPlanFile, result: CleanResult): Promise<void> {
-        const resolvedPath = path.resolve(file.path);
-        if (!resolvedPath.startsWith(this.baseConversationsDir + path.sep) || !resolvedPath.endsWith('.pb')) {
-            result.failedCount++;
-            errorLog(`Cache clean: refused conversation file outside conversations or not .pb: ${file.path}`);
-            return;
+    /**
+     * Delete planned conversation files, recording the outcomes in result. When a .db cannot be
+     * deleted, its -wal / -shm are kept and counted as failed: they may hold data not yet in the .db.
+     */
+    private async removeConversationFiles(files: CleanPlanFile[], result: CleanResult): Promise<void> {
+        const keptDatabases = new Set<string>();
+        for (const file of files) {
+            const resolvedPath = path.resolve(file.path);
+            const match = CONVERSATION_FILE_PATTERN.exec(path.basename(resolvedPath));
+            if (!resolvedPath.startsWith(this.baseConversationsDir + path.sep) || !match) {
+                result.failedCount++;
+                errorLog(`Cache clean: refused file outside conversations or not a conversation file: ${file.path}`);
+                continue;
+            }
+            const [, id, ext] = match;
+            if ((ext === '.db-wal' || ext === '.db-shm') && keptDatabases.has(id)) {
+                result.failedCount++;
+                errorLog(`Cache clean: kept ${path.basename(resolvedPath)} because ${id}.db could not be deleted`);
+                continue;
+            }
+            try {
+                await fs.promises.rm(resolvedPath);
+            } catch (err) {
+                if ((err as NodeJS.ErrnoException).code === 'ENOENT') continue;
+                if (ext === '.db') keptDatabases.add(id);
+                result.failedCount++;
+                errorLog(`Cache clean: failed to delete ${path.basename(resolvedPath)}`, err);
+                continue;
+            }
+            result.deletedConversationCount++;
+            result.freedBytes += file.size;
         }
-        try {
-            await fs.promises.rm(resolvedPath);
-        } catch (err) {
-            if ((err as NodeJS.ErrnoException).code === 'ENOENT') return;
-            result.failedCount++;
-            errorLog(`Cache clean: failed to delete ${path.basename(resolvedPath)}`, err);
-            return;
-        }
-        result.deletedConversationCount++;
-        result.freedBytes += file.size;
     }
 
     /**

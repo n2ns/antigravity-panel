@@ -477,7 +477,7 @@ suite('AppViewModel Test Suite', () => {
     suite('Cache cleaning confirmations', () => {
         const plan = {
             keepCount: 3,
-            tasks: [{ id: 'old-task', size: 1000, conversation: { path: '/c/old-task.pb', size: 24 } }],
+            tasks: [{ id: 'old-task', size: 1000, conversations: [{ path: '/c/old-task.pb', size: 24 }] }],
             orphanConversations: [{ path: '/c/orphan.pb', size: 1024 }],
             conversationFileCount: 2,
             totalBytes: 2048

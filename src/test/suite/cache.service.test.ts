@@ -1,9 +1,16 @@
 import * as assert from 'assert';
+import * as crypto from 'crypto';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
 import * as sinon from 'sinon';
 import { CacheService } from '../../model/services/cache.service';
+
+/** Deterministic UUID for a readable test name: tasks and conversations are UUID-named */
+function u(name: string): string {
+    const h = crypto.createHash('md5').update(name).digest('hex');
+    return `${h.slice(0, 8)}-${h.slice(8, 12)}-${h.slice(12, 16)}-${h.slice(16, 20)}-${h.slice(20, 32)}`;
+}
 
 suite('CacheService Test Suite', () => {
     let tempDir: string;
@@ -47,7 +54,7 @@ suite('CacheService Test Suite', () => {
         await fs.promises.writeFile(path.join(conversationsDir, '2.json'), 'world'); // 5 bytes
 
         // Brain task structure: brain/task-id/files...
-        const taskDir = path.join(brainDir, 'task-1');
+        const taskDir = path.join(brainDir, u('task-1'));
         await fs.promises.mkdir(taskDir);
         await fs.promises.writeFile(path.join(taskDir, 'task.md'), '# Test Task'); // 11 bytes
 
@@ -65,10 +72,10 @@ suite('CacheService Test Suite', () => {
     test('should clean cache keeping newest 5 brain tasks', async () => {
         // Create 7 brain task directories
         for (let i = 1; i <= 7; i++) {
-            const taskDir = path.join(brainDir, `task-${i}`);
+            const taskDir = path.join(brainDir, u(`task-${i}`));
             await fs.promises.mkdir(taskDir);
             await fs.promises.writeFile(path.join(taskDir, 'file'), `data-${i}`);
-            await fs.promises.writeFile(path.join(conversationsDir, `task-${i}.pb`), `conv-${i}`);
+            await fs.promises.writeFile(path.join(conversationsDir, `${u(`task-${i}`)}.pb`), `conv-${i}`);
 
             // Ensure timestamp diff
             await new Promise(r => setTimeout(r, 10));
@@ -83,9 +90,9 @@ suite('CacheService Test Suite', () => {
         info = await cacheService.getCacheInfo();
         assert.strictEqual(result.deletedCount, 2);
         assert.ok(result.freedBytes > 0); // Should have freed some bytes
-        const keptTasks = ['task-3', 'task-4', 'task-5', 'task-6', 'task-7'];
+        const keptTasks = [u('task-3'), u('task-4'), u('task-5'), u('task-6'), u('task-7')].sort();
         assert.deepStrictEqual(info.brainTasks.map(task => task.id).sort(), keptTasks);
-        assert.deepStrictEqual((await fs.promises.readdir(conversationsDir)).sort(), keptTasks.map(id => `${id}.pb`));
+        assert.deepStrictEqual((await fs.promises.readdir(conversationsDir)).sort(), keptTasks.map(id => `${id}.pb`).sort());
     });
 
     test('deleteContext should only delete exact context basename matches', async () => {
@@ -141,99 +148,96 @@ suite('CacheService Test Suite', () => {
         }
 
         test('keeps a recent conversation-only .pb within keepCount orphans', async () => {
-            await makeTask('task-a', 1000);
-            await makePb('task-a', 1000);
-            await makeTask('task-b', 1100);
-            await makePb('task-b', 1100);
+            await makeTask(u('task-a'), 1000);
+            await makePb(u('task-a'), 1000);
+            await makeTask(u('task-b'), 1100);
+            await makePb(u('task-b'), 1100);
             // Orphans: older than both task .pb files
-            await makePb('orphan-recent', 900);
-            await makePb('orphan-mid', 800);
-            await makePb('orphan-old', 700);
-            // Non-.pb context files are never touched
-            await fs.promises.writeFile(path.join(conversationsDir, 'orphan-old.db'), 'db');
-
+            await makePb(u('orphan-recent'), 900);
+            await makePb(u('orphan-mid'), 800);
+            await makePb(u('orphan-old'), 700);
             const result = await cacheService.cleanCache(2);
 
             assert.strictEqual(result.deletedCount, 0);
             assert.strictEqual(result.deletedConversationCount, 1);
-            assert.ok(await exists(path.join(conversationsDir, 'orphan-recent.pb')));
-            assert.ok(await exists(path.join(conversationsDir, 'orphan-mid.pb')));
-            assert.ok(!await exists(path.join(conversationsDir, 'orphan-old.pb')));
-            assert.ok(await exists(path.join(conversationsDir, 'orphan-old.db')));
-            assert.ok(await exists(path.join(conversationsDir, 'task-a.pb')));
-            assert.ok(await exists(path.join(conversationsDir, 'task-b.pb')));
+            assert.ok(await exists(path.join(conversationsDir, `${u('orphan-recent')}.pb`)));
+            assert.ok(await exists(path.join(conversationsDir, `${u('orphan-mid')}.pb`)));
+            assert.ok(!await exists(path.join(conversationsDir, `${u('orphan-old')}.pb`)));
+            assert.ok(await exists(path.join(conversationsDir, `${u('task-a')}.pb`)));
+            assert.ok(await exists(path.join(conversationsDir, `${u('task-b')}.pb`)));
         });
 
         test('never deletes the .pb of a kept task even if older than many orphans', async () => {
-            await makeTask('task-a', 5000);
-            await makePb('task-a', 10);
-            await makeTask('task-b', 5100);
-            await makePb('task-b', 20);
+            await makeTask(u('task-a'), 5000);
+            await makePb(u('task-a'), 10);
+            await makeTask(u('task-b'), 5100);
+            await makePb(u('task-b'), 20);
             for (let i = 1; i <= 5; i++) {
-                await makePb(`orphan-${i}`, 1000 + i);
+                await makePb(u(`orphan-${i}`), 1000 + i);
             }
 
             const result = await cacheService.cleanCache(2);
 
             assert.strictEqual(result.deletedCount, 0);
             assert.strictEqual(result.failedCount, 0);
-            assert.ok(await exists(path.join(conversationsDir, 'task-a.pb')));
-            assert.ok(await exists(path.join(conversationsDir, 'task-b.pb')));
-            const remainingOrphans = (await fs.promises.readdir(conversationsDir)).filter(n => n.startsWith('orphan-')).sort();
-            assert.deepStrictEqual(remainingOrphans, ['orphan-4.pb', 'orphan-5.pb']);
+            assert.ok(await exists(path.join(conversationsDir, `${u('task-a')}.pb`)));
+            assert.ok(await exists(path.join(conversationsDir, `${u('task-b')}.pb`)));
+            const taskFiles = [`${u('task-a')}.pb`, `${u('task-b')}.pb`];
+            const remainingOrphans = (await fs.promises.readdir(conversationsDir)).filter(n => !taskFiles.includes(n)).sort();
+            assert.deepStrictEqual(remainingOrphans, [`${u('orphan-4')}.pb`, `${u('orphan-5')}.pb`].sort());
             assert.strictEqual(result.deletedConversationCount, 3);
         });
 
         test('keeps the most recently active tasks, not the most recently created', async () => {
             // Created in order a, b, c, d; activity order is the reverse
-            const activity: Record<string, number> = { 'task-a': 4000, 'task-b': 3000, 'task-c': 200, 'task-d': 100 };
+            const activity: Record<string, number> = { [u('task-a')]: 4000, [u('task-b')]: 3000, [u('task-c')]: 200, [u('task-d')]: 100 };
             for (const id of Object.keys(activity)) {
                 await makeTask(id, activity[id]);
                 await new Promise(r => setTimeout(r, 15));
             }
             // task-d's .pb is old too; task-c only shows activity through its .pb
-            await makePb('task-c', 300);
-            await makePb('task-d', 150);
+            await makePb(u('task-c'), 300);
+            await makePb(u('task-d'), 150);
 
             const displayOrder = (await cacheService.getBrainTasks()).map(t => t.id);
-            assert.deepStrictEqual(displayOrder, ['task-d', 'task-c', 'task-b', 'task-a'], 'display order stays newest-created first');
+            assert.deepStrictEqual(displayOrder, [u('task-d'), u('task-c'), u('task-b'), u('task-a')], 'display order stays newest-created first');
 
             const result = await cacheService.cleanCache(2);
 
             assert.strictEqual(result.deletedCount, 2);
-            assert.deepStrictEqual((await fs.promises.readdir(brainDir)).sort(), ['task-a', 'task-b']);
+            assert.deepStrictEqual((await fs.promises.readdir(brainDir)).sort(), [u('task-a'), u('task-b')].sort());
             assert.deepStrictEqual(await fs.promises.readdir(conversationsDir), []);
-            assert.deepStrictEqual((await cacheService.getBrainTasks()).map(t => t.id), ['task-b', 'task-a']);
+            assert.deepStrictEqual((await cacheService.getBrainTasks()).map(t => t.id), [u('task-b'), u('task-a')]);
         });
 
         test('task activity counts its conversation .pb', async () => {
-            await makeTask('task-a', 100);
-            await makePb('task-a', 9000); // recently used conversation, stale brain files
-            await makeTask('task-b', 500);
-            await makeTask('task-c', 400);
+            await makeTask(u('task-a'), 100);
+            await makePb(u('task-a'), 9000); // recently used conversation, stale brain files
+            await makeTask(u('task-b'), 500);
+            await makeTask(u('task-c'), 400);
 
             const plan = await cacheService.getCleanPlan(2);
 
-            assert.deepStrictEqual(plan.tasks.map(t => t.id), ['task-c']);
+            assert.deepStrictEqual(plan.tasks.map(t => t.id), [u('task-c')]);
         });
 
         test('task activity counts its conversation .db / .db-wal', async () => {
-            await makeTask('task-a', 100); // oldest brain files
-            const dbPath = path.join(conversationsDir, 'task-a.db');
-            const walPath = path.join(conversationsDir, 'task-a.db-wal');
+            await makeTask(u('task-a'), 100); // oldest brain files
+            const dbPath = path.join(conversationsDir, `${u('task-a')}.db`);
+            const walPath = path.join(conversationsDir, `${u('task-a')}.db-wal`);
             await fs.promises.writeFile(dbPath, 'db');
             await setMtime(dbPath, 100);
             await fs.promises.writeFile(walPath, 'wal');
             await setMtime(walPath, 9000); // newest: the conversation is in use
-            await makeTask('task-b', 500);
-            await makeTask('task-c', 400);
-            await makeTask('task-d', 300);
+            await makeTask(u('task-b'), 500);
+            await makeTask(u('task-c'), 400);
+            await makeTask(u('task-d'), 300);
 
             const plan = await cacheService.getCleanPlan(2);
 
-            assert.ok(!plan.tasks.some(t => t.id === 'task-a'));
-            assert.deepStrictEqual(plan.tasks.map(t => t.id), ['task-c', 'task-d']);
-            const plannedFiles = [...plan.tasks.flatMap(t => t.conversation ? [t.conversation.path] : []), ...plan.orphanConversations.map(f => f.path)];
+            assert.ok(!plan.tasks.some(t => t.id === u('task-a')));
+            assert.deepStrictEqual(plan.tasks.map(t => t.id), [u('task-c'), u('task-d')]);
+            const plannedFiles = [...plan.tasks.flatMap(t => (t.conversations ?? []).map(f => f.path)), ...plan.orphanConversations.map(f => f.path)];
             assert.ok(!plannedFiles.includes(dbPath) && !plannedFiles.includes(walPath));
 
             await cacheService.executeCleanPlan(plan);
@@ -243,27 +247,27 @@ suite('CacheService Test Suite', () => {
         });
 
         test('plan matches actual deletion exactly', async () => {
-            await makeTask('task-a', 1000);
-            await makePb('task-a', 1000);
-            await makeTask('task-b', 900);
-            await makeTask('task-c', 800);
-            await makePb('task-c', 800);
-            await makeTask('task-d', 700);
-            await makePb('task-d', 700);
-            await makePb('orphan-1', 600);
-            await makePb('orphan-2', 500);
-            await makePb('orphan-3', 400);
-            await fs.promises.writeFile(path.join(conversationsDir, 'task-d.db'), 'db');
-            await setMtime(path.join(conversationsDir, 'task-d.db'), 700); // .db counts as activity
+            await makeTask(u('task-a'), 1000);
+            await makePb(u('task-a'), 1000);
+            await makeTask(u('task-b'), 900);
+            await makeTask(u('task-c'), 800);
+            await makePb(u('task-c'), 800);
+            await makeTask(u('task-d'), 700);
+            await makePb(u('task-d'), 700);
+            await makePb(u('orphan-1'), 600);
+            await makePb(u('orphan-2'), 500);
+            await makePb(u('orphan-3'), 400);
+            await fs.promises.writeFile(path.join(conversationsDir, `${u('task-d')}.db`), 'db');
+            await setMtime(path.join(conversationsDir, `${u('task-d')}.db`), 700); // .db counts as activity
 
             const plan = await cacheService.getCleanPlan(2);
-            assert.deepStrictEqual(plan.tasks.map(t => t.id), ['task-c', 'task-d']);
-            assert.deepStrictEqual(plan.orphanConversations.map(f => path.basename(f.path)), ['orphan-3.pb']);
-            assert.strictEqual(plan.conversationFileCount, 3);
+            assert.deepStrictEqual(plan.tasks.map(t => t.id), [u('task-c'), u('task-d')]);
+            assert.deepStrictEqual(plan.orphanConversations.map(f => path.basename(f.path)), [`${u('orphan-3')}.pb`]);
+            assert.strictEqual(plan.conversationFileCount, 4); // task-d's .db goes with its .pb
 
             const planned = new Set<string>([
                 ...plan.tasks.map(t => path.join(brainDir, t.id)),
-                ...plan.tasks.flatMap(t => t.conversation ? [t.conversation.path] : []),
+                ...plan.tasks.flatMap(t => (t.conversations ?? []).map(f => f.path)),
                 ...plan.orphanConversations.map(f => f.path),
             ]);
             const before = [...await listAll(brainDir), ...await listAll(conversationsDir)];
@@ -280,27 +284,27 @@ suite('CacheService Test Suite', () => {
         });
 
         test('executeCleanPlan deletes only the plan it is given even if the state changed', async () => {
-            await makeTask('task-a', 1000);
-            await makePb('task-a', 1000);
-            await makeTask('task-b', 900);
-            await makeTask('task-c', 800);
-            await makePb('task-c', 800);
-            await makePb('orphan-1', 600);
-            await makePb('orphan-2', 500);
-            await makePb('orphan-3', 400);
+            await makeTask(u('task-a'), 1000);
+            await makePb(u('task-a'), 1000);
+            await makeTask(u('task-b'), 900);
+            await makeTask(u('task-c'), 800);
+            await makePb(u('task-c'), 800);
+            await makePb(u('orphan-1'), 600);
+            await makePb(u('orphan-2'), 500);
+            await makePb(u('orphan-3'), 400);
 
             const plan = await cacheService.getCleanPlan(2);
-            assert.deepStrictEqual(plan.tasks.map(t => t.id), ['task-c']);
-            assert.deepStrictEqual(plan.orphanConversations.map(f => path.basename(f.path)), ['orphan-3.pb']);
+            assert.deepStrictEqual(plan.tasks.map(t => t.id), [u('task-c')]);
+            assert.deepStrictEqual(plan.orphanConversations.map(f => path.basename(f.path)), [`${u('orphan-3')}.pb`]);
 
             // State changes after the plan was confirmed: older entries that a fresh plan would select
-            await makeTask('task-e', 10);
-            await makePb('task-e', 10);
-            await makePb('orphan-old', 5);
+            await makeTask(u('task-e'), 10);
+            await makePb(u('task-e'), 10);
+            await makePb(u('orphan-old'), 5);
 
             const planned = new Set<string>([
                 ...plan.tasks.map(t => path.join(brainDir, t.id)),
-                ...plan.tasks.flatMap(t => t.conversation ? [t.conversation.path] : []),
+                ...plan.tasks.flatMap(t => (t.conversations ?? []).map(f => f.path)),
                 ...plan.orphanConversations.map(f => f.path),
             ]);
             const before = [...await listAll(brainDir), ...await listAll(conversationsDir)];
@@ -310,27 +314,27 @@ suite('CacheService Test Suite', () => {
             const after = new Set([...await listAll(brainDir), ...await listAll(conversationsDir)]);
             const deletedTopLevel = before.filter(p => !after.has(p) && !planned.has(path.dirname(p)) && !planned.has(path.dirname(path.dirname(p))));
             assert.deepStrictEqual(new Set(deletedTopLevel), planned);
-            assert.ok(await exists(path.join(brainDir, 'task-e')));
-            assert.ok(await exists(path.join(conversationsDir, 'task-e.pb')));
-            assert.ok(await exists(path.join(conversationsDir, 'orphan-old.pb')));
+            assert.ok(await exists(path.join(brainDir, u('task-e'))));
+            assert.ok(await exists(path.join(conversationsDir, `${u('task-e')}.pb`)));
+            assert.ok(await exists(path.join(conversationsDir, `${u('orphan-old')}.pb`)));
             assert.strictEqual(result.deletedCount, plan.tasks.length);
             assert.strictEqual(result.deletedConversationCount, plan.conversationFileCount);
             assert.strictEqual(result.failedCount, 0);
         });
 
         test('directories with invalid ids are never planned', async () => {
-            await makeTask('task-a', 1000);
-            await makeTask('task-b', 900);
+            await makeTask(u('task-a'), 1000);
+            await makeTask(u('task-b'), 900);
             await makeTask('bad id', 5000); // space: fails isValidId; the most recently active
-            await makeTask('task-c', 5);
+            await makeTask(u('task-c'), 5);
 
             // The invalid directory takes no keep slot
             const planKeepOne = await cacheService.getCleanPlan(1);
-            assert.deepStrictEqual(planKeepOne.tasks.map(t => t.id), ['task-b', 'task-c']);
+            assert.deepStrictEqual(planKeepOne.tasks.map(t => t.id), [u('task-b'), u('task-c')]);
 
             const plan = await cacheService.getCleanPlan(2);
 
-            assert.deepStrictEqual(plan.tasks.map(t => t.id), ['task-c']);
+            assert.deepStrictEqual(plan.tasks.map(t => t.id), [u('task-c')]);
             const result = await cacheService.executeCleanPlan(plan);
             assert.strictEqual(result.deletedCount, plan.tasks.length);
             assert.strictEqual(result.failedCount, 0);
@@ -339,10 +343,10 @@ suite('CacheService Test Suite', () => {
 
         test('executeCleanPlan reports an invalid plan entry as failed', async () => {
             await makeTask('bad id', 10);
-            await makeTask('task-a', 10);
+            await makeTask(u('task-a'), 10);
             const plan = {
                 keepCount: 0,
-                tasks: [{ id: 'bad id', size: 1 }, { id: '..', size: 1 }, { id: 'task-a', size: 1 }],
+                tasks: [{ id: 'bad id', size: 1 }, { id: '..', size: 1 }, { id: u('task-a'), size: 1 }],
                 orphanConversations: [],
                 conversationFileCount: 0,
                 totalBytes: 3,
@@ -355,19 +359,19 @@ suite('CacheService Test Suite', () => {
             assert.strictEqual(result.freedBytes, 1);
             assert.ok(await exists(path.join(brainDir, 'bad id')));
             assert.ok(await exists(brainDir));
-            assert.ok(!await exists(path.join(brainDir, 'task-a')));
+            assert.ok(!await exists(path.join(brainDir, u('task-a'))));
         });
 
         test('executeCleanPlan never deletes an out-of-bounds conversation path', async () => {
             const outside = path.join(brainDir, 'x.pb');
             await fs.promises.writeFile(outside, 'x');
-            await makePb('orphan-1', 10);
+            await makePb(u('orphan-1'), 10);
             const plan = {
                 keepCount: 0,
                 tasks: [],
                 orphanConversations: [
                     { path: `${conversationsDir}${path.sep}..${path.sep}brain${path.sep}x.pb`, size: 1 },
-                    { path: path.join(conversationsDir, 'orphan-1.pb'), size: 2 },
+                    { path: path.join(conversationsDir, `${u('orphan-1')}.pb`), size: 2 },
                 ],
                 conversationFileCount: 2,
                 totalBytes: 3,
@@ -376,43 +380,43 @@ suite('CacheService Test Suite', () => {
             const result = await cacheService.executeCleanPlan(plan);
 
             assert.ok(await exists(outside));
-            assert.ok(!await exists(path.join(conversationsDir, 'orphan-1.pb')));
+            assert.ok(!await exists(path.join(conversationsDir, `${u('orphan-1')}.pb`)));
             assert.strictEqual(result.failedCount, 1);
             assert.strictEqual(result.deletedConversationCount, 1);
             assert.strictEqual(result.freedBytes, 2);
         });
 
         test('a task directory already gone is not counted, but its planned .pb is still deleted', async () => {
-            await makeTask('task-keep', 1000);
-            for (const [id, t] of [['task-x', 300], ['task-y', 200], ['task-z', 100]] as const) {
+            await makeTask(u('task-keep'), 1000);
+            for (const [id, t] of [[u('task-x'), 300], [u('task-y'), 200], [u('task-z'), 100]] as const) {
                 await makeTask(id, t);
                 await makePb(id, t);
             }
             const plan = await cacheService.getCleanPlan(1);
-            assert.deepStrictEqual(plan.tasks.map(t => t.id), ['task-x', 'task-y', 'task-z']);
+            assert.deepStrictEqual(plan.tasks.map(t => t.id), [u('task-x'), u('task-y'), u('task-z')]);
 
-            await fs.promises.rm(path.join(brainDir, 'task-y'), { recursive: true });
+            await fs.promises.rm(path.join(brainDir, u('task-y')), { recursive: true });
             const result = await cacheService.executeCleanPlan(plan);
 
             assert.strictEqual(result.deletedCount, plan.tasks.length - 1);
-            assert.ok(!await exists(path.join(conversationsDir, 'task-y.pb')));
+            assert.ok(!await exists(path.join(conversationsDir, `${u('task-y')}.pb`)));
             assert.strictEqual(result.deletedConversationCount, plan.conversationFileCount);
             assert.strictEqual(result.failedCount, 0);
-            const taskY = plan.tasks.find(t => t.id === 'task-y')!;
+            const taskY = plan.tasks.find(t => t.id === u('task-y'))!;
             assert.strictEqual(result.freedBytes, plan.totalBytes - taskY.size);
         });
 
         test('a failing task deletion does not stop the others and is reported truthfully', async () => {
-            await makeTask('task-keep', 1000);
-            for (const [id, t] of [['task-x', 300], ['task-busy', 200], ['task-z', 100]] as const) {
+            await makeTask(u('task-keep'), 1000);
+            for (const [id, t] of [[u('task-x'), 300], [u('task-busy'), 200], [u('task-z'), 100]] as const) {
                 await makeTask(id, t);
                 await makePb(id, t);
             }
-            const busyPath = path.join(brainDir, 'task-busy');
+            const busyPath = path.join(brainDir, u('task-busy'));
             const plan = await cacheService.getCleanPlan(1);
             const expectedFreed = plan.tasks
-                .filter(t => t.id !== 'task-busy')
-                .reduce((sum, t) => sum + t.size + (t.conversation?.size ?? 0), 0);
+                .filter(t => t.id !== u('task-busy'))
+                .reduce((sum, t) => sum + t.size + (t.conversations ?? []).reduce((n, f) => n + f.size, 0), 0);
 
             const originalRm = fs.promises.rm;
             const rmStub = sinon.stub(fs.promises, 'rm').callsFake(async (p, options) => {
@@ -433,16 +437,100 @@ suite('CacheService Test Suite', () => {
             assert.strictEqual(result.failedCount, 1);
             assert.strictEqual(result.freedBytes, expectedFreed);
             assert.ok(await exists(busyPath));
-            assert.ok(await exists(path.join(conversationsDir, 'task-busy.pb')), 'the .pb of an undeleted task is kept');
-            assert.ok(!await exists(path.join(brainDir, 'task-x')));
-            assert.ok(!await exists(path.join(brainDir, 'task-z')));
-            assert.ok(await exists(path.join(brainDir, 'task-keep')));
+            assert.ok(await exists(path.join(conversationsDir, `${u('task-busy')}.pb`)), 'the .pb of an undeleted task is kept');
+            assert.ok(!await exists(path.join(brainDir, u('task-x'))));
+            assert.ok(!await exists(path.join(brainDir, u('task-z'))));
+            assert.ok(await exists(path.join(brainDir, u('task-keep'))));
+        });
+
+        test('deletes all conversation files of a removed task and of an old orphan', async () => {
+            await makeTask(u('task-keep'), 1000);
+            await makeTask(u('task-old'), 100);
+            const write = async (name: string, mtimeSec: number) => {
+                await fs.promises.writeFile(path.join(conversationsDir, name), name);
+                await setMtime(path.join(conversationsDir, name), mtimeSec);
+            };
+            for (const ext of ['.db', '.db-wal', '.db-shm']) {
+                await write(`${u('task-keep')}${ext}`, 1000);
+                await write(`${u('task-old')}${ext}`, 100);
+                await write(`${u('orphan-new')}${ext}`, 900);
+                await write(`${u('orphan-old')}${ext}`, 50);
+            }
+
+            const plan = await cacheService.getCleanPlan(1);
+            assert.deepStrictEqual(plan.tasks.map(t => t.id), [u('task-old')]);
+            assert.strictEqual(plan.conversationFileCount, 6);
+
+            const result = await cacheService.executeCleanPlan(plan);
+
+            assert.strictEqual(result.deletedConversationCount, 6);
+            assert.strictEqual(result.failedCount, 0);
+            const remaining = (await fs.promises.readdir(conversationsDir)).sort();
+            const expected = ['.db', '.db-wal', '.db-shm'].flatMap(ext => [`${u('task-keep')}${ext}`, `${u('orphan-new')}${ext}`]).sort();
+            assert.deepStrictEqual(remaining, expected);
+        });
+
+        test('keeps -wal / -shm when the .db cannot be deleted', async () => {
+            await makeTask(u('task-keep'), 1000);
+            await makeTask(u('task-busy'), 100);
+            for (const ext of ['.db', '.db-wal', '.db-shm']) {
+                await fs.promises.writeFile(path.join(conversationsDir, `${u('task-busy')}${ext}`), ext);
+                await setMtime(path.join(conversationsDir, `${u('task-busy')}${ext}`), 100);
+            }
+            const busyDb = path.join(conversationsDir, `${u('task-busy')}.db`);
+            const plan = await cacheService.getCleanPlan(1);
+            assert.deepStrictEqual(plan.tasks.map(t => t.id), [u('task-busy')]);
+
+            const originalRm = fs.promises.rm;
+            const rmStub = sinon.stub(fs.promises, 'rm').callsFake(async (p, options) => {
+                if (p === busyDb) {
+                    throw Object.assign(new Error('EBUSY: resource busy or locked'), { code: 'EBUSY' });
+                }
+                return originalRm(p, options);
+            });
+            let result;
+            try {
+                result = await cacheService.executeCleanPlan(plan);
+            } finally {
+                rmStub.restore();
+            }
+
+            assert.strictEqual(result.deletedCount, 1);
+            assert.strictEqual(result.deletedConversationCount, 0);
+            assert.strictEqual(result.failedCount, 3);
+            for (const ext of ['.db', '.db-wal', '.db-shm']) {
+                assert.ok(await exists(path.join(conversationsDir, `${u('task-busy')}${ext}`)));
+            }
+        });
+
+        test('deleteTask deletes the task conversation .db / .db-wal / .db-shm', async () => {
+            await makeTask(u('task-a'), 100);
+            for (const ext of ['.pb', '.db', '.db-wal', '.db-shm']) {
+                await fs.promises.writeFile(path.join(conversationsDir, `${u('task-a')}${ext}`), ext);
+            }
+            await fs.promises.writeFile(path.join(conversationsDir, `${u('task-b')}.db`), 'other');
+
+            await cacheService.deleteTask(u('task-a'));
+
+            assert.ok(!await exists(path.join(brainDir, u('task-a'))));
+            assert.deepStrictEqual(await fs.promises.readdir(conversationsDir), [`${u('task-b')}.db`]);
+        });
+
+        test('only UUID-named brain directories are tasks', async () => {
+            await makeTask(u('task-a'), 100);
+            await fs.promises.mkdir(path.join(brainDir, 'tempmediaStorage'));
+            await fs.promises.writeFile(path.join(conversationsDir, 'notes.db'), 'not a conversation');
+
+            assert.deepStrictEqual((await cacheService.getBrainTasks()).map(t => t.id), [u('task-a')]);
+            const plan = await cacheService.getCleanPlan(0);
+            assert.deepStrictEqual(plan.tasks.map(t => t.id), [u('task-a')]);
+            assert.deepStrictEqual(plan.orphanConversations, []);
         });
 
         test('reports an empty plan when there is nothing to delete', async () => {
-            await makeTask('task-a', 100);
-            await makePb('task-a', 100);
-            await makePb('orphan-1', 50);
+            await makeTask(u('task-a'), 100);
+            await makePb(u('task-a'), 100);
+            await makePb(u('orphan-1'), 50);
 
             const plan = await cacheService.getCleanPlan(5);
 
@@ -473,8 +561,8 @@ suite('CacheService Test Suite', () => {
         }
 
         test('should skip a brain task whose directory vanishes and keep the others', async () => {
-            const keptDir = path.join(brainDir, 'task-kept');
-            const goneDir = path.join(brainDir, 'task-gone');
+            const keptDir = path.join(brainDir, u('task-kept'));
+            const goneDir = path.join(brainDir, u('task-gone'));
             await fs.promises.mkdir(keptDir);
             await fs.promises.mkdir(goneDir);
             await fs.promises.writeFile(path.join(keptDir, 'task.md'), '# Kept');
@@ -483,7 +571,7 @@ suite('CacheService Test Suite', () => {
             failStatFor(goneDir);
             const tasks = await cacheService.getBrainTasks();
 
-            assert.deepStrictEqual(tasks.map(t => t.id), ['task-kept']);
+            assert.deepStrictEqual(tasks.map(t => t.id), [u('task-kept')]);
             assert.strictEqual(tasks[0].label, 'Kept');
         });
 

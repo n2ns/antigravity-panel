@@ -77,7 +77,7 @@
   - Preview images, markdown, and code files
   - Deletion of tasks, contexts, and single files asks for modal confirmation
 - **Code Context**: Manage code analysis caches per project
-- **Clean Cache**: Builds a dry-run plan first and deletes only after you confirm it in a modal dialog; the most recently active tasks are kept (activity includes the task's conversation `.pb`, `.db`, `.db-wal`, and `.db-shm` files); among orphan `.pb` conversation files (no matching task), the newest ones are kept and the rest are removed
+- **Clean Cache**: Builds a dry-run plan first and deletes only after you confirm it in a modal dialog; the most recently active tasks are kept (activity includes the task's conversation `.pb`, `.db`, `.db-wal`, and `.db-shm` files); among orphan conversations (no matching task), the newest ones are kept and the rest are removed with all their `.pb`, `.db`, `.db-wal`, and `.db-shm` files
 - **Smart Cleanup**: Automatically closes related editor tabs
 
 ### 🤖 Auto-Accept (Hands-free Mode)

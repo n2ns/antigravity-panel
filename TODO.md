@@ -25,15 +25,6 @@
 - [ ] **Output panel updates count as editor activity**
   - `onDidChangeTextDocument` in `app.vm.ts` does not filter by URI scheme, so output channel appends reset the idle-drain timer while the Output panel is visible (not yet reproduced)
 
-### Cache Cleaning
-
-- [ ] **Decide how conversation `.db` files are cleaned**
-  - Since Antigravity IDE 2.0 conversations are stored as `conversations/<uuid>.db` (plus `-wal` / `-shm`); task deletion and cache cleaning only handle `<uuid>.pb`, so the `.db` files remain after a task is deleted
-  - Decide whether to delete `.db` / `-wal` / `-shm` together with the task and in the orphan rule, and whether deletion requires Antigravity to be closed (open SQLite files, sidebar index in `state.vscdb`)
-- [ ] **Decide how `brain/tempmediaStorage` is handled**
-  - The IDE's temporary media directory is currently listed as a Brain task and can take a keep slot or be deleted by cleaning
-  - Options: only treat UUID-named directories as tasks, or exclude `tempmediaStorage` by name
-
 ---
 
 ## 🔵 Optional Improvements (P4)

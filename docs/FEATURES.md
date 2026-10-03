@@ -74,7 +74,9 @@
 - One-click deletion with confirmation dialog
 - **Clean Cache** first builds a dry-run clean plan and deletes exactly that plan only after modal confirmation
 - Smart cleanup: keeps the most recently active tasks (default 5, `tfa.cache.autoCleanKeepCount`) to prevent interrupting active work; activity includes the task's files and its conversation `.pb`, `.db`, `.db-wal` and `.db-shm` files
-- Conversation `.pb` files are deleted only with their cleaned task or as true orphans (no matching Brain task directory)
+- Conversation files (`.pb`, `.db`, `.db-wal`, `.db-shm`) are deleted only with their cleaned or deleted task, or as true orphans (no matching Brain task directory); among orphan conversations the newest ones are kept
+- When a conversation `.db` cannot be deleted (for example, locked on Windows), its `.db-wal` and `.db-shm` are kept as well and reported as not deleted
+- Only UUID-named Brain directories are tasks; other directories such as the IDE's `tempmediaStorage` are neither listed nor cleaned
 - Each task is cleaned independently: a failure is logged and counted, and the remaining entries are still processed
 - Auto-clean (`tfa.cache.autoClean`) uses the same selection without a prompt
 

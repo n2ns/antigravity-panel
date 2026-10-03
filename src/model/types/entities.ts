@@ -60,19 +60,19 @@ export interface CleanPlanFile {
     size: number;
 }
 
-/** Brain task selected for deletion, with its conversation file if one exists */
+/** Brain task selected for deletion, with its conversation files (.pb / .db / .db-wal / .db-shm) if any exist */
 export interface CleanPlanTask {
     id: string;
     /** Size of the task directory (bytes) */
     size: number;
-    conversation?: CleanPlanFile;
+    conversations?: CleanPlanFile[];
 }
 
 /** Dry-run result of a cache clean: exactly what cleanCache would delete */
 export interface CleanPlan {
     keepCount: number;
     tasks: CleanPlanTask[];
-    /** Conversation .pb files without a brain task directory, beyond the newest keepCount */
+    /** Files of conversations without a brain task directory, beyond the newest keepCount conversations */
     orphanConversations: CleanPlanFile[];
     /** Task conversation files plus orphan conversation files */
     conversationFileCount: number;
@@ -83,7 +83,7 @@ export interface CleanPlan {
 export interface CleanResult {
     /** Brain tasks deleted */
     deletedCount: number;
-    /** Conversation .pb files deleted (task and orphan) */
+    /** Conversation files deleted (task and orphan) */
     deletedConversationCount: number;
     freedBytes: number;
     /** Tasks or files that could not be deleted */
