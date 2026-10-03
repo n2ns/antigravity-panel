@@ -327,6 +327,27 @@ suite('AutomationService Test Suite', () => {
         assert.strictEqual(service['connections'].get('9222:agent'), replacement as any);
     });
 
+    test('a CDP target whose connection is not open should not stop the scan of later targets', async () => {
+        const page = (id: string) => ({
+            type: 'page',
+            id,
+            url: 'vscode-file://vscode-app/workbench/workbench.html',
+            webSocketDebuggerUrl: `ws://127.0.0.1:9222/devtools/page/${id}`
+        });
+        sandbox.stub(service as any, 'getPages').resolves([page('closed'), page('agent')]);
+        const closedSocket = { close: sandbox.stub(), readyState: 3 };
+        const openSocket = { close: sandbox.stub(), readyState: 1 };
+        sandbox.stub(service as any, 'connectToPage').callsFake(async (id: unknown) =>
+            (id === '9222:closed' ? closedSocket : openSocket));
+        const evaluateStub = sandbox.stub(service as any, 'evaluate').resolves({ panel: true, events: [] });
+        service.start();
+
+        await service['performCdpAutoAccept'](service['runGeneration']);
+
+        assert.ok(closedSocket.close.calledOnce, 'The non-open connection should be closed');
+        assert.ok(evaluateStub.calledOnceWith(openSocket as any), 'The later target should still be scanned');
+    });
+
     test('task logic should NOT execute when disabled', async () => {
         const schedulerStub = sandbox.stub(Scheduler.prototype, 'register');
         service = new AutomationService();

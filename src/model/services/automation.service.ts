@@ -186,9 +186,13 @@ export class AutomationService implements IAutomationService, vscode.Disposable 
             if (!this.connections.has(id) && page.webSocketDebuggerUrl) {
                 const connected = await this.connectToPage(id, page.webSocketDebuggerUrl);
                 if (!connected) continue;
-                if (!this.isRunActive(generation) || connected.readyState !== WebSocket.OPEN as number) {
+                if (!this.isRunActive(generation)) {
                     try { connected.close(); } catch { /* ignore */ }
                     return;
+                }
+                if (connected.readyState !== WebSocket.OPEN as number) {
+                    try { connected.close(); } catch { /* ignore */ }
+                    continue;
                 }
 
                 // A connection created by another active run always keeps ownership.
