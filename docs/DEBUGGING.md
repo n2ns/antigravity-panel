@@ -29,7 +29,7 @@ Successful tools exit with code `0`. Detection or connection failures exit with 
 npm run debug:processes
 ```
 
-This lists matching processes, PIDs, parent PIDs, workspace IDs, ports, complete CSRF tokens, and the relevant command-line arguments.
+This lists matching processes (the `agy` hub of Antigravity IDE 2.6.0 and later, or the legacy `language_server_*`), PIDs, parent PIDs, workspace IDs or `--add-dir` folders, ports, complete CSRF tokens, and the relevant command-line arguments.
 
 ### 2.2 Fetch the raw quota endpoint independently
 
@@ -37,7 +37,7 @@ This lists matching processes, PIDs, parent PIDs, workspace IDs, ports, complete
 npm run debug:quota
 ```
 
-This standalone JavaScript tool discovers a real Language Server process, probes its localhost ports over HTTPS and then HTTP, requests:
+This standalone JavaScript tool discovers a real Language Server process, probes its localhost ports over HTTPS and then HTTP (the `--hub-port` of the `agy` hub first), requests:
 
 ```text
 /exa.language_server_pb.LanguageServerService/GetUserStatus
@@ -63,7 +63,7 @@ Run this from native Windows Node.js:
 npm run debug:windows-tree
 ```
 
-It reports only real IDE, Extension Host, and `language_server_windows_x64.exe` ancestry. It does not create simulated processes. This command is not intended for WSL or Linux Node.js.
+It reports only real IDE, Extension Host, and Language Server (`agy.exe` or `language_server_windows_x64.exe`) ancestry. It does not create simulated processes. This command is not intended for WSL or Linux Node.js.
 
 ## 3. Binary schema and serialization inspection
 

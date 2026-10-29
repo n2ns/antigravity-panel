@@ -7,7 +7,8 @@ function printHelp() {
     console.log(`Usage: node scripts/debug/inspect-windows-process-tree.js
 
 Inspect the real Windows process ancestry between Antigravity/VS Code,
-Extension Host processes, and language_server_windows_x64.exe.`);
+Extension Host processes, and the Language Server (agy.exe on Antigravity IDE
+2.6.0+, language_server_windows_x64.exe on older builds).`);
 }
 
 async function getProcessList() {
@@ -50,7 +51,11 @@ function findRelevantProcesses(processes) {
             || name === 'antigravity.exe'
             || name === 'antigravity ide.exe'
         );
-        if (name === 'language_server_windows_x64.exe' || commandLine.includes('language_server_windows_x64.exe')) {
+        if (
+            name === 'language_server_windows_x64.exe'
+            || name === 'agy.exe'
+            || commandLine.includes('language_server_windows_x64.exe')
+        ) {
             servers.push(processInfo);
         }
         if (
@@ -108,7 +113,7 @@ async function main() {
     console.log(`IDE Processes: ${relevant.ideProcesses.length}`);
 
     if (relevant.servers.length === 0) {
-        console.error('No language_server_windows_x64.exe process was found.');
+        console.error('No agy.exe or language_server_windows_x64.exe process was found.');
         process.exitCode = 1;
         return;
     }

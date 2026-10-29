@@ -186,15 +186,19 @@ async function main() {
     const processes = await listLanguageServerProcesses();
     const processInfo = processes.find(item => extractArgument(item.commandLine, 'csrf_token'));
     if (!processInfo) {
-        throw new Error('No language_server process with --csrf_token was found.');
+        throw new Error('No agy or language_server process with --csrf_token was found.');
     }
 
     const csrfToken = extractArgument(processInfo.commandLine, 'csrf_token');
     const extensionPort = Number(extractArgument(processInfo.commandLine, 'extension_server_port')) || null;
     console.log(`Process: PID ${processInfo.pid}, token ${csrfToken}`);
 
+    // The agy hub (Antigravity IDE 2.6.0+) advertises its service port as --hub-port
+    const hubPort = Number(extractArgument(processInfo.commandLine, 'hub-port')) || null;
+
     const listeningPorts = await discoverListeningPorts(processInfo.pid);
-    const candidates = listeningPorts.filter(port => port !== extensionPort);
+    const candidates = listeningPorts.filter(port => port !== extensionPort && port !== hubPort);
+    if (hubPort) candidates.unshift(hubPort);
     console.log(`Candidate localhost ports: ${candidates.join(', ') || 'none'}`);
     if (candidates.length === 0) {
         throw new Error('No candidate localhost listening ports were found.');

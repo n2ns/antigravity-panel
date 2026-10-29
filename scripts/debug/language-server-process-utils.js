@@ -40,14 +40,15 @@ function parseUnixProcessList(stdout) {
             ppid: Number(match[2]),
             commandLine: match[3],
         }))
-        .filter(processInfo => /language_server/i.test(processInfo.commandLine));
+        // Antigravity IDE 2.6.0+ runs the agy hub; older builds run language_server_*
+        .filter(processInfo => /language_server|(^|\/)agy(\s|$)/i.test(processInfo.commandLine));
 }
 
 async function listLanguageServerProcesses() {
     if (os.platform() === 'win32') {
         const command = [
             'powershell -NoProfile -Command',
-            '"Get-CimInstance Win32_Process -Filter \\"name like \'language_server%\'\\"',
+            '"Get-CimInstance Win32_Process -Filter \\"name like \'language_server%\' or name = \'agy.exe\'\\"',
             '| Select-Object ProcessId,ParentProcessId,CommandLine,ExecutablePath',
             '| ConvertTo-Json -Depth 2"',
         ].join(' ');
@@ -78,5 +79,6 @@ function extractArgument(commandLine, argumentName) {
 module.exports = {
     extractArgument,
     listLanguageServerProcesses,
+    parseUnixProcessList,
     runCommand,
 };

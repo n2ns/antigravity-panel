@@ -7,7 +7,8 @@ const {
 function printHelp() {
     console.log(`Usage: node scripts/debug/inspect-language-server-processes.js
 
-Inspect running Antigravity Language Server processes and print their complete
+Inspect running Antigravity Language Server processes (the agy hub of
+Antigravity IDE 2.6.0+ or the legacy language_server) and print their complete
 local connection arguments, including CSRF tokens.`);
 }
 
@@ -17,6 +18,8 @@ function printProcess(processInfo, index) {
     const extensionToken = extractArgument(commandLine, 'extension_server_csrf_token');
     const fields = [
         ['workspace_id', extractArgument(commandLine, 'workspace_id')],
+        ['add-dir', extractArgument(commandLine, 'add-dir')],
+        ['hub-port', extractArgument(commandLine, 'hub-port')],
         ['extension_server_port', extractArgument(commandLine, 'extension_server_port')],
         ['port', extractArgument(commandLine, 'port')],
         ['csrf_token', apiToken],
@@ -42,7 +45,7 @@ async function main() {
 
     const processes = await listLanguageServerProcesses();
     if (processes.length === 0) {
-        console.error('\nNo running language_server process was found.');
+        console.error('\nNo running agy or language_server process was found.');
         process.exitCode = 1;
         return;
     }

@@ -8,7 +8,23 @@ const { discoverListeningPorts } = require(
     discoverListeningPorts(pid: number): Promise<number[]>;
 };
 
+const { parseUnixProcessList } = require(
+    path.resolve(process.cwd(), 'scripts/debug/language-server-process-utils.js')
+) as {
+    parseUnixProcessList(stdout: string): { pid: number; ppid: number; commandLine: string }[];
+};
+
 suite('Debug Quota Script Test Suite', () => {
+    test('should list the agy hub and the legacy language server, not other processes', () => {
+        const processes = parseUnixProcessList([
+            '13532 25312 /home/dev/.gemini/bin/agy --hub --hub-port=64233 --app_data_dir=antigravity --csrf_token=hub-token',
+            '12345 30372 /opt/antigravity/language_server_linux_x64 --app_data_dir antigravity --csrf_token=abc',
+            '22222 22000 /usr/bin/node /home/dev/antigravity-panel/out/test.js',
+        ].join('\n'));
+
+        assert.deepStrictEqual(processes.map(p => p.pid), [13532, 12345]);
+    });
+
     test('should fall back to proc when Linux socket tools are unavailable', async function () {
         if (process.platform !== 'linux') this.skip();
 
