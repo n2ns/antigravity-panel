@@ -58,9 +58,12 @@ function findRelevantProcesses(processes) {
         ) {
             servers.push(processInfo);
         }
+        // Antigravity IDE 2.6.0 runs the extension host as the Node utility process with an inspector port
+        const isNodeServiceHost = commandLine.includes('--utility-sub-type=node.mojom.nodeservice')
+            && commandLine.includes('--inspect-port');
         if (
             isIdeExecutable
-            && commandLine.includes('--type=extensionhost')
+            && (commandLine.includes('--type=extensionhost') || isNodeServiceHost)
         ) {
             extensionHosts.push(processInfo);
         }
@@ -123,7 +126,13 @@ async function main() {
     }
 }
 
-main().catch(error => {
-    console.error(`Windows process-tree inspection failed: ${error instanceof Error ? error.message : String(error)}`);
-    process.exitCode = 1;
-});
+if (require.main === module) {
+    main().catch(error => {
+        console.error(`Windows process-tree inspection failed: ${error instanceof Error ? error.message : String(error)}`);
+        process.exitCode = 1;
+    });
+}
+
+module.exports = {
+    findRelevantProcesses,
+};
