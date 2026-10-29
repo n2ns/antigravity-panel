@@ -4,6 +4,7 @@
 
 ### Fixed
 
+- **5-Hour Quota Display Under Recent Antigravity IDE Updates** ([#208](https://github.com/n2ns/antigravity-panel/issues/208)): In recent Antigravity updates, `clientModelConfigs` for Gemini models omit valid quota percentages or countdowns, causing the panel to display `0% N/A`. The panel now extracts official 5-hour rolling limit buckets (`gemini-5h`, `3p-5h`) from `RetrieveUserQuotaSummary` and prioritizes them over broken model entries, matching the IDE's Settings → Models display while preserving weekly limit tracking.
 - **Commit Message in Multi-Root Workspaces**: The commit message generator always read the staged diff from, and wrote the message into, the first workspace folder. It now uses the folder of the active editor and falls back to the first folder only when no editor is open in a workspace folder.
 - **Untranslated Messages**: The task and context delete confirmations, the refresh, restart, reset, cache size and output channel notifications, and the sidebar's file open and configuration file errors were always shown in English. They are now translated in every supported language.
 - **WSL NAT Connection**: When the Language Server answered only on the Windows host IP in WSL (NAT networking), detection succeeded but every quota and context request was still sent to `127.0.0.1` and failed. Requests now go to the host that answered during detection.

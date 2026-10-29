@@ -18,6 +18,7 @@ import type {
     TokenUsageInfo,
     QuotaSnapshot,
     WeeklyLimitInfo,
+    RollingLimitInfo,
     QuotaUpdateCallback,
     ErrorCallback,
     LanguageServerInfo,
@@ -143,8 +144,11 @@ export class QuotaService implements IQuotaService {
             throw e;
         }
 
-        const weeklyLimits = await this.fetchWeeklyLimits();
-        if (weeklyLimits) snapshot.weeklyLimits = weeklyLimits;
+        const summaryLimits = await this.fetchSummaryLimits();
+        if (summaryLimits) {
+            snapshot.weeklyLimits = summaryLimits.weeklyLimits;
+            snapshot.rollingLimits = summaryLimits.rollingLimits;
+        }
         return snapshot;
     }
 
@@ -152,7 +156,12 @@ export class QuotaService implements IQuotaService {
      * Fetch the official weekly limits. Optional data: older servers lack this RPC,
      * so any failure only hides the weekly display and never fails the quota fetch.
      */
-    private async fetchWeeklyLimits(): Promise<WeeklyLimitInfo[] | undefined> {
+    /**
+     * Fetch the official weekly and rolling 5-hour limits from RetrieveUserQuotaSummary.
+     * Optional data: older servers lack this RPC, so any failure only hides the summary
+     * display and never fails the quota fetch.
+     */
+    private async fetchSummaryLimits(): Promise<{ weeklyLimits: WeeklyLimitInfo[]; rollingLimits: RollingLimitInfo[] } | undefined> {
         try {
             const response = await this.request<ServerQuotaSummaryResponse>(QUOTA_SUMMARY_PATH, REQUEST_METADATA);
             const groups = response.data?.response?.groups;
@@ -161,20 +170,32 @@ export class QuotaService implements IQuotaService {
                 return undefined;
             }
 
-            const limits: WeeklyLimitInfo[] = [];
+            const weeklyLimits: WeeklyLimitInfo[] = [];
+            const rollingLimits: RollingLimitInfo[] = [];
             for (const bucket of groups.flatMap(group => group.buckets ?? [])) {
-                if (bucket.window !== 'weekly' || typeof bucket.bucketId !== 'string') continue;
+                if (typeof bucket.bucketId !== 'string') continue;
+                if (bucket.window !== 'weekly' && bucket.window !== '5h') continue;
                 // remainingFraction and remainingAmount are alternatives; an amount alone has no percentage
                 if (bucket.remainingFraction === undefined && bucket.remainingAmount !== undefined) continue;
                 const resetTime = new Date(bucket.resetTime ?? '');
-                limits.push({
-                    bucketId: bucket.bucketId,
-                    // The server omits a zero fraction (protobuf omitempty)
-                    remainingPercentage: this.clampUnitFraction(bucket.remainingFraction ?? 0) * 100,
-                    resetTime: Number.isNaN(resetTime.getTime()) ? undefined : resetTime,
-                });
+                const validResetTime = Number.isNaN(resetTime.getTime()) ? undefined : resetTime;
+                const remainingPercentage = this.clampUnitFraction(bucket.remainingFraction ?? 0) * 100;
+
+                if (bucket.window === 'weekly') {
+                    weeklyLimits.push({
+                        bucketId: bucket.bucketId,
+                        remainingPercentage,
+                        resetTime: validResetTime,
+                    });
+                } else if (bucket.window === '5h') {
+                    rollingLimits.push({
+                        bucketId: bucket.bucketId,
+                        remainingPercentage,
+                        resetTime: validResetTime,
+                    });
+                }
             }
-            return limits;
+            return { weeklyLimits, rollingLimits };
         } catch (e) {
             debugLog(`Quota summary request failed: ${e instanceof Error ? e.message : String(e)}`);
             return undefined;

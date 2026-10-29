@@ -390,11 +390,12 @@ suite('QuotaService Test Suite', () => {
             data: { response: { groups: [{ displayName: 'Gemini Models', buckets }] } }
         });
 
-        test('should attach weekly buckets and skip other windows', async () => {
+        test('should attach weekly and 5h rolling buckets and skip other windows', async () => {
             service.mockResponse = validResponse;
             service.summaryResponse = summary([
                 { bucketId: 'gemini-weekly', window: 'weekly', remainingFraction: 0.89276433, resetTime: '2026-10-07T04:06:06Z' },
-                { bucketId: 'gemini-5h', window: '5h', remainingFraction: 1, resetTime: '2026-10-03T05:52:00Z' }
+                { bucketId: 'gemini-5h', window: '5h', remainingFraction: 0.82, resetTime: '2026-10-03T05:52:00Z' },
+                { bucketId: 'gemini-1d', window: '1d', remainingFraction: 0.5, resetTime: '2026-10-04T05:52:00Z' }
             ]);
 
             const snapshot = await service.fetchQuota();
@@ -406,6 +407,12 @@ suite('QuotaService Test Suite', () => {
             assert.strictEqual(weekly.bucketId, 'gemini-weekly');
             assert.ok(Math.abs(weekly.remainingPercentage - 89.276433) < 1e-9);
             assert.strictEqual(weekly.resetTime?.toISOString(), '2026-10-07T04:06:06.000Z');
+
+            assert.strictEqual(snapshot!.rollingLimits?.length, 1);
+            const rolling = snapshot!.rollingLimits![0];
+            assert.strictEqual(rolling.bucketId, 'gemini-5h');
+            assert.ok(Math.abs(rolling.remainingPercentage - 82) < 1e-9);
+            assert.strictEqual(rolling.resetTime?.toISOString(), '2026-10-03T05:52:00.000Z');
         });
 
         test('should treat an omitted fraction as zero and drop invalid reset times', async () => {
@@ -442,6 +449,7 @@ suite('QuotaService Test Suite', () => {
 
                 assert.ok(snapshot, 'quota fetch must still succeed');
                 assert.strictEqual(snapshot!.weeklyLimits, undefined);
+                assert.strictEqual(snapshot!.rollingLimits, undefined);
                 assert.strictEqual(snapshot!.models.length, 1);
                 assert.strictEqual(service.parsingError, null);
                 assert.strictEqual(receivedError, undefined);

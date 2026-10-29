@@ -181,7 +181,9 @@ export class StatusBarManager implements vscode.Disposable {
 
     /** The tighter of the 5-hour and weekly limits decides the status color */
     private getEffectivePercentage(group: StatusBarGroupItem): number {
-        return group.weekly ? Math.min(group.percentage, group.weekly.percentage) : group.percentage;
+        if (!group.weekly) return group.percentage;
+        if (group.percentage === 0 && group.resetTime === 'N/A') return group.weekly.percentage;
+        return Math.min(group.percentage, group.weekly.percentage);
     }
 
     private getStatusEmoji(

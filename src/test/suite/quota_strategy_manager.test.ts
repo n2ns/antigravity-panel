@@ -38,6 +38,11 @@ suite('QuotaStrategyManager Test Suite', () => {
         assert.deepStrictEqual(buckets, { gemini: 'gemini-weekly', 'non-google': '3p-weekly' });
     });
 
+    test('should map each quota pool to its rolling summary bucket', () => {
+        const buckets = Object.fromEntries(manager.getQuotaPools().map(pool => [pool.id, pool.rollingBucketId]));
+        assert.deepStrictEqual(buckets, { gemini: 'gemini-5h', 'non-google': '3p-5h' });
+    });
+
     test('should allow shared pools to be split through strategy data only', () => {
         const groups = manager.getGroups().map(group => ({
             ...group,

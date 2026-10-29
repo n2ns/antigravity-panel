@@ -550,8 +550,14 @@ export class AppViewModel implements vscode.Disposable {
         const newGroups = this.aggregateGroups(snapshot);
         const observedRemaining = new Map<string, number>();
         for (const group of newGroups) {
-            const model = this.getMinModelForPool(snapshot, group.id);
-            if (model) observedRemaining.set(group.id, model.remainingPercentage);
+            const pool = this.strategyManager.getQuotaPools().find(p => p.id === group.id);
+            const limit = pool?.rollingBucketId ? snapshot.rollingLimits?.find(l => l.bucketId === pool.rollingBucketId) : undefined;
+            if (limit) {
+                observedRemaining.set(group.id, limit.remainingPercentage);
+            } else {
+                const model = this.getMinModelForPool(snapshot, group.id);
+                if (model) observedRemaining.set(group.id, model.remainingPercentage);
+            }
         }
         const activeGroupId = this.detectActiveGroup(prevState, newGroups);
         const activeGroup = newGroups.find(g => g.id === activeGroupId);
@@ -953,12 +959,47 @@ export class AppViewModel implements vscode.Disposable {
         };
     }
 
+    /** Official rolling (5-hour) limit of a pool; reset times are recomputed so a cached snapshot is not stale */
+    private getRollingForPool(snapshot: QuotaSnapshot, pool: QuotaPoolDefinition): { remaining: number; resetTime: string; resetDate?: number } | undefined {
+        if (!pool.rollingBucketId) return undefined;
+        const limit = snapshot.rollingLimits?.find(l => l.bucketId === pool.rollingBucketId);
+        if (!limit) return undefined;
+
+        // A cached snapshot comes back from JSON with the date as a string
+        const timestamp = limit.resetTime === undefined ? NaN : new Date(limit.resetTime).getTime();
+        if (!Number.isFinite(timestamp)) {
+            return { remaining: limit.remainingPercentage, resetTime: 'N/A' };
+        }
+        const resetTime = formatTimeUntilReset(timestamp - Date.now());
+        return {
+            remaining: resetTime === 'Ready' ? 100 : limit.remainingPercentage,
+            resetTime,
+            resetDate: timestamp
+        };
+    }
+
     private aggregateGroups(snapshot: QuotaSnapshot): QuotaGroupState[] {
         const pools = this.strategyManager.getQuotaPools();
 
         return pools.map(pool => {
             const minModel = this.getMinModelForPool(snapshot, pool.id);
             const weekly = this.getWeeklyForPool(snapshot, pool);
+            const rolling = this.getRollingForPool(snapshot, pool);
+
+            // If the server provides an official 5-hour rolling limit for this pool in RetrieveUserQuotaSummary,
+            // use it as the source of truth (matching Antigravity IDE Settings → Models).
+            if (rolling) {
+                return {
+                    id: pool.id,
+                    label: pool.label,
+                    remaining: rolling.remaining,
+                    resetTime: rolling.resetTime,
+                    resetDate: rolling.resetDate,
+                    themeColor: pool.themeColor,
+                    hasData: true,
+                    weekly
+                };
+            }
 
             if (!minModel) {
                 return {
@@ -991,11 +1032,20 @@ export class AppViewModel implements vscode.Disposable {
 
     /**
      * Hours until the next quota reset for the active group, from API `resetTime` on the
-     * lowest-remaining model (same rule as aggregateGroups for every configured pool).
+     * lowest-remaining model or official rolling limit (same rule as aggregateGroups for every configured pool).
      * Used for prediction instead of a fixed window.
      */
     private getHoursUntilResetForGroup(groupId: string): number | null {
-        if (!this._lastSnapshot?.models?.length) return null;
+        if (!this._lastSnapshot) return null;
+        const pool = this.strategyManager.getQuotaPools().find(p => p.id === groupId);
+        if (pool && this._lastSnapshot.rollingLimits) {
+            const rolling = this.getRollingForPool(this._lastSnapshot, pool);
+            if (rolling?.resetDate) {
+                const ms = rolling.resetDate - Date.now();
+                if (!isNaN(ms) && ms > 0) return ms / 3_600_000;
+            }
+        }
+        if (!this._lastSnapshot.models?.length) return null;
         const minModel = this.getMinModelForPool(this._lastSnapshot, groupId);
         if (!minModel) return null;
         const resetTimestamp = this.getResetTimestamp(minModel);
@@ -1384,7 +1434,7 @@ export class AppViewModel implements vscode.Disposable {
             this._lastSnapshot = cachedSnapshot || null;
             const currentPoolIds = new Set(this.strategyManager.getQuotaPools().map(pool => pool.id));
             const cacheAlreadyUsesPools = cachedQuota.groups.every(group => currentPoolIds.has(group.id));
-            const restoredGroups = cachedSnapshot?.models
+            const restoredGroups = cachedSnapshot && (cachedSnapshot.models || cachedSnapshot.rollingLimits)
                 ? this.aggregateGroups(cachedSnapshot)
                 : cacheAlreadyUsesPools ? cachedQuota.groups : [];
 

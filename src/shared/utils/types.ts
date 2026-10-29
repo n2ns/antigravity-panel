@@ -38,6 +38,18 @@ export interface WeeklyLimitInfo {
 }
 
 /**
+ * Official rolling (5-hour) limit of one quota pool, from a RetrieveUserQuotaSummary bucket
+ */
+export interface RollingLimitInfo {
+  /** Server bucket ID, e.g. "gemini-5h" */
+  bucketId: string;
+  /** Remaining quota percentage (0-100) */
+  remainingPercentage: number;
+  /** Reset time; absent when the server value was missing or invalid */
+  resetTime?: Date;
+}
+
+/**
  * Prompt Credits information
  */
 export interface PromptCreditsInfo {
@@ -106,6 +118,8 @@ export interface QuotaSnapshot {
   models: ModelQuotaInfo[];
   /** Official weekly limits; absent when the server does not provide the quota summary */
   weeklyLimits?: WeeklyLimitInfo[];
+  /** Official rolling (5-hour) limits; absent when the server does not provide the quota summary */
+  rollingLimits?: RollingLimitInfo[];
 }
 
 /**

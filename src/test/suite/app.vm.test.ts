@@ -1023,6 +1023,72 @@ suite('AppViewModel Test Suite', () => {
         });
     });
 
+    suite('official 5h rolling limits', () => {
+        const inHours = (hours: number) => new Date(Date.now() + hours * 3600000);
+        const brokenGeminiModel = {
+            modelId: 'MODEL_PLACEHOLDER_M37',
+            label: 'Gemini 3.1 Pro (High)',
+            remainingPercentage: 0,
+            isExhausted: false,
+            resetTime: inHours(4),
+            resetTimeIsFallback: true,
+            timeUntilReset: 'N/A'
+        };
+
+        test('should prioritize 5h rolling limit from summary over broken model configs', async () => {
+            const resetDate = new Date(Date.now() + 40 * 60000);
+            mockQuota.fetchQuota = async () => ({
+                timestamp: new Date(),
+                models: [brokenGeminiModel],
+                rollingLimits: [
+                    { bucketId: 'gemini-5h', remainingPercentage: 82, resetTime: resetDate }
+                ]
+            });
+
+            await vm.refreshQuota();
+
+            const { groups } = vm.getState().quota;
+            const gemini = groups.find(g => g.id === 'gemini');
+            assert.strictEqual(gemini?.remaining, 82);
+            assert.strictEqual(gemini?.resetTime, '40m');
+            assert.strictEqual(gemini?.resetDate, resetDate.getTime());
+
+            const statusGemini = vm.getStatusBarData().allGroups.find(g => g.id === 'gemini');
+            assert.strictEqual(statusGemini?.percentage, 82);
+            assert.strictEqual(statusGemini?.resetTime, '40m');
+        });
+
+        test('should fall back to model configs when no rolling bucket is present', async () => {
+            mockQuota.fetchQuota = async () => ({
+                timestamp: new Date(),
+                models: [{ ...brokenGeminiModel, remainingPercentage: 70, timeUntilReset: '3h' }]
+            });
+
+            await vm.refreshQuota();
+
+            const gemini = vm.getState().quota.groups.find(g => g.id === 'gemini');
+            assert.strictEqual(gemini?.remaining, 70);
+            assert.strictEqual(gemini?.resetTime, '3h');
+        });
+
+        test('should read rolling limits from cached snapshot and recompute group quota', () => {
+            const resetIso = inHours(2).toISOString();
+            mockStorage.getLastViewState = <T>() => ({ groups: [{ id: 'gemini' }], activeGroupId: 'gemini' }) as T;
+            mockStorage.getLastSnapshot = <T>() => ({
+                timestamp: new Date().toISOString(),
+                models: [brokenGeminiModel],
+                rollingLimits: [{ bucketId: 'gemini-5h', remainingPercentage: 85, resetTime: resetIso }]
+            }) as T;
+
+            vm.restoreFromCache();
+
+            const gemini = vm.getState().quota.groups.find(g => g.id === 'gemini');
+            assert.strictEqual(gemini?.remaining, 85);
+            assert.strictEqual(gemini?.resetDate, new Date(resetIso).getTime());
+            assert.strictEqual(gemini?.resetTime, '2h 0m');
+        });
+    });
+
     test('output channel changes should not count as editor activity', () => {
         let listener: ((e: { document: { uri: { scheme: string } } }) => void) | undefined;
         const stub = sinon.stub(vscode.workspace, 'onDidChangeTextDocument').callsFake(l => {

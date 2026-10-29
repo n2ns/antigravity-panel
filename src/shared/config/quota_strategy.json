@@ -5,14 +5,16 @@
             "label": "Gemini",
             "shortLabel": "Gemini",
             "themeColor": "#40C4FF",
-            "weeklyBucketId": "gemini-weekly"
+            "weeklyBucketId": "gemini-weekly",
+            "rollingBucketId": "gemini-5h"
         },
         {
             "id": "non-google",
             "label": "Claude",
             "shortLabel": "Claude",
             "themeColor": "#FFAB40",
-            "weeklyBucketId": "3p-weekly"
+            "weeklyBucketId": "3p-weekly",
+            "rollingBucketId": "3p-5h"
         }
     ],
     "groups": [

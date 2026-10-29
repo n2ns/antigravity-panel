@@ -47,6 +47,8 @@ export interface QuotaPoolDefinition {
   themeColor: string;
   /** RetrieveUserQuotaSummary bucket holding this pool's official weekly limit */
   weeklyBucketId?: string;
+  /** RetrieveUserQuotaSummary bucket holding this pool's official 5-hour rolling limit */
+  rollingBucketId?: string;
 }
 
 export interface QuotaStrategyDefinition {

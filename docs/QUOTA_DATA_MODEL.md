@@ -78,6 +78,7 @@ Each poll produces one snapshot:
 | `tokenUsage` | `TokenUsageInfo` | Credits summary (optional) |
 | `userInfo` | `UserInfo` | User and subscription information (optional) |
 | `weeklyLimits` | `WeeklyLimitInfo[]` | Weekly buckets `{ bucketId, remainingPercentage, resetTime? }` (optional; absent when the summary is unavailable). `resetTime` is absent when the server value was invalid |
+| `rollingLimits` | `RollingLimitInfo[]` | 5-hour rolling buckets `{ bucketId, remainingPercentage, resetTime? }` (optional; absent when the summary is unavailable). `resetTime` is absent when the server value was invalid |
 
 ---
 
@@ -102,10 +103,10 @@ Each model group points to a quota pool through `quotaPoolId`. A quota pool name
 | `gpt` | `#FF5252` | `non-google` | Claude (orange) |
 | `other` | `#FFAB40` | `non-google` | Claude (orange) |
 
-| Quota pool | `weeklyBucketId` |
-|---|---|
-| `gemini` | `gemini-weekly` |
-| `non-google` | `3p-weekly` |
+| Quota pool | `weeklyBucketId` | `rollingBucketId` |
+|---|---|---|
+| `gemini` | `gemini-weekly` | `gemini-5h` |
+| `non-google` | `3p-weekly` | `3p-5h` |
 
 Gemini Flash and Gemini Pro currently share the same Gemini quota pool. The relative consumption cost of Flash and Pro may differ, but usage of either model reduces the remaining quota of the same pool.
 
@@ -158,11 +159,11 @@ This type keeps its historical name, but each entry now represents the state of 
 
 ### 4.2 Aggregation rules
 
-For all models that belong to the same `quotaPoolId`:
+For each quota pool:
 
-- `remaining`: the lowest remaining percentage.
-- `resetTime`: the reset time of the model with the lowest remaining percentage.
-- `hasData`: at least one model row exists in the pool.
+- `remaining`: official 5-hour rolling limit from `RetrieveUserQuotaSummary` (`rollingBucketId`) if available; otherwise the lowest remaining percentage across model rows in the pool.
+- `resetTime`: the reset time of the official rolling limit, or of the model with the lowest remaining percentage.
+- `hasData`: at least one model row or rolling summary bucket exists in the pool.
 - When the server reports `Ready`, the UI shows 100% in sync.
 
 The minimum strategy avoids overestimating available quota when server model rows are briefly out of sync.
@@ -294,6 +295,6 @@ On startup, quota, the active pool and the prediction chart are restored from th
 ## 9. Limitations
 
 - The extension can only use the quota windows the Language Server currently exposes; it cannot derive windows that were not returned. Older servers without `RetrieveUserQuotaSummary` show no weekly limit.
-- The 5-hour value comes from the `GetUserStatus` model rows, not from the summary's `5h` buckets; the two can report slightly different reset times.
+- The 5-hour value comes from the official `RetrieveUserQuotaSummary` 5-hour bucket when present, with fallback to `GetUserStatus` model rows for older servers.
 - Active pool detection depends on polling and may lag by up to one polling cycle.
 - Quota pool relationships are provider policy; when they change, `quota_strategy.json` must be updated accordingly. Pools must not be merged automatically just because several models currently show the same value.
