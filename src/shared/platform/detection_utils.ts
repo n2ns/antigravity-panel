@@ -25,6 +25,12 @@ export function hasAntigravityAppDataDir(commandLine: string): boolean {
 }
 
 /**
+ * Port argument of a backend process: the legacy language server passes
+ * --extension_server_port, the agy hub (Antigravity IDE 2.6.0+) --hub-port.
+ */
+export const SERVER_PORT_PATTERN = /--(?:extension_server_port|hub-port)[=\s]+(\d+)/;
+
+/**
  * Original testPort logic from ProcessFinder
  */
 export async function verifyServerGateway(

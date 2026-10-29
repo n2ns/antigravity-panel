@@ -6,7 +6,7 @@ import type { PlatformStrategy } from '../../shared/utils/types';
  * Mock strategy that returns JSON-parsed input to allow easy control in tests
  */
 class MockStrategy implements PlatformStrategy {
-    getProcessListCommand(_name: string) { return 'mock_ps'; }
+    getProcessListCommand(_names: string[]) { return 'mock_ps'; }
     getPortListCommand(_pid: number) { return 'mock_netstat'; }
 
     parseProcessInfo(stdout: string) {

@@ -286,6 +286,24 @@ suite('QuotaService Test Suite', () => {
         }
     });
 
+    test('should skip models the server reports as disabled', async () => {
+        // Antigravity IDE 2.6.0 lists Gemini 4 Argon as disabled with an empty quotaInfo for plans without access
+        service.mockResponse = {
+            userStatus: {
+                cascadeModelConfigData: {
+                    clientModelConfigs: [
+                        validResponse.userStatus.cascadeModelConfigData.clientModelConfigs[0],
+                        { label: 'Gemini 4 Argon', modelOrAlias: { model: 'MODEL_PLACEHOLDER_M421' }, disabled: true, quotaInfo: {} }
+                    ]
+                }
+            }
+        };
+
+        const snapshot = await service.fetchQuota();
+
+        assert.deepStrictEqual(snapshot!.models.map(m => m.label), ['GPT-4']);
+    });
+
     test('should not flag valid resetTime as fallback', async () => {
         service.mockResponse = validResponse;
         const snapshot = await service.fetchQuota();

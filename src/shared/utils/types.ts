@@ -185,8 +185,8 @@ export interface ProcessInfo {
  * Platform strategy interface
  */
 export interface PlatformStrategy {
-  /** Get process list command */
-  getProcessListCommand(processName: string): string;
+  /** Get process list command for every accepted backend process name */
+  getProcessListCommand(processNames: string[]): string;
   /** Parse process information */
   parseProcessInfo(stdout: string): ProcessInfo[] | null;
   /** Get port list command */

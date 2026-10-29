@@ -154,6 +154,38 @@ suite('Platform Strategies Test Suite', () => {
             assert.deepStrictEqual(ports, []);
         });
 
+        test('should list the agy backend alongside the legacy language server', () => {
+            const cmd = strategy.getProcessListCommand(['language_server_windows_x64.exe', 'agy.exe']);
+            assert.ok(cmd.includes("name=''language_server_windows_x64.exe'' or name=''agy.exe''"), cmd);
+            assert.ok(strategy.getFallbackProcessListCommand().includes("name = 'agy.exe'"));
+            assert.ok(strategy.getDiagnosticCommand().includes('agy'));
+        });
+
+        test('should read the agy hub port from --hub-port', () => {
+            const jsonOutput = JSON.stringify({
+                ProcessId: 13532,
+                ParentProcessId: 25312,
+                CommandLine: 'C:\\Users\\dev\\.gemini\\bin\\agy.exe --hub --hub-port=64233 --app_data_dir=antigravity --csrf_token=hub-token --add-dir=C:\\work\\project'
+            });
+
+            const result = strategy.parseProcessInfo(jsonOutput);
+
+            assert.ok(result);
+            assert.strictEqual(result![0].pid, 13532);
+            assert.strictEqual(result![0].extensionPort, 64233);
+            assert.strictEqual(result![0].csrfToken, 'hub-token');
+        });
+
+        test('should parse an agy hub row from wmic CSV output', () => {
+            const csv = 'Node,CommandLine,ParentProcessId,ProcessId\r\nPC,C:\\bin\\agy.exe --hub --hub-port=64233 --app_data_dir=antigravity --csrf_token=hub-token,25312,13532';
+
+            const result = strategy.parseProcessInfo(csv);
+
+            assert.ok(result, 'agy rows carry --hub-port instead of --extension_server_port');
+            assert.strictEqual(result![0].pid, 13532);
+            assert.strictEqual(result![0].extensionPort, 64233);
+        });
+
         test('should return 0 for missing extension port', () => {
             const jsonOutput = JSON.stringify({
                 ProcessId: 12345,
@@ -275,6 +307,23 @@ language  71666 user   11u  IPv4 0x1234567891      0t0  TCP 127.0.0.1:42101 (LIS
             assert.strictEqual(result![0].pid, 12345);
             assert.strictEqual(result![0].extensionPort, 42100);
             assert.strictEqual(result![0].csrfToken, 'abc123xyz');
+        });
+
+        test('should list the agy backend alongside the legacy language server', () => {
+            const cmd = strategy.getProcessListCommand(['language_server_linux_x64', 'agy']);
+            assert.strictEqual(cmd, 'ps -A -ww -o pid,ppid,args | grep -E "[l]anguage_server_linux_x64|[a]gy"');
+        });
+
+        test('should parse an agy hub process', () => {
+            const psOutput = `13532 25312 /home/dev/.gemini/bin/agy --hub --hub-port=64233 --app_data_dir=antigravity --csrf_token=hub-token --add-dir=/home/dev/project`;
+
+            const result = strategy.parseProcessInfo(psOutput);
+
+            assert.ok(result, 'agy carries --hub-port instead of --extension_server_port');
+            assert.strictEqual(result![0].pid, 13532);
+            assert.strictEqual(result![0].ppid, 25312);
+            assert.strictEqual(result![0].extensionPort, 64233);
+            assert.strictEqual(result![0].csrfToken, 'hub-token');
         });
 
         test('should parse ss output for Linux', () => {

@@ -299,7 +299,7 @@ export class QuotaService implements IQuotaService {
 
         const rawModels = userStatus.cascadeModelConfigData?.clientModelConfigs || [];
         const models: ModelQuotaInfo[] = rawModels
-            .filter((m: RawModelConfig) => m.quotaInfo)
+            .filter((m: RawModelConfig) => m.quotaInfo && !m.disabled)
             .map((m: RawModelConfig) => {
                 const now = new Date();
                 // null would parse as the 1970 epoch; treat it like a missing value
@@ -354,6 +354,8 @@ export class QuotaService implements IQuotaService {
 interface RawModelConfig {
     label: string;
     modelOrAlias?: { model: string };
+    /** Set for models the plan cannot use; their quotaInfo is empty */
+    disabled?: boolean;
     quotaInfo?: {
         remainingFraction?: number;
         resetTime?: string | null;

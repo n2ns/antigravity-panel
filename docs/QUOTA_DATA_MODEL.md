@@ -37,6 +37,7 @@ The server mainly returns:
 - `modelOrAlias.model`: model ID
 - `quotaInfo.remainingFraction`: remaining fraction (0-1)
 - `quotaInfo.resetTime`: reset time provided by the server
+- `disabled`: set for models the plan cannot use (for example Gemini 4 Argon on plans without access); their `quotaInfo` is empty, and the panel skips these rows
 
 The Language Server may still return multiple model rows for the same quota pool. The number of model rows does not equal the number of independent quota pools.
 

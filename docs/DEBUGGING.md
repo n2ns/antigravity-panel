@@ -67,7 +67,7 @@ It reports only real IDE, Extension Host, and `language_server_windows_x64.exe` 
 
 ## 3. Binary schema and serialization inspection
 
-When server fields disappear or behave unexpectedly, inspect the compiled Go Protobuf strings in the Language Server binary. A typical Linux installation is:
+When server fields disappear or behave unexpectedly, inspect the compiled Go Protobuf strings in the Language Server binary. Antigravity IDE 2.6.0 and later run the `agy` hub instead of `language_server_*`; on Windows its binary is `%USERPROFILE%\.gemini\bin\agy.exe`. A typical Linux installation of an older build is:
 
 ```text
 ~/.antigravity-ide-server/bin/<version>/extensions/antigravity/bin/language_server_linux_x64

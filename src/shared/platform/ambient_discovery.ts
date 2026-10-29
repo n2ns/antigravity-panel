@@ -2,6 +2,7 @@ import {
     verifyServerGateway,
     getPortListCommand,
     hasAntigravityAppDataDir,
+    SERVER_PORT_PATTERN,
 } from "./detection_utils";
 import { exec } from "child_process";
 import { promisify } from "util";
@@ -160,13 +161,13 @@ export class AmbientDiscovery {
     private extractDetails(cmd: string, pid: number, ppid: number): ProcessInfo | null {
         if (
             !cmd.includes("--csrf_token")
-            || !cmd.includes("--extension_server_port")
+            || !SERVER_PORT_PATTERN.test(cmd)
             || !hasAntigravityAppDataDir(cmd)
         ) {
             return null;
         }
 
-        const portPtr = cmd.match(/--extension_server_port[=\s]+(\d+)/);
+        const portPtr = cmd.match(SERVER_PORT_PATTERN);
         const tokenPtr = cmd.match(/--csrf_token[=\s]+(?:["']?)([a-zA-Z0-9\-_.]+)(?:["']?)/);
         const wsPtr = cmd.match(/--workspace_id[=\s]+(?:["']?)([a-zA-Z0-9\-_.]+)(?:["']?)/);
 

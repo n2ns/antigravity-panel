@@ -71,7 +71,8 @@ function sanitizeDiagnostics(text: string): string {
 
 export class ProcessFinder {
   private strategy: PlatformStrategy;
-  private processName: string;
+  // Antigravity IDE 2.6.0+ runs the agy hub; older builds run language_server_*
+  private processNames: string[];
 
   // Stores the reason for the last detection failure
   public failureReason:
@@ -103,13 +104,13 @@ export class ProcessFinder {
 
     if (platform === "win32") {
       this.strategy = new WindowsStrategy();
-      this.processName = "language_server_windows_x64.exe";
+      this.processNames = ["language_server_windows_x64.exe", "agy.exe"];
     } else if (platform === "darwin") {
       this.strategy = new UnixStrategy("darwin");
-      this.processName = `language_server_macos${arch === "arm64" ? "_arm" : ""}`;
+      this.processNames = [`language_server_macos${arch === "arm64" ? "_arm" : ""}`, "agy"];
     } else {
       this.strategy = new UnixStrategy("linux");
-      this.processName = `language_server_linux${arch === "arm64" ? "_arm" : "_x64"}`;
+      this.processNames = [`language_server_linux${arch === "arm64" ? "_arm" : "_x64"}`, "agy"];
     }
   }
 
@@ -117,7 +118,7 @@ export class ProcessFinder {
    * Get the process name being searched for (for diagnostics)
    */
   getProcessName(): string {
-    return this.processName;
+    return this.processNames.join(" / ");
   }
 
   /**
@@ -183,7 +184,7 @@ export class ProcessFinder {
    */
   private async runDiagnostics(): Promise<void> {
     warnLog("⚠️ Running diagnostics to help troubleshoot...");
-    infoLog(`Target process: ${this.processName}`);
+    infoLog(`Target process: ${this.getProcessName()}`);
     infoLog(`Platform: ${process.platform}, Arch: ${process.arch}`);
     this.diagnosticSummary = "";
 
@@ -217,7 +218,7 @@ export class ProcessFinder {
         );
       } else {
         parts.push("Related process output: none");
-        warnLog("❌ No related processes found (language_server/antigravity)");
+        warnLog("❌ No related processes found (agy/language_server/antigravity)");
         infoLog(
           "💡 This usually means Antigravity IDE is not running or the process name has changed.",
         );
@@ -235,11 +236,11 @@ export class ProcessFinder {
       if (process.platform === "win32") {
         infoLog("💡 Try running this command manually in PowerShell:");
         infoLog(
-          '   Get-Process | Where-Object { $_.ProcessName -match "language|antigravity" }',
+          '   Get-Process | Where-Object { $_.ProcessName -match "language|antigravity|agy" }',
         );
       } else {
         infoLog("💡 Try running this command manually in Terminal:");
-        infoLog('   ps aux | grep -E "language|antigravity"');
+        infoLog('   ps aux | grep -E "language|antigravity|agy"');
       }
     }
 
@@ -261,7 +262,7 @@ export class ProcessFinder {
     try {
       const { stdout } = await this.execute(cmd);
       const lines = stdout.split(/\r?\n/).filter((l) => l.trim());
-      const related = lines.filter((l) => /language|antigravity/i.test(l));
+      const related = lines.filter((l) => /language|antigravity|agy\.exe/i.test(l));
       return [
         `${label}: ${related.length} related of ${lines.length} processes`,
         ...related.slice(0, 10).map((l) => l.substring(0, 150)),
@@ -308,7 +309,7 @@ export class ProcessFinder {
         `ProcessFinder: Expected Workspace IDs: ${expectedIds.join(", ") || "none"}`,
       );
 
-      const cmd = this.strategy.getProcessListCommand(this.processName);
+      const cmd = this.strategy.getProcessListCommand(this.processNames);
       const { stdout } = await this.runScanStep("Process name scan", () =>
         this.executeWithPowershellWarmup(cmd),
       );

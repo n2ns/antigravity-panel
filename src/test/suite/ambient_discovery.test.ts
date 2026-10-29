@@ -38,6 +38,17 @@ suite("AmbientDiscovery Test Suite", () => {
     assert.strictEqual(result.csrfToken, "valid-token");
   });
 
+  test("accepts the agy hub, which advertises its port as --hub-port", () => {
+    const result = extractDetails(
+      "/home/dev/.gemini/bin/agy --hub --hub-port=64233 " +
+      "--app_data_dir=antigravity --csrf_token=hub-token --add-dir=/home/dev/project",
+    );
+
+    assert.ok(result);
+    assert.strictEqual(result.extensionPort, 64233);
+    assert.strictEqual(result.csrfToken, "hub-token");
+  });
+
   test("accepts the legacy marker with quoted equals syntax", () => {
     const result = extractDetails(
       "/opt/antigravity/language_server --csrf_token valid-token " +
