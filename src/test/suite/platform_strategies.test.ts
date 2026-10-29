@@ -163,6 +163,35 @@ suite('Platform Strategies Test Suite', () => {
             const result = strategy.parseProcessInfo(jsonOutput);
             assert.strictEqual(result![0].extensionPort, 0);
         });
+
+        test('should parse the agy hub backend with --hub-port and --add-dir', () => {
+            const jsonOutput = JSON.stringify({
+                ProcessId: 4242,
+                ParentProcessId: 4200,
+                CommandLine: 'C:\\Users\\User\\.gemini\\bin\\agy.exe --hub --hub-port=34165 --app_data_dir=antigravity --csrf_token=hub-token --add-dir=C:\\work\\project'
+            });
+
+            const result = strategy.parseProcessInfo(jsonOutput);
+
+            assert.ok(result, 'Should parse the agy hub process');
+            assert.strictEqual(result![0].pid, 4242);
+            assert.strictEqual(result![0].ppid, 4200);
+            assert.strictEqual(result![0].extensionPort, 34165);
+            assert.strictEqual(result![0].csrfToken, 'hub-token');
+            assert.deepStrictEqual(result![0].workspaceDirs, ['C:\\work\\project']);
+        });
+
+        test('should query both backend executables in the process list command', () => {
+            const command = strategy.getProcessListCommand([
+                'language_server_windows_x64.exe',
+                'agy.exe',
+            ]);
+
+            assert.ok(command.includes("language_server_windows_x64.exe"));
+            assert.ok(command.includes("agy.exe"));
+            assert.ok(command.includes(" or "));
+            assert.ok(command.includes("Get-CimInstance Win32_Process -Filter $f"));
+        });
     });
 
     suite('UnixStrategy - macOS', () => {
@@ -275,6 +304,41 @@ language  71666 user   11u  IPv4 0x1234567891      0t0  TCP 127.0.0.1:42101 (LIS
             assert.strictEqual(result![0].pid, 12345);
             assert.strictEqual(result![0].extensionPort, 42100);
             assert.strictEqual(result![0].csrfToken, 'abc123xyz');
+        });
+
+        test('should parse the agy hub backend from ps output', () => {
+            const psOutput = `118882 118399 /home/user/.gemini/bin/agy --hub --hub-port=34165 --app_data_dir=antigravity --csrf_token=9be535f7 --add-dir=/home/user/project --add-dir=/home/user/other`;
+
+            const result = strategy.parseProcessInfo(psOutput);
+
+            assert.ok(result, 'Should parse the agy hub process');
+            assert.strictEqual(result![0].pid, 118882);
+            assert.strictEqual(result![0].ppid, 118399);
+            assert.strictEqual(result![0].extensionPort, 34165);
+            assert.strictEqual(result![0].csrfToken, '9be535f7');
+            assert.deepStrictEqual(result![0].workspaceDirs, ['/home/user/project', '/home/user/other']);
+            assert.strictEqual(result![0].workspaceId, undefined);
+        });
+
+        test('should ignore processes that only look like Antigravity', () => {
+            const psOutput = `31337 30000 /usr/bin/node /home/user/antigravity-panel/server.js --add-dir=/home/user/project`;
+
+            const result = strategy.parseProcessInfo(psOutput);
+
+            assert.strictEqual(result, null);
+        });
+
+        test('should list both backend executables and anchor the agy match', () => {
+            const command = strategy.getProcessListCommand([
+                'language_server_linux_x64',
+                'agy',
+            ]);
+
+            assert.ok(command.startsWith('ps -A -ww -o pid=,ppid=,args='));
+            assert.ok(command.includes('language_server_linux_x64'));
+            assert.ok(command.includes('agy'));
+            assert.ok(command.includes("'(^|/)"));
+            assert.ok(command.includes('( |$)'));
         });
 
         test('should parse ss output for Linux', () => {

@@ -24,6 +24,19 @@ export function getExpectedWorkspaceIds(): string[] {
   return ids;
 }
 
+/**
+ * Filesystem paths of the open workspace folders.
+ *
+ * The agy hub (Antigravity 1.10+) announces them as repeated `--add-dir`
+ * arguments instead of the legacy `--workspace_id`.
+ */
+export function getExpectedWorkspacePaths(): string[] {
+  const folders = vscode.workspace.workspaceFolders || [];
+  return folders
+    .map((folder) => folder.uri?.fsPath)
+    .filter((fsPath): fsPath is string => typeof fsPath === "string" && fsPath.length > 0);
+}
+
 export function getWorkspaceIdsFromFolders(
   folders: readonly vscode.WorkspaceFolder[],
 ): string[] {

@@ -953,6 +953,45 @@ suite('AppViewModel Test Suite', () => {
             assert.deepStrictEqual(statusGemini?.weekly, { percentage: 15, resetTime: '4d 3h' });
         });
 
+        test('should keep Gemini Argon in a separate quota pool', async () => {
+            mockQuota.fetchQuota = async () => ({
+                timestamp: new Date(),
+                models: [
+                    {
+                        modelId: 'MODEL_PLACEHOLDER_M318',
+                        label: 'Gemini 3.8 Flash (High)',
+                        remainingPercentage: 78.6,
+                        isExhausted: false,
+                        resetTime: inHours(4),
+                        timeUntilReset: '4h'
+                    },
+                    {
+                        modelId: 'MODEL_PLACEHOLDER_M418',
+                        label: 'Gemini 4 Argon (Medium)',
+                        remainingPercentage: 0,
+                        isExhausted: true,
+                        resetTime: inHours(150),
+                        timeUntilReset: '6d 6h'
+                    }
+                ],
+                weeklyLimits: [
+                    { bucketId: 'gemini-weekly', remainingPercentage: 55.6, resetTime: inHours(99) },
+                    { bucketId: 'gemini-argon-wtu-weekly', remainingPercentage: 0, resetTime: inHours(150) }
+                ]
+            });
+
+            await vm.refreshQuota();
+
+            const groups = vm.getState().quota.groups;
+            // The exhausted Argon quota must not drag the Gemini pool to 0%
+            assert.strictEqual(groups.find(g => g.id === 'gemini')?.remaining, 78.6);
+            assert.strictEqual(groups.find(g => g.id === 'gemini')?.weekly?.remaining, 55.6);
+            const argon = groups.find(g => g.id === 'gemini-argon');
+            assert.ok(argon?.hasData);
+            assert.strictEqual(argon?.remaining, 0);
+            assert.strictEqual(argon?.weekly?.remaining, 0);
+        });
+
         test('should leave weekly out when the server sent no quota summary', async () => {
             mockQuota.fetchQuota = async () => ({ timestamp: new Date(), models: [geminiModel] });
 
@@ -1314,12 +1353,12 @@ suite('AppViewModel Test Suite', () => {
 
         const weekly = vm.getSidebarData().weekly;
 
-        assert.deepStrictEqual(queriedGroups, ['gemini', 'non-google']);
+        assert.deepStrictEqual(queriedGroups, ['gemini', 'non-google', 'gemini-argon']);
         assert.ok(weekly);
         assert.strictEqual(weekly.days.length, 7);
-        assert.strictEqual(weekly.days[6].items.length, 2);
-        assert.strictEqual(weekly.total, 28);
-        assert.strictEqual(weekly.previousTotal, 14);
+        assert.strictEqual(weekly.days[6].items.length, 3);
+        assert.strictEqual(weekly.total, 42);
+        assert.strictEqual(weekly.previousTotal, 21);
     });
 
     test('getSidebarData should align quota pools by local day instead of array index', () => {
@@ -1345,9 +1384,9 @@ suite('AppViewModel Test Suite', () => {
             `${todayStart.getFullYear()}-${String(todayStart.getMonth() + 1).padStart(2, '0')}-${String(todayStart.getDate()).padStart(2, '0')}`
         );
         assert.deepStrictEqual(weekly.days[6].items.map(item => item.label), ['Gemini']);
-        assert.deepStrictEqual(weekly.days[5].items.map(item => item.label), ['Gemini', 'Claude']);
-        assert.strictEqual(weekly.total, 13);
-        assert.strictEqual(weekly.previousTotal, 14);
+        assert.deepStrictEqual(weekly.days[5].items.map(item => item.label), ['Gemini', 'Claude', 'Gemini Argon']);
+        assert.strictEqual(weekly.total, 19);
+        assert.strictEqual(weekly.previousTotal, 21);
     });
 
     test('restoreFromCache should fire change events when something was restored', () => {

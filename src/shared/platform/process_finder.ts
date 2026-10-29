@@ -17,7 +17,7 @@ import { AmbientDiscovery } from "./ambient_discovery";
 import {
   verifyServerGateway,
 } from "./detection_utils";
-import { getExpectedWorkspaceIds } from "../utils/workspace_id";
+import { getExpectedWorkspaceIds, getExpectedWorkspacePaths } from "../utils/workspace_id";
 import {
   LanguageServerInfo,
   DetectOptions,
@@ -71,6 +71,7 @@ function sanitizeDiagnostics(text: string): string {
 
 export class ProcessFinder {
   private strategy: PlatformStrategy;
+  private processNames: string[];
   private processName: string;
 
   // Stores the reason for the last detection failure
@@ -103,21 +104,38 @@ export class ProcessFinder {
 
     if (platform === "win32") {
       this.strategy = new WindowsStrategy();
-      this.processName = "language_server_windows_x64.exe";
+      this.processNames = [
+        "language_server_windows_x64.exe",
+        "agy.exe",
+      ];
     } else if (platform === "darwin") {
       this.strategy = new UnixStrategy("darwin");
-      this.processName = `language_server_macos${arch === "arm64" ? "_arm" : ""}`;
+      this.processNames = [
+        `language_server_macos${arch === "arm64" ? "_arm" : ""}`,
+        "agy",
+      ];
     } else {
       this.strategy = new UnixStrategy("linux");
-      this.processName = `language_server_linux${arch === "arm64" ? "_arm" : "_x64"}`;
+      this.processNames = [
+        `language_server_linux${arch === "arm64" ? "_arm" : "_x64"}`,
+        "agy",
+      ];
     }
+    this.processName = this.processNames.join(" / ");
   }
 
   /**
-   * Get the process name being searched for (for diagnostics)
+   * Get the process names being searched for (for diagnostics)
    */
   getProcessName(): string {
     return this.processName;
+  }
+
+  /**
+   * Get the executable names searched on this platform
+   */
+  getProcessNames(): string[] {
+    return [...this.processNames];
   }
 
   /**
@@ -217,7 +235,7 @@ export class ProcessFinder {
         );
       } else {
         parts.push("Related process output: none");
-        warnLog("❌ No related processes found (language_server/antigravity)");
+        warnLog("❌ No related processes found (agy/language_server/antigravity)");
         infoLog(
           "💡 This usually means Antigravity IDE is not running or the process name has changed.",
         );
@@ -235,11 +253,11 @@ export class ProcessFinder {
       if (process.platform === "win32") {
         infoLog("💡 Try running this command manually in PowerShell:");
         infoLog(
-          '   Get-Process | Where-Object { $_.ProcessName -match "language|antigravity" }',
+          '   Get-Process | Where-Object { $_.ProcessName -match "language|antigravity|agy" }',
         );
       } else {
         infoLog("💡 Try running this command manually in Terminal:");
-        infoLog('   ps aux | grep -E "language|antigravity"');
+        infoLog('   ps aux | grep -E "agy|language_server"');
       }
     }
 
@@ -304,11 +322,15 @@ export class ProcessFinder {
 
     try {
       const expectedIds = getExpectedWorkspaceIds();
+      const expectedPaths = getExpectedWorkspacePaths();
       debugLog(
         `ProcessFinder: Expected Workspace IDs: ${expectedIds.join(", ") || "none"}`,
       );
+      debugLog(
+        `ProcessFinder: Expected Workspace folders: ${expectedPaths.join(", ") || "none"}`,
+      );
 
-      const cmd = this.strategy.getProcessListCommand(this.processName);
+      const cmd = this.strategy.getProcessListCommand(this.processNames);
       const { stdout } = await this.runScanStep("Process name scan", () =>
         this.executeWithPowershellWarmup(cmd),
       );
@@ -358,19 +380,20 @@ export class ProcessFinder {
       // Log detected candidates for debugging
       infos.forEach((info) => {
         debugLog(
-          `ProcessFinder: Candidate detected - PID: ${info.pid}, PPID: ${info.ppid}, WorkspaceID: ${info.workspaceId || "N/A"}`,
+          `ProcessFinder: Candidate detected - PID: ${info.pid}, PPID: ${info.ppid}, WorkspaceID: ${info.workspaceId || "N/A"}, Dirs: ${(info.workspaceDirs ?? []).join(", ") || "N/A"}`,
         );
       });
 
-      // Priority 1: Exact Workspace ID match (Strongest guarantee)
-      if (expectedIds.length > 0) {
-        const wsMatch = infos.find(
-          (i) => i.workspaceId && expectedIds.includes(i.workspaceId),
+      // Priority 1: Exact workspace match (Strongest guarantee)
+      // Legacy backends pass --workspace_id; the agy hub passes --add-dir folders.
+      if (expectedIds.length > 0 || expectedPaths.length > 0) {
+        const wsMatch = infos.find((i) =>
+          this.belongsToWorkspace(i, expectedIds, expectedPaths),
         );
         if (wsMatch && !verifiedPids.has(wsMatch.pid)) {
           verifiedPids.add(wsMatch.pid);
           debugLog(
-            `ProcessFinder: Strong Match! Workspace ID matches: ${wsMatch.workspaceId} (PID: ${wsMatch.pid})`,
+            `ProcessFinder: Strong Match! Workspace matches: ${wsMatch.workspaceId ?? (wsMatch.workspaceDirs ?? []).join(", ")} (PID: ${wsMatch.pid})`,
           );
           const result = await this.verifyAndConnect(wsMatch);
           if (result) return result;
@@ -409,12 +432,8 @@ export class ProcessFinder {
       for (const info of infos) {
         if (!info.ppid) continue;
 
-        // STRICT ISOLATION: Check workspace ID even in ancestry trace
-        if (
-          expectedIds.length > 0 &&
-          info.workspaceId &&
-          !expectedIds.includes(info.workspaceId)
-        ) {
+        // STRICT ISOLATION: Check workspace identity even in ancestry trace
+        if (this.hasKnownForeignWorkspace(info, expectedIds, expectedPaths)) {
           continue;
         }
 
@@ -443,33 +462,37 @@ export class ProcessFinder {
         `ProcessFinder: Selective heuristics failed. Verifying all remaining ${infos.length} candidates...`,
       );
       for (const info of infos) {
-        // STRICT ISOLATION: If we have expected IDs, don't connect to a process that has a DIFFERENT ID
-        if (
-          expectedIds.length > 0 &&
-          info.workspaceId &&
-          !expectedIds.includes(info.workspaceId)
-        ) {
+        // STRICT ISOLATION: If we know the workspace of a candidate, it must be ours
+        if (this.hasKnownForeignWorkspace(info, expectedIds, expectedPaths)) {
           // 1. Log the mismatch detail
+          const identity = info.workspaceId
+            ?? (info.workspaceDirs ?? []).join(", ");
           debugLog(
-            `ProcessFinder: Strict ID mismatch. PID:${info.pid} has '${info.workspaceId}', expected: [${expectedIds.join(", ")}]`,
+            `ProcessFinder: Strict workspace mismatch. PID:${info.pid} has '${identity}', expected: [${[...expectedIds, ...expectedPaths].join(", ")}]`,
           );
 
           // 2. Loose Matching (Fallback): Ignore separators (._-) and case
           // This handles cases where our normalization logic still differs slightly from the server
           const normalizeLoose = (id: string) =>
             id.replace(/[._-]/g, "").toLowerCase();
-          const looseMatch = expectedIds.some(
-            (eid) => normalizeLoose(eid) === normalizeLoose(info.workspaceId!),
-          );
+          const looseMatch = info.workspaceId
+            ? expectedIds.some(
+                (eid) => normalizeLoose(eid) === normalizeLoose(info.workspaceId!),
+              )
+            : (info.workspaceDirs ?? []).some((dir) =>
+                expectedPaths.some((expected) =>
+                  normalizeLoose(ProcessFinder.normalizeFolder(dir)) === normalizeLoose(ProcessFinder.normalizeFolder(expected)),
+                ),
+              );
 
           if (looseMatch) {
             warnLog(
-              `ProcessFinder: Loosely matched PID ${info.pid} (Actual: ${info.workspaceId}) despite strict mismatch.`,
+              `ProcessFinder: Loosely matched PID ${info.pid} (Actual: ${identity}) despite strict mismatch.`,
             );
             // Proceed to verify/connect despite the strict mismatch
           } else {
             debugLog(
-              `ProcessFinder: Skipping PID ${info.pid} - belongs to a different workspace (${info.workspaceId})`,
+              `ProcessFinder: Skipping PID ${info.pid} - belongs to a different workspace (${identity})`,
             );
             this.skippedForWorkspace++;
             continue;
@@ -572,6 +595,56 @@ export class ProcessFinder {
       csrfToken: info.csrfToken,
       ...(working.host ? { host: working.host } : {}),
     };
+  }
+
+  /** Normalize a folder path for comparison (case-insensitive only where the filesystem is) */
+  private static normalizeFolder(folder: string): string {
+    const normalized = folder.trim().replace(/\\/g, "/").replace(/\/+$/, "");
+    return process.platform === "win32" ? normalized.toLowerCase() : normalized;
+  }
+
+  /**
+   * True when the candidate advertises one of this window's workspace folders
+   * or the legacy workspace ID derived from them.
+   */
+  private belongsToWorkspace(
+    info: ProcessInfo,
+    expectedIds: string[],
+    expectedPaths: string[],
+  ): boolean {
+    if (
+      info.workspaceId
+      && expectedIds.length > 0
+      && expectedIds.includes(info.workspaceId)
+    ) {
+      return true;
+    }
+
+    const dirs = info.workspaceDirs ?? [];
+    if (dirs.length === 0 || expectedPaths.length === 0) return false;
+
+    const expected = expectedPaths.map((p) => ProcessFinder.normalizeFolder(p));
+    return dirs.some((dir) =>
+      expected.includes(ProcessFinder.normalizeFolder(dir)),
+    );
+  }
+
+  /**
+   * True only when the candidate announces a workspace and it is not ours.
+   * A candidate with no workspace information is never treated as foreign.
+   */
+  private hasKnownForeignWorkspace(
+    info: ProcessInfo,
+    expectedIds: string[],
+    expectedPaths: string[],
+  ): boolean {
+    const hasWorkspaceInfo = Boolean(info.workspaceId)
+      || (info.workspaceDirs ?? []).length > 0;
+    if (!hasWorkspaceInfo) return false;
+    // Without an expected value there is nothing to compare against
+    if (!info.workspaceId && expectedPaths.length === 0) return false;
+    if (info.workspaceId && expectedIds.length === 0) return false;
+    return !this.belongsToWorkspace(info, expectedIds, expectedPaths);
   }
 
   private async getParentPid(pid: number): Promise<number | null> {

@@ -13,6 +13,13 @@
             "shortLabel": "Claude",
             "themeColor": "#FFAB40",
             "weeklyBucketId": "3p-weekly"
+        },
+        {
+            "id": "gemini-argon",
+            "label": "Gemini Argon",
+            "shortLabel": "Argon",
+            "themeColor": "#B388FF",
+            "weeklyBucketId": "gemini-argon-wtu-weekly"
         }
     ],
     "groups": [
@@ -31,6 +38,34 @@
                     "id": "gemini-3-flash",
                     "modelName": "MODEL_PLACEHOLDER_M47",
                     "displayName": "Gemini 3 Flash"
+                }
+            ]
+        },
+        {
+            "id": "gemini-argon",
+            "quotaPoolId": "gemini-argon",
+            "label": "Gemini Argon",
+            "shortLabel": "Argon",
+            "themeColor": "#B388FF",
+            "prefixes": [
+                "gemini-4-argon",
+                "argon"
+            ],
+            "models": [
+                {
+                    "id": "gemini-4-argon-high",
+                    "modelName": "MODEL_PLACEHOLDER_M417",
+                    "displayName": "Gemini 4 Argon (High)"
+                },
+                {
+                    "id": "gemini-4-argon-medium",
+                    "modelName": "MODEL_PLACEHOLDER_M418",
+                    "displayName": "Gemini 4 Argon (Medium)"
+                },
+                {
+                    "id": "gemini-4-argon-low",
+                    "modelName": "MODEL_PLACEHOLDER_M419",
+                    "displayName": "Gemini 4 Argon (Low)"
                 }
             ]
         },

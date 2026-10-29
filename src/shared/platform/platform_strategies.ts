@@ -5,7 +5,7 @@
 import type { ProcessInfo, PlatformStrategy } from "../utils/types";
 import {
   getPortListCommand,
-  hasAntigravityAppDataDir,
+  parseServerCommandLine,
 } from "./detection_utils";
 
 /** Windows process item from PowerShell/WMI output */
@@ -21,7 +21,7 @@ interface WinProcessItem {
  * Note: Windows 7 is not supported (requires PowerShell 3.0+)
  */
 export class WindowsStrategy implements PlatformStrategy {
-  getProcessListCommand(processName: string): string {
+  getProcessListCommand(processNames: string[]): string {
     // PowerShell script for Windows 10/11
     // 1. [Console]::OutputEncoding: Ensures UTF-8 output to handle special characters in paths
     // 2. @( ... ): Forces result into an array structure
@@ -31,10 +31,15 @@ export class WindowsStrategy implements PlatformStrategy {
     // Previous approach using double quotes inside the -Command string was stripped by cmd.exe
     // when Node.js exec() passes through the Windows shell, causing PowerShell to misparse.
     // Single quotes avoid cmd.exe interpretation entirely. (fixes #40, #45, #XX)
+    // The WQL filter stays inside a PowerShell single-quoted literal, so each
+    // embedded quote is doubled.
+    const filter = processNames
+      .map((name) => `name='${name}'`)
+      .join(" or ")
+      .replace(/'/g, "''");
     const script = `
       [Console]::OutputEncoding = [System.Text.Encoding]::UTF8;
-      $n = '${processName}';
-      $f = 'name=''' + $n + '''';
+      $f = '${filter}';
       $p = Get-CimInstance Win32_Process -Filter $f -ErrorAction SilentlyContinue;
       if ($p) { @($p) | Select-Object ProcessId,ParentProcessId,CommandLine | ConvertTo-Json -Compress } else { '[]' }
     `
@@ -65,8 +70,8 @@ export class WindowsStrategy implements PlatformStrategy {
     // so we trust the caller (process_finder) usually invokes this when primary failed.
     // Ideally we list all, but that's heavy. Let's try to filter by commandline buffer if possible?
     // WMIC 'where' clause on CommandLine is tricky.
-    // Let's filter by name 'language_server%' OR 'antigravity%' to be safe.
-    return "wmic process where \"name like '%language_server%' or name like '%antigravity%'\" get ProcessId,ParentProcessId,CommandLine /format:csv";
+    // Let's filter by name 'language_server%' OR 'antigravity%' OR 'agy%' to be safe.
+    return "wmic process where \"name like '%language_server%' or name like '%antigravity%' or name = 'agy.exe'\" get ProcessId,ParentProcessId,CommandLine /format:csv";
   }
 
   parseProcessInfo(stdout: string): ProcessInfo[] | null {
@@ -107,9 +112,6 @@ export class WindowsStrategy implements PlatformStrategy {
           // But sometimes quotes are missing or different.
           // Crucially, ProcessId is the last number.
 
-          // Quick check: does it look like our process?
-          if (!row.includes("--extension_server_port")) continue;
-
           // Extract PPID and PID (last two numbers)
           const idsMatch = row.match(/,(\d+),(\d+)\s*$/);
           if (!idsMatch) continue;
@@ -117,31 +119,10 @@ export class WindowsStrategy implements PlatformStrategy {
           const ppid = parseInt(idsMatch[1], 10);
           const pid = parseInt(idsMatch[2], 10);
           // We mostly need CLI args from the string
-          const commandLine = row;
+          const parsed = parseServerCommandLine(row);
+          if (!parsed) continue;
 
-          const portMatch = commandLine.match(
-            /--extension_server_port[=\s]+(\d+)/,
-          );
-          const tokenMatch = commandLine.match(
-            /--csrf_token[=\s]+(?:["']?)([a-zA-Z0-9\-_.]+)(?:["']?)/,
-          );
-          const wsMatch = commandLine.match(
-            /--workspace_id[=\s]+(?:["']?)([a-zA-Z0-9\-_.]+)(?:["']?)/,
-          );
-
-          if (tokenMatch?.[1]) {
-            if (!hasAntigravityAppDataDir(commandLine)) {
-              continue;
-            }
-
-            results.push({
-              pid,
-              ppid,
-              extensionPort: portMatch?.[1] ? parseInt(portMatch[1], 10) : 0,
-              csrfToken: tokenMatch[1],
-              workspaceId: wsMatch?.[1],
-            });
-          }
+          results.push({ pid, ppid, ...parsed, extensionPort: parsed.serverPort });
         }
         return results.length > 0 ? results : null;
       }
@@ -161,26 +142,10 @@ export class WindowsStrategy implements PlatformStrategy {
 
       if (!pid) continue;
 
-      const portMatch = commandLine.match(/--extension_server_port[=\s]+(\d+)/);
-      const tokenMatch = commandLine.match(
-        /--csrf_token[=\s]+(?:["']?)([a-zA-Z0-9\-_.]+)(?:["']?)/,
-      );
-      const wsMatch = commandLine.match(
-        /--workspace_id[=\s]+(?:["']?)([a-zA-Z0-9\-_.]+)(?:["']?)/,
-      );
+      const parsed = parseServerCommandLine(commandLine);
+      if (!parsed) continue;
 
-      if (tokenMatch?.[1]) {
-        if (!hasAntigravityAppDataDir(commandLine)) {
-          continue;
-        }
-        results.push({
-          pid,
-          ppid,
-          extensionPort: portMatch?.[1] ? parseInt(portMatch[1], 10) : 0,
-          csrfToken: tokenMatch[1],
-          workspaceId: wsMatch?.[1],
-        });
-      }
+      results.push({ pid, ppid, ...parsed, extensionPort: parsed.serverPort });
     }
     return results.length > 0 ? results : null;
   }
@@ -217,7 +182,7 @@ export class WindowsStrategy implements PlatformStrategy {
   getDiagnosticCommand(): string {
     const utf8Header =
       "[Console]::OutputEncoding = [System.Text.Encoding]::UTF8; ";
-    return `chcp 65001 >nul && powershell -NoProfile -Command "${utf8Header}Get-Process | Where-Object { $_.ProcessName -match 'language|antigravity' } | Select-Object Id,ProcessName,Path | Format-Table -AutoSize"`;
+    return `chcp 65001 >nul && powershell -NoProfile -Command "${utf8Header}Get-Process | Where-Object { $_.ProcessName -match 'language|antigravity|agy' } | Select-Object Id,ProcessName,Path | Format-Table -AutoSize"`;
   }
 
   getProcessCrossCheckCommand(): string {
@@ -243,8 +208,8 @@ export class WindowsStrategy implements PlatformStrategy {
    */
   getTroubleshootingTips(): string[] {
     return [
-      "Ensure Antigravity IDE is running",
-      "Check if language_server_windows_x64.exe is in Task Manager",
+      "Ensure Antigravity is running",
+      "Check if agy.exe (Antigravity 1.10+) or language_server_windows_x64.exe (older builds) is in Task Manager",
       "Try restarting Antigravity IDE / VS Code",
       "If PowerShell errors occur, try: Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned",
       "If WMI errors occur, try: net start winmgmt (run as admin)",
@@ -261,18 +226,23 @@ export class UnixStrategy implements PlatformStrategy {
 
   constructor(private platform: "darwin" | "linux") { }
 
-  getProcessListCommand(processName: string): string {
+  getProcessListCommand(processNames: string[]): string {
     // Use 'ps' to get PID, PPID, and full Arguments.
     // -A: Select all processes
     // -o: Specify output format
     // args: Full command line (more reliable than 'command' on some systems)
-    // grep: Filter for our process name (brackets [n] trick prevents grep from matching itself)
     // -ww: Unlimited width output to prevent command truncation
-    const grepPattern =
-      processName.length > 0
-        ? `[${processName[0]}]${processName.slice(1)}`
-        : processName;
-    return `ps -A -ww -o pid,ppid,args | grep "${grepPattern}"`;
+    //
+    // Both backend generations are listed: the legacy `language_server_*` and
+    // the 1.10+ `agy --hub` binary. The names are anchored to the executable
+    // path, because a plain `grep agy` also matches unrelated paths such as
+    // "antigravity-panel" appearing in another process command line.
+    const pattern = processNames
+      .filter((name) => name.length > 0)
+      .map((name) => name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"))
+      .join("|");
+    if (pattern.length === 0) return "ps -A -ww -o pid=,ppid=,args=";
+    return `ps -A -ww -o pid=,ppid=,args= | grep -E '(^|/)(${pattern})( |$)'`;
   }
 
   getProcessListByKeywordCommand(keyword: string): string {
@@ -295,30 +265,12 @@ export class UnixStrategy implements PlatformStrategy {
         const ppid = parseInt(match[2], 10);
         const cmd = match[3];
 
-        if (cmd.includes("--extension_server_port")) {
-          const portMatch = cmd.match(/--extension_server_port[=\s]+(\d+)/);
-          // Match workspace_id and csrf_token (handles optional quotes)
-          const tokenMatch = cmd.match(
-            /--csrf_token[=\s]+(?:["']?)([a-zA-Z0-9\-_.]+)(?:["']?)/,
-          );
-          const wsMatch = cmd.match(
-            /--workspace_id[=\s]+(?:["']?)([a-zA-Z0-9\-_.]+)(?:["']?)/,
-          );
+        // Accepts `agy --hub` (--hub-port) and the legacy language server
+        // (--extension_server_port); both carry --csrf_token and --app_data_dir.
+        const parsed = parseServerCommandLine(cmd);
+        if (!parsed) continue;
 
-          if (tokenMatch?.[1]) {
-            if (!hasAntigravityAppDataDir(cmd)) {
-              continue;
-            }
-
-            results.push({
-              pid,
-              ppid,
-              extensionPort: portMatch ? parseInt(portMatch[1], 10) : 0,
-              csrfToken: tokenMatch[1],
-              workspaceId: wsMatch?.[1],
-            });
-          }
-        }
+        results.push({ pid, ppid, ...parsed, extensionPort: parsed.serverPort });
       }
     }
 
@@ -421,7 +373,7 @@ export class UnixStrategy implements PlatformStrategy {
    * Used when detection fails to help troubleshoot
    */
   getDiagnosticCommand(): string {
-    return `ps aux | grep -E 'language|antigravity' | grep -v grep`;
+    return `ps aux | grep -E 'language_server|(^|/)agy( |$)|antigravity' | grep -v grep`;
   }
 
   /**
@@ -434,8 +386,8 @@ export class UnixStrategy implements PlatformStrategy {
         : "language_server_linux_x64";
 
     return [
-      "Ensure Antigravity IDE is running",
-      `Check if ${processName} process is running: ps aux | grep language_server`,
+      "Ensure Antigravity is running",
+      `Check that the backend is running: ps aux | grep -E 'agy|language_server' (Antigravity 1.10+ runs "agy --hub", older builds run ${processName})`,
       "Try restarting Antigravity IDE",
       "Check system logs for any process crashes",
     ];

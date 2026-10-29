@@ -1,7 +1,7 @@
 import {
     verifyServerGateway,
     getPortListCommand,
-    hasAntigravityAppDataDir,
+    parseServerCommandLine,
 } from "./detection_utils";
 import { exec } from "child_process";
 import { promisify } from "util";
@@ -158,35 +158,31 @@ export class AmbientDiscovery {
     }
 
     private extractDetails(cmd: string, pid: number, ppid: number): ProcessInfo | null {
-        if (
-            !cmd.includes("--csrf_token")
-            || !cmd.includes("--extension_server_port")
-            || !hasAntigravityAppDataDir(cmd)
-        ) {
-            return null;
-        }
+        // Accepts both backend generations: `agy --hub` (--hub-port) and the
+        // legacy language server (--extension_server_port).
+        const parsed = parseServerCommandLine(cmd);
+        if (!parsed) return null;
 
-        const portPtr = cmd.match(/--extension_server_port[=\s]+(\d+)/);
-        const tokenPtr = cmd.match(/--csrf_token[=\s]+(?:["']?)([a-zA-Z0-9\-_.]+)(?:["']?)/);
-        const wsPtr = cmd.match(/--workspace_id[=\s]+(?:["']?)([a-zA-Z0-9\-_.]+)(?:["']?)/);
-
-        if (tokenPtr?.[1]) {
-            return {
-                pid,
-                ppid: ppid || 0,
-                extensionPort: portPtr ? parseInt(portPtr[1], 10) : 0,
-                csrfToken: tokenPtr[1],
-                workspaceId: wsPtr?.[1],
-            };
-        }
-        return null;
+        return {
+            pid,
+            ppid: ppid || 0,
+            extensionPort: parsed.serverPort,
+            csrfToken: parsed.csrfToken,
+            workspaceId: parsed.workspaceId,
+            workspaceDirs: parsed.workspaceDirs,
+        };
     }
 
     private async probeAndEstablish(meta: ProcessInfo): Promise<LanguageServerInfo | null> {
         const ports = await this.lookupPorts(meta.pid);
-        if (ports.length === 0) return null;
+        // The port advertised on the command line (--hub-port / --extension_server_port)
+        // is the service port; the process usually listens on a few more.
+        const candidates = meta.extensionPort > 0 && !ports.includes(meta.extensionPort)
+            ? [meta.extensionPort, ...ports]
+            : ports;
+        if (candidates.length === 0) return null;
 
-        for (const port of ports) {
+        for (const port of candidates) {
             const auth = await verifyServerGateway("127.0.0.1", port, meta.csrfToken);
             if (auth.success) return { port, csrfToken: meta.csrfToken };
 

@@ -98,6 +98,7 @@ Each model group points to a quota pool through `quotaPoolId`. A quota pool name
 |---|---|---|---|
 | `gemini-flash` | `#40C4FF` | `gemini` | Gemini (blue) |
 | `gemini-pro` | `#69F0AE` | `gemini` | Gemini (blue) |
+| `gemini-argon` | `#B388FF` | `gemini-argon` | Gemini Argon (violet) |
 | `claude` | `#FFAB40` | `non-google` | Claude (orange) |
 | `gpt` | `#FF5252` | `non-google` | Claude (orange) |
 | `other` | `#FFAB40` | `non-google` | Claude (orange) |
@@ -106,8 +107,11 @@ Each model group points to a quota pool through `quotaPoolId`. A quota pool name
 |---|---|
 | `gemini` | `gemini-weekly` |
 | `non-google` | `3p-weekly` |
+| `gemini-argon` | `gemini-argon-wtu-weekly` |
 
 Gemini Flash and Gemini Pro currently share the same Gemini quota pool. The relative consumption cost of Flash and Pro may differ, but usage of either model reduces the remaining quota of the same pool.
+
+Gemini 4 Argon has its own pool because the server reports it as a separate summary group with only a weekly bucket and no 5-hour bucket. Its model rows carry the weekly reset time, so an exhausted Argon quota no longer lowers the shared Gemini gauge.
 
 Claude and GPT are also currently treated as the same backend pool; the default group view uses the `Claude` label for compatibility with the original UI.
 
@@ -176,11 +180,12 @@ Each poll writes history only once per quota pool ID, for example:
 ```json
 {
   "gemini": 82,
-  "non-google": 64
+  "non-google": 64,
+  "gemini-argon": 0
 }
 ```
 
-`gemini-flash` and `gemini-pro` are never written at the same time, so a single drop of the shared pool is not double-counted by the bar chart or `pp/h`.
+`gemini-flash` and `gemini-pro` are never written at the same time, so a single drop of the shared pool is not double-counted by the bar chart or `pp/h`. `gemini-argon` is stored separately because the server meters it on its own weekly bucket.
 
 ---
 
@@ -207,6 +212,7 @@ The active pool's weekly limit is checked against the same warning and critical 
 With `tfa.dashboard.viewMode = groups`, each quota pool shows one gauge:
 
 - Gemini: uses the original Flash blue `#40C4FF`
+- Gemini Argon: uses violet `#B388FF`
 - Claude: uses the original Claude orange `#FFAB40`
 
 This avoids presenting a shared quota as multiple independent allowances.
@@ -293,6 +299,7 @@ On startup, quota, the active pool and the prediction chart are restored from th
 
 ## 9. Limitations
 
+- Gemini 4 Argon exposes only a weekly bucket and its model rows carry the weekly reset time, so its gauge follows the same weekly quota that the `Weekly` bar shows.
 - The extension can only use the quota windows the Language Server currently exposes; it cannot derive windows that were not returned. Older servers without `RetrieveUserQuotaSummary` show no weekly limit.
 - The 5-hour value comes from the `GetUserStatus` model rows, not from the summary's `5h` buckets; the two can report slightly different reset times.
 - Active pool detection depends on polling and may lag by up to one polling cycle.

@@ -40,14 +40,16 @@ function parseUnixProcessList(stdout) {
             ppid: Number(match[2]),
             commandLine: match[3],
         }))
-        .filter(processInfo => /language_server/i.test(processInfo.commandLine));
+        // Antigravity 1.10+ runs `agy --hub`; older builds run language_server_*.
+        // The anchored `agy` match avoids paths such as "antigravity-panel".
+        .filter(processInfo => /language_server|(^|\/)agy( |$)/i.test(processInfo.commandLine));
 }
 
 async function listLanguageServerProcesses() {
     if (os.platform() === 'win32') {
         const command = [
             'powershell -NoProfile -Command',
-            '"Get-CimInstance Win32_Process -Filter \\"name like \'language_server%\'\\"',
+            '"Get-CimInstance Win32_Process -Filter \\"name = \'agy.exe\' or name like \'language_server%\'\\"',
             '| Select-Object ProcessId,ParentProcessId,CommandLine,ExecutablePath',
             '| ConvertTo-Json -Depth 2"',
         ].join(' ');

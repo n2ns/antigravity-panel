@@ -1,4 +1,5 @@
 import * as assert from 'assert';
+import * as vscode from 'vscode';
 import { ProcessFinder, formatExecOutcome } from '../../shared/platform/process_finder';
 import type { PlatformStrategy } from '../../shared/utils/types';
 
@@ -6,7 +7,7 @@ import type { PlatformStrategy } from '../../shared/utils/types';
  * Mock strategy that returns JSON-parsed input to allow easy control in tests
  */
 class MockStrategy implements PlatformStrategy {
-    getProcessListCommand(_name: string) { return 'mock_ps'; }
+    getProcessListCommand(_names: string[]) { return 'mock_ps'; }
     getPortListCommand(_pid: number) { return 'mock_netstat'; }
 
     parseProcessInfo(stdout: string) {
@@ -296,5 +297,75 @@ suite('Diagnostics Detail Test Suite', () => {
             assert.ok(summary.includes('Diagnostic command: exit=1, error: Cannot run script'));
             assert.ok(summary.includes('Cross-check (tasklist): exit=1, error: ERROR: Access denied'));
         });
+    });
+});
+
+suite('ProcessFinder backend discovery', () => {
+    let finder: DiagnosticTestFinder;
+    let strategy: MockStrategy;
+
+    setup(() => {
+        strategy = new MockStrategy();
+        finder = new DiagnosticTestFinder(strategy);
+    });
+
+    teardown(() => {
+        delete (vscode.workspace as unknown as { workspaceFolders?: unknown }).workspaceFolders;
+    });
+
+    test('connects to the agy hub port advertised on the command line', async () => {
+        // The hub reports its port as --hub-port; the port scan may find nothing.
+        const hub = { pid: 118882, ppid: process.pid, extensionPort: 34165, csrfToken: 'hub-token', workspaceDirs: [] };
+        finder.mockStdout = JSON.stringify([hub]);
+        finder.mockPortStdout = JSON.stringify([]);
+        finder.mockTestResults = {
+            34165: { success: true, statusCode: 200, protocol: 'http' },
+        };
+
+        const result = await finder.runTryDetect();
+
+        assert.ok(result, 'Should connect through the advertised hub port');
+        assert.strictEqual(result!.port, 34165);
+        assert.strictEqual(result!.csrfToken, 'hub-token');
+        assert.strictEqual(finder.portsFromCmdline, 1);
+        assert.strictEqual(finder.attemptDetails[0].portSource, 'cmdline');
+    });
+
+    test('prefers the hub that announces the current workspace with --add-dir', async () => {
+        (vscode.workspace as unknown as { workspaceFolders?: unknown }).workspaceFolders = [
+            { uri: { fsPath: '/home/user/project' }, index: 0, name: 'project' },
+        ];
+        const foreign = { pid: 201, ppid: 999001, extensionPort: 41001, csrfToken: 'foreign', workspaceDirs: ['/home/user/other'] };
+        const ours = { pid: 202, ppid: 999002, extensionPort: 41002, csrfToken: 'ours', workspaceDirs: ['/home/user/project'] };
+        finder.mockStdout = JSON.stringify([foreign, ours]);
+        finder.mockPortStdout = JSON.stringify([]);
+        finder.mockTestResults = {
+            41001: { success: true, statusCode: 200, protocol: 'http' },
+            41002: { success: true, statusCode: 200, protocol: 'http' },
+        };
+
+        const result = await finder.runTryDetect();
+
+        assert.ok(result);
+        assert.strictEqual(result!.csrfToken, 'ours');
+        assert.strictEqual(result!.port, 41002);
+    });
+
+    test('skips a hub that belongs to another workspace in the fallback scan', async () => {
+        (vscode.workspace as unknown as { workspaceFolders?: unknown }).workspaceFolders = [
+            { uri: { fsPath: '/home/user/project' }, index: 0, name: 'project' },
+        ];
+        const foreign = { pid: 301, ppid: 999001, extensionPort: 42001, csrfToken: 'foreign', workspaceDirs: ['/home/user/other'] };
+        finder.mockStdout = JSON.stringify([foreign]);
+        finder.mockPortStdout = JSON.stringify([42001]);
+        finder.mockTestResults = {
+            42001: { success: true, statusCode: 200, protocol: 'http' },
+        };
+
+        const result = await finder.runTryDetect();
+
+        assert.strictEqual(result, null);
+        assert.strictEqual(finder.failureReason, 'workspace_mismatch');
+        assert.strictEqual(finder.skippedForWorkspace, 1);
     });
 });

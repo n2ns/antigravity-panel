@@ -173,20 +173,22 @@ export interface ProcessInfo {
   pid: number;
   /** Parent Process ID (Optional, for ancestry matching) */
   ppid?: number;
-  /** HTTP extension port */
+  /** HTTP port advertised on the command line (`--hub-port` or `--extension_server_port`), 0 when absent */
   extensionPort: number;
   /** CSRF authentication token */
   csrfToken: string;
-  /** Workspace ID from command line */
+  /** Workspace ID from command line (legacy language server) */
   workspaceId?: string;
+  /** Workspace folders from `--add-dir` (agy hub) */
+  workspaceDirs?: string[];
 }
 
 /**
  * Platform strategy interface
  */
 export interface PlatformStrategy {
-  /** Get process list command */
-  getProcessListCommand(processName: string): string;
+  /** Get process list command for every accepted backend process name */
+  getProcessListCommand(processNames: string[]): string;
   /** Parse process information */
   parseProcessInfo(stdout: string): ProcessInfo[] | null;
   /** Get port list command */

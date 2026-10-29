@@ -26,16 +26,42 @@ suite('QuotaStrategyManager Test Suite', () => {
 
     test('should map model groups to independently configurable quota pools', () => {
         const pools = manager.getQuotaPools();
-        assert.deepStrictEqual(pools.map(pool => pool.id), ['gemini', 'non-google']);
+        assert.deepStrictEqual(pools.map(pool => pool.id), ['gemini', 'non-google', 'gemini-argon']);
         assert.strictEqual(manager.getPoolIdForHistoryKey('gemini-flash'), 'gemini');
         assert.strictEqual(manager.getPoolIdForHistoryKey('gemini-pro'), 'gemini');
+        assert.strictEqual(manager.getPoolIdForHistoryKey('gemini-argon'), 'gemini-argon');
         assert.strictEqual(manager.getPoolIdForHistoryKey('claude'), 'non-google');
         assert.strictEqual(manager.getPoolIdForHistoryKey('gpt'), 'non-google');
     });
 
     test('should map each quota pool to its weekly summary bucket', () => {
         const buckets = Object.fromEntries(manager.getQuotaPools().map(pool => [pool.id, pool.weeklyBucketId]));
-        assert.deepStrictEqual(buckets, { gemini: 'gemini-weekly', 'non-google': '3p-weekly' });
+        assert.deepStrictEqual(buckets, {
+            gemini: 'gemini-weekly',
+            'non-google': '3p-weekly',
+            'gemini-argon': 'gemini-argon-wtu-weekly'
+        });
+    });
+
+    test('should route Gemini 4 Argon to its own quota pool', () => {
+        // The server reports Argon in a separate summary group with only a weekly
+        // bucket, so it must not be aggregated with Gemini Flash and Pro.
+        const rows: Array<[string, string]> = [
+            ['MODEL_PLACEHOLDER_M417', 'Gemini 4 Argon (High)'],
+            ['MODEL_PLACEHOLDER_M418', 'Gemini 4 Argon (Medium)'],
+            ['MODEL_PLACEHOLDER_M419', 'Gemini 4 Argon (Low)'],
+        ];
+        for (const [id, label] of rows) {
+            const group = manager.getGroupForModel(id, label);
+            assert.strictEqual(group.id, 'gemini-argon', `${label} must have its own group`);
+            assert.strictEqual(group.quotaPoolId, 'gemini-argon', `${label} must not share the Gemini pool`);
+            assert.strictEqual(manager.getModelDisplayName(id, label), label);
+        }
+
+        // Flash and Pro keep the shared Gemini pool.
+        assert.strictEqual(manager.getGroupForModel('gemini-4-argon-medium-copy').id, 'gemini-argon');
+        assert.strictEqual(manager.getGroupForModel('gemini-3.8-flash-high', 'Gemini 3.8 Flash (High)').quotaPoolId, 'gemini');
+        assert.strictEqual(manager.getGroupForModel('gemini-3-pro-high').quotaPoolId, 'gemini');
     });
 
     test('should allow shared pools to be split through strategy data only', () => {

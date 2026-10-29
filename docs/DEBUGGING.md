@@ -29,7 +29,7 @@ Successful tools exit with code `0`. Detection or connection failures exit with 
 npm run debug:processes
 ```
 
-This lists matching processes, PIDs, parent PIDs, workspace IDs, ports, complete CSRF tokens, and the relevant command-line arguments.
+This lists matching `agy --hub` (Antigravity 1.10+) and legacy `language_server_*` processes, with PIDs, parent PIDs, workspace folders (`--add-dir`) or IDs, the advertised port (`--hub-port` / `--extension_server_port`), complete CSRF tokens, and the other relevant command-line arguments.
 
 ### 2.2 Fetch the raw quota endpoint independently
 
@@ -37,7 +37,7 @@ This lists matching processes, PIDs, parent PIDs, workspace IDs, ports, complete
 npm run debug:quota
 ```
 
-This standalone JavaScript tool discovers a real Language Server process, probes its localhost ports over HTTPS and then HTTP, requests:
+This standalone JavaScript tool discovers a real Antigravity backend (`agy --hub` or legacy `language_server`), tries the port advertised on its command line first, then probes the remaining localhost ports over HTTPS and then HTTP, requests:
 
 ```text
 /exa.language_server_pb.LanguageServerService/GetUserStatus
@@ -67,7 +67,13 @@ It reports only real IDE, Extension Host, and `language_server_windows_x64.exe` 
 
 ## 3. Binary schema and serialization inspection
 
-When server fields disappear or behave unexpectedly, inspect the compiled Go Protobuf strings in the Language Server binary. A typical Linux installation is:
+When server fields disappear or behave unexpectedly, inspect the compiled Go Protobuf strings in the backend binary. On Antigravity 1.10+ the backend is the `agy` CLI binary:
+
+```text
+~/.gemini/bin/agy
+```
+
+Older builds shipped the Language Server separately:
 
 ```text
 ~/.antigravity-ide-server/bin/<version>/extensions/antigravity/bin/language_server_linux_x64
@@ -76,7 +82,7 @@ When server fields disappear or behave unexpectedly, inspect the compiled Go Pro
 Example:
 
 ```bash
-strings ~/.antigravity-ide-server/bin/*/extensions/antigravity/bin/language_server_linux_x64 | grep -iE 'creditAmount|creditType|minimumCreditAmountForUsage'
+strings ~/.gemini/bin/agy | grep -iE 'creditAmount|creditType|minimumCreditAmountForUsage'
 ```
 
 Numeric Protobuf fields may use `omitempty`. A zero value can therefore be absent from JSON rather than returned as `0`; parsing code should map missing optional numeric fields to an intentional default.

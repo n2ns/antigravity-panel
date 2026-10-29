@@ -17,6 +17,8 @@ function printProcess(processInfo, index) {
     const extensionToken = extractArgument(commandLine, 'extension_server_csrf_token');
     const fields = [
         ['workspace_id', extractArgument(commandLine, 'workspace_id')],
+        ['add-dir', (commandLine.match(/--add-dir(?:=|\s+)(?:"[^"]*"|'[^']*'|[^\s]+)/g) || []).join(' ')],
+        ['hub_port', extractArgument(commandLine, 'hub-port')],
         ['extension_server_port', extractArgument(commandLine, 'extension_server_port')],
         ['port', extractArgument(commandLine, 'port')],
         ['csrf_token', apiToken],
@@ -42,7 +44,7 @@ async function main() {
 
     const processes = await listLanguageServerProcesses();
     if (processes.length === 0) {
-        console.error('\nNo running language_server process was found.');
+        console.error('\nNo running agy --hub or language_server process was found.');
         process.exitCode = 1;
         return;
     }
