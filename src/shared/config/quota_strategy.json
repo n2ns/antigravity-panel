@@ -8,6 +8,14 @@
             "weeklyBucketId": "gemini-weekly"
         },
         {
+            "id": "argon",
+            "label": "Argon",
+            "shortLabel": "Argon",
+            "themeColor": "#B388FF",
+            "weeklyBucketId": "gemini-argon-wtu-weekly",
+            "hideWhenEmpty": true
+        },
+        {
             "id": "non-google",
             "label": "Claude",
             "shortLabel": "Claude",
@@ -53,6 +61,34 @@
                     "id": "gemini-3-pro-low",
                     "modelName": "MODEL_PLACEHOLDER_M36",
                     "displayName": "Gemini 3.1 Pro (Low)"
+                }
+            ]
+        },
+        {
+            "id": "gemini-argon",
+            "quotaPoolId": "argon",
+            "label": "Gemini 4 Argon",
+            "shortLabel": "Argon",
+            "themeColor": "#B388FF",
+            "prefixes": [
+                "gemini-4-argon",
+                "gemini 4 argon"
+            ],
+            "models": [
+                {
+                    "id": "gemini-4-argon-high",
+                    "modelName": "MODEL_PLACEHOLDER_M417",
+                    "displayName": "Gemini 4 Argon (High)"
+                },
+                {
+                    "id": "gemini-4-argon-medium",
+                    "modelName": "MODEL_PLACEHOLDER_M418",
+                    "displayName": "Gemini 4 Argon (Medium)"
+                },
+                {
+                    "id": "gemini-4-argon-low",
+                    "modelName": "MODEL_PLACEHOLDER_M419",
+                    "displayName": "Gemini 4 Argon (Low)"
                 }
             ]
         },

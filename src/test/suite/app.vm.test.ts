@@ -385,6 +385,60 @@ suite('AppViewModel Test Suite', () => {
         assert.deepStrictEqual(vm.getStatusBarData().allGroups.map(group => group.id), ['gemini']);
     });
 
+    suite('Argon quota pool', () => {
+        const argonModel = {
+            modelId: 'MODEL_PLACEHOLDER_M417',
+            label: 'Gemini 4 Argon (High)',
+            remainingPercentage: 0,
+            isExhausted: true,
+            resetTime: new Date(Date.now() + 120 * 3600000),
+            timeUntilReset: '5d'
+        };
+        const geminiModel = {
+            modelId: 'MODEL_PLACEHOLDER_M47',
+            label: 'Gemini 3 Flash',
+            remainingPercentage: 80,
+            isExhausted: false,
+            resetTime: new Date(Date.now() + 5 * 3600000),
+            timeUntilReset: '5h'
+        };
+
+        test('should keep an exhausted Argon quota out of the Gemini pool and show its weekly limit', async () => {
+            mockQuota.fetchQuota = async () => ({
+                timestamp: new Date(),
+                models: [geminiModel, argonModel],
+                weeklyLimits: [{
+                    bucketId: 'gemini-argon-wtu-weekly',
+                    remainingPercentage: 0,
+                    resetTime: new Date(Date.now() + 120 * 3600000)
+                }]
+            });
+
+            await vm.refreshQuota();
+
+            const { groups, displayItems } = vm.getState().quota;
+            assert.strictEqual(groups.find(g => g.id === 'gemini')?.remaining, 80);
+            const argon = groups.find(g => g.id === 'argon');
+            assert.strictEqual(argon?.hasData, true);
+            assert.strictEqual(argon?.remaining, 0);
+            assert.strictEqual(argon?.weekly?.remaining, 0);
+            assert.ok(displayItems.some(item => item.label === 'Argon'));
+        });
+
+        test('should not show an empty Argon gauge on plans without access', async () => {
+            const emptyLabels = vm.getState().quota.displayItems.map(item => item.label);
+            assert.ok(!emptyLabels.includes('Argon'), 'no gauge before the first fetch');
+
+            mockQuota.fetchQuota = async () => ({ timestamp: new Date(), models: [geminiModel] });
+
+            await vm.refreshQuota();
+
+            const labels = vm.getState().quota.displayItems.map(item => item.label);
+            assert.ok(!labels.includes('Argon'));
+            assert.ok(labels.includes('Claude'), 'other pools keep their empty gauge');
+        });
+    });
+
     test('models view should retain Flash and Pro identities while sharing pool consumption', async () => {
         configReader.set('dashboard.viewMode', 'models');
         mockStorage.calculateUsageBuckets = () => [{
@@ -1305,6 +1359,7 @@ suite('AppViewModel Test Suite', () => {
             queriedGroups.push(groupId);
             assert.strictEqual(days, 14);
             assert.strictEqual(maxSampleGapMs, 10 * 60 * 1000);
+            if (groupId === 'argon') return [];
             return dayStarts.map((dayStart, index) => ({
                 dayStart,
                 usage: index < 7 ? 1 : 2,
@@ -1314,7 +1369,7 @@ suite('AppViewModel Test Suite', () => {
 
         const weekly = vm.getSidebarData().weekly;
 
-        assert.deepStrictEqual(queriedGroups, ['gemini', 'non-google']);
+        assert.deepStrictEqual(queriedGroups, ['gemini', 'argon', 'non-google']);
         assert.ok(weekly);
         assert.strictEqual(weekly.days.length, 7);
         assert.strictEqual(weekly.days[6].items.length, 2);
@@ -1331,6 +1386,7 @@ suite('AppViewModel Test Suite', () => {
             return date.getTime();
         });
         mockStorage.getDailyConsumption = groupId => {
+            if (groupId === 'argon') return [];
             const dayStarts = makeDayStarts(groupId === 'gemini' ? 0 : -1);
             return dayStarts.map(dayStart => ({ dayStart, usage: 1, hasData: true }));
         };

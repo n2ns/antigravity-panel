@@ -99,6 +99,7 @@ Each model group points to a quota pool through `quotaPoolId`. A quota pool name
 |---|---|---|---|
 | `gemini-flash` | `#40C4FF` | `gemini` | Gemini (blue) |
 | `gemini-pro` | `#69F0AE` | `gemini` | Gemini (blue) |
+| `gemini-argon` | `#B388FF` | `argon` | Argon (purple) |
 | `claude` | `#FFAB40` | `non-google` | Claude (orange) |
 | `gpt` | `#FF5252` | `non-google` | Claude (orange) |
 | `other` | `#FFAB40` | `non-google` | Claude (orange) |
@@ -106,9 +107,12 @@ Each model group points to a quota pool through `quotaPoolId`. A quota pool name
 | Quota pool | `weeklyBucketId` |
 |---|---|
 | `gemini` | `gemini-weekly` |
+| `argon` | `gemini-argon-wtu-weekly` |
 | `non-google` | `3p-weekly` |
 
 Gemini Flash and Gemini Pro currently share the same Gemini quota pool. The relative consumption cost of Flash and Pro may differ, but usage of either model reduces the remaining quota of the same pool.
+
+Gemini 4 Argon has its own pool because Pro plans report a separate `Gemini 4 Argon` group in `RetrieveUserQuotaSummary` with a weekly bucket and no 5-hour bucket. The pool sets `hideWhenEmpty`, so plans without Argon access, which only list a disabled Argon model that is skipped, get no empty gauge. Its prefixes are the full model name because the longest prefix wins and a bare `argon` would lose to `gemini`.
 
 Claude and GPT are also currently treated as the same backend pool; the default group view uses the `Claude` label for compatibility with the original UI.
 

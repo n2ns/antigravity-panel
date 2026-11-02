@@ -26,16 +26,30 @@ suite('QuotaStrategyManager Test Suite', () => {
 
     test('should map model groups to independently configurable quota pools', () => {
         const pools = manager.getQuotaPools();
-        assert.deepStrictEqual(pools.map(pool => pool.id), ['gemini', 'non-google']);
+        assert.deepStrictEqual(pools.map(pool => pool.id), ['gemini', 'argon', 'non-google']);
         assert.strictEqual(manager.getPoolIdForHistoryKey('gemini-flash'), 'gemini');
         assert.strictEqual(manager.getPoolIdForHistoryKey('gemini-pro'), 'gemini');
+        assert.strictEqual(manager.getPoolIdForHistoryKey('gemini-argon'), 'argon');
         assert.strictEqual(manager.getPoolIdForHistoryKey('claude'), 'non-google');
         assert.strictEqual(manager.getPoolIdForHistoryKey('gpt'), 'non-google');
     });
 
     test('should map each quota pool to its weekly summary bucket', () => {
         const buckets = Object.fromEntries(manager.getQuotaPools().map(pool => [pool.id, pool.weeklyBucketId]));
-        assert.deepStrictEqual(buckets, { gemini: 'gemini-weekly', 'non-google': '3p-weekly' });
+        assert.deepStrictEqual(buckets, { gemini: 'gemini-weekly', argon: 'gemini-argon-wtu-weekly', 'non-google': '3p-weekly' });
+    });
+
+    test('should route Gemini 4 Argon to its own pool despite the broader gemini prefix', () => {
+        const cases: [string, string][] = [
+            ['MODEL_PLACEHOLDER_M417', 'Gemini 4 Argon (High)'],
+            ['MODEL_PLACEHOLDER_M418', 'Gemini 4 Argon (Medium)'],
+            ['MODEL_PLACEHOLDER_M419', 'Gemini 4 Argon (Low)'],
+            ['MODEL_PLACEHOLDER_M999', 'Gemini 4 Argon (Max)'],
+            ['gemini-4-argon-max', 'Unlisted']
+        ];
+        for (const [id, label] of cases) {
+            assert.strictEqual(manager.getGroupForModel(id, label).quotaPoolId, 'argon', `${id} / ${label}`);
+        }
     });
 
     test('should allow shared pools to be split through strategy data only', () => {

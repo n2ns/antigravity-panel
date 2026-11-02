@@ -47,6 +47,8 @@ export interface QuotaPoolDefinition {
   themeColor: string;
   /** RetrieveUserQuotaSummary bucket holding this pool's official weekly limit */
   weeklyBucketId?: string;
+  /** Show no gauge while the pool has no data: only some plans report this pool */
+  hideWhenEmpty?: boolean;
 }
 
 export interface QuotaStrategyDefinition {

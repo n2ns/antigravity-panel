@@ -1,5 +1,11 @@
 # Change Log
 
+## [Unreleased]
+
+### Added
+
+- **Gemini 4 Argon Quota Pool**: Accounts with Argon access now get a separate Argon gauge with its weekly limit. Argon was counted in the Gemini pool, so an exhausted Argon quota pulled the Gemini gauge down to 0%. Plans without Argon access see no extra gauge. Thanks to @HH-Tips for the server data in [#210](https://github.com/n2ns/antigravity-panel/pull/210).
+
 ## [2.8.1] - 2026-10-29
 
 ### Fixed

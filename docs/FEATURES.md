@@ -13,6 +13,7 @@
 - **Official Weekly Limit**: in the pool view, a `Weekly` bar under each gauge shows the pool's weekly limit and a countdown to its reset, as reported by Antigravity (the same values as the IDE's Settings → Models). The gauge keeps showing the 5-hour quota. Hidden when the Language Server does not provide the weekly limit and in the model view
 - Models that share a quota pool are counted together, so each gauge shows the quota its models actually share
 - Model view preserves separate **Gemini Flash** and **Gemini Pro** identities and colors even while they share one pool
+- **Gemini 4 Argon** gets its own gauge on plans with a separate Argon quota; without Argon access no gauge is shown
 - Models that match no configured group are shown in an **Other** group and counted in the Claude (non-Google) pool, never in the Gemini pool
 - **Gauge Styles** (`tfa.dashboard.gaugeStyle`):
   - **Semi-Arc**: A modern, 210-degree industrial precision instrument style (Default).

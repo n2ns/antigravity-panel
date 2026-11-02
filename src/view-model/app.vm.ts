@@ -146,7 +146,7 @@ export class AppViewModel implements vscode.Disposable {
                 })),
                 activeGroupId: pools[0]?.id || 'gemini',
                 chart: { buckets: [] },
-                displayItems: pools.map(pool => ({
+                displayItems: pools.filter(pool => !pool.hideWhenEmpty).map(pool => ({
                     label: pool.label,
                     remaining: 0,
                     resetTime: 'N/A',
@@ -1171,7 +1171,10 @@ export class AppViewModel implements vscode.Disposable {
                 };
             });
         }
-        return groups.map(g => ({
+        const hiddenWhenEmpty = new Set(
+            this.strategyManager.getQuotaPools().filter(pool => pool.hideWhenEmpty).map(pool => pool.id)
+        );
+        return groups.filter(g => g.hasData || g.weekly || !hiddenWhenEmpty.has(g.id)).map(g => ({
             label: g.label,
             remaining: g.remaining,
             resetTime: g.resetTime,
