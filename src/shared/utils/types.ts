@@ -26,16 +26,23 @@ export interface ModelQuotaInfo {
 }
 
 /**
- * Official weekly limit of one quota pool, from a RetrieveUserQuotaSummary bucket
+ * Official bucket limit of one quota pool, from a RetrieveUserQuotaSummary bucket
  */
-export interface WeeklyLimitInfo {
-  /** Server bucket ID, e.g. "gemini-weekly" */
+export interface QuotaBucketInfo {
+  /** Server bucket ID, e.g. "gemini-weekly" or "gemini-5h" */
   bucketId: string;
+  /** Quota window: "weekly", "5h", etc. */
+  window?: 'weekly' | '5h' | string;
   /** Remaining quota percentage (0-100) */
   remainingPercentage: number;
   /** Reset time; absent when the server value was missing or invalid */
   resetTime?: Date;
 }
+
+/**
+ * Official weekly limit of one quota pool, from a RetrieveUserQuotaSummary bucket
+ */
+export type WeeklyLimitInfo = QuotaBucketInfo;
 
 /**
  * Prompt Credits information
@@ -106,6 +113,8 @@ export interface QuotaSnapshot {
   models: ModelQuotaInfo[];
   /** Official weekly limits; absent when the server does not provide the quota summary */
   weeklyLimits?: WeeklyLimitInfo[];
+  /** Official 5-hour limits; absent when the server does not provide the quota summary */
+  fiveHourLimits?: QuotaBucketInfo[];
 }
 
 /**

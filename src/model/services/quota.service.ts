@@ -17,7 +17,7 @@ import type {
     FlowCreditsInfo,
     TokenUsageInfo,
     QuotaSnapshot,
-    WeeklyLimitInfo,
+    QuotaBucketInfo,
     QuotaUpdateCallback,
     ErrorCallback,
     LanguageServerInfo,
@@ -143,16 +143,19 @@ export class QuotaService implements IQuotaService {
             throw e;
         }
 
-        const weeklyLimits = await this.fetchWeeklyLimits();
-        if (weeklyLimits) snapshot.weeklyLimits = weeklyLimits;
+        const summaryBuckets = await this.fetchSummaryBuckets();
+        if (summaryBuckets) {
+            snapshot.weeklyLimits = summaryBuckets.filter(b => b.window === 'weekly');
+            snapshot.fiveHourLimits = summaryBuckets.filter(b => b.window === '5h');
+        }
         return snapshot;
     }
 
     /**
-     * Fetch the official weekly limits. Optional data: older servers lack this RPC,
-     * so any failure only hides the weekly display and never fails the quota fetch.
+     * Fetch official quota summary buckets (both weekly and 5-hour limits). Optional data:
+     * older servers lack this RPC, so any failure only hides the summary limits and never fails the quota fetch.
      */
-    private async fetchWeeklyLimits(): Promise<WeeklyLimitInfo[] | undefined> {
+    private async fetchSummaryBuckets(): Promise<QuotaBucketInfo[] | undefined> {
         try {
             const response = await this.request<ServerQuotaSummaryResponse>(QUOTA_SUMMARY_PATH, REQUEST_METADATA);
             const groups = response.data?.response?.groups;
@@ -161,14 +164,16 @@ export class QuotaService implements IQuotaService {
                 return undefined;
             }
 
-            const limits: WeeklyLimitInfo[] = [];
+            const limits: QuotaBucketInfo[] = [];
             for (const bucket of groups.flatMap(group => group.buckets ?? [])) {
-                if (bucket.window !== 'weekly' || typeof bucket.bucketId !== 'string') continue;
+                if (typeof bucket.bucketId !== 'string') continue;
+                if (bucket.window !== 'weekly' && bucket.window !== '5h') continue;
                 // remainingFraction and remainingAmount are alternatives; an amount alone has no percentage
                 if (bucket.remainingFraction === undefined && bucket.remainingAmount !== undefined) continue;
                 const resetTime = new Date(bucket.resetTime ?? '');
                 limits.push({
                     bucketId: bucket.bucketId,
+                    window: bucket.window,
                     // The server omits a zero fraction (protobuf omitempty)
                     remainingPercentage: this.clampUnitFraction(bucket.remainingFraction ?? 0) * 100,
                     resetTime: Number.isNaN(resetTime.getTime()) ? undefined : resetTime,

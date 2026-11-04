@@ -17,6 +17,7 @@ export type {
     TokenUsageInfo,
     QuotaSnapshot,
     WeeklyLimitInfo,
+    QuotaBucketInfo,
     UserInfo,
     UserCredit,
 

@@ -19,7 +19,7 @@ Quota data comes from the local Antigravity Language Server:
 /exa.language_server_pb.LanguageServerService/RetrieveUserQuotaSummary
 ```
 
-`GetUserStatus` provides the credits and the per-model 5-hour quota rows. `RetrieveUserQuotaSummary` provides the per-group weekly and 5-hour limits that the IDE shows in Settings → Models; the panel reads only its weekly buckets. It is requested after every successful `GetUserStatus` and is optional: a server without it, an error, or an unexpected shape only leaves the weekly limits out and never fails the quota fetch.
+`GetUserStatus` provides the credits and the per-model quota rows. `RetrieveUserQuotaSummary` provides the per-group weekly and 5-hour limits that the IDE shows in Settings → Models; the panel extracts both weekly and 5-hour summary buckets. It is requested after every successful `GetUserStatus` and is optional: a server without it, an error, or an unexpected shape only leaves the summary limits out and never fails the quota fetch.
 
 ### 1.2 Raw data
 
@@ -104,11 +104,11 @@ Each model group points to a quota pool through `quotaPoolId`. A quota pool name
 | `gpt` | `#FF5252` | `non-google` | Claude (orange) |
 | `other` | `#FFAB40` | `non-google` | Claude (orange) |
 
-| Quota pool | `weeklyBucketId` |
-|---|---|
-| `gemini` | `gemini-weekly` |
-| `argon` | `gemini-argon-wtu-weekly` |
-| `non-google` | `3p-weekly` |
+| Quota pool | `weeklyBucketId` | `fiveHourBucketId` |
+|---|---|---|
+| `gemini` | `gemini-weekly` | `gemini-5h` |
+| `argon` | `gemini-argon-wtu-weekly` | *(none)* |
+| `non-google` | `3p-weekly` | `3p-5h` |
 
 Gemini Flash and Gemini Pro currently share the same Gemini quota pool. The relative consumption cost of Flash and Pro may differ, but usage of either model reduces the remaining quota of the same pool.
 
@@ -163,14 +163,20 @@ This type keeps its historical name, but each entry now represents the state of 
 
 ### 4.2 Aggregation rules
 
-For all models that belong to the same `quotaPoolId`:
+For each configured quota pool:
 
-- `remaining`: the lowest remaining percentage.
-- `resetTime`: the reset time of the model with the lowest remaining percentage.
-- `hasData`: at least one model row exists in the pool.
-- When the server reports `Ready`, the UI shows 100% in sync.
+- When an official 5-hour summary bucket (`fiveHourBucketId`) is available in `fiveHourLimits`:
+  - `remaining`: the 5-hour bucket percentage (forced to 100% when countdown is `Ready`).
+  - `resetTime`: the formatted time until the 5-hour reset.
+  - `resetDate`: the 5-hour reset timestamp.
+  - `hasData`: `true`.
+- Fallback for pools without a 5-hour summary bucket (e.g. Argon or older servers):
+  - `remaining`: the lowest remaining percentage among models belonging to the pool.
+  - `resetTime`: the reset time of the lowest-remaining model in the pool.
+  - `hasData`: at least one model row exists in the pool.
+  - When the server reports `Ready`, the UI shows 100% in sync.
 
-The minimum strategy avoids overestimating available quota when server model rows are briefly out of sync.
+The minimum fallback strategy avoids overestimating available quota when server model rows are briefly out of sync.
 
 `weekly` is taken from the summary bucket named by the pool's `weeklyBucketId`. Its `resetTime` is recomputed from the absolute reset time on every aggregation, so a restored cached snapshot does not show a stale countdown, and a passed reset shows 100% like the 5-hour quota. Weekly limits are not written to history and do not affect active pool detection, the bar chart or the prediction.
 
