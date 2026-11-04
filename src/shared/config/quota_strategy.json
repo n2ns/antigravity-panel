@@ -5,7 +5,8 @@
             "label": "Gemini",
             "shortLabel": "Gemini",
             "themeColor": "#40C4FF",
-            "weeklyBucketId": "gemini-weekly"
+            "weeklyBucketId": "gemini-weekly",
+            "fiveHourBucketId": "gemini-5h"
         },
         {
             "id": "argon",
@@ -20,7 +21,8 @@
             "label": "Claude",
             "shortLabel": "Claude",
             "themeColor": "#FFAB40",
-            "weeklyBucketId": "3p-weekly"
+            "weeklyBucketId": "3p-weekly",
+            "fiveHourBucketId": "3p-5h"
         }
     ],
     "groups": [

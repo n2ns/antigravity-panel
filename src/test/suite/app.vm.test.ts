@@ -1075,6 +1075,39 @@ suite('AppViewModel Test Suite', () => {
             check.checkQuotaNotifications({ ...group, remaining: 30 });
             assert.match((vscode.window as any).lastInfoMessage || '', /^Low Quota Warning:/, '5-hour cooldown is separate');
         });
+
+        test('should prioritize official 5-hour limits over model rows and separate 5h from weekly', async () => {
+            mockQuota.fetchQuota = async () => ({
+                timestamp: new Date(),
+                models: [
+                    {
+                        modelId: 'MODEL_PLACEHOLDER_M318',
+                        label: 'Gemini 3.8 Flash (High)',
+                        remainingPercentage: 25.1, // Quota effettiva riportata dal server
+                        isExhausted: false,
+                        resetTime: inHours(99),
+                        timeUntilReset: '4d 3h'
+                    }
+                ],
+                fiveHourLimits: [
+                    { bucketId: 'gemini-5h', remainingPercentage: 99.8, resetTime: inHours(4) },
+                    { bucketId: '3p-5h', remainingPercentage: 100, resetTime: inHours(5) }
+                ],
+                weeklyLimits: [
+                    { bucketId: 'gemini-weekly', remainingPercentage: 25.1, resetTime: inHours(99) },
+                    { bucketId: '3p-weekly', remainingPercentage: 49.5, resetTime: inHours(160) }
+                ]
+            });
+
+            await vm.refreshQuota();
+
+            const { groups } = vm.getState().quota;
+            const gemini = groups.find(g => g.id === 'gemini');
+            assert.strictEqual(gemini?.remaining, 99.8);
+            assert.strictEqual(gemini?.resetTime, '4h 0m');
+            assert.strictEqual(gemini?.weekly?.remaining, 25.1);
+            assert.strictEqual(gemini?.weekly?.resetTime, '4d 3h');
+        });
     });
 
     test('output channel changes should not count as editor activity', () => {
