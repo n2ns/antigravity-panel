@@ -408,11 +408,12 @@ suite('QuotaService Test Suite', () => {
             data: { response: { groups: [{ displayName: 'Gemini Models', buckets }] } }
         });
 
-        test('should attach weekly buckets and skip other windows', async () => {
+        test('should attach weekly and 5h buckets and populate both weeklyLimits and fiveHourLimits', async () => {
             service.mockResponse = validResponse;
             service.summaryResponse = summary([
                 { bucketId: 'gemini-weekly', window: 'weekly', remainingFraction: 0.89276433, resetTime: '2026-10-07T04:06:06Z' },
-                { bucketId: 'gemini-5h', window: '5h', remainingFraction: 1, resetTime: '2026-10-03T05:52:00Z' }
+                { bucketId: 'gemini-5h', window: '5h', remainingFraction: 1, resetTime: '2026-10-03T05:52:00Z' },
+                { bucketId: 'other-bucket', window: 'daily', remainingFraction: 0.5, resetTime: '2026-10-03T05:52:00Z' }
             ]);
 
             const snapshot = await service.fetchQuota();
@@ -422,8 +423,16 @@ suite('QuotaService Test Suite', () => {
             assert.strictEqual(snapshot!.weeklyLimits?.length, 1);
             const weekly = snapshot!.weeklyLimits![0];
             assert.strictEqual(weekly.bucketId, 'gemini-weekly');
+            assert.strictEqual(weekly.window, 'weekly');
             assert.ok(Math.abs(weekly.remainingPercentage - 89.276433) < 1e-9);
             assert.strictEqual(weekly.resetTime?.toISOString(), '2026-10-07T04:06:06.000Z');
+
+            assert.strictEqual(snapshot!.fiveHourLimits?.length, 1);
+            const fiveHour = snapshot!.fiveHourLimits![0];
+            assert.strictEqual(fiveHour.bucketId, 'gemini-5h');
+            assert.strictEqual(fiveHour.window, '5h');
+            assert.strictEqual(fiveHour.remainingPercentage, 100);
+            assert.strictEqual(fiveHour.resetTime?.toISOString(), '2026-10-03T05:52:00.000Z');
         });
 
         test('should treat an omitted fraction as zero and drop invalid reset times', async () => {

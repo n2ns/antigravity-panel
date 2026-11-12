@@ -548,10 +548,17 @@ export class AppViewModel implements vscode.Disposable {
         this._lastSnapshot = snapshot;
         const prevState = this._state.quota;
         const newGroups = this.aggregateGroups(snapshot);
+        const pools = this.strategyManager.getQuotaPools();
         const observedRemaining = new Map<string, number>();
         for (const group of newGroups) {
-            const model = this.getMinModelForPool(snapshot, group.id);
-            if (model) observedRemaining.set(group.id, model.remainingPercentage);
+            const pool = pools.find(p => p.id === group.id);
+            const fiveHour = pool ? this.getFiveHourForPool(snapshot, pool) : undefined;
+            if (fiveHour) {
+                observedRemaining.set(group.id, fiveHour.rawRemaining);
+            } else {
+                const model = this.getMinModelForPool(snapshot, group.id);
+                if (model) observedRemaining.set(group.id, model.remainingPercentage);
+            }
         }
         const activeGroupId = this.detectActiveGroup(prevState, newGroups);
         const activeGroup = newGroups.find(g => g.id === activeGroupId);
@@ -933,6 +940,29 @@ export class AppViewModel implements vscode.Disposable {
         return Number.isFinite(timestamp) ? timestamp : undefined;
     }
 
+    /** Official 5-hour limit of a pool; reset times are recomputed so a cached snapshot is not stale */
+    private getFiveHourForPool(snapshot: QuotaSnapshot, pool: QuotaPoolDefinition): { remaining: number; rawRemaining: number; resetTime: string; resetDate?: number } | undefined {
+        if (!pool.fiveHourBucketId) return undefined;
+        const limit = snapshot.fiveHourLimits?.find(l => l.bucketId === pool.fiveHourBucketId);
+        if (!limit) return undefined;
+
+        const timestamp = limit.resetTime === undefined ? NaN : new Date(limit.resetTime).getTime();
+        if (!Number.isFinite(timestamp)) {
+            return {
+                remaining: limit.remainingPercentage,
+                rawRemaining: limit.remainingPercentage,
+                resetTime: 'N/A'
+            };
+        }
+        const resetTime = formatTimeUntilReset(timestamp - Date.now());
+        return {
+            remaining: resetTime === 'Ready' ? 100 : limit.remainingPercentage,
+            rawRemaining: limit.remainingPercentage,
+            resetTime,
+            resetDate: timestamp
+        };
+    }
+
     /** Official weekly limit of a pool; reset times are recomputed so a cached snapshot is not stale */
     private getWeeklyForPool(snapshot: QuotaSnapshot, pool: QuotaPoolDefinition): QuotaWeeklyState | undefined {
         if (!pool.weeklyBucketId) return undefined;
@@ -957,8 +987,22 @@ export class AppViewModel implements vscode.Disposable {
         const pools = this.strategyManager.getQuotaPools();
 
         return pools.map(pool => {
+            const fiveHour = this.getFiveHourForPool(snapshot, pool);
             const minModel = this.getMinModelForPool(snapshot, pool.id);
             const weekly = this.getWeeklyForPool(snapshot, pool);
+
+            if (fiveHour) {
+                return {
+                    id: pool.id,
+                    label: pool.label,
+                    remaining: fiveHour.remaining,
+                    resetTime: fiveHour.resetTime,
+                    resetDate: fiveHour.resetDate,
+                    themeColor: pool.themeColor,
+                    hasData: true,
+                    weekly
+                };
+            }
 
             if (!minModel) {
                 return {
@@ -995,7 +1039,16 @@ export class AppViewModel implements vscode.Disposable {
      * Used for prediction instead of a fixed window.
      */
     private getHoursUntilResetForGroup(groupId: string): number | null {
-        if (!this._lastSnapshot?.models?.length) return null;
+        if (!this._lastSnapshot) return null;
+        const pool = this.strategyManager.getQuotaPools().find(p => p.id === groupId);
+        if (pool) {
+            const fiveHour = this.getFiveHourForPool(this._lastSnapshot, pool);
+            if (fiveHour?.resetDate !== undefined) {
+                const ms = fiveHour.resetDate - Date.now();
+                if (!isNaN(ms) && ms > 0) return ms / 3_600_000;
+            }
+        }
+        if (!this._lastSnapshot.models?.length) return null;
         const minModel = this.getMinModelForPool(this._lastSnapshot, groupId);
         if (!minModel) return null;
         const resetTimestamp = this.getResetTimestamp(minModel);

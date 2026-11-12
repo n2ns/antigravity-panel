@@ -39,6 +39,15 @@ suite('QuotaStrategyManager Test Suite', () => {
         assert.deepStrictEqual(buckets, { gemini: 'gemini-weekly', argon: 'gemini-argon-wtu-weekly', 'non-google': '3p-weekly' });
     });
 
+    test('should map quota pools to their 5-hour summary bucket', () => {
+        const buckets = Object.fromEntries(manager.getQuotaPools().map(pool => [pool.id, pool.fiveHourBucketId]));
+        assert.deepStrictEqual(buckets, {
+            gemini: 'gemini-5h',
+            argon: undefined,
+            'non-google': '3p-5h'
+        });
+    });
+
     test('should route Gemini 4 Argon to its own pool despite the broader gemini prefix', () => {
         const cases: [string, string][] = [
             ['MODEL_PLACEHOLDER_M417', 'Gemini 4 Argon (High)'],
