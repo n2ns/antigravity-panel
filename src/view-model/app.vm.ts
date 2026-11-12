@@ -717,7 +717,14 @@ export class AppViewModel implements vscode.Disposable {
         if (drop < AppViewModel.ABNORMAL_DRAIN_THRESHOLD_PP) return;
 
         const stored = this.storageService.getLastSnapshot<QuotaSnapshot>();
-        if (stored?.models) {
+        // The history holds the 5-hour bucket when the pool has one, so its reset decides;
+        // the model row may carry the weekly reset instead.
+        const pool = this.strategyManager.getQuotaPools().find(p => p.id === group.id);
+        const fiveHour = stored && pool ? this.getFiveHourForPool(stored, pool) : undefined;
+        if (fiveHour) {
+            const resetMs = fiveHour.resetDate;
+            if (resetMs !== undefined && resetMs > lastTimestamp && resetMs <= Date.now()) return;
+        } else if (stored?.models) {
             const model = this.getMinModelForPool(stored, group.id);
             if (model && !model.resetTimeIsFallback) {
                 const resetMs = this.getResetTimestamp(model);

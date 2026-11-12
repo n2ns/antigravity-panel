@@ -1269,6 +1269,33 @@ suite('AppViewModel Test Suite', () => {
             );
         });
 
+        test('should treat a 5-hour bucket reset as an offline reset when the model row carries the weekly reset', async () => {
+            const now = Date.now();
+            mockStorage.getRecentHistory = () => [{
+                timestamp: now - 2 * 60 * 60 * 1000,
+                usage: { gemini: 90 }
+            }];
+            const withFiveHour = (remaining: number): QuotaSnapshot => {
+                const snapshot = makeSnapshot(remaining);
+                // Under a weekly constraint the model row reports the weekly reset
+                snapshot.models[0].resetTime = new Date(now + 3 * 24 * 60 * 60 * 1000);
+                snapshot.models[0].timeUntilReset = '3d';
+                snapshot.fiveHourLimits = [{
+                    bucketId: 'gemini-5h',
+                    window: '5h',
+                    remainingPercentage: remaining,
+                    resetTime: new Date(now - 60 * 60 * 1000)
+                }];
+                return snapshot;
+            };
+            mockStorage.getLastSnapshot = <T>() => withFiveHour(90) as T;
+            mockQuota.fetchQuota = async () => withFiveHour(80);
+
+            await vm.refreshQuota();
+
+            assert.strictEqual((vscode.window as any).lastWarningMessage, undefined);
+        });
+
         test('should require an unfocused window before accumulating idle drain', async () => {
             const realNow = Date.now;
             const start = 1_700_000_000_000;
