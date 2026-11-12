@@ -332,6 +332,26 @@ suite('Commit Message Claude Test Suite', () => {
 
     suite('getStagedDiff', () => {
         let repoDir: string;
+        // A git hook (the pre-commit `npm test`) runs with these set to the outer
+        // repository; git in the temp repository would then read the outer index.
+        const repoLocationVars = ['GIT_DIR', 'GIT_WORK_TREE', 'GIT_INDEX_FILE', 'GIT_OBJECT_DIRECTORY',
+            'GIT_ALTERNATE_OBJECT_DIRECTORIES', 'GIT_COMMON_DIR', 'GIT_PREFIX'];
+        const savedEnv: Record<string, string | undefined> = {};
+
+        suiteSetup(() => {
+            for (const name of repoLocationVars) {
+                savedEnv[name] = process.env[name];
+                delete process.env[name];
+            }
+        });
+
+        suiteTeardown(() => {
+            for (const name of repoLocationVars) {
+                if (savedEnv[name] !== undefined) {
+                    process.env[name] = savedEnv[name];
+                }
+            }
+        });
 
         setup(() => {
             repoDir = fs.mkdtempSync(path.join(os.tmpdir(), 'tfa-staged-diff-'));
