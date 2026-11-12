@@ -42,6 +42,20 @@ class MockProcessFinder extends ProcessFinder {
     this.sequenceResults = [...results];
   }
 
+  /**
+   * Commands the finder would run, e.g. the diagnostics after a failed
+   * detection. Never executed: real ones start PowerShell on Windows and can
+   * exceed the test timeout.
+   */
+  public executedCommands: string[] = [];
+
+  protected async execute(
+    command: string,
+  ): Promise<{ stdout: string; stderr: string }> {
+    this.executedCommands.push(command);
+    return { stdout: "", stderr: "" };
+  }
+
   protected async tryDetect(): Promise<{
     port: number;
     csrfToken: string;
@@ -90,6 +104,10 @@ suite("ProcessFinder Test Suite", () => {
 
     assert.strictEqual(result, null);
     assert.strictEqual(finder.tryDetectCallCount, 1);
+    assert.ok(
+      finder.executedCommands.length > 0,
+      "Diagnostics after a failed detection go through the mocked execute",
+    );
   });
 
   test("should retry on null result", async () => {
