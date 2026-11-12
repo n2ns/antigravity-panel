@@ -1,5 +1,12 @@
 # Change Log
 
+## [2.8.3] - 2026-11-13
+
+### Fixed
+
+- **5-Hour Gauge Showing the Weekly Limit**: When a pool's weekly limit was lower than its 5-hour quota (for example Claude at 43% weekly with the 5-hour window untouched), the Language Server reported the weekly value on every model row, so the gauge, its countdown and the weekly bar all showed the same weekly percentage and reset. The gauge now reads the official 5-hour limit (`gemini-5h`, `3p-5h`) from the quota summary, and history, reset detection and the prediction follow the real 5-hour window. Pools without a 5-hour limit, and servers that do not provide one, keep the previous behavior. Thanks to @HH-Tips in [#221](https://github.com/n2ns/antigravity-panel/pull/221).
+- **False Offline Drain Warning**: With the 5-hour limit in use, a 5-hour reset while the IDE was closed was judged from the model row's weekly reset time and went unnoticed, so the next start could warn of an abnormal quota drain that did not happen. The offline check now uses the 5-hour reset when the pool has one.
+
 ## [2.8.2] - 2026-11-03
 
 ### Added
