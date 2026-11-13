@@ -1,7 +1,8 @@
 import {
     verifyServerGateway,
     getPortListCommand,
-    hasAntigravityAppDataDir,
+    extractProcessInfoFromCommandLine,
+    scanHubDaemonFiles,
     SERVER_PORT_PATTERN,
 } from "./detection_utils";
 import { exec } from "child_process";
@@ -108,27 +109,32 @@ export class AmbientDiscovery {
     }
 
     private async locateBySignature(): Promise<ProcessInfo[]> {
-        const signature = "csrf_token";
+        const signaturePattern = "csrf_token|--hub-port";
         let shellCmd: string;
 
         if (process.platform === "win32") {
             const psScript = `
         [Console]::OutputEncoding = [System.Text.Encoding]::UTF8;
-        $sign = '${signature}';
+        $sign = '${signaturePattern}';
         $pList = Get-CimInstance Win32_Process | Where-Object { $_.CommandLine -match $sign } -ErrorAction SilentlyContinue;
         if ($pList) { @($pList) | Select-Object ProcessId,ParentProcessId,CommandLine | ConvertTo-Json -Compress } else { '[]' }
       `.replace(/\n\s+/g, " ").trim();
             shellCmd = `chcp 65001 >nul && powershell -ExecutionPolicy Bypass -NoProfile -Command "${psScript}"`;
         } else {
-            shellCmd = `ps -A -ww -o pid,ppid,args | grep "${signature}" | grep -v grep`;
+            shellCmd = `ps -A -ww -o pid,ppid,args | grep -E "${signaturePattern}" | grep -v grep`;
         }
 
         try {
             const { stdout } = await spawnShell(shellCmd, { timeout: 15000 });
-            return this.parseOutput(stdout);
+            const findings = this.parseOutput(stdout);
+            if (findings.length > 0) {
+                return findings;
+            }
         } catch {
-            return [];
+            // Fall through to hub daemon file scan
         }
+
+        return scanHubDaemonFiles();
     }
 
     private parseOutput(raw: string): ProcessInfo[] {
@@ -159,28 +165,10 @@ export class AmbientDiscovery {
     }
 
     private extractDetails(cmd: string, pid: number, ppid: number): ProcessInfo | null {
-        if (
-            !cmd.includes("--csrf_token")
-            || !SERVER_PORT_PATTERN.test(cmd)
-            || !hasAntigravityAppDataDir(cmd)
-        ) {
+        if (!SERVER_PORT_PATTERN.test(cmd)) {
             return null;
         }
-
-        const portPtr = cmd.match(SERVER_PORT_PATTERN);
-        const tokenPtr = cmd.match(/--csrf_token[=\s]+(?:["']?)([a-zA-Z0-9\-_.]+)(?:["']?)/);
-        const wsPtr = cmd.match(/--workspace_id[=\s]+(?:["']?)([a-zA-Z0-9\-_.]+)(?:["']?)/);
-
-        if (tokenPtr?.[1]) {
-            return {
-                pid,
-                ppid: ppid || 0,
-                extensionPort: portPtr ? parseInt(portPtr[1], 10) : 0,
-                csrfToken: tokenPtr[1],
-                workspaceId: wsPtr?.[1],
-            };
-        }
-        return null;
+        return extractProcessInfoFromCommandLine(cmd, pid, ppid || 0);
     }
 
     private async probeAndEstablish(meta: ProcessInfo): Promise<LanguageServerInfo | null> {
