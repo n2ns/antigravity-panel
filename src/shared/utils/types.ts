@@ -184,6 +184,8 @@ export interface ProcessInfo {
   ppid?: number;
   /** HTTP extension port */
   extensionPort: number;
+  /** HTTPS port advertised in the hub discovery file (when available) */
+  httpsPort?: number;
   /** CSRF authentication token */
   csrfToken: string;
   /** Workspace ID from command line */

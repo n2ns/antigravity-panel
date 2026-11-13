@@ -1,5 +1,30 @@
 import * as assert from 'assert';
 import { WindowsStrategy, UnixStrategy } from '../../shared/platform/platform_strategies';
+import type { HubDiscoveryDeps } from '../../shared/platform/detection_utils';
+
+function makeHubDeps(files: Record<string, string>): HubDiscoveryDeps {
+    const normalized = new Map(
+        Object.entries(files).map(([k, v]) => [k.replace(/\\/g, '/'), v]),
+    );
+    return {
+        exists: (p) => normalized.has(p.replace(/\\/g, '/')),
+        readFile: (p) => {
+            const val = normalized.get(p.replace(/\\/g, '/'));
+            if (val === undefined) throw new Error(`ENOENT: ${p}`);
+            return val;
+        },
+        readdir: (dir) => {
+            const prefix = dir.replace(/\\/g, '/').replace(/\/$/, '') + '/';
+            return [...normalized.keys()]
+                .filter((k) => k.startsWith(prefix))
+                .map((k) => k.slice(prefix.length))
+                .filter((name) => !name.includes('/'));
+        },
+        statMtimeMs: () => 1000,
+        getGeminiRoots: () => [{ root: '/home/dev/.gemini', local: true }],
+        isPidAlive: () => true,
+    };
+}
 
 suite('Platform Strategies Test Suite', () => {
     suite('WindowsStrategy', () => {
@@ -195,6 +220,69 @@ suite('Platform Strategies Test Suite', () => {
             const result = strategy.parseProcessInfo(jsonOutput);
             assert.strictEqual(result![0].extensionPort, 0);
         });
+
+        test('should resolve csrfToken and httpsPort from hub discovery file when --csrf_token is omitted', () => {
+            const hubStrategy = new WindowsStrategy(makeHubDeps({
+                '/home/dev/.gemini/antigravity/daemon/hub_38107.json': JSON.stringify({
+                    pid: 13532,
+                    httpsPort: 37051,
+                    httpPort: 38107,
+                    lsVersion: '2.31.2',
+                    csrfToken: 'hub-file-token',
+                }),
+            }));
+            const jsonOutput = JSON.stringify({
+                ProcessId: 13532,
+                ParentProcessId: 25312,
+                CommandLine: 'C:\\Users\\dev\\.gemini\\bin\\agy.exe --hub --hub-port=38107 --app_data_dir=antigravity --add-dir=C:\\work\\my-project',
+            });
+
+            const result = hubStrategy.parseProcessInfo(jsonOutput);
+
+            assert.ok(result);
+            assert.strictEqual(result![0].pid, 13532);
+            assert.strictEqual(result![0].extensionPort, 38107);
+            assert.strictEqual(result![0].httpsPort, 37051);
+            assert.strictEqual(result![0].csrfToken, 'hub-file-token');
+            assert.strictEqual(result![0].workspaceId, 'file_c_3A_work_my_project');
+        });
+
+        test('should reject stale hub discovery file whose PID does not match', () => {
+            const hubStrategy = new WindowsStrategy(makeHubDeps({
+                '/home/dev/.gemini/antigravity/daemon/hub_38107.json': JSON.stringify({
+                    pid: 99999,
+                    httpsPort: 37051,
+                    httpPort: 38107,
+                    csrfToken: 'stale-token',
+                }),
+            }));
+            const jsonOutput = JSON.stringify({
+                ProcessId: 13532,
+                ParentProcessId: 25312,
+                CommandLine: 'C:\\Users\\dev\\.gemini\\bin\\agy.exe --hub --hub-port=38107 --app_data_dir=antigravity',
+            });
+
+            assert.strictEqual(hubStrategy.parseProcessInfo(jsonOutput), null);
+        });
+
+        test('should parse an agy hub wmic CSV row without --csrf_token using hub discovery file', () => {
+            const hubStrategy = new WindowsStrategy(makeHubDeps({
+                '/home/dev/.gemini/antigravity/daemon/hub_38107.json': JSON.stringify({
+                    pid: 13532,
+                    httpsPort: 37051,
+                    httpPort: 38107,
+                    csrfToken: 'csv-hub-token',
+                }),
+            }));
+            const csv = 'Node,CommandLine,ParentProcessId,ProcessId\r\nPC,C:\\bin\\agy.exe --hub --hub-port=38107 --app_data_dir=antigravity,25312,13532';
+
+            const result = hubStrategy.parseProcessInfo(csv);
+
+            assert.ok(result);
+            assert.strictEqual(result![0].pid, 13532);
+            assert.strictEqual(result![0].csrfToken, 'csv-hub-token');
+            assert.strictEqual(result![0].httpsPort, 37051);
+        });
     });
 
     suite('UnixStrategy - macOS', () => {
@@ -324,6 +412,30 @@ language  71666 user   11u  IPv4 0x1234567891      0t0  TCP 127.0.0.1:42101 (LIS
             assert.strictEqual(result![0].ppid, 25312);
             assert.strictEqual(result![0].extensionPort, 64233);
             assert.strictEqual(result![0].csrfToken, 'hub-token');
+            assert.strictEqual(result![0].workspaceId, 'file_home_dev_project');
+        });
+
+        test('should parse an agy hub process without --csrf_token using hub discovery file', () => {
+            const hubStrategy = new UnixStrategy('linux', makeHubDeps({
+                '/home/dev/.gemini/antigravity/daemon/hub_38107.json': JSON.stringify({
+                    pid: 116951,
+                    httpsPort: 37051,
+                    httpPort: 38107,
+                    lsVersion: '2.31.2',
+                    csrfToken: 'unix-hub-token',
+                }),
+            }));
+            const psOutput = `116951 116556 /home/dev/.gemini/bin/agy --hub --hub-port=38107 --app_data_dir=antigravity --add-dir=/home/dev/antigravity-panel`;
+
+            const result = hubStrategy.parseProcessInfo(psOutput);
+
+            assert.ok(result);
+            assert.strictEqual(result![0].pid, 116951);
+            assert.strictEqual(result![0].ppid, 116556);
+            assert.strictEqual(result![0].extensionPort, 38107);
+            assert.strictEqual(result![0].httpsPort, 37051);
+            assert.strictEqual(result![0].csrfToken, 'unix-hub-token');
+            assert.strictEqual(result![0].workspaceId, 'file_home_dev_antigravity_panel');
         });
 
         test('should parse ss output for Linux', () => {

@@ -2,9 +2,11 @@ const http = require('http');
 const https = require('https');
 const os = require('os');
 const fs = require('fs');
+const path = require('path');
 const {
     extractArgument,
     listLanguageServerProcesses,
+    readHubDiscovery,
     runCommand,
 } = require('./language-server-process-utils');
 
@@ -184,21 +186,36 @@ async function main() {
     console.log(`Platform: ${os.platform()} (${os.arch()})`);
 
     const processes = await listLanguageServerProcesses();
-    const processInfo = processes.find(item => extractArgument(item.commandLine, 'csrf_token'));
-    if (!processInfo) {
-        throw new Error('No agy or language_server process with --csrf_token was found.');
+    const resolved = processes
+        .map(item => {
+            const cmdToken = extractArgument(item.commandLine, 'csrf_token');
+            const hubInfo = !cmdToken ? readHubDiscovery(item.commandLine, item.pid) : null;
+            return {
+                processInfo: item,
+                csrfToken: cmdToken || (hubInfo ? hubInfo.csrfToken : null),
+                httpsPort: hubInfo ? hubInfo.httpsPort : null,
+                addDir: extractArgument(item.commandLine, 'add-dir'),
+            };
+        })
+        .filter(entry => entry.csrfToken);
+
+    if (resolved.length === 0) {
+        throw new Error('No agy or language_server process with a CSRF token was found.');
     }
 
-    const csrfToken = extractArgument(processInfo.commandLine, 'csrf_token');
+    const cwd = path.resolve(process.cwd());
+    const selected = resolved.find(entry => entry.addDir && path.resolve(entry.addDir) === cwd) || resolved[0];
+    const { processInfo, csrfToken, httpsPort } = selected;
     const extensionPort = Number(extractArgument(processInfo.commandLine, 'extension_server_port')) || null;
     console.log(`Process: PID ${processInfo.pid}, token ${csrfToken}`);
 
-    // The agy hub (Antigravity IDE 2.6.0+) advertises its service port as --hub-port
+    // The agy hub (Antigravity IDE 2.6.0+) advertises its HTTP service port as --hub-port
     const hubPort = Number(extractArgument(processInfo.commandLine, 'hub-port')) || null;
 
     const listeningPorts = await discoverListeningPorts(processInfo.pid);
-    const candidates = listeningPorts.filter(port => port !== extensionPort && port !== hubPort);
+    const candidates = listeningPorts.filter(port => port !== extensionPort && port !== hubPort && port !== httpsPort);
     if (hubPort) candidates.unshift(hubPort);
+    if (httpsPort) candidates.unshift(httpsPort);
     console.log(`Candidate localhost ports: ${candidates.join(', ') || 'none'}`);
     if (candidates.length === 0) {
         throw new Error('No candidate localhost listening ports were found.');
