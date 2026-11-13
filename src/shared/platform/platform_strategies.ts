@@ -5,8 +5,10 @@
 import type { ProcessInfo, PlatformStrategy } from "../utils/types";
 import {
   getPortListCommand,
-  hasAntigravityAppDataDir,
+  parseAntigravityProcess,
   SERVER_PORT_PATTERN,
+  type HubDiscoveryDeps,
+  defaultHubDiscoveryDeps,
 } from "./detection_utils";
 
 /** Windows process item from PowerShell/WMI output */
@@ -22,6 +24,7 @@ interface WinProcessItem {
  * Note: Windows 7 is not supported (requires PowerShell 3.0+)
  */
 export class WindowsStrategy implements PlatformStrategy {
+  constructor(private hubDeps: HubDiscoveryDeps = defaultHubDiscoveryDeps) {}
   getProcessListCommand(processNames: string[]): string {
     // PowerShell script for Windows 10/11
     // 1. [Console]::OutputEncoding: Ensures UTF-8 output to handle special characters in paths
@@ -113,33 +116,19 @@ export class WindowsStrategy implements PlatformStrategy {
 
           // Extract PPID and PID (last two numbers)
           const idsMatch = row.match(/,(\d+),(\d+)\s*$/);
-          if (!idsMatch) continue;
+          if (!idsMatch || idsMatch.index === undefined) continue;
 
           const ppid = parseInt(idsMatch[1], 10);
           const pid = parseInt(idsMatch[2], 10);
-          // We mostly need CLI args from the string
-          const commandLine = row;
+          // Strip leading "Node," and trailing ",PPID,PID" so unquoted trailing args don't include ",PPID,PID"
+          const commandLine = row
+            .slice(0, idsMatch.index)
+            .replace(/^[^,]+,/, "")
+            .replace(/^"(.*)"$/, "$1");
 
-          const portMatch = commandLine.match(SERVER_PORT_PATTERN);
-          const tokenMatch = commandLine.match(
-            /--csrf_token[=\s]+(?:["']?)([a-zA-Z0-9\-_.]+)(?:["']?)/,
-          );
-          const wsMatch = commandLine.match(
-            /--workspace_id[=\s]+(?:["']?)([a-zA-Z0-9\-_.]+)(?:["']?)/,
-          );
-
-          if (tokenMatch?.[1]) {
-            if (!hasAntigravityAppDataDir(commandLine)) {
-              continue;
-            }
-
-            results.push({
-              pid,
-              ppid,
-              extensionPort: portMatch?.[1] ? parseInt(portMatch[1], 10) : 0,
-              csrfToken: tokenMatch[1],
-              workspaceId: wsMatch?.[1],
-            });
+          const info = parseAntigravityProcess(commandLine, pid, ppid, this.hubDeps);
+          if (info) {
+            results.push(info);
           }
         }
         return results.length > 0 ? results : null;
@@ -156,29 +145,13 @@ export class WindowsStrategy implements PlatformStrategy {
     for (const item of processList) {
       const commandLine = item.CommandLine || "";
       const pid = item.ProcessId;
-      const ppid = item.ParentProcessId;
+      const ppid = item.ParentProcessId ?? 0;
 
       if (!pid) continue;
 
-      const portMatch = commandLine.match(SERVER_PORT_PATTERN);
-      const tokenMatch = commandLine.match(
-        /--csrf_token[=\s]+(?:["']?)([a-zA-Z0-9\-_.]+)(?:["']?)/,
-      );
-      const wsMatch = commandLine.match(
-        /--workspace_id[=\s]+(?:["']?)([a-zA-Z0-9\-_.]+)(?:["']?)/,
-      );
-
-      if (tokenMatch?.[1]) {
-        if (!hasAntigravityAppDataDir(commandLine)) {
-          continue;
-        }
-        results.push({
-          pid,
-          ppid,
-          extensionPort: portMatch?.[1] ? parseInt(portMatch[1], 10) : 0,
-          csrfToken: tokenMatch[1],
-          workspaceId: wsMatch?.[1],
-        });
+      const info = parseAntigravityProcess(commandLine, pid, ppid, this.hubDeps);
+      if (info) {
+        results.push(info);
       }
     }
     return results.length > 0 ? results : null;
@@ -258,7 +231,10 @@ export class UnixStrategy implements PlatformStrategy {
   private availablePortCommand: "lsof" | "ss" | "netstat" | null = null;
   private portCommandChecked: boolean = false;
 
-  constructor(private platform: "darwin" | "linux") { }
+  constructor(
+    private platform: "darwin" | "linux",
+    private hubDeps: HubDiscoveryDeps = defaultHubDiscoveryDeps,
+  ) { }
 
   getProcessListCommand(processNames: string[]): string {
     // Use 'ps' to get PID, PPID, and full Arguments.
@@ -293,29 +269,9 @@ export class UnixStrategy implements PlatformStrategy {
         const ppid = parseInt(match[2], 10);
         const cmd = match[3];
 
-        if (SERVER_PORT_PATTERN.test(cmd)) {
-          const portMatch = cmd.match(SERVER_PORT_PATTERN);
-          // Match workspace_id and csrf_token (handles optional quotes)
-          const tokenMatch = cmd.match(
-            /--csrf_token[=\s]+(?:["']?)([a-zA-Z0-9\-_.]+)(?:["']?)/,
-          );
-          const wsMatch = cmd.match(
-            /--workspace_id[=\s]+(?:["']?)([a-zA-Z0-9\-_.]+)(?:["']?)/,
-          );
-
-          if (tokenMatch?.[1]) {
-            if (!hasAntigravityAppDataDir(cmd)) {
-              continue;
-            }
-
-            results.push({
-              pid,
-              ppid,
-              extensionPort: portMatch ? parseInt(portMatch[1], 10) : 0,
-              csrfToken: tokenMatch[1],
-              workspaceId: wsMatch?.[1],
-            });
-          }
+        const info = parseAntigravityProcess(cmd, pid, ppid, this.hubDeps);
+        if (info) {
+          results.push(info);
         }
       }
     }

@@ -2,6 +2,7 @@ const os = require('os');
 const {
     extractArgument,
     listLanguageServerProcesses,
+    readHubDiscovery,
 } = require('./language-server-process-utils');
 
 function printHelp() {
@@ -16,6 +17,7 @@ function printProcess(processInfo, index) {
     const commandLine = processInfo.commandLine;
     const apiToken = extractArgument(commandLine, 'csrf_token');
     const extensionToken = extractArgument(commandLine, 'extension_server_csrf_token');
+    const hubInfo = !apiToken ? readHubDiscovery(commandLine, processInfo.pid) : null;
     const fields = [
         ['workspace_id', extractArgument(commandLine, 'workspace_id')],
         ['add-dir', extractArgument(commandLine, 'add-dir')],
@@ -25,6 +27,11 @@ function printProcess(processInfo, index) {
         ['csrf_token', apiToken],
         ['extension_server_csrf_token', extensionToken],
         ['app_data_dir', extractArgument(commandLine, 'app_data_dir')],
+        ...(hubInfo ? [
+            ['csrf_token (hub file)', hubInfo.csrfToken],
+            ['httpsPort (hub file)', hubInfo.httpsPort],
+            ['lsVersion (hub file)', hubInfo.lsVersion],
+        ] : []),
     ].filter(([, value]) => value);
 
     console.log(`\n[Process ${index + 1}] PID ${processInfo.pid}, PPID ${processInfo.ppid}`);

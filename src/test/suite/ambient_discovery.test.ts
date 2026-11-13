@@ -6,14 +6,42 @@ import {
   AmbientDiscovery,
   parseAmbientListeningPorts,
 } from "../../shared/platform/ambient_discovery";
+import type { HubDiscoveryDeps } from "../../shared/platform/detection_utils";
 import type { ProcessInfo } from "../../shared/utils/types";
 
 interface AmbientDiscoveryTestAccess {
   extractDetails(cmd: string, pid: number, ppid: number): ProcessInfo | null;
 }
 
-function extractDetails(cmd: string): ProcessInfo | null {
-  const discovery = new AmbientDiscovery() as unknown as AmbientDiscoveryTestAccess;
+function makeHubDeps(
+  files: Record<string, { content: string; mtimeMs?: number }>,
+  alivePids: Set<number> = new Set([116951]),
+): HubDiscoveryDeps {
+  const normalized = new Map(
+    Object.entries(files).map(([k, v]) => [k.replace(/\\/g, "/"), v]),
+  );
+  return {
+    exists: (p) => normalized.has(p.replace(/\\/g, "/")),
+    readFile: (p) => {
+      const entry = normalized.get(p.replace(/\\/g, "/"));
+      if (!entry) throw new Error(`ENOENT: ${p}`);
+      return entry.content;
+    },
+    readdir: (dir) => {
+      const prefix = dir.replace(/\\/g, "/").replace(/\/$/, "") + "/";
+      return [...normalized.keys()]
+        .filter((k) => k.startsWith(prefix))
+        .map((k) => k.slice(prefix.length))
+        .filter((name) => !name.includes("/"));
+    },
+    statMtimeMs: (p) => normalized.get(p.replace(/\\/g, "/"))?.mtimeMs ?? 0,
+    getGeminiRoots: () => [{ root: "/home/dev/.gemini", local: true }],
+    isPidAlive: (pid) => alivePids.has(pid),
+  };
+}
+
+function extractDetails(cmd: string, hubDeps?: HubDiscoveryDeps): ProcessInfo | null {
+  const discovery = new AmbientDiscovery(hubDeps) as unknown as AmbientDiscoveryTestAccess;
   return discovery.extractDetails(cmd, 12345, 12000);
 }
 
@@ -47,6 +75,29 @@ suite("AmbientDiscovery Test Suite", () => {
     assert.ok(result);
     assert.strictEqual(result.extensionPort, 64233);
     assert.strictEqual(result.csrfToken, "hub-token");
+  });
+
+  test("resolves the agy hub token and httpsPort from hub discovery file when --csrf_token is omitted", () => {
+    const hubDeps = makeHubDeps({
+      "/home/dev/.gemini/antigravity/daemon/hub_38107.json": {
+        content: JSON.stringify({
+          pid: 12345,
+          httpsPort: 37051,
+          httpPort: 38107,
+          csrfToken: "ambient-hub-token",
+        }),
+      },
+    });
+    const result = extractDetails(
+      "/home/dev/.gemini/bin/agy --hub --hub-port=38107 " +
+      "--app_data_dir=antigravity --add-dir=/home/dev/project",
+      hubDeps,
+    );
+
+    assert.ok(result);
+    assert.strictEqual(result.extensionPort, 38107);
+    assert.strictEqual(result.httpsPort, 37051);
+    assert.strictEqual(result.csrfToken, "ambient-hub-token");
   });
 
   test("accepts the legacy marker with quoted equals syntax", () => {
@@ -119,6 +170,51 @@ suite("AmbientDiscovery Test Suite", () => {
       parseAmbientListeningPorts(output, "linux", 1529),
       [42100],
     );
+  });
+
+  test("falls back to hub discovery files when process scan finds nothing and skips dead local PIDs", async () => {
+    const hubDeps = makeHubDeps(
+      {
+        "/home/dev/.gemini/antigravity/daemon/hub_41049.json": {
+          content: JSON.stringify({
+            pid: 3725,
+            httpsPort: 42973,
+            httpPort: 41049,
+            csrfToken: "dead-token",
+          }),
+          mtimeMs: 2000,
+        },
+        "/home/dev/.gemini/antigravity/daemon/hub_38107.json": {
+          content: JSON.stringify({
+            pid: 116951,
+            httpsPort: 37051,
+            httpPort: 38107,
+            csrfToken: "live-token",
+          }),
+          mtimeMs: 1000,
+        },
+      },
+      new Set([116951]),
+    );
+
+    const verifyStub = sinon.stub(detection, "verifyServerGateway").callsFake(async (_host, port, token) => {
+      const ok = port === 37051 && token === "live-token";
+      return { success: ok, statusCode: ok ? 200 : 0, protocol: "https" as const };
+    });
+
+    try {
+      const discovery = new AmbientDiscovery(hubDeps) as unknown as {
+        locateBySignature(): Promise<ProcessInfo[]>;
+        executeDiscovery(): Promise<unknown>;
+      };
+      discovery.locateBySignature = async () => [];
+
+      const result = await discovery.executeDiscovery();
+      assert.deepStrictEqual(result, { port: 37051, csrfToken: "live-token" });
+      assert.strictEqual(verifyStub.callCount, 1);
+    } finally {
+      verifyStub.restore();
+    }
   });
 });
 
