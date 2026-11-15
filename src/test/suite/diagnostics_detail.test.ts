@@ -182,6 +182,31 @@ suite('Diagnostics Detail Test Suite', () => {
         assert.strictEqual(result!.csrfToken, 'keyword-token');
     });
 
+    test('should prefer httpsPort from hub discovery file before extensionPort and netstat ports', async () => {
+        const proc = {
+            pid: 101,
+            ppid: process.ppid,
+            extensionPort: 38107,
+            httpsPort: 37051,
+            csrfToken: 'hub-token',
+        };
+        finder.mockStdout = JSON.stringify([proc]);
+        finder.mockPortStdout = JSON.stringify([38107, 37051]);
+
+        const testedPorts: number[] = [];
+        (finder as any).testPort = async (_host: string, port: number) => {
+            testedPorts.push(port);
+            return port === 37051
+                ? { success: true, statusCode: 200, protocol: 'https' as const }
+                : { success: false, statusCode: 404, protocol: 'http' as const };
+        };
+
+        const result = await finder.runTryDetect();
+        assert.ok(result);
+        assert.strictEqual(result!.port, 37051);
+        assert.strictEqual(testedPorts[0], 37051);
+    });
+
     suite('Failure report details', () => {
         type ExecFn = (command: string) => Promise<{ stdout: string; stderr: string }>;
         const execError = (props: Record<string, unknown>) => Object.assign(new Error(String(props.message ?? '')), props);

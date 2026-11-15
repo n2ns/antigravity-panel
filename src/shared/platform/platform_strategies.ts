@@ -4,9 +4,11 @@
 
 import type { ProcessInfo, PlatformStrategy } from "../utils/types";
 import {
-  extractProcessInfoFromCommandLine,
   getPortListCommand,
+  parseAntigravityProcess,
   SERVER_PORT_PATTERN,
+  type HubDiscoveryDeps,
+  defaultHubDiscoveryDeps,
 } from "./detection_utils";
 
 /** Windows process item from PowerShell/WMI output */
@@ -22,6 +24,7 @@ interface WinProcessItem {
  * Note: Windows 7 is not supported (requires PowerShell 3.0+)
  */
 export class WindowsStrategy implements PlatformStrategy {
+  constructor(private hubDeps: HubDiscoveryDeps = defaultHubDiscoveryDeps) {}
   getProcessListCommand(processNames: string[]): string {
     // PowerShell script for Windows 10/11
     // 1. [Console]::OutputEncoding: Ensures UTF-8 output to handle special characters in paths
@@ -113,16 +116,17 @@ export class WindowsStrategy implements PlatformStrategy {
 
           // Extract PPID and PID (last two numbers)
           const idsMatch = row.match(/,(\d+),(\d+)\s*$/);
-          if (!idsMatch) continue;
+          if (!idsMatch || idsMatch.index === undefined) continue;
 
           const ppid = parseInt(idsMatch[1], 10);
           const pid = parseInt(idsMatch[2], 10);
-          // Strip leading Node, and trailing ,PPID,PID from WMIC CSV row
+          // Strip leading "Node," and trailing ",PPID,PID" so unquoted trailing args don't include ",PPID,PID"
           const commandLine = row
+            .slice(0, idsMatch.index)
             .replace(/^[^,]+,/, "")
-            .replace(/,\d+,\d+\s*$/, "")
             .replace(/^"(.*)"$/, "$1");
-          const info = extractProcessInfoFromCommandLine(commandLine, pid, ppid);
+
+          const info = parseAntigravityProcess(commandLine, pid, ppid, this.hubDeps);
           if (info) {
             results.push(info);
           }
@@ -141,11 +145,11 @@ export class WindowsStrategy implements PlatformStrategy {
     for (const item of processList) {
       const commandLine = item.CommandLine || "";
       const pid = item.ProcessId;
-      const ppid = item.ParentProcessId;
+      const ppid = item.ParentProcessId ?? 0;
 
       if (!pid) continue;
 
-      const info = extractProcessInfoFromCommandLine(commandLine, pid, ppid);
+      const info = parseAntigravityProcess(commandLine, pid, ppid, this.hubDeps);
       if (info) {
         results.push(info);
       }
@@ -227,7 +231,10 @@ export class UnixStrategy implements PlatformStrategy {
   private availablePortCommand: "lsof" | "ss" | "netstat" | null = null;
   private portCommandChecked: boolean = false;
 
-  constructor(private platform: "darwin" | "linux") { }
+  constructor(
+    private platform: "darwin" | "linux",
+    private hubDeps: HubDiscoveryDeps = defaultHubDiscoveryDeps,
+  ) { }
 
   getProcessListCommand(processNames: string[]): string {
     // Use 'ps' to get PID, PPID, and full Arguments.
@@ -262,11 +269,9 @@ export class UnixStrategy implements PlatformStrategy {
         const ppid = parseInt(match[2], 10);
         const cmd = match[3];
 
-        if (SERVER_PORT_PATTERN.test(cmd)) {
-          const info = extractProcessInfoFromCommandLine(cmd, pid, ppid);
-          if (info) {
-            results.push(info);
-          }
+        const info = parseAntigravityProcess(cmd, pid, ppid, this.hubDeps);
+        if (info) {
+          results.push(info);
         }
       }
     }

@@ -1,15 +1,30 @@
 import * as assert from 'assert';
-import * as fs from 'fs';
-import * as os from 'os';
-import * as path from 'path';
 import { WindowsStrategy, UnixStrategy } from '../../shared/platform/platform_strategies';
-import {
-    getAntigravityAppDataDir,
-    readHubDaemonInfo,
-    scanHubDaemonFiles,
-    setHomeDirResolverForTests,
-} from '../../shared/platform/detection_utils';
-import { AmbientDiscovery } from '../../shared/platform/ambient_discovery';
+import type { HubDiscoveryDeps } from '../../shared/platform/detection_utils';
+
+function makeHubDeps(files: Record<string, string>): HubDiscoveryDeps {
+    const normalized = new Map(
+        Object.entries(files).map(([k, v]) => [k.replace(/\\/g, '/'), v]),
+    );
+    return {
+        exists: (p) => normalized.has(p.replace(/\\/g, '/')),
+        readFile: (p) => {
+            const val = normalized.get(p.replace(/\\/g, '/'));
+            if (val === undefined) throw new Error(`ENOENT: ${p}`);
+            return val;
+        },
+        readdir: (dir) => {
+            const prefix = dir.replace(/\\/g, '/').replace(/\/$/, '') + '/';
+            return [...normalized.keys()]
+                .filter((k) => k.startsWith(prefix))
+                .map((k) => k.slice(prefix.length))
+                .filter((name) => !name.includes('/'));
+        },
+        statMtimeMs: () => 1000,
+        getGeminiRoots: () => [{ root: '/home/dev/.gemini', local: true }],
+        isPidAlive: () => true,
+    };
+}
 
 suite('Platform Strategies Test Suite', () => {
     suite('WindowsStrategy', () => {
@@ -205,6 +220,69 @@ suite('Platform Strategies Test Suite', () => {
             const result = strategy.parseProcessInfo(jsonOutput);
             assert.strictEqual(result![0].extensionPort, 0);
         });
+
+        test('should resolve csrfToken and httpsPort from hub discovery file when --csrf_token is omitted', () => {
+            const hubStrategy = new WindowsStrategy(makeHubDeps({
+                '/home/dev/.gemini/antigravity/daemon/hub_38107.json': JSON.stringify({
+                    pid: 13532,
+                    httpsPort: 37051,
+                    httpPort: 38107,
+                    lsVersion: '2.31.2',
+                    csrfToken: 'hub-file-token',
+                }),
+            }));
+            const jsonOutput = JSON.stringify({
+                ProcessId: 13532,
+                ParentProcessId: 25312,
+                CommandLine: 'C:\\Users\\dev\\.gemini\\bin\\agy.exe --hub --hub-port=38107 --app_data_dir=antigravity --add-dir=C:\\work\\my-project',
+            });
+
+            const result = hubStrategy.parseProcessInfo(jsonOutput);
+
+            assert.ok(result);
+            assert.strictEqual(result![0].pid, 13532);
+            assert.strictEqual(result![0].extensionPort, 38107);
+            assert.strictEqual(result![0].httpsPort, 37051);
+            assert.strictEqual(result![0].csrfToken, 'hub-file-token');
+            assert.strictEqual(result![0].workspaceId, 'file_c_3A_work_my_project');
+        });
+
+        test('should reject stale hub discovery file whose PID does not match', () => {
+            const hubStrategy = new WindowsStrategy(makeHubDeps({
+                '/home/dev/.gemini/antigravity/daemon/hub_38107.json': JSON.stringify({
+                    pid: 99999,
+                    httpsPort: 37051,
+                    httpPort: 38107,
+                    csrfToken: 'stale-token',
+                }),
+            }));
+            const jsonOutput = JSON.stringify({
+                ProcessId: 13532,
+                ParentProcessId: 25312,
+                CommandLine: 'C:\\Users\\dev\\.gemini\\bin\\agy.exe --hub --hub-port=38107 --app_data_dir=antigravity',
+            });
+
+            assert.strictEqual(hubStrategy.parseProcessInfo(jsonOutput), null);
+        });
+
+        test('should parse an agy hub wmic CSV row without --csrf_token using hub discovery file', () => {
+            const hubStrategy = new WindowsStrategy(makeHubDeps({
+                '/home/dev/.gemini/antigravity/daemon/hub_38107.json': JSON.stringify({
+                    pid: 13532,
+                    httpsPort: 37051,
+                    httpPort: 38107,
+                    csrfToken: 'csv-hub-token',
+                }),
+            }));
+            const csv = 'Node,CommandLine,ParentProcessId,ProcessId\r\nPC,C:\\bin\\agy.exe --hub --hub-port=38107 --app_data_dir=antigravity,25312,13532';
+
+            const result = hubStrategy.parseProcessInfo(csv);
+
+            assert.ok(result);
+            assert.strictEqual(result![0].pid, 13532);
+            assert.strictEqual(result![0].csrfToken, 'csv-hub-token');
+            assert.strictEqual(result![0].httpsPort, 37051);
+        });
     });
 
     suite('UnixStrategy - macOS', () => {
@@ -334,6 +412,30 @@ language  71666 user   11u  IPv4 0x1234567891      0t0  TCP 127.0.0.1:42101 (LIS
             assert.strictEqual(result![0].ppid, 25312);
             assert.strictEqual(result![0].extensionPort, 64233);
             assert.strictEqual(result![0].csrfToken, 'hub-token');
+            assert.strictEqual(result![0].workspaceId, 'file_home_dev_project');
+        });
+
+        test('should parse an agy hub process without --csrf_token using hub discovery file', () => {
+            const hubStrategy = new UnixStrategy('linux', makeHubDeps({
+                '/home/dev/.gemini/antigravity/daemon/hub_38107.json': JSON.stringify({
+                    pid: 116951,
+                    httpsPort: 37051,
+                    httpPort: 38107,
+                    lsVersion: '2.31.2',
+                    csrfToken: 'unix-hub-token',
+                }),
+            }));
+            const psOutput = `116951 116556 /home/dev/.gemini/bin/agy --hub --hub-port=38107 --app_data_dir=antigravity --add-dir=/home/dev/antigravity-panel`;
+
+            const result = hubStrategy.parseProcessInfo(psOutput);
+
+            assert.ok(result);
+            assert.strictEqual(result![0].pid, 116951);
+            assert.strictEqual(result![0].ppid, 116556);
+            assert.strictEqual(result![0].extensionPort, 38107);
+            assert.strictEqual(result![0].httpsPort, 37051);
+            assert.strictEqual(result![0].csrfToken, 'unix-hub-token');
+            assert.strictEqual(result![0].workspaceId, 'file_home_dev_antigravity_panel');
         });
 
         test('should parse ss output for Linux', () => {
@@ -365,158 +467,6 @@ language 12345 user   11u  IPv4  12346      0t0  TCP 127.0.0.1:42101 (LISTEN)`;
         test('should return empty array for empty output', () => {
             const ports = strategy.parseListeningPorts('', 12345);
             assert.deepStrictEqual(ports, []);
-        });
-    });
-
-    suite('agy v1.5.7+ hub_<port>.json discovery fallback', () => {
-        let tempHome: string;
-
-        setup(() => {
-            tempHome = fs.mkdtempSync(path.join(os.tmpdir(), 'agy-hub-test-'));
-        });
-
-        teardown(() => {
-            setHomeDirResolverForTests();
-            fs.rmSync(tempHome, { recursive: true, force: true });
-        });
-
-        function writeHubFile(appDataDir: string, hubPort: number, payload: Record<string, unknown>) {
-            const daemonDir = path.join(tempHome, '.gemini', appDataDir, 'daemon');
-            fs.mkdirSync(daemonDir, { recursive: true });
-            fs.writeFileSync(path.join(daemonDir, `hub_${hubPort}.json`), JSON.stringify(payload), 'utf8');
-        }
-
-        test('getAntigravityAppDataDir extracts supported app_data_dir values', () => {
-            assert.strictEqual(
-                getAntigravityAppDataDir('agy.exe --hub --hub-port=58073 --app_data_dir=antigravity'),
-                'antigravity',
-            );
-            assert.strictEqual(
-                getAntigravityAppDataDir('agy --app_data_dir "antigravity-ide" --hub-port 58073'),
-                'antigravity-ide',
-            );
-            assert.strictEqual(
-                getAntigravityAppDataDir('other.exe --app_data_dir=other'),
-                undefined,
-            );
-        });
-
-        test('readHubDaemonInfo reads and validates hub_<port>.json', () => {
-            writeHubFile('antigravity', 58073, {
-                csrfToken: 'daemon-csrf-token',
-                httpPort: 58074,
-                httpsPort: 58075,
-                lsVersion: '1.5.7',
-                pid: 4242,
-            });
-            writeHubFile('antigravity-ide', 58080, {
-                csrfToken: '   ',
-                httpPort: 58081,
-            });
-
-            const info = readHubDaemonInfo(58073, 'antigravity', tempHome);
-            assert.deepStrictEqual(info, {
-                csrfToken: 'daemon-csrf-token',
-                httpPort: 58074,
-                httpsPort: 58075,
-                pid: 4242,
-            });
-
-            const fallbackInfo = readHubDaemonInfo(58073, undefined, tempHome);
-            assert.strictEqual(fallbackInfo?.csrfToken, 'daemon-csrf-token');
-
-            assert.strictEqual(readHubDaemonInfo(58080, 'antigravity-ide', tempHome), null);
-            assert.strictEqual(readHubDaemonInfo(59999, 'antigravity', tempHome), null);
-        });
-
-        test('WindowsStrategy resolves token and httpPort from hub_<port>.json in JSON and CSV outputs', () => {
-            writeHubFile('antigravity', 58073, {
-                csrfToken: 'win-daemon-token',
-                httpPort: 58074,
-                httpsPort: 58075,
-                pid: 13532,
-            });
-            setHomeDirResolverForTests(() => tempHome);
-
-            const winStrategy = new WindowsStrategy();
-
-            const jsonResult = winStrategy.parseProcessInfo(JSON.stringify({
-                ProcessId: 13532,
-                ParentProcessId: 25312,
-                CommandLine: 'C:\\Users\\dev\\.gemini\\bin\\agy.exe --hub --hub-port=58073 --app_data_dir=antigravity --add-dir=C:\\work\\project',
-            }));
-            assert.ok(jsonResult);
-            assert.strictEqual(jsonResult![0].pid, 13532);
-            assert.strictEqual(jsonResult![0].csrfToken, 'win-daemon-token');
-            assert.strictEqual(jsonResult![0].extensionPort, 58074);
-
-            const csvResult = winStrategy.parseProcessInfo(
-                'Node,CommandLine,ParentProcessId,ProcessId\r\nPC,C:\\bin\\agy.exe --hub --hub-port=58073 --app_data_dir=antigravity,25312,13532',
-            );
-            assert.ok(csvResult);
-            assert.strictEqual(csvResult![0].pid, 13532);
-            assert.strictEqual(csvResult![0].csrfToken, 'win-daemon-token');
-            assert.strictEqual(csvResult![0].extensionPort, 58074);
-        });
-
-        test('UnixStrategy resolves token and httpsPort when httpPort is absent', () => {
-            writeHubFile('antigravity-ide', 58090, {
-                csrfToken: 'unix-daemon-token',
-                httpsPort: 58092,
-                pid: 13532,
-            });
-            setHomeDirResolverForTests(() => tempHome);
-
-            const unixStrategy = new UnixStrategy('linux');
-            const result = unixStrategy.parseProcessInfo(
-                '13532 25312 /home/dev/.gemini/bin/agy --hub --hub-port=58090 --app_data_dir=antigravity-ide --add-dir=/home/dev/project',
-            );
-
-            assert.ok(result);
-            assert.strictEqual(result![0].pid, 13532);
-            assert.strictEqual(result![0].csrfToken, 'unix-daemon-token');
-            assert.strictEqual(result![0].extensionPort, 58092);
-        });
-
-        test('AmbientDiscovery extractDetails falls back to hub_<port>.json when --csrf_token is omitted', () => {
-            writeHubFile('antigravity', 58100, {
-                csrfToken: 'ambient-daemon-token',
-                httpPort: 58101,
-                pid: 7777,
-            });
-            setHomeDirResolverForTests(() => tempHome);
-
-            const discovery = new AmbientDiscovery() as unknown as {
-                extractDetails(cmd: string, pid: number, ppid: number): { pid: number; extensionPort: number; csrfToken: string } | null;
-            };
-            const result = discovery.extractDetails(
-                'agy.exe --hub --hub-port=58100 --app_data_dir=antigravity',
-                7777,
-                1000,
-            );
-
-            assert.ok(result);
-            assert.strictEqual(result!.csrfToken, 'ambient-daemon-token');
-            assert.strictEqual(result!.extensionPort, 58101);
-        });
-
-        test('scanHubDaemonFiles returns live PIDs and skips dead PIDs', () => {
-            writeHubFile('antigravity', 58110, {
-                csrfToken: 'live-token',
-                httpPort: 58111,
-                pid: process.pid,
-            });
-            writeHubFile('antigravity-ide', 58120, {
-                csrfToken: 'dead-token',
-                httpPort: 58121,
-                pid: 99999999,
-            });
-
-            const results = scanHubDaemonFiles(tempHome);
-            assert.strictEqual(results.length, 1);
-            assert.strictEqual(results[0].pid, process.pid);
-            assert.strictEqual(results[0].csrfToken, 'live-token');
-            assert.strictEqual(results[0].extensionPort, 58111);
         });
     });
 });

@@ -1,5 +1,7 @@
 import * as assert from 'assert';
+import * as fs from 'fs';
 import * as net from 'net';
+import * as os from 'os';
 import * as path from 'path';
 
 const { discoverListeningPorts } = require(
@@ -8,10 +10,15 @@ const { discoverListeningPorts } = require(
     discoverListeningPorts(pid: number): Promise<number[]>;
 };
 
-const { parseUnixProcessList } = require(
+const { parseUnixProcessList, readHubDiscovery } = require(
     path.resolve(process.cwd(), 'scripts/debug/language-server-process-utils.js')
 ) as {
     parseUnixProcessList(stdout: string): { pid: number; ppid: number; commandLine: string }[];
+    readHubDiscovery(
+        commandLine: string,
+        pid: number,
+        geminiRoots?: string[],
+    ): { pid: number | null; httpsPort: number | null; httpPort: number | null; lsVersion: string | null; csrfToken: string } | null;
 };
 
 const { findRelevantProcesses } = require(
@@ -72,6 +79,37 @@ suite('Debug Quota Script Test Suite', () => {
             await new Promise<void>((resolve, reject) => {
                 server.close(error => error ? reject(error) : resolve());
             });
+        }
+    });
+
+    test('should resolve csrfToken and httpsPort from hub discovery file when --csrf_token is omitted', () => {
+        const tmpRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'agy-hub-test-'));
+        try {
+            const daemonDir = path.join(tmpRoot, 'antigravity', 'daemon');
+            fs.mkdirSync(daemonDir, { recursive: true });
+            fs.writeFileSync(
+                path.join(daemonDir, 'hub_38107.json'),
+                JSON.stringify({
+                    pid: 116951,
+                    httpsPort: 37051,
+                    httpPort: 38107,
+                    lsVersion: '2.31.2',
+                    csrfToken: 'script-hub-token',
+                }),
+                'utf8',
+            );
+
+            const cmd = '/home/dev/.gemini/bin/agy --hub --hub-port=38107 --app_data_dir=antigravity --add-dir=/home/dev/project';
+            const found = readHubDiscovery(cmd, 116951, [tmpRoot]);
+            assert.ok(found);
+            assert.strictEqual(found!.csrfToken, 'script-hub-token');
+            assert.strictEqual(found!.httpsPort, 37051);
+            assert.strictEqual(found!.lsVersion, '2.31.2');
+
+            const mismatch = readHubDiscovery(cmd, 999999, [tmpRoot]);
+            assert.strictEqual(mismatch, null);
+        } finally {
+            fs.rmSync(tmpRoot, { recursive: true, force: true });
         }
     });
 });

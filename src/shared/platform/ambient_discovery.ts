@@ -1,9 +1,10 @@
 import {
     verifyServerGateway,
     getPortListCommand,
-    extractProcessInfoFromCommandLine,
-    scanHubDaemonFiles,
-    SERVER_PORT_PATTERN,
+    parseAntigravityProcess,
+    listAllHubDiscoveryEntries,
+    type HubDiscoveryDeps,
+    defaultHubDiscoveryDeps,
 } from "./detection_utils";
 import { exec } from "child_process";
 import { promisify } from "util";
@@ -75,28 +76,38 @@ export function parseAmbientListeningPorts(
 
 /**
  * AmbientDiscovery: A standalone, signature-based discovery layer.
- * This class is decoupled from the main Strategy pattern to provide 
+ * This class is decoupled from the main Strategy pattern to provide
  * a secondary, independent detection mechanism.
  */
 export class AmbientDiscovery {
-    constructor() {
+    constructor(private hubDeps: HubDiscoveryDeps = defaultHubDiscoveryDeps) {
         debugLog("AmbientDiscovery: Initialized.");
     }
 
     /**
-     * Initiates a wide-spectrum search for processes containing the Antigravity signature.
+     * Initiates a wide-spectrum search for processes containing the Antigravity signature,
+     * falling back to hub discovery files if process listing yields nothing.
      */
     public async executeDiscovery(): Promise<LanguageServerInfo | null> {
         infoLog("AmbientDiscovery: Starting signature-based detection...");
 
         try {
             const candidates = await this.locateBySignature();
-            if (!candidates || candidates.length === 0) {
-                return null;
-            }
-
             for (const candidate of candidates) {
                 const connection = await this.probeAndEstablish(candidate);
+                if (connection) {
+                    return connection;
+                }
+            }
+
+            const hubCandidates = this.locateFromHubFiles();
+            for (const candidate of hubCandidates) {
+                const connection = await this.probeCandidatePorts(
+                    [candidate.httpsPort, candidate.httpPort].filter(
+                        (p): p is number => typeof p === "number" && p > 0,
+                    ),
+                    candidate.csrfToken,
+                );
                 if (connection) {
                     return connection;
                 }
@@ -108,33 +119,32 @@ export class AmbientDiscovery {
         return null;
     }
 
+    private locateFromHubFiles() {
+        return listAllHubDiscoveryEntries(this.hubDeps);
+    }
+
     private async locateBySignature(): Promise<ProcessInfo[]> {
-        const signaturePattern = "csrf_token|--hub-port";
+        const signature = "app_data_dir";
         let shellCmd: string;
 
         if (process.platform === "win32") {
             const psScript = `
         [Console]::OutputEncoding = [System.Text.Encoding]::UTF8;
-        $sign = '${signaturePattern}';
+        $sign = '${signature}';
         $pList = Get-CimInstance Win32_Process | Where-Object { $_.CommandLine -match $sign } -ErrorAction SilentlyContinue;
         if ($pList) { @($pList) | Select-Object ProcessId,ParentProcessId,CommandLine | ConvertTo-Json -Compress } else { '[]' }
       `.replace(/\n\s+/g, " ").trim();
             shellCmd = `chcp 65001 >nul && powershell -ExecutionPolicy Bypass -NoProfile -Command "${psScript}"`;
         } else {
-            shellCmd = `ps -A -ww -o pid,ppid,args | grep -E "${signaturePattern}" | grep -v grep`;
+            shellCmd = `ps -A -ww -o pid,ppid,args | grep "${signature}" | grep -v grep`;
         }
 
         try {
             const { stdout } = await spawnShell(shellCmd, { timeout: 15000 });
-            const findings = this.parseOutput(stdout);
-            if (findings.length > 0) {
-                return findings;
-            }
+            return this.parseOutput(stdout);
         } catch {
-            // Fall through to hub daemon file scan
+            return [];
         }
-
-        return scanHubDaemonFiles();
     }
 
     private parseOutput(raw: string): ProcessInfo[] {
@@ -165,25 +175,35 @@ export class AmbientDiscovery {
     }
 
     private extractDetails(cmd: string, pid: number, ppid: number): ProcessInfo | null {
-        if (!SERVER_PORT_PATTERN.test(cmd)) {
-            return null;
-        }
-        return extractProcessInfoFromCommandLine(cmd, pid, ppid || 0);
+        return parseAntigravityProcess(cmd, pid, ppid || 0, this.hubDeps);
     }
 
     private async probeAndEstablish(meta: ProcessInfo): Promise<LanguageServerInfo | null> {
-        const ports = await this.lookupPorts(meta.pid);
+        const osPorts = await this.lookupPorts(meta.pid);
+        const ports: number[] = [];
+        for (const p of [meta.httpsPort, meta.extensionPort, ...osPorts]) {
+            if (p && p > 0 && !ports.includes(p)) {
+                ports.push(p);
+            }
+        }
         if (ports.length === 0) return null;
 
+        return this.probeCandidatePorts(ports, meta.csrfToken);
+    }
+
+    private async probeCandidatePorts(
+        ports: number[],
+        csrfToken: string,
+    ): Promise<LanguageServerInfo | null> {
         for (const port of ports) {
-            const auth = await verifyServerGateway("127.0.0.1", port, meta.csrfToken);
-            if (auth.success) return { port, csrfToken: meta.csrfToken };
+            const auth = await verifyServerGateway("127.0.0.1", port, csrfToken);
+            if (auth.success) return { port, csrfToken };
 
             if (isWsl()) {
                 const ip = getWslHostIp();
                 if (ip && ip !== "127.0.0.1") {
-                    const authWsl = await verifyServerGateway(ip, port, meta.csrfToken);
-                    if (authWsl.success) return { port, csrfToken: meta.csrfToken, host: ip };
+                    const authWsl = await verifyServerGateway(ip, port, csrfToken);
+                    if (authWsl.success) return { port, csrfToken, host: ip };
                 }
             }
         }

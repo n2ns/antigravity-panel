@@ -317,13 +317,13 @@ export class ProcessFinder {
       let infos: ProcessInfo[] | null = this.strategy.parseProcessInfo(stdout);
 
       if (!infos) {
-        // 1. Try Keyword Search (existing fallback)
+        // 1. Try Keyword Search (existing fallback — app_data_dir matches both legacy and agy hub)
         if (this.strategy.getProcessListByKeywordCommand) {
           debugLog(
-            "ProcessFinder: Process name scan failed, trying keyword scan (csrf_token)...",
+            "ProcessFinder: Process name scan failed, trying keyword scan (app_data_dir)...",
           );
           const keywordCmd =
-            this.strategy.getProcessListByKeywordCommand("csrf_token");
+            this.strategy.getProcessListByKeywordCommand("app_data_dir");
           // Use standard execute for keyword search to avoid double warm-up delay if first failed
           const { stdout: keywordStdout } = await this.runScanStep(
             "Keyword scan",
@@ -551,6 +551,11 @@ export class ProcessFinder {
     if (info.extensionPort > 0 && !ports.includes(info.extensionPort)) {
       ports = [info.extensionPort, ...ports];
       this.portsFromCmdline = 1;
+    }
+
+    // Prefer the hub discovery file's HTTPS port when present so we connect directly over TLS
+    if (info.httpsPort && info.httpsPort > 0) {
+      ports = [info.httpsPort, ...ports.filter((p) => p !== info.httpsPort)];
     }
 
     const working = await this.findWorkingPort(

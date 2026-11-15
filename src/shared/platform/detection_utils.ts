@@ -2,50 +2,94 @@ import * as fs from "fs";
 import * as os from "os";
 import * as path from "path";
 import { testPort as httpTestPort } from "../utils/http_client";
+import { GEMINI_ROOT_DIR_NAME } from "../utils/constants";
+import { findWindowsGeminiRootFromWsl } from "../utils/config_targets";
+import { isWsl } from "../utils/wsl";
+import { normalizePathToWorkspaceId } from "../utils/workspace_path";
 import type { ProcessInfo } from "../utils/types";
 
 /**
- * Common utilities extracted from ProcessFinder to avoid redundancy.
- * Strictly using the original logic as requested.
+ * Common utilities shared by ProcessFinder, PlatformStrategies, and AmbientDiscovery.
  */
 
-const ANTIGRAVITY_APP_DATA_DIRS = [
+export const ANTIGRAVITY_APP_DATA_VALUES = new Set([
     "antigravity",
     "antigravity-ide",
-] as const;
-
-const ANTIGRAVITY_APP_DATA_VALUES = new Set<string>(ANTIGRAVITY_APP_DATA_DIRS);
-
-let resolveHomeDir: () => string = () => os.homedir();
+]);
 
 /**
- * Overrides the home directory resolver in unit tests where `os.homedir`
- * cannot be stubbed directly on modern Node.js.
+ * Port argument of a backend process: the legacy language server passes
+ * --extension_server_port, the agy hub (Antigravity IDE 2.6.0+) --hub-port.
  */
-export function setHomeDirResolverForTests(resolver?: () => string): void {
-    resolveHomeDir = resolver ?? (() => os.homedir());
-}
+export const SERVER_PORT_PATTERN = /--(?:extension_server_port|hub-port)[=\s]+(\d+)/;
 
-export interface HubDaemonInfo {
-    csrfToken: string;
-    httpPort?: number;
-    httpsPort?: number;
+const HUB_DISCOVERY_FILE_PATTERN = /^hub_\d+\.json$/;
+
+export interface HubDiscoveryInfo {
     pid?: number;
+    httpsPort?: number;
+    httpPort?: number;
+    lsVersion?: string;
+    csrfToken: string;
 }
 
-/**
- * Extracts the supported Antigravity `--app_data_dir` value from a command line.
- */
-export function getAntigravityAppDataDir(commandLine: string): string | undefined {
-    const match = commandLine.match(
-        /(?:^|\s)--app_data_dir(?:=|\s+)(?:"([^"]+)"|'([^']+)'|([^\s]+))(?=\s|$)/i,
-    );
-    const value = match?.[1] ?? match?.[2] ?? match?.[3];
+export interface HubDiscoveryCandidate extends HubDiscoveryInfo {
+    local: boolean;
+    mtimeMs: number;
+}
 
-    if (value !== undefined && ANTIGRAVITY_APP_DATA_VALUES.has(value.toLowerCase())) {
-        return value.toLowerCase();
+export interface HubDiscoveryDeps {
+    exists: (filePath: string) => boolean;
+    readFile: (filePath: string) => string;
+    readdir: (dirPath: string) => string[];
+    statMtimeMs: (filePath: string) => number;
+    getGeminiRoots: () => Array<{ root: string; local: boolean }>;
+    isPidAlive: (pid: number) => boolean;
+}
+
+function defaultIsPidAlive(pid: number): boolean {
+    try {
+        process.kill(pid, 0);
+        return true;
+    } catch (e) {
+        return (e as NodeJS.ErrnoException)?.code === "EPERM";
     }
-    return undefined;
+}
+
+function getDefaultGeminiRoots(): Array<{ root: string; local: boolean }> {
+    const localRoot = path.join(os.homedir(), GEMINI_ROOT_DIR_NAME);
+    const roots: Array<{ root: string; local: boolean }> = [{ root: localRoot, local: true }];
+
+    if (isWsl()) {
+        const winRoot = findWindowsGeminiRootFromWsl();
+        if (winRoot && winRoot !== localRoot) {
+            roots.push({ root: winRoot, local: false });
+        }
+    }
+
+    return roots;
+}
+
+export const defaultHubDiscoveryDeps: HubDiscoveryDeps = {
+    exists: (filePath) => fs.existsSync(filePath),
+    readFile: (filePath) => fs.readFileSync(filePath, "utf8"),
+    readdir: (dirPath) => fs.readdirSync(dirPath),
+    statMtimeMs: (filePath) => fs.statSync(filePath).mtimeMs,
+    getGeminiRoots: getDefaultGeminiRoots,
+    isPidAlive: defaultIsPidAlive,
+};
+
+/**
+ * Extracts a `--name=value` or `--name value` CLI argument (supports single/double quotes).
+ */
+export function extractCliArgument(commandLine: string, argName: string): string | undefined {
+    const escapedName = argName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const pattern = new RegExp(
+        `(?:^|\\s)--${escapedName}(?:=|\\s+)(?:"([^"]+)"|'([^']+)'|([^\\s]+))(?=\\s|$)`,
+        "i",
+    );
+    const match = commandLine.match(pattern);
+    return match?.[1] ?? match?.[2] ?? match?.[3];
 }
 
 /**
@@ -53,25 +97,45 @@ export function getAntigravityAppDataDir(commandLine: string): string | undefine
  * language-server processes.
  */
 export function hasAntigravityAppDataDir(commandLine: string): boolean {
-    return getAntigravityAppDataDir(commandLine) !== undefined;
+    const value = extractCliArgument(commandLine, "app_data_dir");
+
+    return value !== undefined
+        && ANTIGRAVITY_APP_DATA_VALUES.has(value.toLowerCase());
 }
 
-function parseHubDaemonFile(filePath: string): HubDaemonInfo | null {
+function parsePortNumber(value: unknown): number | undefined {
+    return typeof value === "number" && Number.isInteger(value) && value > 0 && value <= 65535
+        ? value
+        : undefined;
+}
+
+/**
+ * Parses a hub discovery file (`~/.gemini/<app_data_dir>/daemon/hub_<port>.json`).
+ * Rejects entries whose recorded PID mismatches `expectedPid` to avoid stale files.
+ */
+export function parseHubDiscoveryJson(raw: string, expectedPid?: number): HubDiscoveryInfo | null {
     try {
-        const raw = fs.readFileSync(filePath, "utf8");
-        const parsed = JSON.parse(raw) as Record<string, unknown>;
-        if (!parsed || typeof parsed !== "object") {
+        const data = JSON.parse(raw) as Record<string, unknown>;
+        if (!data || typeof data !== "object") {
             return null;
         }
-        const csrfToken = typeof parsed.csrfToken === "string" ? parsed.csrfToken.trim() : "";
+        const csrfToken = typeof data.csrfToken === "string" ? data.csrfToken.trim() : "";
         if (!csrfToken) {
             return null;
         }
+        const pid = typeof data.pid === "number" && Number.isInteger(data.pid) && data.pid > 0
+            ? data.pid
+            : undefined;
+        if (expectedPid && expectedPid > 0 && pid !== undefined && pid !== expectedPid) {
+            return null;
+        }
+
         return {
+            ...(pid !== undefined ? { pid } : {}),
+            ...(parsePortNumber(data.httpsPort) !== undefined ? { httpsPort: parsePortNumber(data.httpsPort) } : {}),
+            ...(parsePortNumber(data.httpPort) !== undefined ? { httpPort: parsePortNumber(data.httpPort) } : {}),
+            ...(typeof data.lsVersion === "string" ? { lsVersion: data.lsVersion } : {}),
             csrfToken,
-            httpPort: typeof parsed.httpPort === "number" ? parsed.httpPort : undefined,
-            httpsPort: typeof parsed.httpsPort === "number" ? parsed.httpsPort : undefined,
-            pid: typeof parsed.pid === "number" ? parsed.pid : undefined,
         };
     } catch {
         return null;
@@ -79,136 +143,156 @@ function parseHubDaemonFile(filePath: string): HubDaemonInfo | null {
 }
 
 /**
- * Reads `~/.gemini/<app_data_dir>/daemon/hub_<port>.json` emitted by `agy` (v1.5.7+)
- * when `--csrf_token` is no longer passed on the command line.
+ * Reads the hub discovery file for an `agy --hub` process when `--csrf_token`
+ * is omitted from the command line (Antigravity IDE / agy 1.5.8+).
  */
-export function readHubDaemonInfo(
-    hubPort: number,
-    appDataDir?: string,
-    homeDir: string = resolveHomeDir(),
-): HubDaemonInfo | null {
-    if (!Number.isInteger(hubPort) || hubPort <= 0 || hubPort > 65535) {
+export function readHubDiscoveryForProcess(
+    commandLine: string,
+    pid: number,
+    deps: HubDiscoveryDeps = defaultHubDiscoveryDeps,
+): HubDiscoveryInfo | null {
+    const appDataDir = extractCliArgument(commandLine, "app_data_dir")?.toLowerCase();
+    if (!appDataDir || !ANTIGRAVITY_APP_DATA_VALUES.has(appDataDir)) {
         return null;
     }
 
-    const dirsToTry = appDataDir ? [appDataDir] : [...ANTIGRAVITY_APP_DATA_DIRS];
-    for (const dir of dirsToTry) {
-        const filePath = path.join(homeDir, ".gemini", dir, "daemon", `hub_${hubPort}.json`);
-        const info = parseHubDaemonFile(filePath);
-        if (info) {
-            return info;
+    const hubPortRaw = extractCliArgument(commandLine, "hub-port");
+    const hubPort = hubPortRaw ? parseInt(hubPortRaw, 10) : 0;
+    const isHubProcess = hubPort > 0 || /(?:^|\s)--hub(?=\s|$)/i.test(commandLine);
+    if (!isHubProcess) {
+        return null;
+    }
+
+    for (const { root } of deps.getGeminiRoots()) {
+        const daemonDir = path.join(root, appDataDir, "daemon");
+
+        if (hubPort > 0) {
+            const directPath = path.join(daemonDir, `hub_${hubPort}.json`);
+            if (deps.exists(directPath)) {
+                try {
+                    const parsed = parseHubDiscoveryJson(deps.readFile(directPath), pid);
+                    if (parsed) {
+                        return parsed;
+                    }
+                } catch {
+                    // Ignore unreadable discovery file and continue searching
+                }
+            }
+        }
+
+        if (pid > 0) {
+            let files: string[];
+            try {
+                files = deps.readdir(daemonDir).filter((name) => HUB_DISCOVERY_FILE_PATTERN.test(name));
+            } catch {
+                continue;
+            }
+            for (const file of files) {
+                try {
+                    const parsed = parseHubDiscoveryJson(deps.readFile(path.join(daemonDir, file)), pid);
+                    if (parsed && parsed.pid === pid) {
+                        return parsed;
+                    }
+                } catch {
+                    // Ignore unreadable/corrupt discovery file
+                }
+            }
         }
     }
+
     return null;
 }
 
-function isPidAlive(pid: number): boolean {
-    try {
-        process.kill(pid, 0);
-        return true;
-    } catch (err: unknown) {
-        return (err as NodeJS.ErrnoException)?.code === "EPERM";
-    }
-}
-
 /**
- * Scans `~/.gemini/{antigravity,antigravity-ide}/daemon/hub_*.json` for live
- * `agy` hub processes when command-line process discovery yields no matches.
+ * Lists all valid hub discovery entries across local (and WSL Windows) `.gemini`
+ * daemon directories, sorted newest first. Stale local PIDs are skipped.
  */
-export function scanHubDaemonFiles(homeDir: string = resolveHomeDir()): ProcessInfo[] {
-    const results: ProcessInfo[] = [];
-    const seenPids = new Set<number>();
+export function listAllHubDiscoveryEntries(
+    deps: HubDiscoveryDeps = defaultHubDiscoveryDeps,
+): HubDiscoveryCandidate[] {
+    const entries: HubDiscoveryCandidate[] = [];
 
-    for (const dir of ANTIGRAVITY_APP_DATA_DIRS) {
-        const daemonDir = path.join(homeDir, ".gemini", dir, "daemon");
-        let entries: string[];
-        try {
-            entries = fs.readdirSync(daemonDir);
-        } catch {
-            continue;
-        }
+    for (const { root, local } of deps.getGeminiRoots()) {
+        for (const appDataDir of ANTIGRAVITY_APP_DATA_VALUES) {
+            const daemonDir = path.join(root, appDataDir, "daemon");
 
-        for (const entry of entries) {
-            const match = entry.match(/^hub_(\d+)\.json$/);
-            if (!match) continue;
-
-            const info = parseHubDaemonFile(path.join(daemonDir, entry));
-            if (!info || !info.pid || !Number.isInteger(info.pid) || info.pid <= 0) {
-                continue;
-            }
-            if (seenPids.has(info.pid) || !isPidAlive(info.pid)) {
+            let files: string[];
+            try {
+                files = deps.readdir(daemonDir).filter((name) => HUB_DISCOVERY_FILE_PATTERN.test(name));
+            } catch {
                 continue;
             }
 
-            seenPids.add(info.pid);
-            const hubPort = parseInt(match[1], 10);
-            results.push({
-                pid: info.pid,
-                ppid: 0,
-                extensionPort: info.httpPort || info.httpsPort || hubPort,
-                csrfToken: info.csrfToken,
-            });
+            for (const file of files) {
+                const filePath = path.join(daemonDir, file);
+                try {
+                    const parsed = parseHubDiscoveryJson(deps.readFile(filePath));
+                    if (!parsed) continue;
+                    if (parsed.httpsPort === undefined && parsed.httpPort === undefined) continue;
+                    if (local && parsed.pid && !deps.isPidAlive(parsed.pid)) continue;
+
+                    let mtimeMs = 0;
+                    try {
+                        mtimeMs = deps.statMtimeMs(filePath);
+                    } catch {
+                        mtimeMs = 0;
+                    }
+                    entries.push({ ...parsed, local, mtimeMs });
+                } catch {
+                    // Ignore unreadable/corrupt discovery file
+                }
+            }
         }
     }
 
-    return results;
+    return entries.sort((a, b) => b.mtimeMs - a.mtimeMs);
 }
 
 /**
- * Extracts ProcessInfo from a process command line, falling back to
- * `hub_<port>.json` when `--csrf_token` is omitted by newer `agy` builds.
+ * Parses a candidate Antigravity backend command line into `ProcessInfo`.
+ * Supports both legacy `--csrf_token` args and `agy --hub` discovery files.
  */
-export function extractProcessInfoFromCommandLine(
+export function parseAntigravityProcess(
     commandLine: string,
     pid: number,
-    ppid?: number,
-    homeDir?: string,
+    ppid: number,
+    deps: HubDiscoveryDeps = defaultHubDiscoveryDeps,
 ): ProcessInfo | null {
-    const appDataDir = getAntigravityAppDataDir(commandLine);
-    if (!appDataDir) {
+    if (!pid || !hasAntigravityAppDataDir(commandLine)) {
         return null;
     }
 
     const portMatch = commandLine.match(SERVER_PORT_PATTERN);
-    const tokenMatch = commandLine.match(
-        /--csrf_token[=\s]+(?:["']?)([a-zA-Z0-9\-_.]+)(?:["']?)/,
-    );
-    const wsMatch = commandLine.match(
-        /--workspace_id[=\s]+(?:["']?)([a-zA-Z0-9\-_.]+)(?:["']?)/,
-    );
+    let csrfToken = extractCliArgument(commandLine, "csrf_token");
+    let httpsPort: number | undefined;
+    let hubHttpPort: number | undefined;
 
-    if (tokenMatch?.[1]) {
-        return {
-            pid,
-            ppid,
-            extensionPort: portMatch?.[1] ? parseInt(portMatch[1], 10) : 0,
-            csrfToken: tokenMatch[1],
-            workspaceId: wsMatch?.[1],
-        };
-    }
-
-    if (portMatch?.[1]) {
-        const hubPort = parseInt(portMatch[1], 10);
-        const daemonInfo = readHubDaemonInfo(hubPort, appDataDir, homeDir);
-        if (daemonInfo) {
-            return {
-                pid,
-                ppid,
-                extensionPort: daemonInfo.httpPort || daemonInfo.httpsPort || hubPort,
-                csrfToken: daemonInfo.csrfToken,
-                workspaceId: wsMatch?.[1],
-            };
+    if (!csrfToken) {
+        const hub = readHubDiscoveryForProcess(commandLine, pid, deps);
+        if (!hub) {
+            return null;
         }
+        csrfToken = hub.csrfToken;
+        httpsPort = hub.httpsPort;
+        hubHttpPort = hub.httpPort;
     }
 
-    return null;
-}
+    const wsArg = extractCliArgument(commandLine, "workspace_id");
+    const addDirArg = !wsArg ? extractCliArgument(commandLine, "add-dir") : undefined;
+    const workspaceId = wsArg || (addDirArg ? normalizePathToWorkspaceId(addDirArg) : undefined);
+    const extensionPort = portMatch?.[1]
+        ? parseInt(portMatch[1], 10)
+        : (hubHttpPort ?? 0);
 
-/**
- * Port argument of a backend process: the legacy language server passes
- * --extension_server_port, the agy hub (Antigravity IDE 2.6.0+) --hub-port.
- */
-export const SERVER_PORT_PATTERN = /--(?:extension_server_port|hub-port)[=\s]+(\d+)/;
+    return {
+        pid,
+        ppid,
+        extensionPort,
+        ...(httpsPort !== undefined ? { httpsPort } : {}),
+        csrfToken,
+        ...(workspaceId ? { workspaceId } : {}),
+    };
+}
 
 /**
  * Original testPort logic from ProcessFinder

@@ -2,11 +2,45 @@ const { exec } = require('child_process');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
-
-const ANTIGRAVITY_APP_DATA_DIRS = ['antigravity', 'antigravity-ide'];
+const { isWsl, findWindowsGeminiRootFromWsl } = (() => {
+    // Keep debug scripts runnable directly without building dist/ if needed
+    return {
+        isWsl: () => {
+            if (os.platform() !== 'linux') return false;
+            try {
+                const version = fs.readFileSync('/proc/version', 'utf8').toLowerCase();
+                return version.includes('microsoft') || version.includes('wsl');
+            } catch {
+                return false;
+            }
+        },
+        findWindowsGeminiRootFromWsl: () => {
+            const mountRoot = '/mnt';
+            let drives = [];
+            try {
+                drives = fs.readdirSync(mountRoot).filter(n => /^[a-z]$/i.test(n));
+            } catch {
+                return null;
+            }
+            for (const drive of drives) {
+                const usersDir = path.posix.join(mountRoot, drive, 'Users');
+                try {
+                    for (const name of fs.readdirSync(usersDir)) {
+                        const candidate = path.posix.join(usersDir, name, '.gemini');
+                        if (fs.existsSync(candidate)) return candidate;
+                    }
+                } catch {
+                    // ignore
+                }
+            }
+            return null;
+        },
+    };
+})();
 
 const COMMAND_TIMEOUT_MS = 5000;
 const MAX_BUFFER_BYTES = 10 * 1024 * 1024;
+const VALID_APP_DATA_DIRS = new Set(['antigravity', 'antigravity-ide']);
 
 function runCommand(command, timeout = COMMAND_TIMEOUT_MS) {
     return new Promise((resolve) => {
@@ -20,82 +54,21 @@ function runCommand(command, timeout = COMMAND_TIMEOUT_MS) {
     });
 }
 
-function readHubDaemonInfo(hubPort, appDataDir, homeDir = os.homedir()) {
-    const port = Number(hubPort);
-    if (!Number.isInteger(port) || port <= 0 || port > 65535) {
-        return null;
-    }
-
-    const dirsToTry = appDataDir ? [appDataDir] : ANTIGRAVITY_APP_DATA_DIRS;
-    for (const dir of dirsToTry) {
-        const filePath = path.join(homeDir, '.gemini', dir, 'daemon', `hub_${port}.json`);
-        try {
-            const raw = fs.readFileSync(filePath, 'utf8');
-            const parsed = JSON.parse(raw);
-            if (!parsed || typeof parsed !== 'object') {
-                continue;
-            }
-            const csrfToken = typeof parsed.csrfToken === 'string' ? parsed.csrfToken.trim() : '';
-            if (!csrfToken) {
-                continue;
-            }
-            return {
-                csrfToken,
-                httpPort: typeof parsed.httpPort === 'number' ? parsed.httpPort : undefined,
-                httpsPort: typeof parsed.httpsPort === 'number' ? parsed.httpsPort : undefined,
-                pid: typeof parsed.pid === 'number' ? parsed.pid : undefined,
-            };
-        } catch {
-            // Try next directory
-        }
-    }
-    return null;
-}
-
-function enrichProcessInfo(pid, ppid, commandLine, homeDir) {
-    let csrfToken = extractArgument(commandLine, 'csrf_token');
-    let httpPort;
-    let httpsPort;
-
-    if (!csrfToken) {
-        const hubPort = extractArgument(commandLine, 'hub-port') || extractArgument(commandLine, 'extension_server_port');
-        if (hubPort) {
-            const appDataDir = extractArgument(commandLine, 'app_data_dir');
-            const daemonInfo = readHubDaemonInfo(Number(hubPort), appDataDir || undefined, homeDir);
-            if (daemonInfo) {
-                csrfToken = daemonInfo.csrfToken;
-                httpPort = daemonInfo.httpPort;
-                httpsPort = daemonInfo.httpsPort;
-            }
-        }
-    }
-
-    return {
-        pid,
-        ppid,
-        commandLine,
-        csrfToken: csrfToken || null,
-        ...(httpPort !== undefined ? { httpPort } : {}),
-        ...(httpsPort !== undefined ? { httpsPort } : {}),
-    };
-}
-
-function parseWindowsProcessJson(stdout, homeDir) {
+function parseWindowsProcessJson(stdout) {
     if (!stdout.trim()) return [];
 
     const parsed = JSON.parse(stdout);
     const rows = Array.isArray(parsed) ? parsed : [parsed];
     return rows
         .filter(row => row && row.ProcessId)
-        .map(row => enrichProcessInfo(
-            Number(row.ProcessId),
-            Number(row.ParentProcessId || 0),
-            row.CommandLine || row.ExecutablePath || '',
-            homeDir,
-        ));
+        .map(row => ({
+            pid: Number(row.ProcessId),
+            ppid: Number(row.ParentProcessId || 0),
+            commandLine: row.CommandLine || row.ExecutablePath || '',
+        }));
 }
 
-function parseUnixProcessList(stdout, homeDir) {
+function parseUnixProcessList(stdout) {
     return stdout
         .split(/\r?\n/)
         .map(line => line.trim().match(/^(\d+)\s+(\d+)\s+(.+)$/))
@@ -106,13 +79,7 @@ function parseUnixProcessList(stdout, homeDir) {
             commandLine: match[3],
         }))
         // Antigravity IDE 2.6.0+ runs the agy hub; older builds run language_server_*
-        .filter(processInfo => /language_server|(^|\/)agy(\s|$)/i.test(processInfo.commandLine))
-        .map(processInfo => enrichProcessInfo(
-            processInfo.pid,
-            processInfo.ppid,
-            processInfo.commandLine,
-            homeDir,
-        ));
+        .filter(processInfo => /language_server|(^|\/)agy(\s|$)/i.test(processInfo.commandLine));
 }
 
 async function listLanguageServerProcesses() {
@@ -140,18 +107,74 @@ async function listLanguageServerProcesses() {
 function extractArgument(commandLine, argumentName) {
     const escapedName = argumentName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     const pattern = new RegExp(
-        `--${escapedName}(?:=|\\s+)(?:"([^"]*)"|'([^']*)'|([^\\s]+))`,
+        `(?:^|\\s)--${escapedName}(?:=|\\s+)(?:"([^"]*)"|'([^']*)'|([^\\s]+))(?=\\s|$)`,
         'i'
     );
     const match = commandLine.match(pattern);
     return match ? (match[1] ?? match[2] ?? match[3] ?? null) : null;
 }
 
+function getDefaultGeminiRoots() {
+    const roots = [path.join(os.homedir(), '.gemini')];
+    if (isWsl()) {
+        const winRoot = findWindowsGeminiRootFromWsl();
+        if (winRoot && !roots.includes(winRoot)) roots.push(winRoot);
+    }
+    return roots;
+}
+
+function parseHubDiscovery(raw, expectedPid) {
+    try {
+        const data = JSON.parse(raw);
+        if (!data || typeof data.csrfToken !== 'string' || !data.csrfToken.trim()) {
+            return null;
+        }
+        if (expectedPid && typeof data.pid === 'number' && data.pid !== expectedPid) {
+            return null;
+        }
+        return {
+            pid: typeof data.pid === 'number' ? data.pid : null,
+            httpsPort: typeof data.httpsPort === 'number' ? data.httpsPort : null,
+            httpPort: typeof data.httpPort === 'number' ? data.httpPort : null,
+            lsVersion: typeof data.lsVersion === 'string' ? data.lsVersion : null,
+            csrfToken: data.csrfToken.trim(),
+        };
+    } catch {
+        return null;
+    }
+}
+
+function readHubDiscovery(commandLine, pid, geminiRoots = getDefaultGeminiRoots()) {
+    const appDataDir = (extractArgument(commandLine, 'app_data_dir') || '').toLowerCase();
+    if (!VALID_APP_DATA_DIRS.has(appDataDir)) return null;
+
+    const hubPort = Number(extractArgument(commandLine, 'hub-port')) || 0;
+    const isHub = hubPort > 0 || /(?:^|\s)--hub(?=\s|$)/i.test(commandLine);
+    if (!isHub) return null;
+
+    for (const root of geminiRoots) {
+        const daemonDir = path.join(root, appDataDir, 'daemon');
+        if (hubPort > 0) {
+            const directPath = path.join(daemonDir, `hub_${hubPort}.json`);
+            if (fs.existsSync(directPath)) {
+                const parsed = parseHubDiscovery(fs.readFileSync(directPath, 'utf8'), pid);
+                if (parsed) return parsed;
+            }
+        }
+        if (pid > 0 && fs.existsSync(daemonDir)) {
+            for (const file of fs.readdirSync(daemonDir).filter(f => /^hub_\d+\.json$/.test(f))) {
+                const parsed = parseHubDiscovery(fs.readFileSync(path.join(daemonDir, file), 'utf8'), pid);
+                if (parsed && parsed.pid === pid) return parsed;
+            }
+        }
+    }
+    return null;
+}
+
 module.exports = {
     extractArgument,
     listLanguageServerProcesses,
     parseUnixProcessList,
-    parseWindowsProcessJson,
-    readHubDaemonInfo,
+    readHubDiscovery,
     runCommand,
 };

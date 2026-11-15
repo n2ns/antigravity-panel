@@ -1,5 +1,11 @@
 # Change Log
 
+## [Unreleased]
+
+### Fixed
+
+- **Backend Detection When `--csrf_token` Is Omitted from Process Arguments**: Newer Antigravity builds (`agy` 1.5.8 / Language Server 2.31.2) no longer pass `--csrf_token` on the `agy --hub` command line and instead write the token and ports to `~/.gemini/<app_data_dir>/daemon/hub_<port>.json`. Process detection, `AmbientDiscovery`, and the `debug:*` scripts now read those hub discovery files (verifying the process PID and preferring the advertised `httpsPort`) and normalize `--add-dir` into a workspace ID for multi-window matching.
+
 ## [2.8.3] - 2026-11-13
 
 ### Fixed
