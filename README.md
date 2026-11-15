@@ -165,7 +165,8 @@ Special thanks to our community contributors:
 *   [**@AMDphreak**](https://github.com/AMDphreak) - Sidebar title fix, Gemini Flash/Pro grouping, quota reset window alignment with API cycles, and Claude+GPT shared pool display.
 *   [**@chonkydonkers**](https://github.com/chonkydonkers) - Display user tier available credits in status bar and sidebar.
 *   [**@vincenzofabiano92**](https://github.com/vincenzofabiano92) - Synchronous command registration, connection stability optimization, Italian NLS localization, and server integration test runner (v2.6.0).
-*   [**@HH-Tips**](https://github.com/HH-Tips) - Antigravity IDE 2.6.0 backend detection, Gemini 4 Argon quota data, and separate 5-hour and weekly quota tracking.
+*   [**@HH-Tips**](https://github.com/HH-Tips) - Antigravity IDE 2.6.0 backend detection, Gemini 4 Argon quota data, separate 5-hour and weekly quota tracking, and `agy` hub discovery file support.
+*   [**@phanuphon**](https://github.com/phanuphon) - `agy` hub discovery file support and Gemini 3.8 Flash, Gemini 4 Hydrogen, Claude 5.5 and Orchestrator (Argon) models.
 
 ## 📄 License
 

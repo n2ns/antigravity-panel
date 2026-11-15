@@ -99,6 +99,7 @@ Each model group points to a quota pool through `quotaPoolId`. A quota pool name
 |---|---|---|---|
 | `gemini-flash` | `#40C4FF` | `gemini` | Gemini (blue) |
 | `gemini-pro` | `#69F0AE` | `gemini` | Gemini (blue) |
+| `gemini-hydrogen` | `#69F0AE` | `gemini` | Gemini (blue) |
 | `gemini-argon` | `#B388FF` | `argon` | Argon (purple) |
 | `claude` | `#FFAB40` | `non-google` | Claude (orange) |
 | `gpt` | `#FF5252` | `non-google` | Claude (orange) |
@@ -110,9 +111,13 @@ Each model group points to a quota pool through `quotaPoolId`. A quota pool name
 | `argon` | `gemini-argon-wtu-weekly` | *(none)* |
 | `non-google` | `3p-weekly` | `3p-5h` |
 
-Gemini Flash and Gemini Pro currently share the same Gemini quota pool. The relative consumption cost of Flash and Pro may differ, but usage of either model reduces the remaining quota of the same pool.
+Gemini Flash, Gemini Pro and Gemini 4 Hydrogen currently share the same Gemini quota pool. The relative consumption cost of Flash and Pro may differ, but usage of either model reduces the remaining quota of the same pool.
 
 Gemini 4 Argon has its own pool because Pro plans report a separate `Gemini 4 Argon` group in `RetrieveUserQuotaSummary` with a weekly bucket and no 5-hour bucket. The pool sets `hideWhenEmpty`, so plans without Argon access, which only list a disabled Argon model that is skipped, get no empty gauge. Its prefixes are the full model name because the longest prefix wins and a bare `argon` would lose to `gemini`.
+
+Gemini 4 Hydrogen (`MODEL_PLACEHOLDER_M525` to `M528`, High, Medium, Low and XHigh) has its own model group so the model view shows it under its own name, but it counts against the Gemini pool. Plans without access list it as a single disabled `Gemini 4 Hydrogen` model (`MODEL_PLACEHOLDER_M529`) with an empty quota, which is skipped like the disabled Argon model. If a plan with Hydrogen access reports a separate Hydrogen bucket in `RetrieveUserQuotaSummary`, Hydrogen needs its own pool as Argon has.
+
+Orchestrator (Argon) (`MODEL_PLACEHOLDER_M668`) belongs to the Argon group and pool. Gemini 3.8 Flash (`MODEL_PLACEHOLDER_M318` to `M320`) belongs to the Flash group, and Claude Opus 5.5 and Claude Sonnet 5.5 (`MODEL_PLACEHOLDER_M400` to `M405`) to the Claude group.
 
 Claude and GPT are also currently treated as the same backend pool; the default group view uses the `Claude` label for compatibility with the original UI.
 

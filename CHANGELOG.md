@@ -2,9 +2,13 @@
 
 ## [Unreleased]
 
+### Added
+
+- **New Models**: Gemini 3.8 Flash (High, Medium, Low) is listed in the Flash group, Gemini 4 Hydrogen gets its own model group in the Gemini pool, Claude Opus 5.5 and Claude Sonnet 5.5 join the Claude group, and Orchestrator (Argon) joins the Argon group. Thanks to @phanuphon in [#226](https://github.com/n2ns/antigravity-panel/pull/226).
+
 ### Fixed
 
-- **Backend Detection When `--csrf_token` Is Omitted from Process Arguments**: Newer Antigravity builds (`agy` 1.5.8 / Language Server 2.31.2) no longer pass `--csrf_token` on the `agy --hub` command line and instead write the token and ports to `~/.gemini/<app_data_dir>/daemon/hub_<port>.json`. Process detection, `AmbientDiscovery`, and the `debug:*` scripts now read those hub discovery files (verifying the process PID and preferring the advertised `httpsPort`) and normalize `--add-dir` into a workspace ID for multi-window matching.
+- **Backend Not Found on Newer `agy` Builds** ([#224](https://github.com/n2ns/antigravity-panel/issues/224)): Newer `agy` builds (1.5.7 and later) can start the `agy --hub` backend without `--csrf_token` on the command line and write the token and ports to `~/.gemini/<app_data_dir>/daemon/hub_<port>.json` instead, so the panel found no backend. Process detection, the fallback discovery and the `debug:*` scripts now read these files, accept a file only when its PID matches the process, connect over the advertised HTTPS port first, and, in WSL, also look in the Windows user's `.gemini` folder. The workspace is now also recognized from the `--add-dir` argument, so with several windows open the panel connects to the backend of its own window. Thanks to @phanuphon in [#226](https://github.com/n2ns/antigravity-panel/pull/226) and @HH-Tips in [#227](https://github.com/n2ns/antigravity-panel/pull/227), who both tracked down the new discovery files.
 
 ## [2.8.3] - 2026-11-13
 
