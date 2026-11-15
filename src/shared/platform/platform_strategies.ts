@@ -4,8 +4,8 @@
 
 import type { ProcessInfo, PlatformStrategy } from "../utils/types";
 import {
+  extractProcessInfoFromCommandLine,
   getPortListCommand,
-  hasAntigravityAppDataDir,
   SERVER_PORT_PATTERN,
 } from "./detection_utils";
 
@@ -117,29 +117,14 @@ export class WindowsStrategy implements PlatformStrategy {
 
           const ppid = parseInt(idsMatch[1], 10);
           const pid = parseInt(idsMatch[2], 10);
-          // We mostly need CLI args from the string
-          const commandLine = row;
-
-          const portMatch = commandLine.match(SERVER_PORT_PATTERN);
-          const tokenMatch = commandLine.match(
-            /--csrf_token[=\s]+(?:["']?)([a-zA-Z0-9\-_.]+)(?:["']?)/,
-          );
-          const wsMatch = commandLine.match(
-            /--workspace_id[=\s]+(?:["']?)([a-zA-Z0-9\-_.]+)(?:["']?)/,
-          );
-
-          if (tokenMatch?.[1]) {
-            if (!hasAntigravityAppDataDir(commandLine)) {
-              continue;
-            }
-
-            results.push({
-              pid,
-              ppid,
-              extensionPort: portMatch?.[1] ? parseInt(portMatch[1], 10) : 0,
-              csrfToken: tokenMatch[1],
-              workspaceId: wsMatch?.[1],
-            });
+          // Strip leading Node, and trailing ,PPID,PID from WMIC CSV row
+          const commandLine = row
+            .replace(/^[^,]+,/, "")
+            .replace(/,\d+,\d+\s*$/, "")
+            .replace(/^"(.*)"$/, "$1");
+          const info = extractProcessInfoFromCommandLine(commandLine, pid, ppid);
+          if (info) {
+            results.push(info);
           }
         }
         return results.length > 0 ? results : null;
@@ -160,25 +145,9 @@ export class WindowsStrategy implements PlatformStrategy {
 
       if (!pid) continue;
 
-      const portMatch = commandLine.match(SERVER_PORT_PATTERN);
-      const tokenMatch = commandLine.match(
-        /--csrf_token[=\s]+(?:["']?)([a-zA-Z0-9\-_.]+)(?:["']?)/,
-      );
-      const wsMatch = commandLine.match(
-        /--workspace_id[=\s]+(?:["']?)([a-zA-Z0-9\-_.]+)(?:["']?)/,
-      );
-
-      if (tokenMatch?.[1]) {
-        if (!hasAntigravityAppDataDir(commandLine)) {
-          continue;
-        }
-        results.push({
-          pid,
-          ppid,
-          extensionPort: portMatch?.[1] ? parseInt(portMatch[1], 10) : 0,
-          csrfToken: tokenMatch[1],
-          workspaceId: wsMatch?.[1],
-        });
+      const info = extractProcessInfoFromCommandLine(commandLine, pid, ppid);
+      if (info) {
+        results.push(info);
       }
     }
     return results.length > 0 ? results : null;
@@ -294,27 +263,9 @@ export class UnixStrategy implements PlatformStrategy {
         const cmd = match[3];
 
         if (SERVER_PORT_PATTERN.test(cmd)) {
-          const portMatch = cmd.match(SERVER_PORT_PATTERN);
-          // Match workspace_id and csrf_token (handles optional quotes)
-          const tokenMatch = cmd.match(
-            /--csrf_token[=\s]+(?:["']?)([a-zA-Z0-9\-_.]+)(?:["']?)/,
-          );
-          const wsMatch = cmd.match(
-            /--workspace_id[=\s]+(?:["']?)([a-zA-Z0-9\-_.]+)(?:["']?)/,
-          );
-
-          if (tokenMatch?.[1]) {
-            if (!hasAntigravityAppDataDir(cmd)) {
-              continue;
-            }
-
-            results.push({
-              pid,
-              ppid,
-              extensionPort: portMatch ? parseInt(portMatch[1], 10) : 0,
-              csrfToken: tokenMatch[1],
-              workspaceId: wsMatch?.[1],
-            });
+          const info = extractProcessInfoFromCommandLine(cmd, pid, ppid);
+          if (info) {
+            results.push(info);
           }
         }
       }

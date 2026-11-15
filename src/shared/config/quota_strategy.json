@@ -41,6 +41,21 @@
                     "id": "gemini-3-flash",
                     "modelName": "MODEL_PLACEHOLDER_M47",
                     "displayName": "Gemini 3 Flash"
+                },
+                {
+                    "id": "gemini-3-8-flash-high",
+                    "modelName": "MODEL_PLACEHOLDER_M318",
+                    "displayName": "Gemini 3.8 Flash (High)"
+                },
+                {
+                    "id": "gemini-3-8-flash-medium",
+                    "modelName": "MODEL_PLACEHOLDER_M319",
+                    "displayName": "Gemini 3.8 Flash (Medium)"
+                },
+                {
+                    "id": "gemini-3-8-flash-low",
+                    "modelName": "MODEL_PLACEHOLDER_M320",
+                    "displayName": "Gemini 3.8 Flash (Low)"
                 }
             ]
         },
@@ -63,6 +78,40 @@
                     "id": "gemini-3-pro-low",
                     "modelName": "MODEL_PLACEHOLDER_M36",
                     "displayName": "Gemini 3.1 Pro (Low)"
+                }
+            ]
+        },
+        {
+            "id": "gemini-hydrogen",
+            "quotaPoolId": "gemini",
+            "label": "Gemini 4 Hydrogen",
+            "shortLabel": "Hydrogen",
+            "themeColor": "#69F0AE",
+            "prefixes": [
+                "gemini-4-hydrogen",
+                "gemini 4 hydrogen",
+                "hydrogen"
+            ],
+            "models": [
+                {
+                    "id": "gemini-4-hydrogen-high",
+                    "modelName": "MODEL_PLACEHOLDER_M525",
+                    "displayName": "Gemini 4 Hydrogen (High)"
+                },
+                {
+                    "id": "gemini-4-hydrogen-medium",
+                    "modelName": "MODEL_PLACEHOLDER_M526",
+                    "displayName": "Gemini 4 Hydrogen (Medium)"
+                },
+                {
+                    "id": "gemini-4-hydrogen-low",
+                    "modelName": "MODEL_PLACEHOLDER_M527",
+                    "displayName": "Gemini 4 Hydrogen (Low)"
+                },
+                {
+                    "id": "gemini-4-hydrogen-xhigh",
+                    "modelName": "MODEL_PLACEHOLDER_M528",
+                    "displayName": "Gemini 4 Hydrogen (XHigh)"
                 }
             ]
         },
@@ -91,6 +140,11 @@
                     "id": "gemini-4-argon-low",
                     "modelName": "MODEL_PLACEHOLDER_M419",
                     "displayName": "Gemini 4 Argon (Low)"
+                },
+                {
+                    "id": "orchestrator-argon",
+                    "modelName": "MODEL_PLACEHOLDER_M668",
+                    "displayName": "Orchestrator (Argon)"
                 }
             ]
         },
@@ -113,6 +167,36 @@
                     "id": "claude-4-6-opus-thinking",
                     "modelName": "MODEL_PLACEHOLDER_M26",
                     "displayName": "Claude Opus 4.6 (Thinking)"
+                },
+                {
+                    "id": "claude-opus-5-5-low",
+                    "modelName": "MODEL_PLACEHOLDER_M400",
+                    "displayName": "Claude Opus 5.5 (Low)"
+                },
+                {
+                    "id": "claude-opus-5-5-medium",
+                    "modelName": "MODEL_PLACEHOLDER_M401",
+                    "displayName": "Claude Opus 5.5 (Medium)"
+                },
+                {
+                    "id": "claude-opus-5-5-high",
+                    "modelName": "MODEL_PLACEHOLDER_M402",
+                    "displayName": "Claude Opus 5.5 (High)"
+                },
+                {
+                    "id": "claude-sonnet-5-5-low",
+                    "modelName": "MODEL_PLACEHOLDER_M403",
+                    "displayName": "Claude Sonnet 5.5 (Low)"
+                },
+                {
+                    "id": "claude-sonnet-5-5-medium",
+                    "modelName": "MODEL_PLACEHOLDER_M404",
+                    "displayName": "Claude Sonnet 5.5 (Medium)"
+                },
+                {
+                    "id": "claude-sonnet-5-5-high",
+                    "modelName": "MODEL_PLACEHOLDER_M405",
+                    "displayName": "Claude Sonnet 5.5 (High)"
                 }
             ]
         },

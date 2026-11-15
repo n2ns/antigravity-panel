@@ -277,4 +277,39 @@ suite('QuotaStrategyManager Test Suite', () => {
         const group2 = manager.getGroupForModel('claude-test', undefined);
         assert.strictEqual(group2.id, 'claude');
     });
+
+    test('should route Gemini 4 Hydrogen to the gemini pool and resolve display names', () => {
+        const cases: [string, string][] = [
+            ['MODEL_PLACEHOLDER_M525', 'Gemini 4 Hydrogen (High)'],
+            ['MODEL_PLACEHOLDER_M526', 'Gemini 4 Hydrogen (Medium)'],
+            ['MODEL_PLACEHOLDER_M527', 'Gemini 4 Hydrogen (Low)'],
+            ['MODEL_PLACEHOLDER_M528', 'Gemini 4 Hydrogen (XHigh)'],
+        ];
+        for (const [id, expectedName] of cases) {
+            const group = manager.getGroupForModel(id);
+            assert.strictEqual(group.id, 'gemini-hydrogen', `${id} group`);
+            assert.strictEqual(group.quotaPoolId, 'gemini', `${id} pool`);
+            assert.strictEqual(manager.getModelDisplayName(id), expectedName, `${id} displayName`);
+        }
+    });
+
+    test('should route Orchestrator (Argon) to gemini-argon and the argon pool', () => {
+        const group = manager.getGroupForModel('MODEL_PLACEHOLDER_M668');
+        assert.strictEqual(group.id, 'gemini-argon');
+        assert.strictEqual(group.quotaPoolId, 'argon');
+        assert.strictEqual(manager.getModelDisplayName('MODEL_PLACEHOLDER_M668'), 'Orchestrator (Argon)');
+    });
+
+    test('should route Gemini 3.8 Flash and Claude 5.5 models to their respective pools', () => {
+        const flashGroup = manager.getGroupForModel('MODEL_PLACEHOLDER_M318');
+        assert.strictEqual(flashGroup.id, 'gemini-flash');
+        assert.strictEqual(flashGroup.quotaPoolId, 'gemini');
+        assert.strictEqual(manager.getModelDisplayName('MODEL_PLACEHOLDER_M319'), 'Gemini 3.8 Flash (Medium)');
+
+        const opusGroup = manager.getGroupForModel('MODEL_PLACEHOLDER_M402');
+        assert.strictEqual(opusGroup.id, 'claude');
+        assert.strictEqual(opusGroup.quotaPoolId, 'non-google');
+        assert.strictEqual(manager.getModelDisplayName('MODEL_PLACEHOLDER_M400'), 'Claude Opus 5.5 (Low)');
+        assert.strictEqual(manager.getModelDisplayName('MODEL_PLACEHOLDER_M405'), 'Claude Sonnet 5.5 (High)');
+    });
 });
