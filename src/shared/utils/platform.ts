@@ -3,6 +3,14 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 /**
+ * Whether the extension runs inside Antigravity (by `vscode.env.appName`). Elsewhere, for
+ * example in VS Code, the panel works with a standalone agy CLI instead of the IDE backend.
+ */
+export function isAntigravityApp(appName: string): boolean {
+    return /antigravity/i.test(appName);
+}
+
+/**
  * Reads product identity from the current extension host's product.json.
  * vscode.version only exposes the VS Code base version, not the product identity.
  * Missing fields remain undefined; an unreadable file returns no product fields.

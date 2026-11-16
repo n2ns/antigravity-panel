@@ -215,6 +215,8 @@ export interface SidebarData {
     contexts: TreeSectionState;
     connectionStatus: ConnectionStatus;
     failureReason?: 'no_process' | 'no_port' | 'auth_failed' | 'workspace_mismatch' | null;
+    /** Backend the connection hints refer to: the Antigravity IDE, or the agy CLI in other editors */
+    backend: BackendKind;
     gaugeStyle?: string;
     showUserInfoCard?: boolean;
     showCreditsCard?: boolean;
@@ -222,6 +224,9 @@ export interface SidebarData {
     autoAcceptStatus?: AutomationStatus;
     uiScale?: number;
 }
+
+/** Backend the panel works with: the Antigravity IDE's own, or a standalone agy CLI in other editors */
+export type BackendKind = 'ide' | 'cli';
 
 /** Connection status for sidebar feedback */
 export type ConnectionStatus = 'connected' | 'failed' | 'detecting';

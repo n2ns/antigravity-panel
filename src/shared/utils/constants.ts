@@ -19,6 +19,9 @@ export const GEMINI_ROOT_DIR_NAME = ".gemini";
 /** Antigravity subdirectory name */
 export const ANTIGRAVITY_DIR_NAME = "antigravity-ide";
 
+/** App data subdirectory of the standalone agy CLI */
+export const ANTIGRAVITY_CLI_DIR_NAME = "antigravity-cli";
+
 /** Config subdirectory under the Gemini root (the 2.x "Global Customizations Root") */
 export const CONFIG_DIR_NAME = "config";
 

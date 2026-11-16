@@ -14,6 +14,7 @@ import { retry } from "../utils/retry";
 import { debugLog, infoLog, warnLog, errorLog } from "../utils/logger";
 import { isWsl, getWslHostIp } from "../utils/wsl";
 import { AmbientDiscovery } from "./ambient_discovery";
+import { discoverCliServer } from "./cli_discovery";
 import {
   verifyServerGateway,
 } from "./detection_utils";
@@ -98,7 +99,7 @@ export class ProcessFinder {
   private scanSteps: string[] = [];
   private powershellTimeoutRetried: boolean = false;
 
-  constructor() {
+  constructor(private readonly options: { cliCsrfToken?: string } = {}) {
     const platform = process.platform;
     const arch = process.arch;
 
@@ -288,6 +289,24 @@ export class ProcessFinder {
    * Single detection attempt without retry
    */
   protected async tryDetect(): Promise<LanguageServerInfo | null> {
+    const ideBackend = await this.detectIdeBackend();
+    if (ideBackend || !this.options.cliCsrfToken) {
+      return ideBackend;
+    }
+
+    // Standalone agy CLI started in a terminal that carries the injected token
+    const cliServer = await discoverCliServer(this.options.cliCsrfToken);
+    this.scanSteps.push(`agy CLI scan: ${cliServer ? `connected on port ${cliServer.port}` : "none"}`);
+    if (!cliServer) {
+      return null;
+    }
+    this.failureReason = null;
+    this.protocolUsed = cliServer.protocol;
+    infoLog(`ProcessFinder: Connected to agy CLI server on port ${cliServer.port}`);
+    return { port: cliServer.port, csrfToken: cliServer.csrfToken };
+  }
+
+  private async detectIdeBackend(): Promise<LanguageServerInfo | null> {
     this.failureReason = null; // Reset failure reason
     this.candidateCount = 0; // Reset candidate count
     this.skippedForWorkspace = 0; // Reset workspace mismatch counter
@@ -529,6 +548,13 @@ export class ProcessFinder {
       this.scanSteps.push(formatExecOutcome(label, result));
       return result;
     } catch (e) {
+      // Unix scans pipe through grep, which exits 1 when nothing matches: an empty result, not a failure.
+      // stderr is not checked because ps may print warnings there (e.g. "screen size is bogus").
+      const failure = e as { code?: number | string; stdout?: string };
+      if (this.strategy instanceof UnixStrategy && failure.code === 1 && !failure.stdout?.trim()) {
+        this.scanSteps.push(`${label}: no matching process`);
+        return { stdout: "", stderr: "" };
+      }
       this.scanSteps.push(formatExecOutcome(label, null, e));
       throw e;
     }

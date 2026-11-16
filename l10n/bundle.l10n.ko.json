@@ -55,6 +55,7 @@
     "Parsing Details": "파싱 세부 정보",
     "Permanently delete {0} tasks and {1} conversation files ({2})? The {3} most recently active tasks will be kept.": "작업 {0}개와 대화 파일 {1}개({2})를 영구적으로 삭제하시겠습니까? 가장 최근에 활동한 작업 {3}개는 유지됩니다.",
     "Please ensure you are logged into Antigravity IDE (Authentication failed).": "Antigravity IDE에 로그인되어 있는지 확인하세요 (인증 실패).",
+    "Please ensure you are signed in to the agy CLI (Authentication failed).": "agy CLI에 로그인되어 있는지 확인하세요 (인증 실패).",
     "Process found but no listening port detected.": "프로세스를 찾았지만 수신 포트가 감지되지 않았습니다.",
     "Prompt": "Prompt",
     "Quota reset: {0} is back to {1}%.": "쿼터가 초기화되었습니다: {0}이(가) {1}%로 회복되었습니다.",

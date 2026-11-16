@@ -99,7 +99,7 @@ For version history and release notes, see the [Changelog](CHANGELOG.md).
 
 ## 🎯 Quick Start
 
-1. Make sure Antigravity IDE is running and you are signed in — the panel reads quota from the IDE's local Language Server.
+1. Make sure Antigravity IDE is running and you are signed in — the panel reads quota from the IDE's local Language Server. In VS Code, start the `agy` CLI from an integrated terminal instead; the panel reads quota from the CLI's local server.
 2. Click the **Antigravity Panel** icon in the activity bar (or run `Antigravity Panel: Open Panel`).
 3. Your quota pools appear within a few seconds; hover the status bar item for every pool at a glance.
 

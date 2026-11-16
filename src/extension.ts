@@ -3,7 +3,9 @@
  */
 
 import * as vscode from "vscode";
+import { randomUUID } from "crypto";
 import { ProcessFinder } from "./shared/platform/process_finder";
+import { AGY_CLI_CSRF_ENV } from "./shared/platform/cli_discovery";
 import { QuotaService } from "./model/services/quota.service";
 import { ConnectionService } from "./model/services/connection.service";
 import { CacheService } from "./model/services/cache.service";
@@ -20,8 +22,9 @@ import { SidebarProvider } from "./view/sidebar-provider";
 import { initLogger, setDebugMode, infoLog, errorLog, warnLog, debugLog, getLogger, logQuotaSnapshot } from "./shared/utils/logger";
 import { formatBytes } from "./shared/utils/format";
 import type { CommunicationAttempt, TfaConfig } from "./shared/utils/types";
-import { getDetailedOSVersion, getIdeProductInfo } from "./shared/utils/platform";
+import { getDetailedOSVersion, getIdeProductInfo, isAntigravityApp } from "./shared/utils/platform";
 import { getExpectedWorkspaceIds } from "./shared/utils/workspace_id";
+import { getCacheBaseDir, getBrainDir, getConversationsDir, getCodeContextsDir } from "./shared/utils/paths";
 import { generateCommitMessageCommand, setAnthropicApiKeyCommand } from "./commitMessageClaude";
 
 
@@ -74,6 +77,26 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
   };
   infoLog(`IDE identity: ${JSON.stringify(ideIdentity)}`);
 
+  // A standalone agy CLI reads its local server CSRF token from the environment at startup.
+  // Inject a stable extension-owned token into integrated terminals so the panel can connect
+  // to an agy CLI started there (e.g. in plain VS Code without the Antigravity IDE backend).
+  const CLI_TOKEN_KEY = "tfa.agyCliCsrfToken";
+  let cliCsrfToken = context.globalState.get<string>(CLI_TOKEN_KEY);
+  if (!cliCsrfToken) {
+    cliCsrfToken = randomUUID();
+    // Not awaited: Phase 1 command registration must not wait on, or fail with, a storage write
+    context.globalState.update(CLI_TOKEN_KEY, cliCsrfToken).then(undefined, (err: unknown) =>
+      warnLog(`Failed to persist the agy CLI token: ${err instanceof Error ? err.message : String(err)}`));
+  }
+  context.environmentVariableCollection.replace(AGY_CLI_CSRF_ENV, cliCsrfToken);
+  const createProcessFinder = () => new ProcessFinder({ cliCsrfToken });
+
+  // Outside Antigravity (e.g. VS Code) the panel works with the agy CLI, so hints name the CLI
+  const isAntigravity = isAntigravityApp(vscode.env.appName);
+  const authFailedMessage = () => isAntigravity
+    ? vscode.l10n.t("Please ensure you are logged into Antigravity IDE (Authentication failed).")
+    : vscode.l10n.t("Please ensure you are signed in to the agy CLI (Authentication failed).");
+
   // Mutable service references — command closures capture these variables
   // and read their current value at invocation time, not at registration time.
   // This allows commands to be registered before services are initialized.
@@ -105,7 +128,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
         vscode.window.showInformationMessage(vscode.l10n.t("Antigravity Panel: Data Updated."));
       } else if (result === 'auth_failed') {
         vscode.window.showErrorMessage(
-          vscode.l10n.t("Please ensure you are logged into Antigravity IDE (Authentication failed).")
+          authFailedMessage()
         );
       } else if (result === 'server_error') {
         // The server answered without usable data: no reconnect is started
@@ -182,7 +205,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
         title: vscode.l10n.t("Running Connectivity Diagnostics..."),
         cancellable: false
       }, async () => {
-        const finder = new ProcessFinder();
+        const finder = createProcessFinder();
         const start = Date.now();
 
         // Use default detect (with retries) but for diagnostics,
@@ -276,7 +299,10 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     // 2. Model Services
     const strategyManager = new QuotaStrategyManager();
     storageService = new StorageService(context.globalState);
-    cacheService = new CacheService();
+    // Antigravity IDE caches inside Antigravity; the agy CLI's caches in other editors
+    const cacheBaseDir = getCacheBaseDir(vscode.env.appName);
+    infoLog(`Cache directory: ${cacheBaseDir}`);
+    cacheService = new CacheService(getBrainDir(cacheBaseDir), getConversationsDir(cacheBaseDir), getCodeContextsDir(cacheBaseDir));
     const quotaService = new QuotaService(configManager);
     const contextService = new ContextService(configManager);
     const automationService = new AutomationService();
@@ -298,7 +324,8 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
       configManager,
       strategyManager,
       automationService,
-      contextService
+      contextService,
+      isAntigravity ? 'ide' : 'cli'
     );
     context.subscriptions.push(appViewModel);
 
@@ -324,7 +351,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
      * internal retries. Used for boot and every later reconnect.
      */
     const connection = new ConnectionService<ProcessFinder>({
-      createDetector: () => new ProcessFinder(),
+      createDetector: createProcessFinder,
       setServerInfo: (info) => {
         quotaService.setServerInfo(info);
         contextService.setServerInfo(info);
@@ -339,7 +366,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
       onAuthFailed: () => {
         warnLog(`Quota request rejected (${quotaService.parsingError}); polling continues without reconnecting`);
         vscode.window.showErrorMessage(
-          vscode.l10n.t("Please ensure you are logged into Antigravity IDE (Authentication failed).")
+          authFailedMessage()
         );
       },
       onError: (e) => errorLog("Server detection failed", e),
@@ -406,7 +433,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
 
         // Smart decision: If it's a single server but auth failed, it's likely a login issue
         if (reason === 'auth_failed' && count === 1) {
-          message = vscode.l10n.t("Please ensure you are logged into Antigravity IDE (Authentication failed).");
+          message = authFailedMessage();
         }
 
         // Collect useful diagnostic info only

@@ -55,6 +55,7 @@
     "Parsing Details": "解析詳細資料",
     "Permanently delete {0} tasks and {1} conversation files ({2})? The {3} most recently active tasks will be kept.": "確定永久刪除 {0} 個任務和 {1} 個對話檔案（{2}）嗎？將保留最近活躍的 {3} 個任務。",
     "Please ensure you are logged into Antigravity IDE (Authentication failed).": "請確保已登入 Antigravity IDE (身份驗證失敗)。",
+    "Please ensure you are signed in to the agy CLI (Authentication failed).": "請確保已登入 agy CLI (身份驗證失敗)。",
     "Process found but no listening port detected.": "已找到處理程序，但未偵測到接聽連接埠。",
     "Prompt": "Prompt",
     "Quota reset: {0} is back to {1}%.": "配額已重置：{0} 已恢復至 {1}%。",

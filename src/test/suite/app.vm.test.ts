@@ -115,6 +115,17 @@ suite('AppViewModel Test Suite', () => {
         assert.ok(state.quota.groups.length > 0);
     });
 
+    test('should tell the sidebar which backend its connection hints refer to', () => {
+        assert.strictEqual(vm.getSidebarData().backend, 'ide');
+
+        const cliVm = new AppViewModel(mockQuota, mockCache, mockStorage, configManager, strategyManager, defaultMockAutomationService, defaultMockContextService, 'cli');
+        try {
+            assert.strictEqual(cliVm.getSidebarData().backend, 'cli');
+        } finally {
+            cliVm.dispose();
+        }
+    });
+
     test('auto-accept terminal setting should reach the automation service at startup and on change', async () => {
         vm.dispose();
         const terminalCalls: boolean[] = [];

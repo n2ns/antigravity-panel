@@ -162,6 +162,33 @@ suite('Webview Footer Test Suite', () => {
             assert.match(textOf(connected), /CDP: connected/);
             assert.ok(!connected.some(item => item.strings.some(part => part.includes('aa-setup-btn'))));
             assert.match(textOf(renderStatus(true, { ...status, cdp: 'noPanel' })), /CDP: connected, but the Agent panel was not found/);
+
+            // Restart and Reset run antigravity.* commands, which exist only inside Antigravity.
+            const footerMarkup = (backend: 'ide' | 'cli', collapsed = false) => collectTemplates(SidebarFooter.prototype.render.call({
+                autoAcceptEnabled: false,
+                autoAcceptStatus: null,
+                backend,
+                _renderAutoAcceptStatus: SidebarFooter.prototype._renderAutoAcceptStatus,
+                _isCollapsed: collapsed,
+                _t: {},
+                _vscode: vscodeApi,
+                _toggleAutoAccept: SidebarFooter.prototype._toggleAutoAccept,
+                _toggleCollapse: () => undefined,
+                _postMessage: () => undefined,
+                _openUrl: () => undefined
+            })).flatMap(item => [...item.strings, ...item.values.filter((value): value is string => typeof value === 'string')]).join('');
+            const ideFooter = footerMarkup('ide');
+            assert.ok(ideFooter.includes('codicon-sync') && ideFooter.includes('codicon-refresh'), 'Antigravity shows Restart and Reset');
+            const cliFooter = footerMarkup('cli');
+            assert.ok(!cliFooter.includes('codicon-sync') && !cliFooter.includes('codicon-refresh'), 'Other editors hide Restart and Reset');
+            assert.ok(cliFooter.includes('codicon-window'), 'Reload stays available');
+
+            // Auto-Accept works only through Antigravity commands and its Agent panel. Its row is also the
+            // collapse header, so without it the footer must stay expanded even if it was saved collapsed.
+            assert.ok(ideFooter.includes('type="checkbox"'), 'Antigravity shows the Auto-Accept toggle');
+            assert.ok(!cliFooter.includes('type="checkbox"') && !cliFooter.includes('auto-accept-row'), 'Other editors hide the Auto-Accept row');
+            assert.ok(!footerMarkup('cli', true).includes('collapsed'), 'Other editors never render the footer collapsed');
+            assert.ok(footerMarkup('ide', true).includes('collapsed'), 'Antigravity keeps the saved collapsed state');
         } finally {
             if (originalWindow) Object.defineProperty(globalThis, 'window', originalWindow);
             else delete (globalThis as { window?: unknown }).window;
