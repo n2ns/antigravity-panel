@@ -56,7 +56,7 @@
 ### Connection and Automatic Reconnection
 - The local Antigravity Language Server is found automatically
 - Without the Antigravity IDE backend (for example in VS Code), the panel connects to a standalone `agy` CLI session started from an integrated terminal: the extension passes its own access token to new terminals, so terminals opened before the extension was installed or updated, and `agy` sessions already running, need to be restarted
-- Outside Antigravity IDE, connection hints and the sign-in error point to the `agy` CLI instead of the IDE, and the **Restart** and **Reset** buttons, which only work inside Antigravity, are hidden
+- Outside Antigravity IDE, the connection hints (including "Connecting to agy CLI...") and the sign-in error point to the `agy` CLI instead of the IDE, and the **Restart** and **Reset** buttons and the **Auto-Accept** toggle, which only work inside Antigravity, are hidden
 - When the connection is lost, after **Restart Agent Service**, or after a failed manual refresh, the panel reconnects by itself: a few quick retries first, then retries in the background at growing intervals
 - If the server rejects the request because you are not signed in, the panel tells you so instead of reconnecting
 - A temporary server error does not count as a lost connection
@@ -143,6 +143,8 @@ In WSL remote sessions the shortcuts follow where Antigravity actually reads eac
 ---
 
 ## 🤖 Auto-Accept (Hands-free Mode)
+
+Available in Antigravity IDE only; in other editors such as VS Code the toggle is hidden.
 
 > [!WARNING]
 > Auto-Accept is a trust-the-agent feature. Keep it off for untrusted or prompt-injection-prone tasks.

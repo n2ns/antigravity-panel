@@ -336,7 +336,7 @@ export class SidebarApp extends LitElement {
         ${this._connectionStatus === 'detecting' ? html`
           <div class="connection-hint">
             <span class="codicon codicon-loading codicon-modifier-spin"></span>
-            <span>Connecting to Antigravity service...</span>
+            <span>${this._backend === 'cli' ? 'Connecting to agy CLI...' : 'Connecting to Antigravity service...'}</span>
           </div>
         ` : nothing}
         ${this._connectionStatus === 'failed' ? html`

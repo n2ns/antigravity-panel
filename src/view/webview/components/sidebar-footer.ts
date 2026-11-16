@@ -140,9 +140,14 @@ export class SidebarFooter extends LitElement {
   }
 
   protected render() {
+    // Outside Antigravity, Auto-Accept has nothing to act on (Antigravity commands and Agent panel).
+    // Its row is the collapse header, so without it the footer stays expanded.
+    const cli = this.backend === 'cli';
+    const collapsed = !cli && this._isCollapsed;
     return html`
       <!-- Main Action Card -->
-      <div class="action-card ${this._isCollapsed ? 'collapsed' : ''}">
+      <div class="action-card ${collapsed ? 'collapsed' : ''}">
+        ${cli ? nothing : html`
         <!-- Auto-Accept Toggle Row (Sticky Header for collapse) -->
         <div class="action-row auto-accept-row clickable" 
              @click=${this._toggleCollapse}
@@ -161,8 +166,9 @@ export class SidebarFooter extends LitElement {
         </div>
 
         ${this._renderAutoAcceptStatus()}
+        `}
 
-        <div class="collapsible-wrapper ${this._isCollapsed ? 'collapsed' : ''}">
+        <div class="collapsible-wrapper ${collapsed ? 'collapsed' : ''}">
           <div class="collapsible-content">
             <!-- Quick Tools -->
             <div class="action-row action-buttons">
@@ -207,7 +213,7 @@ export class SidebarFooter extends LitElement {
         </div>
       </div>
 
-      <div class="collapsible-wrapper ${this._isCollapsed ? 'collapsed' : ''}">
+      <div class="collapsible-wrapper ${collapsed ? 'collapsed' : ''}">
         <div class="collapsible-content">
           <!-- External Links (outside card) -->
           <div class="footer-links">
