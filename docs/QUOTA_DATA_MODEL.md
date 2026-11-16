@@ -115,7 +115,9 @@ Gemini Flash, Gemini Pro and Gemini 4 Hydrogen currently share the same Gemini q
 
 Gemini 4 Argon has its own pool because Pro plans report a separate `Gemini 4 Argon` group in `RetrieveUserQuotaSummary` with a weekly bucket and no 5-hour bucket. The pool sets `hideWhenEmpty`, so plans without Argon access, which only list a disabled Argon model that is skipped, get no empty gauge. Its prefixes are the full model name because the longest prefix wins and a bare `argon` would lose to `gemini`.
 
-Gemini 4 Hydrogen (`MODEL_PLACEHOLDER_M525` to `M528`, High, Medium, Low and XHigh) has its own model group so the model view shows it under its own name, but it counts against the Gemini pool. Plans without access list it as a single disabled `Gemini 4 Hydrogen` model (`MODEL_PLACEHOLDER_M529`) with an empty quota, which is skipped like the disabled Argon model. If a plan with Hydrogen access reports a separate Hydrogen bucket in `RetrieveUserQuotaSummary`, Hydrogen needs its own pool as Argon has.
+Gemini 4 Hydrogen (`MODEL_PLACEHOLDER_M525` to `M528`, High, Medium, Low and XHigh) has its own model group so the model view shows it under its own name, but it counts against the Gemini pool. Plans without access list it as a single disabled `Gemini 4 Hydrogen` model (`MODEL_PLACEHOLDER_M529`) with an empty quota, which is skipped like the disabled Argon model. Pro plans with Hydrogen access report no separate Hydrogen bucket in `RetrieveUserQuotaSummary`: the only buckets are `gemini-weekly`, `gemini-5h`, `3p-weekly`, `3p-5h` and `gemini-argon-wtu-weekly`, so Hydrogen stays in the Gemini pool.
+
+Gemini 4 Carbon (`MODEL_PLACEHOLDER_M670`) is listed as disabled on both Free and Pro plans, so it is skipped and has no entry in `quota_strategy.json`.
 
 Orchestrator (Argon) (`MODEL_PLACEHOLDER_M668`) belongs to the Argon group and pool. Gemini 3.8 Flash (`MODEL_PLACEHOLDER_M318` to `M320`) belongs to the Flash group, and Claude Opus 5.5 and Claude Sonnet 5.5 (`MODEL_PLACEHOLDER_M400` to `M405`) to the Claude group.
 
