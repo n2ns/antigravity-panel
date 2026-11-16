@@ -182,6 +182,13 @@ suite('Webview Footer Test Suite', () => {
             const cliFooter = footerMarkup('cli');
             assert.ok(!cliFooter.includes('codicon-sync') && !cliFooter.includes('codicon-refresh'), 'Other editors hide Restart and Reset');
             assert.ok(cliFooter.includes('codicon-window'), 'Reload stays available');
+            // browserAllowlist.txt is read by the Antigravity IDE browser, not by the agy CLI
+            assert.ok(ideFooter.includes('codicon-globe'), 'Antigravity shows Allowlist');
+            assert.ok(!cliFooter.includes('codicon-globe'), 'Other editors hide Allowlist');
+            assert.ok(cliFooter.includes('codicon-symbol-ruler') && cliFooter.includes('codicon-plug'), 'Rules and MCP stay available');
+            const buttonRows = (markup: string) => markup.split('action-row action-buttons').length - 1;
+            assert.strictEqual(buttonRows(ideFooter), 2, 'Antigravity keeps the tool row and the recovery row');
+            assert.strictEqual(buttonRows(cliFooter), 1, 'Other editors put Rules, MCP and Reload in one row');
 
             // Auto-Accept works only through Antigravity commands and its Agent panel. Its row is also the
             // collapse header, so without it the footer must stay expanded even if it was saved collapsed.

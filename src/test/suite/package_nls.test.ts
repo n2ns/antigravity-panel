@@ -94,3 +94,15 @@ suite('Package NLS Alignment Test Suite', () => {
         });
     });
 });
+
+suite('Package Manifest Command Palette Test Suite', () => {
+    test('Antigravity-only commands are hidden from the command palette outside Antigravity', () => {
+        const projectRoot = path.resolve(__dirname, '../../../');
+        const manifest = JSON.parse(fs.readFileSync(path.join(projectRoot, 'package.json'), 'utf8'));
+        const palette: Array<{ command: string; when?: string }> = manifest.contributes.menus?.commandPalette ?? [];
+        for (const command of ['tfa.restartLanguageServer', 'tfa.restartUserStatusUpdater', 'tfa.toggleAutoAccept']) {
+            const entry = palette.find(item => item.command === command);
+            assert.strictEqual(entry?.when, 'tfa.antigravity', `${command} must be shown only when tfa.antigravity is set`);
+        }
+    });
+});

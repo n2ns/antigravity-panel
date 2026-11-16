@@ -165,6 +165,20 @@
       }
     ],
     "menus": {
+      "commandPalette": [
+        {
+          "command": "tfa.restartLanguageServer",
+          "when": "tfa.antigravity"
+        },
+        {
+          "command": "tfa.restartUserStatusUpdater",
+          "when": "tfa.antigravity"
+        },
+        {
+          "command": "tfa.toggleAutoAccept",
+          "when": "tfa.antigravity"
+        }
+      ],
       "view/title": [
         {
           "command": "tfa.refreshQuota",

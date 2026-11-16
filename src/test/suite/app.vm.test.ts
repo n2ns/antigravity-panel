@@ -126,6 +126,28 @@ suite('AppViewModel Test Suite', () => {
         }
     });
 
+    test('should never run Auto-Accept outside Antigravity, whatever the setting says', async () => {
+        vm.dispose();
+        const calls: string[] = [];
+        const automation: IAutomationService = {
+            ...defaultMockAutomationService,
+            start: () => { calls.push('start'); },
+            stop: () => { calls.push('stop'); }
+        };
+        configReader.set('system.autoAccept', true);
+        vm = new AppViewModel(mockQuota, mockCache, mockStorage, configManager, strategyManager, automation, defaultMockContextService, 'cli');
+        assert.deepStrictEqual(calls, [], 'not started at startup');
+        assert.strictEqual(vm.getSidebarData().autoAcceptEnabled, false);
+
+        configReader.set('system.autoAccept', false);
+        await vm.onConfigurationChanged();
+        configReader.set('system.autoAccept', true);
+        await vm.onConfigurationChanged();
+        await vm.toggleAutoAccept();
+        assert.deepStrictEqual(calls, [], 'setting changes and the toggle command do nothing');
+        assert.strictEqual(vm.getSidebarData().autoAcceptEnabled, false);
+    });
+
     test('auto-accept terminal setting should reach the automation service at startup and on change', async () => {
         vm.dispose();
         const terminalCalls: boolean[] = [];

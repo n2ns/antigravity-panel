@@ -56,7 +56,7 @@
 ### Connection and Automatic Reconnection
 - The local Antigravity Language Server is found automatically
 - Without the Antigravity IDE backend (for example in VS Code), the panel connects to a standalone `agy` CLI session started from an integrated terminal: the extension passes its own access token to new terminals, so terminals opened before the extension was installed or updated, and `agy` sessions already running, need to be restarted
-- Outside Antigravity IDE, the connection hints (including "Connecting to agy CLI...") and the sign-in error point to the `agy` CLI instead of the IDE, and the **Restart** and **Reset** buttons and the **Auto-Accept** toggle, which only work inside Antigravity, are hidden
+- Outside Antigravity IDE, the connection hints (including "Connecting to agy CLI...") and the sign-in error point to the `agy` CLI instead of the IDE, and the **Restart**, **Reset** and **Allowlist** buttons, the **Auto-Accept** toggle and the matching commands, which only work inside Antigravity, are hidden
 - When the connection is lost, after **Restart Agent Service**, or after a failed manual refresh, the panel reconnects by itself: a few quick retries first, then retries in the background at growing intervals
 - If the server rejects the request because you are not signed in, the panel tells you so instead of reconnecting
 - A temporary server error does not count as a lost connection
@@ -135,7 +135,7 @@ In Antigravity IDE the panel manages the IDE's own caches (`~/.gemini/antigravit
 The **Rules**, **MCP**, and **Allowlist** buttons in the sidebar footer open:
 - Edit Global Rules (opens the first existing of `~/.gemini/config/AGENTS.md`, legacy `~/.gemini/GEMINI.md`, cross-tool `~/.gemini/AGENTS.md`)
 - Configure MCP settings (`~/.gemini/config/mcp_config.json`)
-- Manage Browser Allowlist (`~/.gemini/config/browserAllowlist.txt`)
+- Manage Browser Allowlist (`~/.gemini/config/browserAllowlist.txt`); shown only in Antigravity IDE, whose browser reads this file
 - Open extension settings
 
 In WSL remote sessions the shortcuts follow where Antigravity actually reads each file: Rules and MCP config target the WSL-side `~/.gemini`, while the Browser Allowlist targets the Windows-side profile (the browser runs on the Windows host). If the counterpart side cannot be located, the shortcut falls back to the local path.
@@ -144,7 +144,7 @@ In WSL remote sessions the shortcuts follow where Antigravity actually reads eac
 
 ## 🤖 Auto-Accept (Hands-free Mode)
 
-Available in Antigravity IDE only; in other editors such as VS Code the toggle is hidden.
+Available in Antigravity IDE only; in other editors such as VS Code the toggle and the **Toggle Agent Auto-Accept** command are hidden, and `tfa.system.autoAccept` has no effect.
 
 > [!WARNING]
 > Auto-Accept is a trust-the-agent feature. Keep it off for untrusted or prompt-injection-prone tasks.
@@ -209,7 +209,7 @@ In a multi-root workspace the repository is taken from the folder of the active 
 
 ## 🔄 Service Recovery
 
-The **Restart**, **Reset**, and **Reload** buttons in the sidebar footer:
+The **Restart**, **Reset**, and **Reload** buttons in the sidebar footer (Restart and Reset, and their commands, are available in Antigravity IDE only):
 - **Restart**: restarts the background Language Server when the Agent is unresponsive (also the **Restart Agent Service** command)
 - **Reset**: resets the user status updater to fix stuck quota updates (also the **Reset Status** command)
 - **Reload**: reloads the IDE window to resolve UI glitches

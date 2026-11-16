@@ -90,7 +90,7 @@ export class AppViewModel implements vscode.Disposable {
         this._state = this.createEmptyState();
 
         // Sync initial state from config
-        const initialAutoAccept = this.configManager.get('system.autoAccept', false);
+        const initialAutoAccept = this.isAutoAcceptOn();
         const initialInterval = this.configManager.get('system.autoAcceptInterval', 800);
 
         this.automationService.updateInterval(initialInterval);
@@ -431,10 +431,17 @@ export class AppViewModel implements vscode.Disposable {
         this._onTreeChange.fire(this._state.tree);
     }
 
+    /** The Auto-Accept setting, which never applies outside Antigravity (agy CLI backend) */
+    private isAutoAcceptOn(): boolean {
+        return this.backend === 'ide' && this.configManager.get('system.autoAccept', false);
+    }
+
     /**
      * Toggle the auto-accept automation
      */
     async toggleAutoAccept(): Promise<void> {
+        // Auto-Accept acts on Antigravity commands and its Agent panel only
+        if (this.backend === 'cli') return;
         const newValue = !this._state.automation.enabled;
 
         // 1. Update Service
@@ -486,7 +493,7 @@ export class AppViewModel implements vscode.Disposable {
      */
     async onConfigurationChanged(): Promise<void> {
         // Handle auto-accept config change
-        const autoAccept = this.configManager.get('system.autoAccept', false);
+        const autoAccept = this.isAutoAcceptOn();
         const interval = this.configManager.get('system.autoAcceptInterval', 800);
 
         this.automationService.updateInterval(interval);

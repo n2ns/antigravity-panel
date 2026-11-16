@@ -117,11 +117,11 @@ Open Command Palette (`Ctrl+Shift+P` / `Cmd+Shift+P`) and search for:
 | `Antigravity Panel: Clean Cache` | Show a cleanup plan, then delete it after confirmation; the most recently active tasks are kept (use with caution!) |
 | `Antigravity Panel: Open Settings` | Open extension settings |
 | `Antigravity Panel: About` | View privacy and safety disclaimer |
-| `Antigravity Panel: Restart Agent Service` | Restart Antigravity Agent Service |
-| `Antigravity Panel: Reset Status` | Reset the status updater |
+| `Antigravity Panel: Restart Agent Service` | Restart Antigravity Agent Service (Antigravity IDE only) |
+| `Antigravity Panel: Reset Status` | Reset the status updater (Antigravity IDE only) |
 | `Antigravity Panel: Connectivity Diagnostics` | Run connectivity diagnostics |
 | `Antigravity Panel: Show Logs` | Open the Output panel log |
-| `Antigravity Panel: Toggle Agent Auto-Accept` | Enable/Disable Auto-Accept (Hands-free Mode) |
+| `Antigravity Panel: Toggle Agent Auto-Accept` | Enable/Disable Auto-Accept (Hands-free Mode; Antigravity IDE only) |
 | `Antigravity Panel: Generate Commit Message (Local & Claude)` | Generate commit message using Local LLM or Claude |
 | `Antigravity Panel: Set Anthropic API Key` | Configure Anthropic API Key |
 

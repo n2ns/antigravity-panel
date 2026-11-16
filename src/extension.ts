@@ -93,6 +93,8 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
 
   // Outside Antigravity (e.g. VS Code) the panel works with the agy CLI, so hints name the CLI
   const isAntigravity = isAntigravityApp(vscode.env.appName);
+  // Shows Antigravity-only commands (restart, reset, Auto-Accept) in the command palette
+  void vscode.commands.executeCommand("setContext", "tfa.antigravity", isAntigravity);
   const authFailedMessage = () => isAntigravity
     ? vscode.l10n.t("Please ensure you are logged into Antigravity IDE (Authentication failed).")
     : vscode.l10n.t("Please ensure you are signed in to the agy CLI (Authentication failed).");

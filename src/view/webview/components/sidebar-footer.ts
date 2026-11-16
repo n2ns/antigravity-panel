@@ -140,10 +140,19 @@ export class SidebarFooter extends LitElement {
   }
 
   protected render() {
-    // Outside Antigravity, Auto-Accept has nothing to act on (Antigravity commands and Agent panel).
-    // Its row is the collapse header, so without it the footer stays expanded.
+    // Outside Antigravity, Auto-Accept has nothing to act on (Antigravity commands and Agent panel), and
+    // browserAllowlist.txt is read by the Antigravity IDE browser, not by the agy CLI.
+    // The Auto-Accept row is the collapse header, so without it the footer stays expanded.
     const cli = this.backend === 'cli';
     const collapsed = !cli && this._isCollapsed;
+    // With Allowlist, Restart and Reset hidden, Reload joins Rules and MCP in a single row
+    const reloadButton = html`
+              <button class="action-btn primary" 
+                      @click=${() => this._postMessage('reloadWindow')} 
+                      data-tooltip="${this._t.reloadWindowTooltip || 'Reload the entire window'}">
+                <i class="codicon codicon-window"></i>
+                <span>Reload</span>
+              </button>`;
     return html`
       <!-- Main Action Card -->
       <div class="action-card ${collapsed ? 'collapsed' : ''}">
@@ -180,15 +189,17 @@ export class SidebarFooter extends LitElement {
                 <i class="codicon codicon-plug"></i>
                 <span>${this._t.mcp || 'MCP'}</span>
               </button>
+              ${cli ? reloadButton : html`
               <button class="action-btn primary" @click=${() => this._postMessage('openBrowserAllowlist')}>
                 <i class="codicon codicon-globe"></i>
                 <span>${this._t.allowlist || 'Allowlist'}</span>
               </button>
+              `}
             </div>
 
+            ${cli ? nothing : html`
             <!-- Recovery Actions -->
             <div class="action-row action-buttons">
-              ${this.backend === 'cli' ? nothing : html`
               <button class="action-btn primary" 
                       @click=${() => this._postMessage('restartLanguageServer')} 
                       data-tooltip="${this._t.restartServiceTooltip || 'Restart the background Agent language server'}">
@@ -201,14 +212,9 @@ export class SidebarFooter extends LitElement {
                 <i class="codicon codicon-refresh"></i>
                 <span>Reset</span>
               </button>
-              `}
-              <button class="action-btn primary" 
-                      @click=${() => this._postMessage('reloadWindow')} 
-                      data-tooltip="${this._t.reloadWindowTooltip || 'Reload the entire window'}">
-                <i class="codicon codicon-window"></i>
-                <span>Reload</span>
-              </button>
+              ${reloadButton}
             </div>
+            `}
           </div>
         </div>
       </div>
