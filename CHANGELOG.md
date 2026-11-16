@@ -1,5 +1,15 @@
 # Change Log
 
+## [Unreleased]
+
+### Added
+
+- **`agy` CLI Support**: Without the Antigravity IDE backend, for example in VS Code, the panel now connects to the Language Server of a standalone `agy` CLI session. The CLI writes no discovery file and keeps its access token in memory, so the extension injects its own token into integrated terminals (`ANTIGRAVITY_SERVER_CSRF_TOKEN`, read by `agy` at startup) and finds the CLI's PID and ports in its log. Start `agy` from a terminal opened after the extension was installed or updated. Outside Antigravity IDE, Brain and Code Tracker show and clean the CLI's caches in `~/.gemini/antigravity-cli`, the connection hints and the sign-in error point to the `agy` CLI instead of the IDE, and the Restart and Reset buttons, which run Antigravity-only commands, are hidden.
+
+### Fixed
+
+- **"Unknown" Failure Reason on Linux and macOS**: When no backend process was running, the `ps | grep` scan exited with code 1, which the panel logged as an unexpected error with a stack trace on every attempt. It then skipped the `app_data_dir` keyword scan and reported the failure reason as `unknown`. A scan without matches now counts as an empty result: the keyword scan still runs, and the panel reports `no_process`.
+
 ## [2.8.4] - 2026-11-15
 
 ### Added

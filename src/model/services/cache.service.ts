@@ -2,7 +2,8 @@
  * CacheService: Manages brain tasks and code contexts
  * 
  * Implements ICacheService interface for dependency injection.
- * Responsible for scanning and cleaning ~/.gemini/antigravity/brain/ and conversations/ directories.
+ * Responsible for scanning and cleaning the brain/ and conversations/ directories of
+ * ~/.gemini/antigravity-ide (Antigravity IDE) or ~/.gemini/antigravity-cli (agy CLI, other editors).
  */
 
 import * as fs from 'fs';

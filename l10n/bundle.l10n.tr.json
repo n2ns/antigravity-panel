@@ -55,6 +55,7 @@
     "Parsing Details": "Ayrıştırma Ayrıntıları",
     "Permanently delete {0} tasks and {1} conversation files ({2})? The {3} most recently active tasks will be kept.": "{0} görev ve {1} konuşma dosyası ({2}) kalıcı olarak silinsin mi? En son etkin olan {3} görev korunacak.",
     "Please ensure you are logged into Antigravity IDE (Authentication failed).": "Lütfen Antigravity IDE'ye giriş yaptığınızdan emin olun (Kimlik doğrulama başarısız).",
+    "Please ensure you are signed in to the agy CLI (Authentication failed).": "Lütfen agy CLI'ye giriş yaptığınızdan emin olun (Kimlik doğrulama başarısız).",
     "Process found but no listening port detected.": "İşlem bulundu ancak dinleme portu algılanmadı.",
     "Prompt": "Prompt",
     "Quota reset: {0} is back to {1}%.": "Kota sıfırlandı: {0} yeniden %{1} seviyesinde.",

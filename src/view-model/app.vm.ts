@@ -28,6 +28,7 @@ import type {
     TokenUsageViewState,
     UserViewState,
     ConnectionStatus,
+    BackendKind,
 } from './types';
 
 const ACTIVE_GROUP_THRESHOLD = 0.1;
@@ -83,7 +84,8 @@ export class AppViewModel implements vscode.Disposable {
         private readonly configManager: ConfigManager,
         private readonly strategyManager: QuotaStrategyManager,
         private readonly automationService: IAutomationService,
-        private readonly contextService: IContextService
+        private readonly contextService: IContextService,
+        private readonly backend: BackendKind = 'ide'
     ) {
         this._state = this.createEmptyState();
 
@@ -1424,6 +1426,7 @@ export class AppViewModel implements vscode.Disposable {
             contexts: this._state.tree.contexts,
             connectionStatus: this._state.connectionStatus,
             failureReason: this._state.failureReason,
+            backend: this.backend,
             autoAcceptEnabled: this._state.automation.enabled,
             autoAcceptStatus: this._state.automation.status,
             gaugeStyle: config["dashboard.gaugeStyle"],

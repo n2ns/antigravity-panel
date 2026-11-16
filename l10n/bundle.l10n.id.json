@@ -55,6 +55,7 @@
     "Parsing Details": "Detail Parsing",
     "Permanently delete {0} tasks and {1} conversation files ({2})? The {3} most recently active tasks will be kept.": "Hapus permanen {0} tugas dan {1} file percakapan ({2})? {3} tugas yang paling baru aktif akan tetap disimpan.",
     "Please ensure you are logged into Antigravity IDE (Authentication failed).": "Pastikan Anda sudah login ke Antigravity IDE (Autentikasi gagal).",
+    "Please ensure you are signed in to the agy CLI (Authentication failed).": "Pastikan Anda sudah login ke agy CLI (Autentikasi gagal).",
     "Process found but no listening port detected.": "Proses ditemukan tetapi port listening tidak terdeteksi.",
     "Prompt": "Prompt",
     "Quota reset: {0} is back to {1}%.": "Quota telah direset: {0} kembali ke {1}%.",

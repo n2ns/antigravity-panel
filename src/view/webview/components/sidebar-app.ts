@@ -103,6 +103,9 @@ export class SidebarApp extends LitElement {
   private _failureReason: 'no_process' | 'no_port' | 'auth_failed' | 'workspace_mismatch' | null = null;
 
   @state()
+  private _backend: 'ide' | 'cli' = 'ide';
+
+  @state()
   private _uiScale: number = 1.0;
 
 
@@ -262,6 +265,9 @@ export class SidebarApp extends LitElement {
     if (state.failureReason !== undefined) {
       this._failureReason = state.failureReason;
     }
+    if (state.backend !== undefined) {
+      this._backend = state.backend;
+    }
     if (state.uiScale !== undefined) {
       this._uiScale = state.uiScale;
       document.documentElement.style.setProperty('--antigravity-font-scale', this._uiScale.toString());
@@ -337,7 +343,11 @@ export class SidebarApp extends LitElement {
           <div class="connection-hint">
             <span class="codicon codicon-warning"></span>
             <span>
-              ${this._failureReason === 'no_process' ? html`
+              ${this._backend === 'cli' && (this._failureReason === 'no_process' || this._failureReason === 'workspace_mismatch') ? html`
+                No agy CLI session found. Start agy in a terminal opened in this window.
+              ` : this._backend === 'cli' && this._failureReason === 'auth_failed' ? html`
+                Authentication failed. Ensure you're signed in to the agy CLI.
+              ` : this._failureReason === 'no_process' ? html`
                 Antigravity IDE language server not running. Ensure Antigravity IDE is active.
               ` : this._failureReason === 'workspace_mismatch' ? html`
                 Wrong workspace detected. Reopen folder matching the Antigravity instance.
@@ -349,8 +359,8 @@ export class SidebarApp extends LitElement {
                 Local service not detected.
               `}
               Try 
-              <a @click=${() => this._vscode.postMessage({ type: 'runDiagnostics' })}>Run Diagnostics</a>, 
-              <a @click=${() => this._vscode.postMessage({ type: 'restartLanguageServer' })}>${window.__TRANSLATIONS__?.restartService || 'Restart Service'}</a>, or 
+              <a @click=${() => this._vscode.postMessage({ type: 'runDiagnostics' })}>Run Diagnostics</a>${this._backend === 'cli' ? ' or ' : html`,
+              <a @click=${() => this._vscode.postMessage({ type: 'restartLanguageServer' })}>${window.__TRANSLATIONS__?.restartService || 'Restart Service'}</a>, or `}
               <a @click=${() => this._vscode.postMessage({ type: 'reloadWindow' })}>${window.__TRANSLATIONS__?.reloadWindow || 'Reload Window'}</a>.
             </span>
           </div>
@@ -403,6 +413,7 @@ export class SidebarApp extends LitElement {
       <sidebar-footer 
         .autoAcceptEnabled=${this._autoAcceptEnabled}
         .autoAcceptStatus=${this._autoAcceptStatus}
+        .backend=${this._backend}
         style="flex-shrink: 0; position: relative; z-index: 10;"
       ></sidebar-footer>
 

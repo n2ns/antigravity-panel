@@ -164,6 +164,8 @@ export interface WebviewStateUpdate {
   contexts?: TreeSectionState;
   connectionStatus?: ConnectionStatus;
   failureReason?: 'no_process' | 'no_port' | 'auth_failed' | 'workspace_mismatch' | null;
+  /** 'cli' outside Antigravity: connection hints point to the agy CLI instead of the IDE */
+  backend?: 'ide' | 'cli';
   gaugeStyle?: string;
   showUserInfoCard?: boolean;
   showCreditsCard?: boolean;

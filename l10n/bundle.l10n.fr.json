@@ -55,6 +55,7 @@
     "Parsing Details": "Détails de l'analyse",
     "Permanently delete {0} tasks and {1} conversation files ({2})? The {3} most recently active tasks will be kept.": "Supprimer définitivement {0} tâches et {1} fichiers de conversation ({2}) ? Les {3} tâches les plus récemment actives seront conservées.",
     "Please ensure you are logged into Antigravity IDE (Authentication failed).": "Veuillez vous assurer que vous êtes connecté à Antigravity IDE (Échec de l'authentification).",
+    "Please ensure you are signed in to the agy CLI (Authentication failed).": "Veuillez vous assurer que vous êtes connecté à la CLI agy (Échec de l'authentification).",
     "Process found but no listening port detected.": "Processus trouvé mais aucun port d'écoute détecté.",
     "Prompt": "Prompt",
     "Quota reset: {0} is back to {1}%.": "Quota réinitialisé : {0} est revenu à {1}%.",

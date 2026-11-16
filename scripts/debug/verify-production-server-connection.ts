@@ -34,6 +34,8 @@ Module.prototype.require = function (id: string) {
 
 const { ProcessFinder } = require('../../src/shared/platform/process_finder') as
     typeof import('../../src/shared/platform/process_finder');
+const { AGY_CLI_CSRF_ENV } = require('../../src/shared/platform/cli_discovery') as
+    typeof import('../../src/shared/platform/cli_discovery');
 const { ConfigManager } = require('../../src/shared/config/config_manager') as
     typeof import('../../src/shared/config/config_manager');
 const { QuotaService } = require('../../src/model/services/quota.service') as
@@ -73,7 +75,11 @@ async function main(): Promise<void> {
     initLogger({ subscriptions: [] } as never);
     setDebugMode(true);
 
-    const processFinder = new ProcessFinder();
+    // Run from an integrated terminal, the token injected by the extension also reaches an agy CLI
+    // started in such a terminal, so the CLI path is checked the same way the extension does it.
+    const cliCsrfToken = process.env[AGY_CLI_CSRF_ENV];
+    console.log(`agy CLI token from ${AGY_CLI_CSRF_ENV}: ${cliCsrfToken ? 'set' : 'not set (CLI path skipped)'}`);
+    const processFinder = new ProcessFinder({ cliCsrfToken });
     const serverInfo = await processFinder.detect({
         attempts: 3,
         baseDelay: 500,

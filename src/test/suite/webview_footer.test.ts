@@ -162,6 +162,26 @@ suite('Webview Footer Test Suite', () => {
             assert.match(textOf(connected), /CDP: connected/);
             assert.ok(!connected.some(item => item.strings.some(part => part.includes('aa-setup-btn'))));
             assert.match(textOf(renderStatus(true, { ...status, cdp: 'noPanel' })), /CDP: connected, but the Agent panel was not found/);
+
+            // Restart and Reset run antigravity.* commands, which exist only inside Antigravity.
+            const footerMarkup = (backend: 'ide' | 'cli') => collectTemplates(SidebarFooter.prototype.render.call({
+                autoAcceptEnabled: false,
+                autoAcceptStatus: null,
+                backend,
+                _renderAutoAcceptStatus: SidebarFooter.prototype._renderAutoAcceptStatus,
+                _isCollapsed: false,
+                _t: {},
+                _vscode: vscodeApi,
+                _toggleAutoAccept: SidebarFooter.prototype._toggleAutoAccept,
+                _toggleCollapse: () => undefined,
+                _postMessage: () => undefined,
+                _openUrl: () => undefined
+            })).flatMap(item => item.strings).join('');
+            const ideFooter = footerMarkup('ide');
+            assert.ok(ideFooter.includes('codicon-sync') && ideFooter.includes('codicon-refresh'), 'Antigravity shows Restart and Reset');
+            const cliFooter = footerMarkup('cli');
+            assert.ok(!cliFooter.includes('codicon-sync') && !cliFooter.includes('codicon-refresh'), 'Other editors hide Restart and Reset');
+            assert.ok(cliFooter.includes('codicon-window'), 'Reload stays available');
         } finally {
             if (originalWindow) Object.defineProperty(globalThis, 'window', originalWindow);
             else delete (globalThis as { window?: unknown }).window;

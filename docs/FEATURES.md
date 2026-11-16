@@ -55,6 +55,8 @@
 
 ### Connection and Automatic Reconnection
 - The local Antigravity Language Server is found automatically
+- Without the Antigravity IDE backend (for example in VS Code), the panel connects to a standalone `agy` CLI session started from an integrated terminal: the extension passes its own access token to new terminals, so terminals opened before the extension was installed or updated, and `agy` sessions already running, need to be restarted
+- Outside Antigravity IDE, connection hints and the sign-in error point to the `agy` CLI instead of the IDE, and the **Restart** and **Reset** buttons, which only work inside Antigravity, are hidden
 - When the connection is lost, after **Restart Agent Service**, or after a failed manual refresh, the panel reconnects by itself: a few quick retries first, then retries in the background at growing intervals
 - If the server rejects the request because you are not signed in, the panel tells you so instead of reconnecting
 - A temporary server error does not count as a lost connection
@@ -77,6 +79,8 @@
 ---
 
 ## 🗂️ Cache Management
+
+In Antigravity IDE the panel manages the IDE's own caches (`~/.gemini/antigravity-ide`); in other editors such as VS Code it manages the caches of the `agy` CLI (`~/.gemini/antigravity-cli`).
 
 ### Brain Tasks Management
 - Browse AI conversation caches with folder tree view

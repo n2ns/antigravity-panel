@@ -6,6 +6,7 @@ import {
     getGeminiBaseDir,
     getBrainDir,
     getConversationsDir,
+    getCacheBaseDir,
     getMcpConfigPath,
     getBrowserAllowlistPath
 } from '../../shared/utils/paths';
@@ -17,6 +18,13 @@ suite('Paths Utils Test Suite', () => {
         const result = getGeminiRootDir();
         const expected = path.join(homeDir, '.gemini');
         assert.strictEqual(result, expected);
+    });
+
+    test('getCacheBaseDir uses the IDE caches in Antigravity and the agy CLI caches elsewhere', () => {
+        assert.strictEqual(getCacheBaseDir('Antigravity IDE'), path.join(homeDir, '.gemini', 'antigravity-ide'));
+        assert.strictEqual(getCacheBaseDir('Antigravity'), path.join(homeDir, '.gemini', 'antigravity-ide'));
+        assert.strictEqual(getCacheBaseDir('Visual Studio Code'), path.join(homeDir, '.gemini', 'antigravity-cli'));
+        assert.strictEqual(getBrainDir(getCacheBaseDir('Visual Studio Code')), path.join(homeDir, '.gemini', 'antigravity-cli', 'brain'));
     });
 
     test('getGeminiBaseDir should return ~/.gemini/antigravity-ide', () => {

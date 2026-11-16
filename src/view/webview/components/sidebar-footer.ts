@@ -21,6 +21,10 @@ export class SidebarFooter extends LitElement {
   @property({ attribute: false })
   autoAcceptStatus: AutoAcceptStatus | null = null;
 
+  /** 'cli' outside Antigravity: Restart and Reset run antigravity.* commands that do not exist there */
+  @property({ attribute: false })
+  backend: 'ide' | 'cli' = 'ide';
+
   @state()
   private _isCollapsed = false;
 
@@ -178,6 +182,7 @@ export class SidebarFooter extends LitElement {
 
             <!-- Recovery Actions -->
             <div class="action-row action-buttons">
+              ${this.backend === 'cli' ? nothing : html`
               <button class="action-btn primary" 
                       @click=${() => this._postMessage('restartLanguageServer')} 
                       data-tooltip="${this._t.restartServiceTooltip || 'Restart the background Agent language server'}">
@@ -190,6 +195,7 @@ export class SidebarFooter extends LitElement {
                 <i class="codicon codicon-refresh"></i>
                 <span>Reset</span>
               </button>
+              `}
               <button class="action-btn primary" 
                       @click=${() => this._postMessage('reloadWindow')} 
                       data-tooltip="${this._t.reloadWindowTooltip || 'Reload the entire window'}">

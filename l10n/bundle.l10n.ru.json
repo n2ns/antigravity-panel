@@ -55,6 +55,7 @@
     "Parsing Details": "Сведения о разборе",
     "Permanently delete {0} tasks and {1} conversation files ({2})? The {3} most recently active tasks will be kept.": "Безвозвратно удалить задачи ({0}) и файлы разговоров ({1}), всего {2}? Последние активные задачи (количество: {3}) будут сохранены.",
     "Please ensure you are logged into Antigravity IDE (Authentication failed).": "Убедитесь, что вы вошли в Antigravity IDE (Ошибка аутентификации).",
+    "Please ensure you are signed in to the agy CLI (Authentication failed).": "Убедитесь, что вы вошли в agy CLI (Ошибка аутентификации).",
     "Process found but no listening port detected.": "Процесс найден, но порт прослушивания не обнаружен.",
     "Prompt": "Prompt",
     "Quota reset: {0} is back to {1}%.": "Квота сброшена: {0} восстановлена до {1}%.",

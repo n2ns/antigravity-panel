@@ -300,3 +300,37 @@ suite("ProcessFinder WSL host IP", () => {
     assert.deepStrictEqual(result, { port: 4321, csrfToken: "token" });
   });
 });
+
+suite("ProcessFinder with no matching process on Unix", () => {
+  const originalPlatform = Object.getOwnPropertyDescriptor(process, "platform")!;
+
+  /** Every scan behaves like `ps | grep` without a match: grep exits 1 with empty stdout */
+  class NoMatchFinder extends ProcessFinder {
+    public commands: string[] = [];
+    protected async execute(command: string): Promise<{ stdout: string; stderr: string }> {
+      this.commands.push(command);
+      throw Object.assign(new Error(`Command failed: ${command}`), {
+        code: 1,
+        stdout: "",
+        stderr: "your 131072x1 screen size is bogus. expect trouble\n",
+      });
+    }
+  }
+
+  setup(() => {
+    Object.defineProperty(process, "platform", { value: "linux" });
+  });
+
+  teardown(() => {
+    Object.defineProperty(process, "platform", originalPlatform);
+  });
+
+  test("runs the keyword scan and reports no_process instead of an unexpected error", async () => {
+    const finder = new NoMatchFinder();
+    const result = await (finder as unknown as { tryDetect(): Promise<unknown> }).tryDetect();
+
+    assert.strictEqual(result, null);
+    assert.strictEqual(finder.failureReason, "no_process");
+    assert.ok(finder.commands.some((c) => c.includes('grep "app_data_dir"')), "keyword scan ran");
+  });
+});

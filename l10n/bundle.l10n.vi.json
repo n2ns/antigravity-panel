@@ -55,6 +55,7 @@
     "Parsing Details": "Chi tiết phân tích",
     "Permanently delete {0} tasks and {1} conversation files ({2})? The {3} most recently active tasks will be kept.": "Xóa vĩnh viễn {0} tác vụ và {1} tệp hội thoại ({2})? {3} tác vụ hoạt động gần đây nhất sẽ được giữ lại.",
     "Please ensure you are logged into Antigravity IDE (Authentication failed).": "Vui lòng đảm bảo bạn đã đăng nhập vào Antigravity IDE (Xác thực thất bại).",
+    "Please ensure you are signed in to the agy CLI (Authentication failed).": "Vui lòng đảm bảo bạn đã đăng nhập vào agy CLI (Xác thực thất bại).",
     "Process found but no listening port detected.": "Tìm thấy tiến trình nhưng không phát hiện được cổng lắng nghe.",
     "Prompt": "Prompt",
     "Quota reset: {0} is back to {1}%.": "Quota đã được đặt lại: {0} đã trở về {1}%.",

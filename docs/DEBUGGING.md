@@ -53,6 +53,8 @@ npm run debug:server
 
 This command compiles the TypeScript debug entry with `tsconfig.debug.json`, then exercises the same production `ProcessFinder`, protocol fallback, `QuotaService`, parser, and logger used by the extension and prints the complete parsed snapshot. It is the preferred check after changing connection or parsing code.
 
+When `ANTIGRAVITY_SERVER_CSRF_TOKEN` is set, the script also tries a standalone `agy` CLI with that token after the IDE backend, as the extension does. Run it from an integrated terminal of the IDE or VS Code where the extension is active, so it gets the token the extension injects, while an `agy` session started from such a terminal is running.
+
 Use `debug:quota` when you need an independent raw endpoint check. Use `debug:server` when you need to verify the extension's production code path.
 
 ### 2.4 Inspect the native Windows process tree

@@ -55,6 +55,7 @@
     "Parsing Details": "解析の詳細",
     "Permanently delete {0} tasks and {1} conversation files ({2})? The {3} most recently active tasks will be kept.": "{0} 件のタスクと {1} 件の会話ファイル（{2}）を完全に削除しますか？最近アクティブな {3} 件のタスクは保持されます。",
     "Please ensure you are logged into Antigravity IDE (Authentication failed).": "Antigravity IDE にログインしていることを確認してください（認証失敗）。",
+    "Please ensure you are signed in to the agy CLI (Authentication failed).": "agy CLI にログインしていることを確認してください（認証失敗）。",
     "Process found but no listening port detected.": "プロセスは見つかりましたが、リスニングポートが検出されませんでした。",
     "Prompt": "Prompt",
     "Quota reset: {0} is back to {1}%.": "クォータがリセットされました：{0} は {1}% に回復しました。",

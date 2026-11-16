@@ -55,6 +55,7 @@
     "Parsing Details": "Szczegóły analizy",
     "Permanently delete {0} tasks and {1} conversation files ({2})? The {3} most recently active tasks will be kept.": "Trwale usunąć zadania ({0}) i pliki rozmów ({1}), łącznie {2}? Zachowane zostaną ostatnio aktywne zadania (liczba: {3}).",
     "Please ensure you are logged into Antigravity IDE (Authentication failed).": "Upewnij się, że jesteś zalogowany do Antigravity IDE (Błąd uwierzytelniania).",
+    "Please ensure you are signed in to the agy CLI (Authentication failed).": "Upewnij się, że jesteś zalogowany do agy CLI (Błąd uwierzytelniania).",
     "Process found but no listening port detected.": "Znaleziono proces, ale nie wykryto portu nasłuchiwania.",
     "Prompt": "Prompt",
     "Quota reset: {0} is back to {1}%.": "Limit zresetowany: {0} wrócił do {1}%.",
