@@ -1,6 +1,6 @@
 # Change Log
 
-## [Unreleased]
+## [2.8.5] - 2026-11-16
 
 ### Added
 
