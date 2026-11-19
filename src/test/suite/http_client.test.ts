@@ -78,7 +78,7 @@ function close(server: http.Server | https.Server | undefined): Promise<void> {
 
 suite('HttpClient Test Suite', function () {
     // Increase timeout for possible real network connections
-    this.timeout(10000);
+    this.timeout(30000);
 
     setup(() => {
         // Clear protocol cache before each test
@@ -224,9 +224,17 @@ suite('HttpClient Test Suite', function () {
         }
     });
 
+    let liveServerPromise: Promise<{ port: number; csrfToken: string } | null> | undefined;
+    function getLiveServerInfo(): Promise<{ port: number; csrfToken: string } | null> {
+        if (!liveServerPromise) {
+            const processFinder = new ProcessFinder();
+            liveServerPromise = processFinder.detect({ attempts: 1, skipAmbientDiscovery: true });
+        }
+        return liveServerPromise;
+    }
+
     test('should connect to real local server if running', async function (this: Mocha.Context) {
-        const processFinder = new ProcessFinder();
-        const serverInfo = await processFinder.detect({ attempts: 2 });
+        const serverInfo = await getLiveServerInfo();
         if (!serverInfo) {
             console.warn('    ⚠️ Real Language Server not found. Skipping live HttpClient tests.');
             return this.skip();
@@ -260,8 +268,7 @@ suite('HttpClient Test Suite', function () {
     });
 
     test('testPort should verify real local server if running', async function (this: Mocha.Context) {
-        const processFinder = new ProcessFinder();
-        const serverInfo = await processFinder.detect({ attempts: 2 });
+        const serverInfo = await getLiveServerInfo();
         if (!serverInfo) {
             console.warn('    ⚠️ Real Language Server not found. Skipping live testPort tests.');
             return this.skip();
