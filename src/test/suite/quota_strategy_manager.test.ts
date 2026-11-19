@@ -312,4 +312,24 @@ suite('QuotaStrategyManager Test Suite', () => {
         assert.strictEqual(manager.getModelDisplayName('MODEL_PLACEHOLDER_M400'), 'Claude Opus 5.5 (Low)');
         assert.strictEqual(manager.getModelDisplayName('MODEL_PLACEHOLDER_M405'), 'Claude Sonnet 5.5 (High)');
     });
+
+    test('should route Gemini 4 Neon and Orchestrator (Neon) to gemini-neon and the gemini pool', () => {
+        const cases: [string, string][] = [
+            ['MODEL_PLACEHOLDER_M532', 'Gemini 4 Neon (High)'],
+            ['MODEL_PLACEHOLDER_M533', 'Gemini 4 Neon (Medium)'],
+            ['MODEL_PLACEHOLDER_M534', 'Gemini 4 Neon (Low)'],
+            ['MODEL_PLACEHOLDER_M535', 'Gemini 4 Neon (XHigh)'],
+            ['MODEL_PLACEHOLDER_M537', 'Orchestrator (Neon)'],
+        ];
+        for (const [id, expectedName] of cases) {
+            const group = manager.getGroupForModel(id, expectedName);
+            assert.strictEqual(group.id, 'gemini-neon', `${id} group`);
+            assert.strictEqual(group.quotaPoolId, 'gemini', `${id} pool`);
+            assert.strictEqual(manager.getModelDisplayName(id, expectedName), expectedName, `${id} displayName`);
+        }
+
+        const byLabelOnly = manager.getGroupForModel('MODEL_PLACEHOLDER_M999', 'Orchestrator (Neon)');
+        assert.strictEqual(byLabelOnly.id, 'gemini-neon');
+        assert.strictEqual(byLabelOnly.quotaPoolId, 'gemini');
+    });
 });

@@ -116,6 +116,45 @@
             ]
         },
         {
+            "id": "gemini-neon",
+            "quotaPoolId": "gemini",
+            "label": "Gemini 4 Neon",
+            "shortLabel": "Neon",
+            "themeColor": "#69F0AE",
+            "prefixes": [
+                "gemini-4-neon",
+                "gemini 4 neon",
+                "neon"
+            ],
+            "models": [
+                {
+                    "id": "gemini-4-neon-high",
+                    "modelName": "MODEL_PLACEHOLDER_M532",
+                    "displayName": "Gemini 4 Neon (High)"
+                },
+                {
+                    "id": "gemini-4-neon-medium",
+                    "modelName": "MODEL_PLACEHOLDER_M533",
+                    "displayName": "Gemini 4 Neon (Medium)"
+                },
+                {
+                    "id": "gemini-4-neon-low",
+                    "modelName": "MODEL_PLACEHOLDER_M534",
+                    "displayName": "Gemini 4 Neon (Low)"
+                },
+                {
+                    "id": "gemini-4-neon-xhigh",
+                    "modelName": "MODEL_PLACEHOLDER_M535",
+                    "displayName": "Gemini 4 Neon (XHigh)"
+                },
+                {
+                    "id": "orchestrator-neon",
+                    "modelName": "MODEL_PLACEHOLDER_M537",
+                    "displayName": "Orchestrator (Neon)"
+                }
+            ]
+        },
+        {
             "id": "gemini-argon",
             "quotaPoolId": "argon",
             "label": "Gemini 4 Argon",

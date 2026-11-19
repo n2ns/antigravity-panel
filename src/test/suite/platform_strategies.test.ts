@@ -7,6 +7,7 @@ import {
     defaultHubDiscoveryDeps,
     extractCliArgument,
     listAllHubDiscoveryEntries,
+    parseAntigravityProcess,
     parseHubDiscoveryJson,
     readHubDiscoveryForProcess,
 } from '../../shared/platform/detection_utils';
@@ -587,6 +588,29 @@ language 12345 user   11u  IPv4  12346      0t0  TCP 127.0.0.1:42101 (LISTEN)`;
             assert.strictEqual(entries[0].pid, process.pid);
             assert.strictEqual(entries[0].csrfToken, 'live-token');
             assert.strictEqual(entries[0].httpPort, 58111);
+        });
+
+        test('parseAntigravityProcess populates httpsPort from hub_<port>.json even when --csrf_token is on the CLI', () => {
+            writeHubFile('antigravity', 63374, {
+                pid: 4242,
+                httpPort: 63374,
+                httpsPort: 63376,
+                lsVersion: '2.33.0',
+                csrfToken: 'cli-or-daemon-token',
+            });
+
+            const parsed = parseAntigravityProcess(
+                'agy.exe --hub --hub-port=63374 --app_data_dir=antigravity --csrf_token=cli-token',
+                4242,
+                1000,
+                diskDeps,
+            );
+
+            assert.ok(parsed);
+            assert.strictEqual(parsed.pid, 4242);
+            assert.strictEqual(parsed.csrfToken, 'cli-token');
+            assert.strictEqual(parsed.httpsPort, 63376);
+            assert.strictEqual(parsed.extensionPort, 63374);
         });
     });
 });
