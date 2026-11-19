@@ -264,15 +264,18 @@ export function parseAntigravityProcess(
 
     const portMatch = commandLine.match(SERVER_PORT_PATTERN);
     let csrfToken = extractCliArgument(commandLine, "csrf_token");
+    const hub = readHubDiscoveryForProcess(commandLine, pid, deps);
     let httpsPort: number | undefined;
     let hubHttpPort: number | undefined;
 
     if (!csrfToken) {
-        const hub = readHubDiscoveryForProcess(commandLine, pid, deps);
         if (!hub) {
             return null;
         }
         csrfToken = hub.csrfToken;
+    }
+
+    if (hub) {
         httpsPort = hub.httpsPort;
         hubHttpPort = hub.httpPort;
     }

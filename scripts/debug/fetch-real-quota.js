@@ -189,7 +189,7 @@ async function main() {
     const resolved = processes
         .map(item => {
             const cmdToken = extractArgument(item.commandLine, 'csrf_token');
-            const hubInfo = !cmdToken ? readHubDiscovery(item.commandLine, item.pid) : null;
+            const hubInfo = readHubDiscovery(item.commandLine, item.pid);
             return {
                 processInfo: item,
                 csrfToken: cmdToken || (hubInfo ? hubInfo.csrfToken : null),

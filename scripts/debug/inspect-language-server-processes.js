@@ -17,7 +17,7 @@ function printProcess(processInfo, index) {
     const commandLine = processInfo.commandLine;
     const apiToken = extractArgument(commandLine, 'csrf_token');
     const extensionToken = extractArgument(commandLine, 'extension_server_csrf_token');
-    const hubInfo = !apiToken ? readHubDiscovery(commandLine, processInfo.pid) : null;
+    const hubInfo = readHubDiscovery(commandLine, processInfo.pid);
     const fields = [
         ['workspace_id', extractArgument(commandLine, 'workspace_id')],
         ['add-dir', extractArgument(commandLine, 'add-dir')],
