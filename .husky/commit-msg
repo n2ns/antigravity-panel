@@ -1,5 +1,0 @@
-#!/usr/bin/env sh
-# This repo sets core.hooksPath, so git skips the user's global hooks; run the global commit-msg check (AI attribution lines) when the machine has one.
-global=$(git config --global --type=path --get core.hooksPath)
-[ -n "$global" ] && [ -x "$global/commit-msg" ] || exit 0
-exec "$global/commit-msg" "$@"
