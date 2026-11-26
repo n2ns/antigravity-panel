@@ -9,14 +9,6 @@
             "fiveHourBucketId": "gemini-5h"
         },
         {
-            "id": "argon",
-            "label": "Argon",
-            "shortLabel": "Argon",
-            "themeColor": "#B388FF",
-            "weeklyBucketId": "gemini-argon-wtu-weekly",
-            "hideWhenEmpty": true
-        },
-        {
             "id": "non-google",
             "label": "Claude",
             "shortLabel": "Claude",
@@ -116,14 +108,88 @@
             ]
         },
         {
+            "id": "gemini-neon",
+            "quotaPoolId": "gemini",
+            "label": "Gemini 4 Neon",
+            "shortLabel": "Neon",
+            "themeColor": "#69F0AE",
+            "prefixes": [
+                "gemini-4-neon",
+                "gemini 4 neon",
+                "neon"
+            ],
+            "models": [
+                {
+                    "id": "gemini-4-neon-high",
+                    "modelName": "MODEL_PLACEHOLDER_M532",
+                    "displayName": "Gemini 4 Neon (High)"
+                },
+                {
+                    "id": "gemini-4-neon-medium",
+                    "modelName": "MODEL_PLACEHOLDER_M533",
+                    "displayName": "Gemini 4 Neon (Medium)"
+                },
+                {
+                    "id": "gemini-4-neon-low",
+                    "modelName": "MODEL_PLACEHOLDER_M534",
+                    "displayName": "Gemini 4 Neon (Low)"
+                },
+                {
+                    "id": "gemini-4-neon-xhigh",
+                    "modelName": "MODEL_PLACEHOLDER_M535",
+                    "displayName": "Gemini 4 Neon (XHigh)"
+                },
+                {
+                    "id": "orchestrator-neon",
+                    "modelName": "MODEL_PLACEHOLDER_M537",
+                    "displayName": "Orchestrator (Neon)"
+                }
+            ]
+        },
+        {
+            "id": "gemini-carbon",
+            "quotaPoolId": "gemini",
+            "label": "Gemini 4 Carbon",
+            "shortLabel": "Carbon",
+            "themeColor": "#69F0AE",
+            "prefixes": [
+                "gemini-4-carbon",
+                "gemini 4 carbon",
+                "carbon"
+            ],
+            "models": [
+                {
+                    "id": "gemini-4-carbon-high",
+                    "modelName": "MODEL_PLACEHOLDER_M427",
+                    "displayName": "Gemini 4 Carbon (High)"
+                },
+                {
+                    "id": "gemini-4-carbon-medium",
+                    "modelName": "MODEL_PLACEHOLDER_M437",
+                    "displayName": "Gemini 4 Carbon (Medium)"
+                },
+                {
+                    "id": "gemini-4-carbon-low",
+                    "modelName": "MODEL_PLACEHOLDER_M438",
+                    "displayName": "Gemini 4 Carbon (Low)"
+                },
+                {
+                    "id": "orchestrator-carbon",
+                    "modelName": "MODEL_PLACEHOLDER_M667",
+                    "displayName": "Orchestrator (Carbon)"
+                }
+            ]
+        },
+        {
             "id": "gemini-argon",
-            "quotaPoolId": "argon",
+            "quotaPoolId": "gemini",
             "label": "Gemini 4 Argon",
             "shortLabel": "Argon",
             "themeColor": "#B388FF",
             "prefixes": [
                 "gemini-4-argon",
-                "gemini 4 argon"
+                "gemini 4 argon",
+                "orchestrator (argon)"
             ],
             "models": [
                 {
@@ -143,6 +209,11 @@
                 },
                 {
                     "id": "orchestrator-argon",
+                    "modelName": "MODEL_PLACEHOLDER_M681",
+                    "displayName": "Orchestrator (Argon)"
+                },
+                {
+                    "id": "orchestrator-argon-legacy",
                     "modelName": "MODEL_PLACEHOLDER_M668",
                     "displayName": "Orchestrator (Argon)"
                 }

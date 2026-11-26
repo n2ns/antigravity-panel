@@ -26,29 +26,29 @@ suite('QuotaStrategyManager Test Suite', () => {
 
     test('should map model groups to independently configurable quota pools', () => {
         const pools = manager.getQuotaPools();
-        assert.deepStrictEqual(pools.map(pool => pool.id), ['gemini', 'argon', 'non-google']);
+        assert.deepStrictEqual(pools.map(pool => pool.id), ['gemini', 'non-google']);
         assert.strictEqual(manager.getPoolIdForHistoryKey('gemini-flash'), 'gemini');
         assert.strictEqual(manager.getPoolIdForHistoryKey('gemini-pro'), 'gemini');
-        assert.strictEqual(manager.getPoolIdForHistoryKey('gemini-argon'), 'argon');
+        assert.strictEqual(manager.getPoolIdForHistoryKey('gemini-carbon'), 'gemini');
+        assert.strictEqual(manager.getPoolIdForHistoryKey('gemini-argon'), 'gemini');
         assert.strictEqual(manager.getPoolIdForHistoryKey('claude'), 'non-google');
         assert.strictEqual(manager.getPoolIdForHistoryKey('gpt'), 'non-google');
     });
 
     test('should map each quota pool to its weekly summary bucket', () => {
         const buckets = Object.fromEntries(manager.getQuotaPools().map(pool => [pool.id, pool.weeklyBucketId]));
-        assert.deepStrictEqual(buckets, { gemini: 'gemini-weekly', argon: 'gemini-argon-wtu-weekly', 'non-google': '3p-weekly' });
+        assert.deepStrictEqual(buckets, { gemini: 'gemini-weekly', 'non-google': '3p-weekly' });
     });
 
     test('should map quota pools to their 5-hour summary bucket', () => {
         const buckets = Object.fromEntries(manager.getQuotaPools().map(pool => [pool.id, pool.fiveHourBucketId]));
         assert.deepStrictEqual(buckets, {
             gemini: 'gemini-5h',
-            argon: undefined,
             'non-google': '3p-5h'
         });
     });
 
-    test('should route Gemini 4 Argon to its own pool despite the broader gemini prefix', () => {
+    test('should route Gemini 4 Argon to gemini-argon in the gemini pool despite the broader gemini prefix', () => {
         const cases: [string, string][] = [
             ['MODEL_PLACEHOLDER_M417', 'Gemini 4 Argon (High)'],
             ['MODEL_PLACEHOLDER_M418', 'Gemini 4 Argon (Medium)'],
@@ -57,7 +57,9 @@ suite('QuotaStrategyManager Test Suite', () => {
             ['gemini-4-argon-max', 'Unlisted']
         ];
         for (const [id, label] of cases) {
-            assert.strictEqual(manager.getGroupForModel(id, label).quotaPoolId, 'argon', `${id} / ${label}`);
+            const group = manager.getGroupForModel(id, label);
+            assert.strictEqual(group.id, 'gemini-argon', `${id} / ${label}`);
+            assert.strictEqual(group.quotaPoolId, 'gemini', `${id} / ${label}`);
         }
     });
 
@@ -293,11 +295,38 @@ suite('QuotaStrategyManager Test Suite', () => {
         }
     });
 
-    test('should route Orchestrator (Argon) to gemini-argon and the argon pool', () => {
-        const group = manager.getGroupForModel('MODEL_PLACEHOLDER_M668');
-        assert.strictEqual(group.id, 'gemini-argon');
-        assert.strictEqual(group.quotaPoolId, 'argon');
-        assert.strictEqual(manager.getModelDisplayName('MODEL_PLACEHOLDER_M668'), 'Orchestrator (Argon)');
+    test('should route Orchestrator (Argon) to gemini-argon and the gemini pool', () => {
+        for (const id of ['MODEL_PLACEHOLDER_M681', 'MODEL_PLACEHOLDER_M668']) {
+            const group = manager.getGroupForModel(id);
+            assert.strictEqual(group.id, 'gemini-argon', id);
+            assert.strictEqual(group.quotaPoolId, 'gemini', id);
+            assert.strictEqual(manager.getModelDisplayName(id), 'Orchestrator (Argon)', id);
+        }
+
+        const byLabelOnly = manager.getGroupForModel('MODEL_PLACEHOLDER_M999', 'Orchestrator (Argon)');
+        assert.strictEqual(byLabelOnly.id, 'gemini-argon');
+        assert.strictEqual(byLabelOnly.quotaPoolId, 'gemini');
+    });
+
+    test('should route Gemini 4 Carbon and Orchestrator (Carbon) to gemini-carbon and the gemini pool', () => {
+        const cases: [string, string][] = [
+            ['MODEL_PLACEHOLDER_M427', 'Gemini 4 Carbon (High)'],
+            ['MODEL_PLACEHOLDER_M437', 'Gemini 4 Carbon (Medium)'],
+            ['MODEL_PLACEHOLDER_M438', 'Gemini 4 Carbon (Low)'],
+            ['MODEL_PLACEHOLDER_M667', 'Orchestrator (Carbon)'],
+        ];
+        for (const [id, expectedName] of cases) {
+            const group = manager.getGroupForModel(id, expectedName);
+            assert.strictEqual(group.id, 'gemini-carbon', `${id} group`);
+            assert.strictEqual(group.quotaPoolId, 'gemini', `${id} pool`);
+            assert.notStrictEqual(group.id, 'other', `${id} must not fall back to other`);
+            assert.notStrictEqual(group.quotaPoolId, 'non-google', `${id} must not route to non-google`);
+            assert.strictEqual(manager.getModelDisplayName(id, expectedName), expectedName, `${id} displayName`);
+        }
+
+        const byLabelOnly = manager.getGroupForModel('MODEL_PLACEHOLDER_M999', 'Orchestrator (Carbon)');
+        assert.strictEqual(byLabelOnly.id, 'gemini-carbon');
+        assert.strictEqual(byLabelOnly.quotaPoolId, 'gemini');
     });
 
     test('should route Gemini 3.8 Flash and Claude 5.5 models to their respective pools', () => {
@@ -311,5 +340,25 @@ suite('QuotaStrategyManager Test Suite', () => {
         assert.strictEqual(opusGroup.quotaPoolId, 'non-google');
         assert.strictEqual(manager.getModelDisplayName('MODEL_PLACEHOLDER_M400'), 'Claude Opus 5.5 (Low)');
         assert.strictEqual(manager.getModelDisplayName('MODEL_PLACEHOLDER_M405'), 'Claude Sonnet 5.5 (High)');
+    });
+
+    test('should route Gemini 4 Neon and Orchestrator (Neon) to gemini-neon and the gemini pool', () => {
+        const cases: [string, string][] = [
+            ['MODEL_PLACEHOLDER_M532', 'Gemini 4 Neon (High)'],
+            ['MODEL_PLACEHOLDER_M533', 'Gemini 4 Neon (Medium)'],
+            ['MODEL_PLACEHOLDER_M534', 'Gemini 4 Neon (Low)'],
+            ['MODEL_PLACEHOLDER_M535', 'Gemini 4 Neon (XHigh)'],
+            ['MODEL_PLACEHOLDER_M537', 'Orchestrator (Neon)'],
+        ];
+        for (const [id, expectedName] of cases) {
+            const group = manager.getGroupForModel(id, expectedName);
+            assert.strictEqual(group.id, 'gemini-neon', `${id} group`);
+            assert.strictEqual(group.quotaPoolId, 'gemini', `${id} pool`);
+            assert.strictEqual(manager.getModelDisplayName(id, expectedName), expectedName, `${id} displayName`);
+        }
+
+        const byLabelOnly = manager.getGroupForModel('MODEL_PLACEHOLDER_M999', 'Orchestrator (Neon)');
+        assert.strictEqual(byLabelOnly.id, 'gemini-neon');
+        assert.strictEqual(byLabelOnly.quotaPoolId, 'gemini');
     });
 });

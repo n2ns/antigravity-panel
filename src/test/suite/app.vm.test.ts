@@ -418,7 +418,43 @@ suite('AppViewModel Test Suite', () => {
         assert.deepStrictEqual(vm.getStatusBarData().allGroups.map(group => group.id), ['gemini']);
     });
 
-    suite('Argon quota pool', () => {
+    suite('Optional hideWhenEmpty quota pool', () => {
+        let customVm: AppViewModel;
+
+        setup(() => {
+            const basePools = strategyManager.getQuotaPools();
+            const customStrategy = new QuotaStrategyManager({
+                quotaPools: [
+                    ...basePools.slice(0, 1),
+                    {
+                        id: 'argon',
+                        label: 'Argon',
+                        shortLabel: 'Argon',
+                        themeColor: '#B388FF',
+                        weeklyBucketId: 'gemini-argon-wtu-weekly',
+                        hideWhenEmpty: true
+                    },
+                    ...basePools.slice(1)
+                ],
+                groups: strategyManager.getGroups().map(group =>
+                    group.id === 'gemini-argon' ? { ...group, quotaPoolId: 'argon' } : group
+                )
+            });
+            customVm = new AppViewModel(
+                mockQuota,
+                mockCache,
+                mockStorage,
+                configManager,
+                customStrategy,
+                defaultMockAutomationService,
+                defaultMockContextService
+            );
+        });
+
+        teardown(() => {
+            if (customVm) customVm.dispose();
+        });
+
         const argonModel = {
             modelId: 'MODEL_PLACEHOLDER_M417',
             label: 'Gemini 4 Argon (High)',
@@ -436,7 +472,7 @@ suite('AppViewModel Test Suite', () => {
             timeUntilReset: '5h'
         };
 
-        test('should keep an exhausted Argon quota out of the Gemini pool and show its weekly limit', async () => {
+        test('should keep an exhausted hideWhenEmpty pool out of the Gemini pool and show its weekly limit', async () => {
             mockQuota.fetchQuota = async () => ({
                 timestamp: new Date(),
                 models: [geminiModel, argonModel],
@@ -447,9 +483,9 @@ suite('AppViewModel Test Suite', () => {
                 }]
             });
 
-            await vm.refreshQuota();
+            await customVm.refreshQuota();
 
-            const { groups, displayItems } = vm.getState().quota;
+            const { groups, displayItems } = customVm.getState().quota;
             assert.strictEqual(groups.find(g => g.id === 'gemini')?.remaining, 80);
             const argon = groups.find(g => g.id === 'argon');
             assert.strictEqual(argon?.hasData, true);
@@ -458,15 +494,15 @@ suite('AppViewModel Test Suite', () => {
             assert.ok(displayItems.some(item => item.label === 'Argon'));
         });
 
-        test('should not show an empty Argon gauge on plans without access', async () => {
-            const emptyLabels = vm.getState().quota.displayItems.map(item => item.label);
+        test('should not show an empty gauge for a hideWhenEmpty pool when absent', async () => {
+            const emptyLabels = customVm.getState().quota.displayItems.map(item => item.label);
             assert.ok(!emptyLabels.includes('Argon'), 'no gauge before the first fetch');
 
             mockQuota.fetchQuota = async () => ({ timestamp: new Date(), models: [geminiModel] });
 
-            await vm.refreshQuota();
+            await customVm.refreshQuota();
 
-            const labels = vm.getState().quota.displayItems.map(item => item.label);
+            const labels = customVm.getState().quota.displayItems.map(item => item.label);
             assert.ok(!labels.includes('Argon'));
             assert.ok(labels.includes('Claude'), 'other pools keep their empty gauge');
         });
@@ -1452,7 +1488,6 @@ suite('AppViewModel Test Suite', () => {
             queriedGroups.push(groupId);
             assert.strictEqual(days, 14);
             assert.strictEqual(maxSampleGapMs, 10 * 60 * 1000);
-            if (groupId === 'argon') return [];
             return dayStarts.map((dayStart, index) => ({
                 dayStart,
                 usage: index < 7 ? 1 : 2,
@@ -1462,7 +1497,7 @@ suite('AppViewModel Test Suite', () => {
 
         const weekly = vm.getSidebarData().weekly;
 
-        assert.deepStrictEqual(queriedGroups, ['gemini', 'argon', 'non-google']);
+        assert.deepStrictEqual(queriedGroups, ['gemini', 'non-google']);
         assert.ok(weekly);
         assert.strictEqual(weekly.days.length, 7);
         assert.strictEqual(weekly.days[6].items.length, 2);
@@ -1479,7 +1514,6 @@ suite('AppViewModel Test Suite', () => {
             return date.getTime();
         });
         mockStorage.getDailyConsumption = groupId => {
-            if (groupId === 'argon') return [];
             const dayStarts = makeDayStarts(groupId === 'gemini' ? 0 : -1);
             return dayStarts.map(dayStart => ({ dayStart, usage: 1, hasData: true }));
         };
